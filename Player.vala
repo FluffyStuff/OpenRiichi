@@ -120,7 +120,11 @@ public class Player
             {
                 call_decision_thread_discard_tile = discard_tile;
                 call_decision_thread_can_chi = can_chi;
+#if LINUX
+                Thread<int> thread = new Thread<int>.try(null, call_decision_thread);
+#else
                 Thread.create<void>(call_decision_thread, false);
+#endif
             }
             catch (ThreadError e)
             {
@@ -134,13 +138,15 @@ public class Player
     // TODO: Should we maybe use SDL threads instead?
     private Tile call_decision_thread_discard_tile;
     private bool call_decision_thread_can_chi;
-    private void call_decision_thread()
+    private int call_decision_thread()
     {
         // Keep a reference, so the player doesn't get deallocated while the thread is still running
         Player p = this;
 
         p.call_action = Bot.make_call(0, p, p.call_decision_thread_discard_tile, p.call_decision_thread_can_chi);
         p.state = PlayerState.READY;
+
+        return 0;
     }
 
     public bool turn_decision()
@@ -160,7 +166,11 @@ public class Player
         {
             try
             {
+#if LINUX
+                new Thread<int>.try(null, turn_decision_thread);
+#else
                 Thread.create<void>(turn_decision_thread, false);
+#endif
             }
             catch (ThreadError e)
             {
@@ -178,7 +188,7 @@ public class Player
             Logic.winning_hand(hand);
     }
 
-    private void turn_decision_thread()
+    private int turn_decision_thread()
     {
         // Keep a reference, so the player doesn't get deallocated while the thread is still running
         Player p = this;
@@ -187,6 +197,8 @@ public class Player
 
         if (p.turn_action != null)
             p.state = PlayerState.READY;
+
+        return 0;
     }
 
     public void arrange_hand()
