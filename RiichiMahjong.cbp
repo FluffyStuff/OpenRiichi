@@ -5,14 +5,14 @@
 		<Option title="RiichiMahjong" />
 		<Option makefile_is_custom="1" />
 		<Option pch_mode="2" />
-		<Option compiler="gcc" />
+		<Option compiler="vala_compiler" />
 		<Build>
 			<Target title="Debug">
 				<Option output="bin/RiichiMahjong" prefix_auto="1" extension_auto="1" />
 				<Option working_dir="bin/" />
 				<Option object_output="obj/Debug/" />
 				<Option type="1" />
-				<Option compiler="gcc" />
+				<Option compiler="vala_compiler" />
 				<Compiler>
 					<Add option="-g" />
 				</Compiler>
@@ -22,7 +22,7 @@
 				<Option working_dir="bin/" />
 				<Option object_output="obj/Release/" />
 				<Option type="1" />
-				<Option compiler="gcc" />
+				<Option compiler="vala_compiler" />
 				<Compiler>
 					<Add option="-O2" />
 				</Compiler>
@@ -34,90 +34,39 @@
 				<Option output="bin/RiichiMahjong" prefix_auto="1" extension_auto="1" />
 				<Option working_dir="bin/" />
 				<Option type="1" />
-				<Option compiler="gcc" />
+				<Option compiler="vala_compiler" />
 			</Target>
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
 			<Add directory="C:/vala-0.12.0/lib/gtk-2.0/include" />
 		</Compiler>
-		<Unit filename="Board.vala">
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="Button.vala">
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="Calls.vala">
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="Environment.vala">
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="Game.vala">
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="GameInterface.vala">
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="Logic.vala">
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="Mahjong.vala">
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="Makefile">
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
+		<Unit filename="Makefile" />
 		<Unit filename="Notes.txt">
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
-		<Unit filename="Player.vala">
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="Sound.vala">
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="Stick.vala">
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="Texture.vala">
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="Tile.vala">
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="Vector.vala">
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="bot/Action.vala">
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="bot/Bot.vala">
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="main.vala">
-			<Option compile="1" />
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
+		<Unit filename="source/Game/Action.vala" />
+		<Unit filename="source/Game/Board.vala" />
+		<Unit filename="source/Game/Bot/Bot.vala" />
+		<Unit filename="source/Game/Calls.vala" />
+		<Unit filename="source/Game/Game.vala" />
+		<Unit filename="source/Game/Interface/Button.vala" />
+		<Unit filename="source/Game/Interface/GameInterface.vala" />
+		<Unit filename="source/Game/Logic.vala" />
+		<Unit filename="source/Game/Mahjong.vala" />
+		<Unit filename="source/Game/Player.vala" />
+		<Unit filename="source/Game/Stick.vala" />
+		<Unit filename="source/Game/Tile.vala" />
+		<Unit filename="source/Game/Yaku.vala" />
+		<Unit filename="source/Helper/Environment.vala" />
+		<Unit filename="source/Helper/Sound.vala" />
+		<Unit filename="source/Helper/Texture.vala" />
+		<Unit filename="source/Helper/Vector.vala" />
+		<Unit filename="source/MainWindow.vala" />
+		<Unit filename="source/Menu/MainMenu.vala" />
+		<Unit filename="source/Menu/MainMenuBackground.vala" />
+		<Unit filename="source/main.vala" />
 		<Extensions>
 			<code_completion />
 			<envvars />

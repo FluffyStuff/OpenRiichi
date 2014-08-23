@@ -24,7 +24,7 @@ THE SOFTWARE.
 //FOR: SDL2.0 - This is not official, to be futurely changed for the official binding
 //Maintainer: PedroHLC and Txasatonga
 
-[CCode (cprefix="SDLNet_", cheader_filename="SDL2/SDL2_net.h")]
+[CCode (cprefix="SDLNet_", cheader_filename="SDL2/SDL_net.h")]
 namespace SDLNet {
 	[CCode (cname="SDLNet_Linked_Version")]
 	public static SDL.Version linked();
