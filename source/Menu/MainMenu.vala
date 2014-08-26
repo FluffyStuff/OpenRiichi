@@ -46,6 +46,14 @@ public class MainMenu : View
         buttons.add(exit_button);
     }
 
+    ~MainMenu()
+    {
+        ai_button.press.disconnect(ai_button_press);
+        host_button.press.disconnect(host_button_press);
+        join_button.press.disconnect(join_button_press);
+        exit_button.press.disconnect(exit_button_press);
+    }
+
     private void ai_button_press(Button b)
     {
         action = MenuAction.SINGLE_PLAYER;

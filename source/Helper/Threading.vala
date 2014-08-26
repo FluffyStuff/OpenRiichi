@@ -1,4 +1,4 @@
-public static class Threading
+public /*static*/ class Threading
 {
     public delegate void Del0Arg();
     public delegate void Del1Arg(Object arg1);
@@ -43,7 +43,7 @@ public static class Threading
 
     private abstract class Thread
     {
-        public abstract void start();
+        public abstract int start();
     }
 
     private class Thread0 : Thread
@@ -57,10 +57,11 @@ public static class Threading
             this.func = func;
         }
 
-        public override void start()
+        public override int start()
         {
             func();
             self = null;
+	    return 0;
         }
     }
 
@@ -77,10 +78,11 @@ public static class Threading
             this.arg1 = arg1;
         }
 
-        public override void start()
+        public override int start()
         {
             func(arg1);
             self = null;
+	    return 0;
         }
     }
 
@@ -99,10 +101,11 @@ public static class Threading
             this.arg2 = arg2;
         }
 
-        public override void start()
+        public override int start()
         {
             func(arg1, arg2);
             self = null;
+	    return 0;
         }
     }
 
@@ -123,10 +126,11 @@ public static class Threading
             this.arg3 = arg3;
         }
 
-        public override void start()
+        public override int start()
         {
             func(arg1, arg2, arg3);
             self = null;
+	    return 0;
         }
     }
 
@@ -136,6 +140,7 @@ public static class Threading
 // A class for storing primitives/structs as objects
 public class Obj<T> : Object
 {
-    public T obj { get; private set; }
-    public Obj(T t) { obj = t; }
+    public T _obj;
+    public T obj { get { return _obj; } }
+    public Obj(T t) { _obj = (T)t; }
 }

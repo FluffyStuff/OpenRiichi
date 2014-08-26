@@ -13,14 +13,22 @@ public class MainWindow
     private bool restart = false;
 
     private int focal_length = 2;
-    private Networking net = new Networking();
+    //private Networking net;
+
+    private MainMenu menu;
 
     public MainWindow(Window window)
     {
         this.window = window;
-        MainMenu m = new MainMenu(window);
-        view = m;
-        m.menu_action.connect(menu_action);
+        menu = new MainMenu(window);
+        view = menu;
+        menu.menu_action.connect(menu_action);
+    }
+
+    ~MainWindow()
+    {
+        menu.menu_action.disconnect(menu_action);
+        Networking.close_connections();
     }
 
     private void menu_action(MainMenu m)
@@ -31,10 +39,10 @@ public class MainWindow
             view = new Mahjong(window);
             break;
         case MainMenu.MenuAction.HOST_MULTI_PLAYER:
-            net.host();
+            Networking.host();
             break;
         case MainMenu.MenuAction.JOIN_MULTI_PLAYER:
-            net.join("localhost");
+            Networking.join("localhost");
             break;
         case MainMenu.MenuAction.EXIT:
             exit = true;

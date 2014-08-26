@@ -29,12 +29,12 @@ public static class Environment
             return false;
         }
 
-        if (SDLNet.init() < 0)
+        /*if (SDLNet.init() < 0)
         {
             Sound.quit();
             SDL.quit();
             return false;
-        }
+        }*/
 
         window = new Window("Riichi Mahjong", Window.POS_CENTERED, Window.POS_CENTERED, ORIGINAL_WINDOW_WIDTH, ORIGINAL_WINDOW_HEIGHT, WindowFlags.RESIZABLE | WindowFlags.OPENGL);
 
@@ -42,7 +42,7 @@ public static class Environment
         {
             SDL.quit();
             Sound.quit();
-            SDLNet.quit();
+            //SDLNet.quit();
             return false;
         }
 
@@ -51,7 +51,7 @@ public static class Environment
             window.destroy();
             SDL.quit();
             Sound.quit();
-            SDLNet.quit();
+            //SDLNet.quit();
             return false;
         }
 
@@ -93,6 +93,7 @@ public static class Environment
         hover_cursor = new Cursor.from_system(SystemCursor.HAND);
         default_cursor = new Cursor.from_system(SystemCursor.ARROW);
         rand = new Rand();
+        Networking.init();
 
         #if __APPLE__
         CGSetLocalEventsSuppressionInterval(0); // Herp derp, fix the choppy cursor bug
@@ -108,7 +109,7 @@ public static class Environment
         {
             SDL.GL.delete_context(context);
             Sound.quit();
-            SDLNet.quit();
+            //SDLNet.quit();
             window.destroy();
             TextInput.stop();
             default_cursor = null;
