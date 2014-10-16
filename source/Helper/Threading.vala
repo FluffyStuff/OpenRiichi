@@ -136,6 +136,7 @@ public static class Threading
 // A class for storing primitives/structs as objects
 public class Obj<T> : Object
 {
-    public T obj { get; private set; }
-    public Obj(T t) { obj = t; }
+    public T _obj;
+    public T obj { get { return _obj; } }
+    public Obj(T t) { _obj = (T)t; }
 }

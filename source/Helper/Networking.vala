@@ -1,126 +1,232 @@
 using Gee;
 
 // Asynchronous networking class
-public class Networking
+public static class Networking
 {
-    private const uint16 PORT = 1337;
+    public static MessageSignal message_received;
 
-    private SocketService server;
-    private SocketConnection client_connection;
-    private ArrayList<SocketConnection> clients;
+    private static SocketListener server;
+    private static bool listening = false;
+    private static Cancellable server_cancel;
 
-    public Networking()
+    private static ArrayList<Connection> connections;
+    private static Mutex mutex;
+    private static bool initialized = false;
+
+    public static void init()
     {
+        if (initialized)
+            return;
+
+        initialized = true;
+        connections = new ArrayList<Connection>();
+        message_received = new MessageSignal();
+        mutex = new Mutex();
     }
 
-    private bool new_connection(SocketConnection connection)
+    public static void close_connections()
     {
-        print("New connection!\n");
-        clients.add(connection);
-        read_data.begin(connection);
+        // Need to explicitly cancel all connections, or we will leak memory (have zombie threads)
+        mutex.lock();
 
+        if (listening)
+        {
+            listening = false;
+            server_cancel.cancel();
+        }
+
+        foreach (Connection c in connections)
+            c.stop();
+
+        mutex.unlock();
+    }
+
+    private static void message_received_handler(Connection connection, Message message)
+    {
+        message_received.message(connection, message);
+    }
+
+    private static void connection_closed(Connection connection)
+    {
+        mutex.lock();
+
+        connection.message_received.disconnect(message_received_handler);
+        connection.closed.disconnect(connection_closed);
+        connections.remove(connection);
+        print("Connection closed. (" + connections.size.to_string() + " left)\n");
+
+        mutex.unlock();
+    }
+
+    private static Connection add_connection(SocketConnection connection)
+    {
+        mutex.lock();
+
+        Connection c = new Connection(connection);
+        connections.add(c);
+        print("New connection. (" + connections.size.to_string() + " now)\n");
+        c.message_received.connect(message_received_handler);
+        c.closed.connect(connection_closed);
+        c.start();
+
+        mutex.unlock();
+
+        return c;
+    }
+
+    private static bool new_connection(SocketConnection connection)
+    {
+        add_connection(connection);
         return true;
     }
 
-    private async void read_data(SocketConnection client)
+    private static void host_worker(Object obj)
     {
-        while (true)
-        {
+        if (listening)
+            return;
 
-        }
-    }
-
-    void process_request (InputStream input, OutputStream output)
-    {
         try
         {
-            /*var data_in = new DataInputStream (input);
-            string line;
-            while ((line = data_in.read_line (null)) != null) {
-                stdout.printf ("%s\n", line);
-                if (line.strip () == "") break;
-            }
-
-            string content = "<html><h1>RiichiMahjong!</h1></html>";
-            var header = new StringBuilder ();
-            header.append ("HTTP/1.0 200 OK\r\n");
-            header.append ("Content-Type: text/html\r\n");
-            header.append_printf ("Content-Length: %lu\r\n\r\n", content.length);
+            uint16 port = ((Obj<uint16>)obj).obj;
+            server_cancel = new Cancellable();
+            server = new SocketListener();
+            server.add_inet_port(port, null);
+            listening = true;
 
             while (true)
             {
-                output.write (header.str.data);
-                output.write (content.data);
-                output.flush ();
-                Thread.usleep(1000000);
-            }*/
+                SocketConnection connection = server.accept(null, server_cancel);
 
+                if (!listening)
+                    break;
 
-        }
-        catch {}
-    }
-
-    private void host_worker()
-    {
-        try
-        {
-            clients = new ArrayList<SocketConnection>();
-            server = new SocketService();
-            server.add_inet_port(PORT, null);
-            server.start();
-
-            while (true)
-            {
-                SocketConnection connection = server.accept(null, null);
-                print("derp\n");
+                new_connection(connection);
             }
         }
         catch { }
+
+        server.close();
+        listening = false;
     }
 
-    public bool host()
+    public static bool host(uint16 port)
     {
-        Threading.start0(host_worker);
+        Threading.start1(host_worker, new Obj<uint16>(port));
         return true;
     }
 
-    private void client_worker(Object addr_obj)
+    public static Connection? join(string addr, uint16 port)
     {
-        string addr = ((Obj<string>)addr_obj).obj;
         try
         {
             Resolver resolver = Resolver.get_default();
             GLib.List<InetAddress> addresses = resolver.lookup_by_name(addr, null);
             InetAddress address = addresses.nth_data(0);
 
-            var socket_address = new InetSocketAddress(address, PORT);
+            var socket_address = new InetSocketAddress(address, port);
             var client = new SocketClient();
             var conn = client.connect(socket_address);
-            print("Connected to " + addr + ".\n");
 
-            var message = "GET / HTTP/1.1\r\nHost: www.google.com\r\n\r\n";
-            conn.output_stream.write(message.data);
-            print("Wrote request.\n");
+            return add_connection(conn);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+}
 
-            //conn.socket.set_blocking(false);
+public class MessageSignal
+{
+    public signal void message(Connection connection, Message message);
+}
 
-            //var input = new DataInputStream(conn.input_stream);
+public class Connection : Object
+{
+    public signal void message_received(Connection connection, Message message);
+    public signal void closed(Connection connection);
 
-            while (true)
+    private SocketConnection connection;
+    private bool run = true;
+    private Cancellable cancel = new Cancellable();
+
+    public Connection(SocketConnection connection)
+    {
+        this.connection = connection;
+    }
+
+    public void send_message(Message message)
+    {
+        try
+        {
+            int len = message.message.length;
+            uint8[] buffer = new uint8[4];
+            buffer[0] = (uint8)(len >> 24);
+            buffer[1] = (uint8)(len >> 16);
+            buffer[2] = (uint8)(len >>  8);
+            buffer[3] = (uint8)(len);
+            connection.output_stream.write(buffer);
+            connection.output_stream.write(message.message.data);
+        }
+        catch { } // Won't close here, because the thread will do it for us
+    }
+
+    public void start()
+    {
+        Threading.start1(reading_worker, this);
+    }
+
+    public void stop()
+    {
+        run = false;
+        cancel.cancel();
+    }
+
+    private static void reading_worker(Object conn)
+    {
+        Connection connection = (Connection)conn;
+
+        connection.connection.socket.set_blocking(false);
+        var input = new DataInputStream(connection.connection.input_stream);
+
+        try
+        {
+            while (connection.run)
             {
-                //message = input.read_line(null).strip();
-                //print("Client received line: %s\n", message);
+                uint32 length = input.read_uint32();
+                uint8[] buffer = new uint8[length];
+                size_t read;
 
-                conn.output_stream.write(message.data);
-                Thread.usleep(100000);
+                if (!connection.connection.input_stream.read_all(buffer, out read, connection.cancel))
+                    break;
+
+                string? message = (string)buffer;
+                if (message == null)
+                    break;
+
+                connection.message_received(connection, new Message(message));
             }
         }
-        catch { }
+        catch {}
+
+        try
+        {
+            if (connection.cancel.is_cancelled())
+                connection.connection.close();
+
+            connection.closed(connection);
+        }
+        catch {}
+    }
+}
+
+public class Message
+{
+    protected Message.empty() {}
+    public Message(string message)
+    {
+        this.message = message;
     }
 
-    public bool join(string addr)
-    {
-        Threading.start1(client_worker, new Obj<string>(addr));
-        return true;
-    }
+    public string message { get; private set; }
 }

@@ -93,6 +93,7 @@ public static class Environment
         hover_cursor = new Cursor.from_system(SystemCursor.HAND);
         default_cursor = new Cursor.from_system(SystemCursor.ARROW);
         rand = new Rand();
+        Networking.init();
 
         #if __APPLE__
         CGSetLocalEventsSuppressionInterval(0); // Herp derp, fix the choppy cursor bug
