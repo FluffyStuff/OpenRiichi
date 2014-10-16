@@ -1,4 +1,4 @@
-public static class Threading
+public /*static*/ class Threading
 {
     public delegate void Del0Arg();
     public delegate void Del1Arg(Object arg1);
@@ -43,7 +43,11 @@ public static class Threading
 
     private abstract class Thread
     {
+#if LINUX
+        public abstract int start();
+#else
         public abstract void start();
+#endif
     }
 
     private class Thread0 : Thread
@@ -57,11 +61,20 @@ public static class Threading
             this.func = func;
         }
 
+#if LINUX
+        public override int start()
+        {
+            func();
+            self = null;
+            return 0;
+        }
+#else
         public override void start()
         {
             func();
             self = null;
         }
+#endif
     }
 
     private class Thread1 : Thread
@@ -77,11 +90,20 @@ public static class Threading
             this.arg1 = arg1;
         }
 
+#if LINUX
+        public override int start()
+        {
+            func(arg1);
+            self = null;
+            return 0;
+        }
+#else
         public override void start()
         {
             func(arg1);
             self = null;
         }
+#endif
     }
 
     private class Thread2 : Thread
@@ -99,11 +121,20 @@ public static class Threading
             this.arg2 = arg2;
         }
 
+#if LINUX
+        public override int start()
+        {
+            func(arg1, arg2);
+            self = null;
+            return 0;
+        }
+#else
         public override void start()
         {
             func(arg1, arg2);
             self = null;
         }
+#endif
     }
 
     private class Thread3 : Thread
@@ -123,11 +154,20 @@ public static class Threading
             this.arg3 = arg3;
         }
 
+#if LINUX
+        public override int start()
+        {
+            func(arg1, arg2, arg3);
+            self = null;
+            return 0;
+        }
+#else
         public override void start()
         {
             func(arg1, arg2, arg3);
             self = null;
         }
+#endif
     }
 
     public static bool threading { get { return GLib.Thread.supported(); } }
