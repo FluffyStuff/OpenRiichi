@@ -22,6 +22,12 @@ public class Mahjong : View
         game = new Game();
     }
 
+    public Mahjong.seed(Window window, uint8[] tiles, uint8 wall_split, uint8 seat)
+    {
+        this.window = window;
+        game = new Game.seed(tiles, wall_split, seat);
+    }
+
     public override void process(double dt) { game.process(dt); }
 
     public override void render()

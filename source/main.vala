@@ -1,3 +1,7 @@
+const uint32 MAJOR = 0;
+const uint32 MINOR = 0;
+const uint32 REVISION = 0;
+
 public static int main(string[] args)
 {
     /*var list = new Gee.ArrayList<Tile>();
@@ -46,7 +50,7 @@ public static int main(string[] args)
 
     return 0;*/
 
-    if (!Environment.init())
+    if (!Environment.init(MAJOR, MINOR, REVISION))
         return -1;
 
     while (true)

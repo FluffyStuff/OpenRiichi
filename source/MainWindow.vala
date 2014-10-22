@@ -14,6 +14,7 @@ public class MainWindow
 
     private int focal_length = 2;
     private GameNetworking net = new GameNetworking();
+    private GameStartMessage net_start = null;
 
     private MainMenu menu;
 
@@ -23,11 +24,13 @@ public class MainWindow
         menu = new MainMenu(window);
         view = menu;
         menu.menu_action.connect(menu_action);
+        net.game_start.connect(net_game_start);
     }
 
     ~MainWindow()
     {
         menu.menu_action.disconnect(menu_action);
+        net.game_start.disconnect(net_game_start);
     }
 
     private void menu_action(MainMenu m)
@@ -41,12 +44,17 @@ public class MainWindow
             net.host();
             break;
         case MainMenu.MenuAction.JOIN_MULTI_PLAYER:
-            net.join("localhost");
+            net.join("server.fluffy.is");
             break;
         case MainMenu.MenuAction.EXIT:
             exit = true;
             break;
         }
+    }
+
+    private void net_game_start(GameStartMessage message)
+    {
+        net_start = message;
     }
 
     public bool loop()
@@ -55,6 +63,12 @@ public class MainWindow
 
         while (!exit)
         {
+            if (net_start != null)// TODO: code plz, stahp, be a little more graceful...
+            {
+                view = new Mahjong.seed(window, net_start.tile_seed, net_start.wall_split, net_start.seat);
+                net_start = null;
+            }
+
             while (Event.poll(out e) != 0)
             {
                 if (e.type == EventType.QUIT)

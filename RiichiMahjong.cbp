@@ -55,12 +55,17 @@
 		<Unit filename="source/Game/Interface/GameInterface.vala" />
 		<Unit filename="source/Game/Logic.vala" />
 		<Unit filename="source/Game/Mahjong.vala" />
+		<Unit filename="source/Game/Networking/GameMessage.vala" />
 		<Unit filename="source/Game/Networking/GameNetworking.vala" />
+		<Unit filename="source/Game/Networking/HostMessage.vala" />
+		<Unit filename="source/Game/Networking/InitiateMessage.vala" />
+		<Unit filename="source/Game/Networking/PlayerMessage.vala" />
 		<Unit filename="source/Game/Player.vala" />
 		<Unit filename="source/Game/Stick.vala" />
 		<Unit filename="source/Game/Tile.vala" />
 		<Unit filename="source/Game/Yaku.vala" />
 		<Unit filename="source/Helper/Environment.vala" />
+		<Unit filename="source/Helper/Helper.vala" />
 		<Unit filename="source/Helper/Networking.vala" />
 		<Unit filename="source/Helper/Sound.vala" />
 		<Unit filename="source/Helper/Texture.vala" />

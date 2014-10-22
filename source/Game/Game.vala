@@ -21,20 +21,45 @@ public class Game
     private int current_player = 0;
     private int game_turn = 0;
     private bool first_round = true;
+    private int player_seat = 0;
 
     public Game()
     {
-        for (int i = 0; i < 136; i++)
+        uint8 wall_split = (uint8)rnd.int_range(2, 12);
+
+        uint8[] tiles = new uint8[this.tiles.length];
+
+        for (uint8 i = 0; i < tiles.length; i++)
+            tiles[i] = i;
+
+        for (uint8 i = 0; i < tiles.length; i++)
+        {
+            int r = rnd.int_range(0, tiles.length - 1);
+
+            //r1 -= r1 % 4;
+            //r2 -= r2 % 4;
+
+            uint8 t = tiles[r];
+            tiles[r] = tiles[i];
+            tiles[i] = t;
+        }
+
+        Game.seed(tiles, wall_split, (uint8)rnd.int_range(0, 4));
+    }
+
+    public Game.seed(uint8[] tile_seed, uint8 wall_split, uint8 seat)
+    {
+        player_seat = (int)seat % 4;
+
+        for (int i = 0; i < tiles.length; i++)
         {
             Tile t = new Tile(1, i, i / 4);
             t.rotation = new Vector(90, 0, 0);
             t.color_ID = i + 1;
-            tiles[i] = t;
+            tiles[tile_seed[i]] = t;
         }
 
-        shuffle_tiles(tiles, 10000);
-
-        for (int i = 0; i < 136; i++)
+        for (int i = 0; i < tiles.length; i++)
         {
             wall_tiles.add(tiles[i]);
 
@@ -65,7 +90,6 @@ public class Game
             tiles[i].position = new Vector(x, y, z);
         }
 
-        int wall_split = rnd.int_range(2, 12);
         int starting_player = wall_split % 4;
 
         drawing_tile = int.max(starting_player * 34 + wall_split * 2 - 14, 0);
@@ -75,7 +99,10 @@ public class Game
 
         for (int i = 0; i < 4; i++)
             players[i] = new Player(i, "Player" + i.to_string());
-        players[0].computer_player = false;
+
+        for (int i = 0; i < 4; i++)
+            players[i].computer_player = false;
+        players[player_seat].computer_player = false;
 
         for (int i = 0; i < 52; i++)
         {
@@ -299,7 +326,7 @@ public class Game
         {
             float offset = shift * (a < 14 ? 1 : 2);
 
-            if (player == 0)
+            if (player == player_seat)
                 tiles[i].position.x -= offset;
             else if (player == 1)
                 tiles[i].position.y += offset;
@@ -335,24 +362,9 @@ public class Game
         }
     }
 
-    private static void shuffle_tiles(Tile[] tiles, int power)
-    {
-        for (int i = 0; i < power; i++)
-        {
-            int r1 = rnd.int_range(0, tiles.length - 1);
-            int r2 = rnd.int_range(0, tiles.length - 1);
-
-            //r1 -= r1 % 4;
-            //r2 -= r2 % 4;
-
-            Tile t = tiles[r1];
-            tiles[r1] = tiles[r2];
-            tiles[r2] = t;
-        }
-    }
-
     public void render()
     {
+        glRotated(-(GLdouble)player_seat * 90, 0, 0, 1);
         board.render();
         foreach (Player p in players)
             p.render();
@@ -364,6 +376,7 @@ public class Game
 
     public void render_selection()
     {
+        glRotated(-(GLdouble)player_seat * 90, 0, 0, 1);
         foreach (Player p in players)
             p.render_selection();
     }
@@ -383,8 +396,7 @@ public class Game
         if (!(ui.visible = show))
             return;
 
-        // TODO: Something...
-        Player p = players[0];
+        Player p = players[player_seat];
 
         if (state == GameState.WAITING_CALLS)
         {
@@ -411,8 +423,7 @@ public class Game
 
     public void mouse_click(int x, int y, uint color_id, bool mouse_state)
     {
-        // TODO: Something
-        Player player = players[0];
+        Player player = players[player_seat];
 
         Button button = ui.click(x, y, color_id, mouse_state);
 
@@ -533,8 +544,7 @@ public class Game
     public void mouse_move(int x, int y, uint color_id)
     {
         // TODO: Only update cursor if needed
-        // TODO: Make dependent on current user
-        Player player = players[0];
+        Player player = players[player_seat];
 
         if (ui.hover(x, y, color_id))
         {
@@ -549,8 +559,7 @@ public class Game
 
     private void do_continue()
     {
-        // TODO: Something about this
-        Player player = players[0];
+        Player player = players[player_seat];
 
         if (state == GameState.WAITING_CLOSED_OR_LATE_KAN)
         {
@@ -568,8 +577,7 @@ public class Game
 
     private void do_open_kan()
     {
-        // TODO: Something about this
-        Player player = players[0];
+        Player player = players[player_seat];
 
         Tile[] tiles = new Tile[3];
 
@@ -589,7 +597,7 @@ public class Game
 
     private void do_closed_or_late_kan()
     {
-        Player player = players[0];
+        Player player = players[player_seat];
 
         Tile? tile = null;
         Pon? pon = null;
@@ -650,8 +658,7 @@ public class Game
 
     private void do_pon()
     {
-        // TODO: Something about this
-        Player player = players[0];
+        Player player = players[player_seat];
 
         Tile[] tiles = new Tile[2];
 
@@ -671,8 +678,7 @@ public class Game
 
     private void do_chi()
     {
-        // TODO: Something
-        Player player = players[0];
+        Player player = players[player_seat];
 
         Tile[]? tiles = Logic.auto_chi(last_played_tile, player.hand);
         if (tiles == null)

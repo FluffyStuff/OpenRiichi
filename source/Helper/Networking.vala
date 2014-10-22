@@ -36,7 +36,7 @@ public static class Networking
         }
 
         foreach (Connection c in connections)
-            c.stop();
+            c.close();
 
         mutex.unlock();
     }
@@ -155,18 +155,12 @@ public class Connection : Object
         this.connection = connection;
     }
 
-    public void send_message(Message message)
+    public void send(Message message)
     {
         try
         {
-            int len = message.message.length;
-            uint8[] buffer = new uint8[4];
-            buffer[0] = (uint8)(len >> 24);
-            buffer[1] = (uint8)(len >> 16);
-            buffer[2] = (uint8)(len >>  8);
-            buffer[3] = (uint8)(len);
-            connection.output_stream.write(buffer);
-            connection.output_stream.write(message.message.data);
+            connection.output_stream.write(int_to_data(message.data.length));
+            connection.output_stream.write(message.data);
         }
         catch { } // Won't close here, because the thread will do it for us
     }
@@ -176,7 +170,7 @@ public class Connection : Object
         Threading.start1(reading_worker, this);
     }
 
-    public void stop()
+    public void close()
     {
         run = false;
         cancel.cancel();
@@ -197,14 +191,10 @@ public class Connection : Object
                 uint8[] buffer = new uint8[length];
                 size_t read;
 
-                if (!connection.connection.input_stream.read_all(buffer, out read, connection.cancel))
+                if (!connection.connection.input_stream.read_all(buffer, out read, connection.cancel) || buffer == null)
                     break;
 
-                string? message = (string)buffer;
-                if (message == null)
-                    break;
-
-                connection.message_received(connection, new Message(message));
+                connection.message_received(connection, new Message(buffer));
             }
         }
         catch {}
@@ -220,13 +210,14 @@ public class Connection : Object
     }
 }
 
-public class Message
+public class Message : Object
 {
     protected Message.empty() {}
-    public Message(string message)
+
+    public Message(uint8[] data)
     {
-        this.message = message;
+        this.data = data;
     }
 
-    public string message { get; private set; }
+    public uint8[] data { get; private set; }
 }

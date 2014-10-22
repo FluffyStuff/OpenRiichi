@@ -15,7 +15,7 @@ public static class Environment
     private static Cursor? default_cursor;
     private static Cursor? hover_cursor;
 
-    public static bool init()
+    public static bool init(uint32 major, uint32 minor, uint32 revision)
     {
         if (initialized)
             return true;
@@ -99,6 +99,9 @@ public static class Environment
         CGSetLocalEventsSuppressionInterval(0); // Herp derp, fix the choppy cursor bug
         #endif
 
+        version_major = major;
+        version_minor = minor;
+        version_revision = revision;
         initialized = true;
         return true;
     }
@@ -132,9 +135,19 @@ public static class Environment
         }
     }
 
+    // This function needs to be updated regularly to keep track of the
+    // smaller versions which aren't compatible with the current version
+    public static bool is_compatible(uint32 major, uint32 minor, uint32 revision)
+    {
+        return !(major < version_major || minor < version_minor);
+    }
+
     public static Rand random { get { return rand; } }
     public const int ORIGINAL_WINDOW_WIDTH = 1280;
     public const int ORIGINAL_WINDOW_HEIGHT = 720;
+    public static uint32 version_major { get; private set; }
+    public static uint32 version_minor { get; private set; }
+    public static uint32 version_revision { get; private set; }
 
     public enum CursorType
     {
