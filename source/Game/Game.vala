@@ -12,6 +12,7 @@ public class Game
     private Board board = new Board(6);
     private Player[] players = new Player[4];
     private Tile[] tiles = new Tile[136];
+    private Tile[] game_tiles = new Tile[136];
     private ArrayList<Tile> dead_wall = new ArrayList<Tile>();
     private ArrayList<Tile> wall_tiles = new ArrayList<Tile>();
     private ArrayList<Tile> dora_tiles = new ArrayList<Tile>();
@@ -44,24 +45,26 @@ public class Game
             tiles[i] = t;
         }
 
-        Game.seed(tiles, wall_split, (uint8)rnd.int_range(0, 4));
+        Game.seed(tiles, wall_split, (uint8)rnd.int_range(0, 4), null);
     }
 
-    public Game.seed(uint8[] tile_seed, uint8 wall_split, uint8 seat)
+    public Game.seed(uint8[] tile_seed, uint8 wall_split, uint8 seat, GLib.List<GameConnection>? connections)
     {
+        print("Game seed\n");
         player_seat = (int)seat % 4;
 
         for (int i = 0; i < tiles.length; i++)
         {
-            Tile t = new Tile(1, i, i / 4);
+            Tile t = new Tile(1, (uint8)i, i / 4);
             t.rotation = new Vector(90, 0, 0);
             t.color_ID = i + 1;
-            tiles[tile_seed[i]] = t;
+            tiles[i] = t;
+            game_tiles[tile_seed[i]] = t;
         }
 
-        for (int i = 0; i < tiles.length; i++)
+        for (int i = 0; i < game_tiles.length; i++)
         {
-            wall_tiles.add(tiles[i]);
+            wall_tiles.add(game_tiles[i]);
 
             float rot = (i / 34) * 90;
             float x = ((i % 34) / 2 - 8f) * (Tile.TILE_WIDTH + Tile.TILE_SPACING);
@@ -86,8 +89,8 @@ public class Game
                 y = a;
             }
 
-            tiles[i].rotation = new Vector(180, 0, rot);
-            tiles[i].position = new Vector(x, y, z);
+            game_tiles[i].rotation = new Vector(180, 0, rot);
+            game_tiles[i].position = new Vector(x, y, z);
         }
 
         int starting_player = wall_split % 4;
@@ -97,12 +100,23 @@ public class Game
 
         flip_dora();
 
+        int a = 0;
         for (int i = 0; i < 4; i++)
-            players[i] = new Player(i, "Player" + i.to_string());
+        {
+            if (i == seat)
+            {
+                GameConnection g = null;
+                if (connections != null && connections.length() > 1)
+                    g = connections.nth_data(0);
+                players[i] = new GamePlayer(i, "Player" + i.to_string(), g);
+                continue;
+            }
 
-        for (int i = 0; i < 4; i++)
-            players[i].computer_player = false;
-        players[player_seat].computer_player = false;
+            if (connections != null && connections.length() > ++a)
+                players[i] = new NetworkPlayer(i, connections.nth_data(a));
+            else
+                players[i] = new ComputerPlayer(i, "Computer" + i.to_string());
+        }
 
         for (int i = 0; i < 52; i++)
         {
@@ -116,6 +130,7 @@ public class Game
             players[i].arrange_hand();
 
         game_start();
+        print("Game seeded\n");
     }
 
     public void process(double dt)
@@ -148,8 +163,7 @@ public class Game
                     continue;
                 else if (p.call_action.action == CallAction.CallActionEnum.OPEN_KAN)
                 {
-                    //stdout.printf("Starting Open Kan for player: " + p.name + "\n");
-                    p.do_open_kan(p.call_action.tiles, last_played_tile, current_player);
+                    p.do_open_kan(Tile.ints_to_tiles(tiles, p.call_action.tiles), last_played_tile, current_player);
                     p.call_action = null;
                     players[current_player].steal_tile(last_played_tile);
                     player = p.position;
@@ -158,8 +172,7 @@ public class Game
                 }
                 else if (p.call_action.action == CallAction.CallActionEnum.PON)
                 {
-                    //stdout.printf("Starting Pon for player: " + p.name + "\n");
-                    p.do_pon(p.call_action.tiles, last_played_tile, current_player);
+                    p.do_pon(Tile.ints_to_tiles(tiles, p.call_action.tiles), last_played_tile, current_player);
                     p.call_action = null;
                     players[current_player].steal_tile(last_played_tile);
                     player = p.position;
@@ -174,8 +187,7 @@ public class Game
                         continue;
                     if (p.call_action.action == CallAction.CallActionEnum.CHI)
                     {
-                        //stdout.printf("Starting Chi for player: " + p.name + "\n");
-                        p.do_chi(p.call_action.tiles, last_played_tile);
+                        p.do_chi(Tile.ints_to_tiles(tiles, p.call_action.tiles), last_played_tile);
                         p.call_action = null;
                         players[current_player].steal_tile(last_played_tile);
                         player = p.position;
@@ -205,7 +217,7 @@ public class Game
                 first_round = false;
 
             state = GameState.WAITING_TURN;
-            if (players[current_player].turn_decision() && !players[current_player].computer_player)
+            if (players[current_player].turn_decision() && current_player == player_seat)
                 toggle_interface(true);
         }
 
@@ -216,25 +228,22 @@ public class Game
                 switch (players[current_player].turn_action.action)
                 {
                     case TurnAction.TurnActionEnum.DISCARD:
-                        //stdout.printf("Starting Discard for player: " + players[current_player].name + "\n");
-                        players[current_player].discard_tile(players[current_player].turn_action.discard_tile);
-                        discard_tile(players[current_player].turn_action.discard_tile);
+                        players[current_player].discard_tile(tiles[(int)players[current_player].turn_action.discard_tile]);
+                        discard_tile(tiles[(int)players[current_player].turn_action.discard_tile]);
                         break;
                     case TurnAction.TurnActionEnum.CLOSED_KAN:
-                        //stdout.printf("Starting Closed Kan for player: " + players[current_player].name + "\n");
-                        players[current_player].do_closed_kan(players[current_player].turn_action.kan_tiles);
+                        players[current_player].do_closed_kan(Tile.ints_to_tiles(tiles, players[current_player].turn_action.kan_tiles));
                         draw_dead_wall();
                         players[current_player].turn_decision();
                         break;
                     case TurnAction.TurnActionEnum.LATE_KAN:
-                        //stdout.printf("Starting Late Kan for player: " + players[current_player].name + "\n");
-                        players[current_player].do_late_kan(players[current_player].turn_action.late_kan_tile, players[current_player].turn_action.late_kan_pon);
+                        players[current_player].do_late_kan(tiles[(int)players[current_player].turn_action.late_kan_tile], players[current_player].pons[(int)players[current_player].turn_action.late_kan_pon]);
                         draw_dead_wall();
                         players[current_player].turn_decision();
                         break;
                     case TurnAction.TurnActionEnum.RIICHI:
-                        players[current_player].do_riichi(players[current_player].turn_action.action == TurnAction.TurnActionEnum.OPEN_RIICHI, game_turn, players[current_player].turn_action.discard_tile);
-                        discard_tile(players[current_player].turn_action.discard_tile);
+                        players[current_player].do_riichi(players[current_player].turn_action.action == TurnAction.TurnActionEnum.OPEN_RIICHI, game_turn, tiles[(int)players[current_player].turn_action.discard_tile]);
+                        discard_tile(tiles[(int)players[current_player].turn_action.discard_tile]);
                         break;
                     case TurnAction.TurnActionEnum.TSUMO:
                         players[current_player].do_tsumo();
@@ -307,7 +316,7 @@ public class Game
             if (i == current_player)
                 continue;
 
-            if (players[i].call_decision(t, i == (current_player + 1) % 4) && !players[i].computer_player)
+            if (players[i].call_decision(t, i == (current_player + 1) % 4) && i == player_seat)
                 toggle_interface(true);
         }
     }
@@ -327,18 +336,18 @@ public class Game
             float offset = shift * (a < 14 ? 1 : 2);
 
             if (player == player_seat)
-                tiles[i].position.x -= offset;
+                game_tiles[i].position.x -= offset;
             else if (player == 1)
-                tiles[i].position.y += offset;
+                game_tiles[i].position.y += offset;
             else if (player == 2)
-                tiles[i].position.x += offset;
+                game_tiles[i].position.x += offset;
             else
-                tiles[i].position.y -= offset;
+                game_tiles[i].position.y -= offset;
 
             if (a < 14)
             {
-                dead_wall.add(tiles[i]);
-                wall_tiles.remove(tiles[i]);
+                dead_wall.add(game_tiles[i]);
+                wall_tiles.remove(game_tiles[i]);
             }
             a++;
         }
@@ -349,16 +358,16 @@ public class Game
         for (int i = end - 1; i >= start; i--)
         {
             if (player == 0)
-                tiles[i].position.y += shift;
+                game_tiles[i].position.y += shift;
             else if (player == 1)
-                tiles[i].position.x += shift;
+                game_tiles[i].position.x += shift;
             else if (player == 2)
-                tiles[i].position.y -= shift;
+                game_tiles[i].position.y -= shift;
             else
-                tiles[i].position.x -= shift;
+                game_tiles[i].position.x -= shift;
 
-            dead_wall.add(tiles[i]);
-            wall_tiles.remove(tiles[i]);
+            dead_wall.add(game_tiles[i]);
+            wall_tiles.remove(game_tiles[i]);
         }
     }
 
@@ -468,7 +477,7 @@ public class Game
             case "Ron":
                 if (Logic.has_yaku(player, null, wall_tiles.size - kan_count == 0, false))
                 {
-                    player.call_action = new CallAction.ron(last_played_tile);
+                    player.call_action = new CallAction.ron(last_played_tile.id);
                     player.state = Player.PlayerState.READY;
                 }
                 break;
@@ -488,7 +497,7 @@ public class Game
 
         if (state == GameState.WAITING_TURN)
         {
-            player.turn_action = new TurnAction.discard(t);
+            player.turn_action = new TurnAction.discard(t.id);
             player.state = Player.PlayerState.READY;
             toggle_interface(false);
         }
@@ -498,7 +507,7 @@ public class Game
 
             if (tile != null)
             {
-                player.call_action = new CallAction(CallAction.CallActionEnum.CHI, new Tile[] { t, tile });
+                player.call_action = new CallAction(CallAction.CallActionEnum.CHI, Tile.tiles_to_ints(new Tile[] { t, tile }));
                 player.state = Player.PlayerState.READY;
                 state = GameState.WAITING_CALLS;
                 toggle_interface(false);
@@ -506,10 +515,10 @@ public class Game
         }
         else if (state == GameState.WAITING_CLOSED_OR_LATE_KAN)
         {
-            foreach (Pon p in player.pons)
-                if (t.tile_type == p.tiles[0].tile_type)
+            for (uint8 p = 0; p < player.pons.size; p++)
+                if (t.tile_type == player.pons[p].tiles[0].tile_type)
                 {
-                    player.turn_action = new TurnAction.late_kan(t, p);
+                    player.turn_action = new TurnAction.late_kan(t.id, p);
                     player.state = Player.PlayerState.READY;
                     toggle_interface(false);
                 }
@@ -525,7 +534,7 @@ public class Game
 
                     if (count == 4)
                     {
-                        player.turn_action = new TurnAction.closed_kan(tiles);
+                        player.turn_action = new TurnAction.closed_kan(Tile.tiles_to_ints(tiles));
                         player.state = Player.PlayerState.READY;
                         toggle_interface(false);
                     }
@@ -534,7 +543,7 @@ public class Game
         }
         else if (state == GameState.WAITING_RIICHI_DISCARD)
         {
-            player.turn_action = new TurnAction.riichi(t);
+            player.turn_action = new TurnAction.riichi(t.id);
             player.state = Player.PlayerState.READY;
             state = GameState.WAITING_TURN;
             toggle_interface(false);
@@ -589,7 +598,7 @@ public class Game
 
             if (a == 3)
             {
-                player.call_action = new CallAction(CallAction.CallActionEnum.OPEN_KAN, tiles);
+                player.call_action = new CallAction(CallAction.CallActionEnum.OPEN_KAN, Tile.tiles_to_ints(tiles));
                 player.state = Player.PlayerState.READY;
             }
         }
@@ -600,11 +609,11 @@ public class Game
         Player player = players[player_seat];
 
         Tile? tile = null;
-        Pon? pon = null;
+        uint8? pon = null;
 
-        foreach (Pon p in player.pons)
+        for (uint8 p = 0; p < player.pons.size; p++)
             foreach (Tile t in player.hand)
-                if (t.tile_type == p.tiles[0].tile_type)
+                if (t.tile_type == player.pons[p].tiles[0].tile_type)
                 {
                     if (tile != null)
                     {
@@ -648,9 +657,9 @@ public class Game
         }
 
         if (tile != null)
-            player.turn_action = new TurnAction.late_kan(tile, pon);
+            player.turn_action = new TurnAction.late_kan(tile.id, pon);
         else
-            player.turn_action = new TurnAction.closed_kan(tiles);
+            player.turn_action = new TurnAction.closed_kan(Tile.tiles_to_ints(tiles));
 
         player.state = Player.PlayerState.READY;
         toggle_interface(false);
@@ -670,7 +679,7 @@ public class Game
 
             if (a == 2)
             {
-                player.call_action = new CallAction(CallAction.CallActionEnum.PON, tiles);
+                player.call_action = new CallAction(CallAction.CallActionEnum.PON, Tile.tiles_to_ints(tiles));
                 player.state = Player.PlayerState.READY;
             }
         }
@@ -687,7 +696,7 @@ public class Game
             return;
         }
 
-        player.call_action = new CallAction(CallAction.CallActionEnum.CHI, tiles);
+        player.call_action = new CallAction(CallAction.CallActionEnum.CHI, Tile.tiles_to_ints(tiles));
         player.state = Player.PlayerState.READY;
         toggle_interface(false);
     }

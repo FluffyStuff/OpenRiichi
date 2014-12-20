@@ -219,5 +219,5 @@ public class Message : Object
         this.data = data;
     }
 
-    public uint8[] data { get; private set; }
+    public uint8[] data { get; protected set; }
 }

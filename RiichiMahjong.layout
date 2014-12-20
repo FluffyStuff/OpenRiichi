@@ -1,19 +1,104 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_layout_file>
 	<ActiveTarget name="Debug" />
-	<File name="source\Game\Networking\GameNetworking.vala" open="1" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="source\Game\Networking\HostMessage.vala" open="0" top="0" tabpos="11" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="1385" topLine="0" />
+			<Cursor1 position="190" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="source\Game\Board.vala" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="source\Game\Mahjong.vala" open="0" top="0" tabpos="26" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="376" topLine="0" />
+			<Cursor1 position="746" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="source\Game\Mahjong.vala" open="0" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="source\Server\GameStateBoardTiles.vala" open="1" top="0" tabpos="9" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="2023" topLine="54" />
+			<Cursor1 position="71" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="source\Game\Networking\TurnActionMessage.vala" open="0" top="0" tabpos="12" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="329" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="source\Game\Networking\CallActionMessage.vala" open="0" top="0" tabpos="15" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="671" topLine="1" />
+		</Cursor>
+	</File>
+	<File name="source\Game\Networking\GameNetworking.vala" open="1" top="0" tabpos="15" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="624" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="source\Menu\MainMenuBackground.vala" open="0" top="0" tabpos="10" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="401" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="source\Game\Networking\GameStartMessage.vala" open="0" top="0" tabpos="14" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="0" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="Notes.txt" open="1" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1087" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="source\Server\GameStateGame.vala" open="1" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="252" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="source\Game\Networking\InitiateMessage.vala" open="0" top="0" tabpos="8" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="621" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="source\Server\ServerPlayer.vala" open="1" top="1" tabpos="11" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="727" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="source\Game\Player\NetworkPlayer.vala" open="0" top="0" tabpos="17" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="187" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="source\Game\Action.vala" open="0" top="0" tabpos="16" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2451" topLine="53" />
+		</Cursor>
+	</File>
+	<File name="source\Game\Player\Player.vala" open="0" top="0" tabpos="19" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="73" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="source\Server\ServerNetworking.vala" open="1" top="0" tabpos="13" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="266" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="source\Game\Networking\PlayerConnectedMessage.vala" open="0" top="0" tabpos="13" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="299" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="source\Game\Bot\Bot.vala" open="0" top="0" tabpos="22" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="3857" topLine="91" />
+		</Cursor>
+	</File>
+	<File name="source\Game\Player\ComputerPlayer.vala" open="0" top="0" tabpos="23" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="691" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="source\Game\Player\GamePlayer.vala" open="0" top="0" tabpos="24" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1212" topLine="0" />
 		</Cursor>
 	</File>
 	<File name="source\Helper\Environment.vala" open="0" top="0" tabpos="13" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -21,19 +106,14 @@
 			<Cursor1 position="2327" topLine="78" />
 		</Cursor>
 	</File>
-	<File name="source\Helper\Networking.vala" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="source\Game\Tile.vala" open="0" top="0" tabpos="18" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="5482" topLine="185" />
+			<Cursor1 position="8091" topLine="224" />
 		</Cursor>
 	</File>
-	<File name="source\Helper\Threading.vala" open="0" top="0" tabpos="16" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="source\Server\GameStateTile.vala" open="1" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="576" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="source\Helper\Helper.vala" open="1" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="547" topLine="0" />
+			<Cursor1 position="0" topLine="0" />
 		</Cursor>
 	</File>
 	<File name="source\Helper\Sound.vala" open="0" top="0" tabpos="9" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -41,19 +121,19 @@
 			<Cursor1 position="557" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="Makefile" open="1" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="source\Game\Networking\PlayerMessage.vala" open="0" top="0" tabpos="10" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="1515" topLine="0" />
+			<Cursor1 position="585" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="source\Game\Game.vala" open="0" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="source\Server\GameStateTurnDecision.vala" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="22213" topLine="566" />
+			<Cursor1 position="0" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="source\Game\Action.vala" open="0" top="0" tabpos="12" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="source\Game\Board.vala" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="1730" topLine="0" />
+			<Cursor1 position="376" topLine="0" />
 		</Cursor>
 	</File>
 	<File name="source\Helper\Texture.vala" open="0" top="0" tabpos="20" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -61,19 +141,29 @@
 			<Cursor1 position="610" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="source\main.vala" open="1" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="source\Server\GameStatePlayer.vala" open="1" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="1004" topLine="7" />
+			<Cursor1 position="0" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="source\Game\Logic.vala" open="0" top="0" tabpos="12" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="source\MainWindow.vala" open="0" top="0" tabpos="25" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="6730" topLine="356" />
+			<Cursor1 position="1866" topLine="36" />
 		</Cursor>
 	</File>
-	<File name="Notes.txt" open="1" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="source\Server\GameStatePlayers.vala" open="1" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="1001" topLine="0" />
+			<Cursor1 position="54" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="source\Helper\Networking.vala" open="1" top="0" tabpos="14" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="260" topLine="90" />
+		</Cursor>
+	</File>
+	<File name="source\Game\Calls.vala" open="0" top="0" tabpos="20" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="652" topLine="0" />
 		</Cursor>
 	</File>
 	<File name="source\Menu\MainMenu.vala" open="0" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -81,9 +171,34 @@
 			<Cursor1 position="1766" topLine="24" />
 		</Cursor>
 	</File>
-	<File name="source\Game\Interface\GameInterface.vala" open="0" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="source\Server\ServerController.vala" open="1" top="0" tabpos="12" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="3396" topLine="0" />
+			<Cursor1 position="395" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="source\Server\GameStateCallDecision.vala" open="1" top="0" tabpos="8" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="0" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="source\Game\Game.vala" open="0" top="0" tabpos="9" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="6835" topLine="177" />
+		</Cursor>
+	</File>
+	<File name="source\Helper\Helper.vala" open="0" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="227" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="source\main.vala" open="0" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1004" topLine="7" />
+		</Cursor>
+	</File>
+	<File name="Makefile" open="1" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1679" topLine="2" />
 		</Cursor>
 	</File>
 	<File name="source\Game\Interface\Button.vala" open="0" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -91,39 +206,29 @@
 			<Cursor1 position="68" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="source\MainWindow.vala" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="source\Server\Server.vala" open="1" top="0" tabpos="10" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="0" topLine="0" />
+			<Cursor1 position="3246" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="source\Game\Networking\GameMessage.vala" open="1" top="1" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="source\Game\Logic.vala" open="0" top="0" tabpos="21" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="267" topLine="0" />
+			<Cursor1 position="12132" topLine="51" />
 		</Cursor>
 	</File>
-	<File name="source\Game\Player.vala" open="0" top="0" tabpos="8" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="source\Helper\Threading.vala" open="0" top="0" tabpos="16" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="5327" topLine="0" />
+			<Cursor1 position="576" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="source\Game\Networking\InitiateMessage.vala" open="1" top="0" tabpos="8" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="source\Game\Networking\GameMessage.vala" open="0" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="621" topLine="0" />
+			<Cursor1 position="828" topLine="7" />
 		</Cursor>
 	</File>
-	<File name="source\Game\Tile.vala" open="0" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="source\Game\Interface\GameInterface.vala" open="0" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="432" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="source\Game\Bot\Bot.vala" open="0" top="0" tabpos="17" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="387" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="source\Menu\MainMenuBackground.vala" open="0" top="0" tabpos="10" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="401" topLine="0" />
+			<Cursor1 position="3396" topLine="0" />
 		</Cursor>
 	</File>
 </CodeBlocks_layout_file>

@@ -30,16 +30,25 @@ class GameMessage : Message
         for (int i = 0; i < data.length; i++)
             data[i] = message.data[i+4];
 
+        GameMessage m = null;
+
         switch (t)
         {
         case INIT:
         case INIT_REPLY:
-            return new InitiateMessage(data, t);
+            m = new InitiateMessage(data, t);
+            break;
         case HOST:
-            return HostMessage.parse(data);
+            m = HostMessage.parse(data);
+            break;
+        case PLAYER:
+            m = PlayerMessage.parse(data);
+            break;
         }
 
-        return null;
+        if (m != null)
+            m.data = message.data;
+        return m;
     }
 
     protected static uint32 get_uint_at(uint8[] data, int pos)

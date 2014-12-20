@@ -55,12 +55,19 @@
 		<Unit filename="source/Game/Interface/GameInterface.vala" />
 		<Unit filename="source/Game/Logic.vala" />
 		<Unit filename="source/Game/Mahjong.vala" />
+		<Unit filename="source/Game/Networking/CallActionMessage.vala" />
 		<Unit filename="source/Game/Networking/GameMessage.vala" />
 		<Unit filename="source/Game/Networking/GameNetworking.vala" />
+		<Unit filename="source/Game/Networking/GameStartMessage.vala" />
 		<Unit filename="source/Game/Networking/HostMessage.vala" />
 		<Unit filename="source/Game/Networking/InitiateMessage.vala" />
+		<Unit filename="source/Game/Networking/PlayerConnectedMessage.vala" />
 		<Unit filename="source/Game/Networking/PlayerMessage.vala" />
-		<Unit filename="source/Game/Player.vala" />
+		<Unit filename="source/Game/Networking/TurnActionMessage.vala" />
+		<Unit filename="source/Game/Player/ComputerPlayer.vala" />
+		<Unit filename="source/Game/Player/GamePlayer.vala" />
+		<Unit filename="source/Game/Player/NetworkPlayer.vala" />
+		<Unit filename="source/Game/Player/Player.vala" />
 		<Unit filename="source/Game/Stick.vala" />
 		<Unit filename="source/Game/Tile.vala" />
 		<Unit filename="source/Game/Yaku.vala" />
@@ -74,6 +81,17 @@
 		<Unit filename="source/MainWindow.vala" />
 		<Unit filename="source/Menu/MainMenu.vala" />
 		<Unit filename="source/Menu/MainMenuBackground.vala" />
+		<Unit filename="source/Server/GameStateBoardTiles.vala" />
+		<Unit filename="source/Server/GameStateCallDecision.vala" />
+		<Unit filename="source/Server/GameStateGame.vala" />
+		<Unit filename="source/Server/GameStatePlayer.vala" />
+		<Unit filename="source/Server/GameStatePlayers.vala" />
+		<Unit filename="source/Server/GameStateTile.vala" />
+		<Unit filename="source/Server/GameStateTurnDecision.vala" />
+		<Unit filename="source/Server/Server.vala" />
+		<Unit filename="source/Server/ServerController.vala" />
+		<Unit filename="source/Server/ServerNetworking.vala" />
+		<Unit filename="source/Server/ServerPlayer.vala" />
 		<Unit filename="source/main.vala" />
 		<Extensions>
 			<code_completion />

@@ -14,7 +14,7 @@ public class Tile : Object
 
     private Texture tile_texture;
 
-    public Tile(float size, int id, int type)
+    public Tile(float size, uint8 id, int type)
     {
         this.size = size / 2;
         tile_type = type;
@@ -245,6 +245,24 @@ public class Tile : Object
         }
     }
 
+    public static uint8[] tiles_to_ints(Tile[] tiles)
+    {
+        uint8[] t = new uint8[tiles.length];
+        for (int i = 0; i < tiles.length; i++)
+            t[i] = tiles[i].id;
+
+        return t;
+    }
+
+    public static Tile[] ints_to_tiles(Tile[] tiles, uint8[] ids)
+    {
+        Tile[] t = new Tile[ids.length];
+        for (int i = 0; i < ids.length; i++)
+            t[i] = tiles[ids[i]];
+
+        return t;
+    }
+
     public string name { get; private set; }
     public Vector position { get; set; }
     public Vector rotation { get; set; }
@@ -252,7 +270,7 @@ public class Tile : Object
     public bool hovering { get; set; }
     public float size { get; private set; }
     public int tile_type { get; private set; }
-    public int id { get; private set; }
+    public uint8 id { get; private set; }
 }
 
 public enum TILE_TYPE

@@ -3,7 +3,7 @@ class GameNetworking
     public signal void game_start(GameStartMessage message);
 
     private const uint16 PORT = 1337;
-    private List<GameConnection> players = new List<GameConnection>();
+    private List<GameConnection> _players = new List<GameConnection>();
     private bool hosting = false;
     private uint32 connection_id;
 
@@ -30,13 +30,6 @@ class GameNetworking
 
     private void host_received(Connection connection, GameMessage message)
     {
-        foreach (GameConnection gc in players)
-            if (connection == gc.connection)
-            {
-                gc.message_received(message);
-                return;
-            }
-
         if (message.get_type() == typeof(InitiateMessage))
         {
             InitiateMessage i = (InitiateMessage)message;
@@ -55,41 +48,57 @@ class GameNetworking
                     connection.close();
                 else
                 {
-                    foreach (GameConnection gc in players)
-                    {
-                        PlayerConnectedMessage msg = new PlayerConnectedMessage.message(gc.id, gc.name, true);
-                        connection.send(msg);
-                    }
-
                     GameConnection g = new GameConnection(connection, connection_id++, i.name);
-                    players.append(g);
-
                     PlayerConnectedMessage msg = new PlayerConnectedMessage.message(g.id, g.name, false);
+                    connection.send(msg);
+
+                    foreach (GameConnection gc in _players)
+                        connection.send(new PlayerConnectedMessage.message(gc.id, gc.name, true));
+
                     send_to_all(msg);
+                    _players.append(g);
 
-                    Rand rnd = new Rand();
-                    uint8[] tiles = new uint8[136];
-                    for (uint8 j = 0; j < tiles.length; j++)
-                        tiles[j] = j;
-                    for (uint8 j = 0; j < tiles.length; j++)
+                    if (_players.length() == 2)
                     {
-                        int r = rnd.int_range(0, tiles.length - 1);
-                        uint8 t = tiles[r];
-                        tiles[r] = tiles[j];
-                        tiles[j] = t;
-                    }
-                    uint8 wall_split = (uint8)rnd.int_range(2, 12);
+                        Rand rnd = new Rand();
+                        uint8[] tiles = new uint8[136];
+                        for (uint8 j = 0; j < tiles.length; j++)
+                            tiles[j] = j;
+                        for (uint8 j = 0; j < tiles.length; j++)
+                        {
+                            int r = rnd.int_range(0, tiles.length - 1);
+                            uint8 t = tiles[r];
+                            tiles[r] = tiles[j];
+                            tiles[j] = t;
+                        }
+                        uint8 wall_split = (uint8)rnd.int_range(2, 12);
 
-                    for (int j = 0; j < players.length(); j++)
-                        players.nth_data(j).connection.send(new GameStartMessage.message(0, tiles, wall_split, (uint8)j));
+                        for (int j = 0; j < _players.length(); j++)
+                            _players.nth_data(j).connection.send(new GameStartMessage.message(0, tiles, wall_split, (uint8)j));
+                    }
                 }
             }
+        }
+        else
+        {
+            print("IsClientMessage\n");
+            foreach (GameConnection gc in _players)
+                if (connection == gc.connection)
+                {
+                    if (((PlayerMessage)message).id == gc.id)
+                    {
+                        print("ID: %d\nMsg len: %d\n", (int)gc.id, message.data.length);
+                        send_to_all(message);
+                    }
+                    return;
+                }
         }
     }
 
     private void send_to_all(GameMessage message)
     {
-        foreach (GameConnection gc in players)
+        print("Spreading message\n");
+        foreach (GameConnection gc in _players)
             gc.connection.send(message);
     }
 
@@ -111,12 +120,28 @@ class GameNetworking
         else if (message.get_type() == typeof(PlayerConnectedMessage))
         {
             PlayerConnectedMessage msg = (PlayerConnectedMessage)message;
-            print("Got PCM id = '%d' name = '%s'\n", (int)msg.id, msg.name);
+            GameConnection gc = new GameConnection(connection, msg.id, msg.name);
+            _players.append(gc);
+
+            print("Added player to list with id: %d\n", (int)msg.id);
         }
         else if (message.get_type() == typeof(GameStartMessage))
         {
             GameStartMessage msg = (GameStartMessage)message;
             game_start(msg);
+        }
+        else // PlayerMessage
+        {
+            PlayerMessage msg = (PlayerMessage)message;
+
+            print("Got player message with id: %d", (int)msg.id);
+
+            foreach (GameConnection gc in _players)
+                if (msg.id == gc.id)
+                {
+                    gc.message_received(message);
+                    return;
+                }
         }
     }
 
@@ -144,10 +169,18 @@ class GameNetworking
             connection.send(new InitiateMessage.initiate(Environment.version_major, Environment.version_minor, Environment.version_revision));
         return connection != null;
     }
+
+    public List<GameConnection> players
+    {
+        get { return _players; }
+    }
 }
 
 class GameConnection
 {
+    public signal void call_action(CallAction action);
+    public signal void turn_action(TurnAction action);
+
     public GameConnection(Connection connection, uint32 id, string name)
     {
         this.connection = connection;
@@ -157,7 +190,23 @@ class GameConnection
 
     public void message_received(GameMessage message)
     {
+        print("Got player message\n");
+        if (message.get_type() == typeof(CallActionMessage))
+            call_action(((CallActionMessage)message).call_action);
+        else if (message.get_type() == typeof(TurnActionMessage))
+            turn_action(((TurnActionMessage)message).turn_action);
+    }
 
+    public void send_call_action(CallAction action)
+    {
+        connection.send(new CallActionMessage.message(id, action));
+        print("sent call action\n");
+    }
+
+    public void send_turn_action(TurnAction action)
+    {
+        connection.send(new TurnActionMessage.message(id, action));
+        print("sent turn action\n");
     }
 
     public Connection connection { get; private set; }

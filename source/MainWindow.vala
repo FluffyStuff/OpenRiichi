@@ -65,7 +65,7 @@ public class MainWindow
         {
             if (net_start != null)// TODO: code plz, stahp, be a little more graceful...
             {
-                view = new Mahjong.seed(window, net_start.tile_seed, net_start.wall_split, net_start.seat);
+                view = new Mahjong.seed(window, net_start.tile_seed, net_start.wall_split, net_start.seat, net.players);
                 net_start = null;
             }
 
