@@ -1125,7 +1125,7 @@ namespace SDL {
 		public static void pump();
 
 		[CCode (cname="SDL_PeepEvents")]
-		public static void peep(SDL.Event[] events, int numevents, 
+		public static void peep(SDL.Event[] events,/* int numevents, */
 			EventAction action, uint32 minType, uint32 maxType);
 
 		[CCode (cname="SDL_HasEvent")]

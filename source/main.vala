@@ -53,12 +53,14 @@ public static int main(string[] args)
     if (!Environment.init(MAJOR, MINOR, REVISION))
         return -1;
 
-    while (true)
-    {
-        MainWindow window = new MainWindow(Environment.window);
-        if (!window.loop())
-            break;
-    }
+    SDLWindowTarget sdlWindow = new SDLWindowTarget(Environment.window);
+    OpenGLRenderer renderer = new OpenGLRenderer(sdlWindow);
+    MainWindow window = new MainWindow(sdlWindow, renderer);
+
+    if (!renderer.start())
+        return -1;
+
+    window.show();
 
     return 0;
 }

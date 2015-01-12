@@ -10,7 +10,6 @@ public static class Environment
     public static Window window;
     private static Rand rand;
     private static bool initialized = false;
-    private static GLContext context;
 
     private static Cursor? default_cursor;
     private static Cursor? hover_cursor;
@@ -22,6 +21,8 @@ public static class Environment
 
         if (SDL.init(SDL.InitFlag.EVERYTHING) < 0)
         	return false;
+        SDL.GL.set_attribute(SDL.GLattr.MULTISAMPLEBUFFERS, 1);
+        SDL.GL.set_attribute(SDL.GLattr.MULTISAMPLESAMPLES, 16);
 
         if (!Sound.init())
         {
@@ -46,22 +47,7 @@ public static class Environment
             return false;
         }
 
-        if ((context = SDL.GL.create_context(window)) == null)
-        {
-            window.destroy();
-            SDL.quit();
-            Sound.quit();
-            //SDLNet.quit();
-            return false;
-        }
-
-        SDL.GL.set_attribute(GLattr.CONTEXT_MAJOR_VERSION, 3);
-        SDL.GL.set_attribute(GLattr.CONTEXT_MINOR_VERSION, 1);
-        SDL.GL.set_swapinterval(1);
-
-        GLEW.init();
-
-        glEnable(GL_CULL_FACE);
+        /*glEnable(GL_CULL_FACE);
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LEQUAL);
 
@@ -83,9 +69,9 @@ public static class Environment
         glMaterialfv(GL_FRONT, GL_AMBIENT,   mat_ambient);
         glMaterialfv(GL_FRONT, GL_DIFFUSE,   mat_diffuse);
         glMaterialfv(GL_FRONT, GL_SPECULAR,  mat_specular);
-        glMaterialfv(GL_FRONT, GL_SHININESS, high_shininess);
+        glMaterialfv(GL_FRONT, GL_SHININESS, high_shininess);*/
 
-        window.set_icon(SDLImage.load("textures/Icon.png"));
+        /*window.set_icon(SDLImage.load("textures/Icon.png"));
         window.set_size(ORIGINAL_WINDOW_WIDTH, ORIGINAL_WINDOW_HEIGHT);
         window.show();
 
@@ -97,7 +83,7 @@ public static class Environment
 
         #if __APPLE__
         CGSetLocalEventsSuppressionInterval(0); // Herp derp, fix the choppy cursor bug
-        #endif
+        #endif*/
 
         version_major = major;
         version_minor = minor;
@@ -110,7 +96,7 @@ public static class Environment
     {
         if (initialized)
         {
-            SDL.GL.delete_context(context);
+            //SDL.GL.delete_context(context);
             Sound.quit();
             //SDLNet.quit();
             window.destroy();
@@ -154,15 +140,4 @@ public static class Environment
         DEFAULT,
         HOVER
     }
-
-    // Lighting
-    private const GLfloat light_ambient[]  = { (GLfloat)0.0f, (GLfloat)0.0f, (GLfloat)0.0f, (GLfloat)1.0f };
-    private const GLfloat light_diffuse[]  = { (GLfloat)1.0f, (GLfloat)1.0f, (GLfloat)1.0f, (GLfloat)1.0f };
-    private const GLfloat light_specular[] = { (GLfloat)1.0f, (GLfloat)1.0f, (GLfloat)1.0f, (GLfloat)1.0f };
-    private const GLfloat light_position[] = { (GLfloat)2.0f, (GLfloat)5.0f, (GLfloat)5.0f, (GLfloat)0.0f };
-
-    private const GLfloat mat_ambient[]    = { (GLfloat)0.7f, (GLfloat)0.7f, (GLfloat)0.7f, (GLfloat)1.0f };
-    private const GLfloat mat_diffuse[]    = { (GLfloat)0.8f, (GLfloat)0.8f, (GLfloat)0.8f, (GLfloat)1.0f };
-    private const GLfloat mat_specular[]   = { (GLfloat)1.0f, (GLfloat)1.0f, (GLfloat)1.0f, (GLfloat)1.0f };
-    private const GLfloat high_shininess[] = { (GLfloat)100.0f };
 }

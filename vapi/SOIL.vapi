@@ -20,7 +20,9 @@ namespace SOIL
 	[CCode (cname="SOIL_load_OGL_texture")]
 	public static uint load_OGL_texture(string filename, int force_channels, uint reuse_texture_ID, uint flags);
 	
+	[CCode (cname="SOIL_load_image")]
+	public static uchar *load_image(string filename, out int width, out int height, out int channels, uint flags);
 	
 	[CCode (cname="SOIL_free_image_data")]
-	public static void free_image_data(void *image);
+	public static void free_image_data(void *image);	
 }

@@ -1,7 +1,6 @@
 VALAC = valac
-DIRS  = source/*.vala source/Game/*.vala source/Game/Bot/*.vala source/Game/Interface/*.vala source/Game/Networking/*.vala source/Game/Player/*.vala source/Helper/*.vala source/Menu/*.vala source/Server/*.vala
+DIRS  = source/*.vala source/Engine/Files/*.vala source/Engine/Rendering/*.vala source/Game/*.vala source/Game/Bot/*.vala source/Game/Interface/*.vala source/Game/Networking/*.vala source/Game/Player/*.vala source/Helper/*.vala source/Menu/*.vala source/Server/*.vala
 PKGS  = --thread --target-glib 2.32 --pkg gio-2.0 --pkg glew --pkg gee-1.0 --pkg gl --pkg SDL2-mixer --pkg SDL2-image --pkg SDL2 --pkg soil
-#PKGS = --thread --target-glib 2.32 --pkg gio-2.0 --pkg glew --pkg gee-1.0 --pkg gl --pkg sdl2-mixer --pkg sdl2-image --pkg sdl2 --pkg SOIL
 LIBS  = -X lib/SOIL/libSOIL.a -X lib/SDL/SDL2_net.lib -X lib/SDL/SDL2_image.lib -X lib/SDL/SDL2_mixer.lib -X lib/SDL/SDL2.lib -X lib/GLEW/glew32s.lib -X lib/GL/libopengl32.a
 VAPI  = --vapidir=vapi
 O     = -o bin/RiichiMahjong
@@ -34,6 +33,8 @@ cleanRelease: cleanWindows
 cleanWindows:
 	rm bin RiichiMahjong.exe
 	rm source *.c
+	rm source/Engine/Files *.c
+	rm source/Engine/Rendering *.c
 	rm source/Game *.c
 	rm source/Game/Bot *.c
 	rm source/Game/Interface *.c

@@ -1,50 +1,121 @@
 using GL;
 
-public class MainMenuBackground
+public class MainMenuBackground : View
 {
-    private Texture table_texture;
-    private Tile tile;
+    private float rotation = 0;
 
-    private double rotation = 0;
+    private Render3DObject? tile = null;
+    private Render3DObject? table = null;
+    private Render3DObject? field = null;
 
     public MainMenuBackground()
     {
-        table_texture = Texture.load_texture("table");
-        tile = new Tile(1, -1, TILE_TYPE.PIN1);
-        tile.position = new Vector(0, -Tile.TILE_HEIGHT / 2, 0);
     }
 
-    public void process(double dt)
+    public override void do_load_resources(IResourceStore store)
     {
-        rotation += dt * 1;
+        table = store.load_3D_object("./3d/table");
+        tile = store.load_3D_object("./3d/box");
+        field = store.load_3D_object("./3d/field");
+
+        table.position = Vec3() { y = -0.163f };
+        table.scale = Vec3() { x = 10, y = 10, z = 10 };
+        tile.position = Vec3() { y = 12.5f };
+        tile.scale = Vec3() { x = 1.0f, y = 1.0f, z = 1.0f };
+        field.position = Vec3() { y = 12.3f };
+        field.scale = Vec3() { x = 9.6f, z = 9.6f };
     }
 
-    public void render()
+    private int last_x = 0;
+    private int last_y = 0;
+
+    private float accel_x = 0;
+    private float accel_y = 0;
+    private float accel_z = 0;
+    private float camera_x = 0;
+    private float camera_y = 0;
+    private float camera_z = 0;
+
+    private double derp = 0;
+
+    public override void do_process(double dt)
     {
-        float tex_u_max = 10.0f;
-        float tex_v_max = 10.0f;
-        float size = 1;
+        derp += dt;
+        int slow = 300;
+        camera_x += accel_x;
+        camera_y += accel_y;
+        camera_z += accel_z;
+        //rotation += (float)dt * 0.02f;
+        //tile.rotation = Vec3() { x = (float)last_y / slow + rotation * 0.25f, y = (float)last_x / (float)slow + (float)rotation, z = rotation * 0.1f };
+        //table.rotation = Vec3() { x = (float)last_y / slow + rotation * 0.25f, y = (float)last_x / (float)slow + (float)rotation, z = rotation * 0.1f };
+        //table.rotation = Vec3() { x = rotation * 0.25f, y = rotation, z = rotation * 0.1f };
+        //tile.rotation = Vec3() { x = rotation * 0.25f, y = rotation, z = rotation * 0.1f };
 
-        glRotatef(-(GLfloat)rotation, 0, 0, 1);
+        //tile.position = Vec3() { y = -0.5f, z = 2.5f };
+    }
 
-        glEnable(GL_TEXTURE_2D);
-        glBindTexture(GL_TEXTURE_2D, table_texture.texture);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+    public override void do_render(RenderState state, IResourceStore store)
+    {
+        //state.add_scene();
+        int slow = 300;
+        state.camera_rotation = Vec3(){ x = 1 - (float)last_y / slow, y = - (float)last_x / slow };
+        state.camera_position = Vec3(){ x = camera_x, y = camera_y, z = camera_z };
+        state.add_3D_object(tile);
+        state.add_3D_object(table);
+        state.add_3D_object(field);
+        //state.finish_scene();
+    }
 
-        glBegin(GL_QUADS);
+    protected override void do_mouse_move(int x, int y)
+    {
+        last_x = x;
+        last_y = y;
+        //int slow = 300;
+        //tile.rotation = Vec3() { x = (float)y / slow + rotation * 0.25f, y = (float)x / slow + rotation, z = rotation * 0.1f };
+        //table.rotation = Vec3() { x = (float)y / slow, y = (float)x / slow };
+    }
 
-            glTexCoord2f((GLfloat)0.0f, (GLfloat)tex_v_max);
-            glVertex3f(-(GLfloat)size, -(GLfloat)size, 0);
-            glTexCoord2f((GLfloat)tex_u_max, (GLfloat)tex_v_max);
-            glVertex3f((GLfloat)size, -(GLfloat)size, 0);
-            glTexCoord2f((GLfloat)tex_u_max, (GLfloat)0.0f);
-            glVertex3f((GLfloat)size, (GLfloat)size, 0);
-            glTexCoord2f((GLfloat)0.0f, (GLfloat)0.0f);
-            glVertex3f(-(GLfloat)size, (GLfloat)size, 0);
+    protected override void do_key_press(char key)
+    {
+        int slow = 300;
+        float speed = 0.001f;
 
-        glEnd();
-
-        tile.render();
+        switch (key)
+        {
+            //case 27 :
+            //case 'q':
+        case ' ':
+            accel_y += speed;
+            break;
+        case 'c':
+            accel_y -= speed;
+            break;
+        case 'w':
+            accel_z += (float)Math.cos((float)last_x / slow * Math.PI) * (float)Math.cos((float)last_y / slow * Math.PI) * speed;
+            accel_x += (float)Math.sin((float)last_x / slow * Math.PI) * (float)Math.cos((float)last_y / slow * Math.PI) * speed;
+            accel_y += (float)Math.sin((float)last_y / slow * Math.PI) * speed;
+            break;
+        case 's':
+            accel_z -= (float)Math.cos((float)last_x / slow * Math.PI) * (float)Math.cos((float)last_y / slow * Math.PI) * speed;
+            accel_x -= (float)Math.sin((float)last_x / slow * Math.PI) * (float)Math.cos((float)last_y / slow * Math.PI) * speed;
+            accel_y -= (float)Math.sin((float)last_y / slow * Math.PI) * speed;
+            break;
+        case 'a':
+            accel_z -= (float)Math.sin((float)last_x / slow * Math.PI) * speed;
+            accel_x += (float)Math.cos((float)last_x / slow * Math.PI) * speed;
+            break;
+        case 'd':
+            accel_z += (float)Math.sin((float)last_x / slow * Math.PI) * speed;
+            accel_x -= (float)Math.cos((float)last_x / slow * Math.PI) * speed;
+            break;
+        case 'x':
+            accel_x = 0;
+            accel_y = 0;
+            accel_z = 0;
+            break;
+        default:
+            print("%i\n", (int)key);
+            break;
+        }
     }
 }

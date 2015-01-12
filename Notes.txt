@@ -12,9 +12,7 @@ Add kokushi/toitsu to the tenpai/winning hand logic.
 Maybe improve the SDLMixer vapi.
 Fix the audio, that sounds don't interrupt each other.
 Automatic colorid.
-Extract rendering code and convert to state machine.
 Take delay from bot and add it to general animation/logic code
 Fix player kans (multiple closed)
 SIGNALS, SIGNALS EVERYWHERE! http://cdn.memegenerator.net/instances/500x/51385865.jpg
-Split off host game logic to server even in singleplayer?
 Refactor ALL THE THINGS

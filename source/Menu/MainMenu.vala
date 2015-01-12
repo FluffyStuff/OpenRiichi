@@ -7,18 +7,17 @@ public class MainMenu : View
     public signal void menu_action();
 
     private MainMenuBackground background = new MainMenuBackground();
-    private unowned Window window;
 
     private ArrayList<Button> buttons = new ArrayList<Button>();
-    private Button ai_button = new Button("AI", 1);
-    private Button host_button = new Button("Host", 2);
-    private Button join_button = new Button("Join", 3);
-    private Button exit_button = new Button("Exit", 4);
+    private Button ai_button;// = new Button("AI", 1);
+    private Button host_button;// = new Button("Host", 2);
+    private Button join_button;// = new Button("Join", 3);
+    private Button exit_button;// = new Button("Exit", 4);
 
-    public MainMenu(Window window)
+    public MainMenu()
     {
-        this.window = window;
-        action = MenuAction.ACTIVE;
+        add_child(background);
+        /*action = MenuAction.ACTIVE;
 
         ai_button.position = new Vector(0.5f, 0.75f, 0);
         ai_button.visible = true;
@@ -43,7 +42,7 @@ public class MainMenu : View
         buttons.add(ai_button);
         buttons.add(host_button);
         buttons.add(join_button);
-        buttons.add(exit_button);
+        buttons.add(exit_button);*/
     }
 
     ~MainMenu()
@@ -52,6 +51,22 @@ public class MainMenu : View
         host_button.press.disconnect(host_button_press);
         join_button.press.disconnect(join_button_press);
         exit_button.press.disconnect(exit_button_press);
+    }
+
+    protected override void do_mouse_move(int x, int y){}
+    protected override void do_key_press(char key){}
+
+    public override void do_load_resources(IResourceStore store)
+    {
+    }
+
+    public override void do_process(double dt)
+    {
+    }
+
+    //private static float derp = 0;
+    public override void do_render(RenderState state, IResourceStore store)
+    {
     }
 
     private void ai_button_press(Button b)
@@ -78,7 +93,7 @@ public class MainMenu : View
         menu_action();
     }
 
-    public override void render()
+    /*public override void render()
     {
         glClearColor(0, 0, 0, 0);
         glClear(GL_COLOR_BUFFER_BIT);
@@ -131,7 +146,7 @@ public class MainMenu : View
             b.click(color_id, state);
     }
 
-    public override void mouse_wheel(int amount){}
+    public override void mouse_wheel(int amount){}*/
 
     public MenuAction action { get; private set; }
 

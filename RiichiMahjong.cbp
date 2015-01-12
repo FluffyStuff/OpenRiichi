@@ -46,6 +46,12 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="source/Engine/Files/FileLoader.vala" />
+		<Unit filename="source/Engine/Files/ObjParser.vala" />
+		<Unit filename="source/Engine/Rendering/IRenderTarget.vala" />
+		<Unit filename="source/Engine/Rendering/IResourceHandle.vala" />
+		<Unit filename="source/Engine/Rendering/IResourceStore.vala" />
+		<Unit filename="source/Engine/Rendering/OpenGLRenderer.vala" />
 		<Unit filename="source/Game/Action.vala" />
 		<Unit filename="source/Game/Board.vala" />
 		<Unit filename="source/Game/Bot/Bot.vala" />

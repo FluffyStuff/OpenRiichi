@@ -1,7 +1,7 @@
 using SDL;
 using GL;
 
-public class Mahjong : View
+public class Mahjong// : View
 {
     private unowned Window window;
 
@@ -28,26 +28,32 @@ public class Mahjong : View
         game = new Game.seed(tiles, wall_split, seat, players);
     }
 
-    public override void process(double dt) { game.process(dt); }
+    protected void do_load_resources(IResourceStore store){}
+    protected void do_mouse_move(int x, int y){}
+    protected void do_render(RenderState state, IResourceStore store){}
+    protected void do_process(double dt){}
+    protected void do_key_press(char key){}
 
-    public override void render()
+    public new RenderState render()
     {
-        glClearColor(0, (GLfloat)0.1, (GLfloat)0.2, 0);
-        glClear(GL_COLOR_BUFFER_BIT);
-        do_transform();
+        //glClearColor(0, (GLfloat)0.1, (GLfloat)0.2, 0);
+        //glClear(GL_COLOR_BUFFER_BIT);
+        //do_transform();
 
-        game.render();
+        //game.render();
+
+        return new RenderState(0, 0);
     }
 
-    public override void render_selection()
+    public void render_selection()
     {
         do_transform();
         game.render_selection();
     }
 
-    public override void render_interface() { game.render_interface(); }
+    public void render_interface() { game.render_interface(); }
 
-    public override void render_interface_selection() { game.render_interface_selection(); }
+    public void render_interface_selection() { game.render_interface_selection(); }
 
     private void do_transform()
     {
@@ -61,7 +67,7 @@ public class Mahjong : View
         glScalef((GLfloat)scale, (GLfloat)scale, (GLfloat)scale);
     }
 
-    public override void mouse_click(int x, int y, int button, bool state, uint color_id)
+    public void mouse_click(int x, int y, int button, bool state, uint color_id)
     {
         if (button == 3)
         {
@@ -75,7 +81,7 @@ public class Mahjong : View
             game.mouse_click(x, y, color_id, state);
     }
 
-    public override void mouse_move(int x, int y, uint color_id)
+    public void mouse_move2(int x, int y, uint color_id)
     {
         if (do_move)
         {
@@ -91,7 +97,7 @@ public class Mahjong : View
         game.mouse_move(x, y, color_id);
     }
 
-    public override void mouse_wheel(int amount)
+    public void mouse_wheel(int amount)
     {
         distance -= distance * (amount / 30.0f);
         distance = float.min(float.max(distance, 8.5f), 15);
