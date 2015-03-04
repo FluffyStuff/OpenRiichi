@@ -1,4 +1,4 @@
-class GameMessage : Message
+public class GameMessage : Message
 {
     protected const uint32 INIT       = 0x1;
     protected const uint32 INIT_REPLY = 0x2;

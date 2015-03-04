@@ -176,7 +176,7 @@ class GameNetworking
     }
 }
 
-class GameConnection
+public class GameConnection
 {
     public signal void call_action(CallAction action);
     public signal void turn_action(TurnAction action);

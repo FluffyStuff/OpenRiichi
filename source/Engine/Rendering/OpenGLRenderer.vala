@@ -10,17 +10,17 @@ public class OpenGLRenderer : RenderTarget
     private GLuint shader_program;
     private GLuint vertex_shader;
     private GLuint fragment_shader;
-    private GLuint pos_attrib = 0;
-    private GLuint tex_attrib = 1;
-    private GLuint nor_attrib = 2;
-    private GLuint texture_location = -1;
-    private GLuint rotation_attrib = -1;
-    private GLuint position_attrib = -1;
-    private GLuint scale_attrib = -1;
+    private GLint pos_attrib = 0;
+    private GLint tex_attrib = 1;
+    private GLint nor_attrib = 2;
+    private GLint texture_location = -1;
+    private GLint rotation_attrib = -1;
+    private GLint position_attrib = -1;
+    private GLint scale_attrib = -1;
 
-    private GLuint camera_rotation_attrib = -1;
-    private GLuint camera_position_attrib = -1;
-    private GLuint aspect_ratio_attrib = -1;
+    private GLint camera_rotation_attrib = -1;
+    private GLint camera_position_attrib = -1;
+    private GLint aspect_ratio_attrib = -1;
 
     private GLContext context;
     private unowned Window sdl_window;
@@ -91,7 +91,8 @@ public class OpenGLRenderer : RenderTarget
 
             GLsizei log_size[1];
             glGetShaderiv(vertex_shader, GL_INFO_LOG_LENGTH, log_size);
-            GLchar[] error_log = new GLchar[log_size[0]];
+            //GLchar[] error_log = new GLchar[log_size[0]];
+            GLubyte[] error_log = new GLubyte[log_size[0]];
             glGetShaderInfoLog(vertex_shader, log_size[0], log_size, error_log);
 
             for (int i = 0; i < log_size[0]; i++)
@@ -107,7 +108,7 @@ public class OpenGLRenderer : RenderTarget
 
             GLsizei log_size[1];
             glGetShaderiv(fragment_shader, GL_INFO_LOG_LENGTH, log_size);
-            GLchar[] error_log = new GLchar[log_size[0]];
+            GLubyte[] error_log = new GLubyte[log_size[0]];
             glGetShaderInfoLog(fragment_shader, log_size[0], log_size, error_log);
 
             for (int i = 0; i < log_size[0]; i++)
@@ -148,7 +149,7 @@ public class OpenGLRenderer : RenderTarget
 
     protected override IObject3DResourceHandle do_load_3D_object(Resource3DObject obj)
     {
-        GLuint len = (GLuint)(10 * sizeof(float));
+        GLsizei len = (GLsizei)(10 * sizeof(float));
         GLuint triangles[1];
 
         glGenBuffers(1, triangles);
@@ -183,7 +184,7 @@ public class OpenGLRenderer : RenderTarget
         glBindTexture(GL_TEXTURE_2D, tex[0]);
         glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, (GLfloat[])aniso);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, (GLfloat)aniso[0]);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB_ALPHA, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, (GLvoid[])texture.data);
+        glTexImage2D(GL_TEXTURE_2D, 0, (GLint)GL_SRGB_ALPHA, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, (GLvoid[])texture.data);
 
         //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -224,7 +225,7 @@ public class OpenGLRenderer : RenderTarget
         glUniform3f(position_attrib, (GLfloat)obj.position.x, (GLfloat)obj.position.y, (GLfloat)obj.position.z);
         glUniform3f(scale_attrib, (GLfloat)obj.scale.x, (GLfloat)obj.scale.y, (GLfloat)obj.scale.z);
 
-            GLuint len = (GLuint)(10 * sizeof(float));
+            GLsizei len = (GLsizei)(10 * sizeof(float));
             glEnableVertexAttribArray(pos_attrib);
             glVertexAttribPointer(pos_attrib, 4, GL_FLOAT, GL_FALSE, len, (GLvoid[])0);
             glEnableVertexAttribArray(tex_attrib);

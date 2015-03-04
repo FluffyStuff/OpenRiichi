@@ -1,4 +1,6 @@
 rsc/archive/*
+bin/RiichiMahjong*
 *.c
+*.o
 *.exe
 *.rar

@@ -1,6 +1,6 @@
 using Gee;
 
-public static class ObjParser
+public /*static*/ class ObjParser
 {
     public static ModelData? parse(string[] file)
     {
