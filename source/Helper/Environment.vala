@@ -14,7 +14,7 @@ public static class Environment
     private static Cursor? default_cursor;
     private static Cursor? hover_cursor;
 
-    public static bool init(uint32 major, uint32 minor, uint32 revision)
+    public static bool init()
     {
         if (initialized)
             return true;
@@ -47,30 +47,6 @@ public static class Environment
             return false;
         }
 
-        /*glEnable(GL_CULL_FACE);
-        glEnable(GL_DEPTH_TEST);
-        glDepthFunc(GL_LEQUAL);
-
-        glEnable(GL_LINE_SMOOTH);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glShadeModel(GL_SMOOTH);
-
-        glEnable(GL_LIGHT0);
-        glEnable(GL_NORMALIZE);
-        glEnable(GL_COLOR_MATERIAL);
-        glEnable(GL_LIGHTING);
-
-        glLightfv(GL_LIGHT0, GL_AMBIENT,  light_ambient);
-        glLightfv(GL_LIGHT0, GL_DIFFUSE,  light_diffuse);
-        glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
-        glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-
-        glMaterialfv(GL_FRONT, GL_AMBIENT,   mat_ambient);
-        glMaterialfv(GL_FRONT, GL_DIFFUSE,   mat_diffuse);
-        glMaterialfv(GL_FRONT, GL_SPECULAR,  mat_specular);
-        glMaterialfv(GL_FRONT, GL_SHININESS, high_shininess);*/
-
         /*window.set_icon(SDLImage.load("textures/Icon.png"));
         window.set_size(ORIGINAL_WINDOW_WIDTH, ORIGINAL_WINDOW_HEIGHT);
         window.show();
@@ -79,15 +55,12 @@ public static class Environment
         hover_cursor = new Cursor.from_system(SystemCursor.HAND);
         default_cursor = new Cursor.from_system(SystemCursor.ARROW);
         rand = new Rand();
-        Networking.init();
+        Networking.init();*/
 
         #if __APPLE__
         CGSetLocalEventsSuppressionInterval(0); // Herp derp, fix the choppy cursor bug
-        #endif*/
+        #endif
 
-        version_major = major;
-        version_minor = minor;
-        version_revision = revision;
         initialized = true;
         return true;
     }
@@ -121,19 +94,9 @@ public static class Environment
         }
     }
 
-    // This function needs to be updated regularly to keep track of the
-    // smaller versions which aren't compatible with the current version
-    public static bool is_compatible(uint32 major, uint32 minor, uint32 revision)
-    {
-        return !(major < version_major || minor < version_minor);
-    }
-
     public static Rand random { get { return rand; } }
     public const int ORIGINAL_WINDOW_WIDTH = 1280;
     public const int ORIGINAL_WINDOW_HEIGHT = 720;
-    public static uint32 version_major { get; private set; }
-    public static uint32 version_minor { get; private set; }
-    public static uint32 version_revision { get; private set; }
 
     public enum CursorType
     {

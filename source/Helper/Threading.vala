@@ -177,7 +177,7 @@ public /*static*/ class Threading
 // A class for storing primitives/structs as objects
 public class Obj<T> : Object
 {
-    public T _obj;
-    public T obj { get { return _obj; } }
-    public Obj(T t) { _obj = (T)t; }
+    //Can't create property due to a bug in vala
+    public T obj;
+    public Obj(T t) { obj = (T)t; }
 }

@@ -3,104 +3,47 @@ using GL;
 
 public class MainWindow : RenderWindow
 {
-    //private uint color_id;
-
-    //private bool restart = false;
-    //private int focal_length = 2;
-    //private ServerController server;
-
-    private MainMenu menu;
+    private GameView gameView;
 
     public MainWindow(IWindowTarget window, IRenderTarget renderer)
     {
         base(window, renderer);
 
-        menu = new MainMenu();
-        menu.menu_action.connect(menu_action);
-
-        main_view.add_child(menu);
+        gameView = new GameView();
+        main_view.add_child(gameView);
     }
-
-    ~MainWindow()
-    {
-        menu.menu_action.disconnect(menu_action);
-        //net.game_start.disconnect(net_game_start);
-    }
-
-    private void menu_action(MainMenu m)
-    {
-        switch (m.action)
-        {
-        case MainMenu.MenuAction.SINGLE_PLAYER:
-            /*server = new ServerController();
-            ClientConnection connection = new ClientMemoryConnection(server);
-            clientGame = new ClientGame(connection);
-            view = new Mahjong(window);*/
-            break;
-        case MainMenu.MenuAction.HOST_MULTI_PLAYER:
-            /*server = new ServerController();
-            ClientConnection connection = new ClientMemoryConnection(server);
-            clientGame = new ClientGame(connection);
-            server.listen(1337); // TOOD: Port from where?*/
-            break;
-        case MainMenu.MenuAction.JOIN_MULTI_PLAYER:
-            /*ClientConnection connection = ClientNetworkConnection.connect("127.0.0.1", 1337);
-            if (!connection == null) return;
-            clientGame = new ClientGame(connection);*/
-            break;
-        case MainMenu.MenuAction.EXIT:
-            finish();
-            break;
-        }
-    }
-
-    /*private void net_game_start(GameStartMessage message)
-    {
-        //net_start = message;
-    }*/
 
     protected override void do_process(double dt)
     {
         Event e;
 
-        //while (!exit)
+        while (Event.poll(out e) != 0)
         {
-            /*if (net_start != null)// TODO: code plz, stahp, be a little more graceful...
+            if (e.type == EventType.QUIT)
+                finish();
+            else if (e.type == EventType.KEYDOWN)
+                key(e.key.keysym.sym);
+            else if (e.type == EventType.MOUSEMOTION)
             {
-                view = new Mahjong.seed(window, net_start.tile_seed, net_start.wall_split, net_start.seat, net.players);
-                net_start = null;
-            }*/
-
-            while (Event.poll(out e) != 0)
-            {
-                if (e.type == EventType.QUIT)
-                    finish();
-                else if (e.type == EventType.KEYDOWN)
-                    key(e.key.keysym.sym);
-                else if (e.type == EventType.MOUSEMOTION)
-                {
-                    int x = 0, y = 0;
-                    Cursor.get_state(ref x, ref y);
-                    main_view.mouse_move(x, y);
-                    //back_color = { (float)x / width, 0, (float)y / height, 0 };
-                    //window.get_size(out width, out height);
-                    //view.mouse_move(x, height - y, color_id);
-                }
-                else if (e.type == EventType.MOUSEBUTTONDOWN || e.type == EventType.MOUSEBUTTONUP)
-                {
-                    int x = 0, y = 0;
-                    Cursor.get_state(ref x, ref y);
-                    //window.get_size(out width, out height);
-                    //view.mouse_click(x, height - y, e.button.button, e.type == EventType.MOUSEBUTTONUP, color_id);
-                }
-                else if (e.type == EventType.MOUSEWHEEL)
-                    ;//view.mouse_wheel(e.wheel.y);
+                int x = 0, y = 0;
+                Cursor.get_state(ref x, ref y);
+                main_view.mouse_move(x, y);
+                //back_color = { (float)x / width, 0, (float)y / height, 0 };
+                //window.get_size(out width, out height);
+                //view.mouse_move(x, height - y, color_id);
             }
-
-            main_view.process(dt);
-
-            //((OpenGLRenderer)renderer).render(new RenderState(800, 600));
+            else if (e.type == EventType.MOUSEBUTTONDOWN || e.type == EventType.MOUSEBUTTONUP)
+            {
+                int x = 0, y = 0;
+                Cursor.get_state(ref x, ref y);
+                //window.get_size(out width, out height);
+                //view.mouse_click(x, height - y, e.button.button, e.type == EventType.MOUSEBUTTONUP, color_id);
+            }
+            else if (e.type == EventType.MOUSEWHEEL)
+                ;//view.mouse_wheel(e.wheel.y);
         }
+
+        main_view.process(dt);
     }
 
     private void key(char key)
@@ -114,25 +57,11 @@ public class MainWindow : RenderWindow
             case 'f':
                 fullscreen = !fullscreen;
                 break;
-            /*case 'r':
-                restart = true;
-                exit = true;
-                break;*/
             default:
                 main_view.key_press(key);
                 break;
         }
     }
-
-    /*private uint get_color_id()
-    {
-        uchar color[3];
-        int x = 0, y = 0, width, height;
-        Cursor.get_state(ref x, ref y);
-        window.get_size(out width, out height);
-        glReadPixels((GLint)x, (GLint)(height - y), 1, 1, GL_RGB, GL_UNSIGNED_BYTE, (GLvoid[])color);
-        return ((uint)color[0] << 16) + ((uint)color[1] << 8) + (uint)color[2];
-    }*/
 }
 
 public abstract class RenderWindow
@@ -366,20 +295,4 @@ public abstract class View
     protected abstract void do_process(double dt);
     protected abstract void do_mouse_move(int x, int y);
     protected abstract void do_key_press(char key);
-
-    /*public abstract void render_selection();
-    public abstract void render_interface();
-    public abstract void render_interface_selection();*/
-
-    //public abstract void mouse_move(int x, int y, uint color_id);
-    //public abstract void mouse_click(int x, int y, int button, bool state, uint color_id);
-    //public abstract void mouse_wheel(int amount);
-}
-
-public struct Color
-{
-    public float r;
-    public float g;
-    public float b;
-    public float a;
 }

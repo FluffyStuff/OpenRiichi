@@ -13039,7 +13039,7 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "glShaderOp3EXT")]
 	public static void glShaderOp3EXT (GL.GLenum op, GL.GLuint res, GL.GLuint arg1, GL.GLuint arg2, GL.GLuint arg3);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glShaderSource")]
-	public static void glShaderSource (GL.GLuint shader, GL.GLsizei count, [CCode (array_length = false)] string[]? string, [CCode (array_length = false)] GL.GLint[]? length);
+	public static void glShaderSource (GL.GLuint shader, GL.GLsizei count, [CCode (type = "const GLchar**", array_length = false)] string[]? string, [CCode (array_length = false)] GL.GLint[]? length);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glShaderSourceARB")]
 	public static void glShaderSourceARB (GL.GLhandleARB shaderObj, GL.GLsizei count, [CCode (array_length = false)] string[]? string, [CCode (array_length = false)] GL.GLint[]? length);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glShaderStorageBlockBinding")]

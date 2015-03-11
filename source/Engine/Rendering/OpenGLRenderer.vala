@@ -91,7 +91,6 @@ public class OpenGLRenderer : RenderTarget
 
             GLsizei log_size[1];
             glGetShaderiv(vertex_shader, GL_INFO_LOG_LENGTH, log_size);
-            //GLchar[] error_log = new GLchar[log_size[0]];
             GLubyte[] error_log = new GLubyte[log_size[0]];
             glGetShaderInfoLog(vertex_shader, log_size[0], log_size, error_log);
 
@@ -136,8 +135,6 @@ public class OpenGLRenderer : RenderTarget
         camera_position_attrib = glGetUniformLocation(shader_program, "camera_position");
         aspect_ratio_attrib = glGetUniformLocation(shader_program, "aspect_ratio");
 
-        GLuint len = (GLuint)(10 * sizeof(float));
-
         if (glGetError() != 0)
             print("GL shader program failure!!!\n");
     }
@@ -155,18 +152,6 @@ public class OpenGLRenderer : RenderTarget
         glGenBuffers(1, triangles);
         glBindBuffer(GL_ARRAY_BUFFER, triangles[0]);
         glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)(len * obj.points.length), (GL.GLvoid[])obj.points, GL_STATIC_DRAW);
-
-        if (false)
-        {
-            glEnableVertexAttribArray(pos_attrib);
-            glVertexAttribPointer(pos_attrib, 4, GL_FLOAT, GL_FALSE, len, (GLvoid[])0);
-
-            glEnableVertexAttribArray(tex_attrib);
-            glVertexAttribPointer(tex_attrib, 3, GL_FLOAT, GL_FALSE, len, (GLvoid[])(4 * sizeof(GLfloat)));
-
-            glEnableVertexAttribArray(nor_attrib);
-            glVertexAttribPointer(nor_attrib, 3, GL_FLOAT, GL_FALSE, len, (GLvoid[])(7 * sizeof(GLfloat)));
-        }
 
         return new OpenGLObject3DResourceHandle(triangles[0], obj.points.length);
     }
@@ -192,9 +177,6 @@ public class OpenGLRenderer : RenderTarget
         //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
         return new OpenGLTextureResourceHandle(tex[0]);
-
-        //SOIL_free_image_data(image);
-        //glUniform1i(glGetUniformLocation(shaderProgram, "texKitten"), 0);
     }
 
     private void render_scene(RenderState state)
@@ -225,13 +207,13 @@ public class OpenGLRenderer : RenderTarget
         glUniform3f(position_attrib, (GLfloat)obj.position.x, (GLfloat)obj.position.y, (GLfloat)obj.position.z);
         glUniform3f(scale_attrib, (GLfloat)obj.scale.x, (GLfloat)obj.scale.y, (GLfloat)obj.scale.z);
 
-            GLsizei len = (GLsizei)(10 * sizeof(float));
-            glEnableVertexAttribArray(pos_attrib);
-            glVertexAttribPointer(pos_attrib, 4, GL_FLOAT, GL_FALSE, len, (GLvoid[])0);
-            glEnableVertexAttribArray(tex_attrib);
-            glVertexAttribPointer(tex_attrib, 3, GL_FLOAT, GL_FALSE, len, (GLvoid[])(4 * sizeof(GLfloat)));
-            glEnableVertexAttribArray(nor_attrib);
-            glVertexAttribPointer(nor_attrib, 3, GL_FLOAT, GL_FALSE, len, (GLvoid[])(7 * sizeof(GLfloat)));
+        GLsizei len = (GLsizei)(10 * sizeof(float));
+        glEnableVertexAttribArray(pos_attrib);
+        glVertexAttribPointer(pos_attrib, 4, GL_FLOAT, GL_FALSE, len, (GLvoid[])0);
+        glEnableVertexAttribArray(tex_attrib);
+        glVertexAttribPointer(tex_attrib, 3, GL_FLOAT, GL_FALSE, len, (GLvoid[])(4 * sizeof(GLfloat)));
+        glEnableVertexAttribArray(nor_attrib);
+        glVertexAttribPointer(nor_attrib, 3, GL_FLOAT, GL_FALSE, len, (GLvoid[])(7 * sizeof(GLfloat)));
 
         glDrawArrays(GL_TRIANGLES, 0, (GLsizei)obj_handle.triangle_count);
     }
