@@ -57,7 +57,7 @@ public class OpenGLRenderer : RenderTarget
 
         // TODO: Put this somewhere
         sdl_window.set_icon(SDLImage.load("textures/Icon.png"));
-        sdl_window.set_size(800, 800);
+        sdl_window.set_size(1280, 800);
 
         init_shader();
 

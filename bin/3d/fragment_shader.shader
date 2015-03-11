@@ -106,7 +106,7 @@ void main()
 	vec4 sColor = normalize(vec4(outColor.xyz + vec3(6.0, 6.0, 6.0), 1.0)) * 4;
 	
 	vec4 specColor = sColor * speccy * 1.0 * 1 + sColor * speccy2 * 0.03 * 1;
-   
-	outColor.xyz *= Color * 0.6 * 1;
+	
+	outColor.xyz = outColor.xyz * 0.4 + outColor.xyz * Color * 0.6 * 1;
 	outColor += max(specColor, 0);
 }

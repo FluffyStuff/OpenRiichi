@@ -4,17 +4,18 @@ public class GameView : View
 {
     //private float rotation = 0;
 
-    private Render3DObject? tile = null;
-    private Render3DObject? table = null;
-    private Render3DObject? field = null;
-
-    public GameView()
-    {
-    }
+    private Render3DObject? sky = null;
+    private Render3DObject? level = null;
+    //private Render3DObject? tile = null;
+    //private Render3DObject? table = null;
+    //private Render3DObject? field = null;
 
     public override void do_load_resources(IResourceStore store)
     {
-        table = store.load_3D_object("./3d/table");
+        parent_window.set_cursor_hidden(true);
+        level = store.load_3D_object("./3d/level");
+        sky = store.load_3D_object("./3d/sky");
+        /*table = store.load_3D_object("./3d/table");
         tile = store.load_3D_object("./3d/box");
         field = store.load_3D_object("./3d/field");
 
@@ -23,7 +24,7 @@ public class GameView : View
         tile.position = Vec3() { y = 12.5f };
         tile.scale = Vec3() { x = 1.0f, y = 1.0f, z = 1.0f };
         field.position = Vec3() { y = 12.4f };
-        field.scale = Vec3() { x = 9.6f, z = 9.6f };
+        field.scale = Vec3() { x = 9.6f, z = 9.6f };*/
     }
 
     private int last_x = 0;
@@ -60,16 +61,18 @@ public class GameView : View
         int slow = 300;
         state.camera_rotation = Vec3(){ x = 1 - (float)last_y / slow, y = - (float)last_x / slow };
         state.camera_position = Vec3(){ x = camera_x, y = camera_y, z = camera_z };
-        state.add_3D_object(tile);
-        state.add_3D_object(table);
-        state.add_3D_object(field);
+        state.add_3D_object(level);
+        state.add_3D_object(sky);
+        //state.add_3D_object(tile);
+        //state.add_3D_object(table);
+        //state.add_3D_object(field);
         //state.finish_scene();
     }
 
     protected override void do_mouse_move(int x, int y)
     {
-        last_x = x;
-        last_y = y;
+        last_x += x;
+        last_y += y;
         //int slow = 300;
         //tile.rotation = Vec3() { x = (float)y / slow + rotation * 0.25f, y = (float)x / slow + rotation, z = rotation * 0.1f };
         //table.rotation = Vec3() { x = (float)y / slow, y = (float)x / slow };

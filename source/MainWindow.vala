@@ -26,7 +26,7 @@ public class MainWindow : RenderWindow
             else if (e.type == EventType.MOUSEMOTION)
             {
                 int x = 0, y = 0;
-                Cursor.get_state(ref x, ref y);
+                Cursor.get_relative_state(ref x, ref y);
                 main_view.mouse_move(x, y);
                 //back_color = { (float)x / width, 0, (float)y / height, 0 };
                 //window.get_size(out width, out height);
@@ -122,6 +122,16 @@ public abstract class RenderWindow
         main_view.process(dt);
     }
 
+    public void set_cursor_hidden(bool hidden)
+    {
+        window.set_cursor_hidden(hidden);
+    }
+
+    public void set_cursor_position(int x, int y)
+    {
+        window.set_cursor_position(x, y);
+    }
+
     protected abstract void do_process(double dt);
 
     public View main_view { get; private set; }
@@ -138,6 +148,8 @@ public interface IWindowTarget : Object
     public abstract int height { get; }
     public abstract void swap();
     public abstract void pump_events();
+    public abstract void set_cursor_hidden(bool hidden);
+    public abstract void set_cursor_position(int x, int y);
 }
 
 public class SDLWindowTarget : Object, IWindowTarget
@@ -184,6 +196,17 @@ public class SDLWindowTarget : Object, IWindowTarget
     public void swap()
     {
         SDL.GL.swap_window(window);
+    }
+
+    public void set_cursor_hidden(bool hidden)
+    {
+        //SDL.Cursor.show(hidden ? 0 : 1);
+        SDL.Cursor.set_relative_mode(hidden);
+    }
+
+    public void set_cursor_position(int x, int y)
+    {
+        //window.set_cursor_position(x, y);
     }
 
     public Window sdl_window { get { return window; } }
