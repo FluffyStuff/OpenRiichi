@@ -245,7 +245,7 @@ static void main_menu_background_real_do_load_resources (View* base, IResourceSt
 	_tmp10_ = _tmp9_;
 	render3_dobject_set_scale (self->priv->tile, &_tmp10_);
 	memset (&_tmp11_, 0, sizeof (Vec3));
-	_tmp11_.y = 12.3f;
+	_tmp11_.y = 12.4f;
 	_tmp12_ = _tmp11_;
 	render3_dobject_set_position (self->priv->field, &_tmp12_);
 	memset (&_tmp13_, 0, sizeof (Vec3));

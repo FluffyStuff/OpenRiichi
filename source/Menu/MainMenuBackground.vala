@@ -22,7 +22,7 @@ public class MainMenuBackground : View
         table.scale = Vec3() { x = 10, y = 10, z = 10 };
         tile.position = Vec3() { y = 12.5f };
         tile.scale = Vec3() { x = 1.0f, y = 1.0f, z = 1.0f };
-        field.position = Vec3() { y = 12.3f };
+        field.position = Vec3() { y = 12.4f };
         field.scale = Vec3() { x = 9.6f, z = 9.6f };
     }
 
