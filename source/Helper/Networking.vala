@@ -1,7 +1,7 @@
 using Gee;
 
 // Asynchronous networking class
-public static class Networking
+public /*static*/ class Networking
 {
     public static MessageSignal message_received;
 

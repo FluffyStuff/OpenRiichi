@@ -10,7 +10,8 @@ public /*static*/ class Threading
         try
         {
 #if LINUX
-            new GLib.Thread<int>.try(null, thread.start);
+            //new GLib.Thread<int>.try(null, thread.start);
+            GLib.Thread.create<int>(thread.start, false);
 #else
             GLib.Thread.create<void>(thread.start, false);
 #endif

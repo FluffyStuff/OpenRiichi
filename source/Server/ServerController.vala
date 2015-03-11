@@ -36,7 +36,7 @@ class ServerController
         int playing = 0;
         ServerPlayer[] players = new ServerPlayer[this.players.length()];
 
-        int a;
+        int a = 0;
         foreach (ServerPlayer player in players)
         {
             if (player.state == ServerPlayer.State.PLAYER)

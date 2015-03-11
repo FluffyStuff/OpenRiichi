@@ -1,6 +1,6 @@
 using Gee;
 
-public static class FileLoader
+public /*static*/ class FileLoader
 {
     public static string[]? load(string name)
     {
