@@ -21,6 +21,7 @@ public class OpenGLRenderer : RenderTarget
     private GLint camera_rotation_attrib = -1;
     private GLint camera_position_attrib = -1;
     private GLint aspect_ratio_attrib = -1;
+    private GLint light_count_attrib = -1;
 
     private GLContext context;
     private unowned Window sdl_window;
@@ -133,6 +134,7 @@ public class OpenGLRenderer : RenderTarget
         scale_attrib = glGetUniformLocation(shader_program, "scale_vec");
         camera_rotation_attrib = glGetUniformLocation(shader_program, "camera_rotation");
         camera_position_attrib = glGetUniformLocation(shader_program, "camera_position");
+        light_count_attrib = glGetUniformLocation(shader_program, "light_count");
         aspect_ratio_attrib = glGetUniformLocation(shader_program, "aspect_ratio");
 
         if (glGetError() != 0)
@@ -188,6 +190,13 @@ public class OpenGLRenderer : RenderTarget
         glUniform3f(camera_position_attrib, (GLfloat)state.camera_position.x, (GLfloat)state.camera_position.y, (GLfloat)state.camera_position.z);
         glUniform3f(camera_rotation_attrib, (GLfloat)state.camera_rotation.x, (GLfloat)state.camera_rotation.y, (GLfloat)state.camera_rotation.z);
         glUniform1f(aspect_ratio_attrib, (GLfloat)state.screen_width / state.screen_height);
+        glUniform1i(light_count_attrib, (GLint)state.lights.size);
+
+        for (int i = 0; i < state.lights.size; i++)
+        {
+            GLint light_source_attrib = glGetUniformLocation(shader_program, "light_source[" + i.to_string() + "].position");
+            glUniform3f(light_source_attrib, (GLfloat)state.lights[i].position.x, (GLfloat)state.lights[i].position.y, (GLfloat)state.lights[i].position.z);
+        }
 
         foreach (Render3DObject obj in state.objects)
             render_3D_object(obj);

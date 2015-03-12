@@ -90,6 +90,16 @@ public class Render3DObject
     public Vec3 scale { get; set; }
 }
 
+public class LightSource
+{
+    public LightSource()
+    {
+
+    }
+
+    public Vec3 position { get; set; }
+}
+
 public struct Vec3
 {
     float x;

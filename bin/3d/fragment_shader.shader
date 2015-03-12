@@ -1,10 +1,24 @@
-#version 400 core
+#version 450 core
+
+struct lightSourceParameters 
+{
+   vec3 position;
+   vec3 spotDirection;
+};
+
+struct lightNormalParameters
+{
+   vec3 normal;
+};
 
 in vec2 Texcoord;
 in vec3 Normal;
+//in vec3 Position;
+in lightNormalParameters ls[20];
+in vec3 Camera_normal;
 out vec4 outColor;
 uniform sampler2D tex;
-varying vec3 vVertexPosition;
+uniform int light_count;
 
 //////////////////////////////////
 
@@ -18,7 +32,7 @@ varying vec3 vVertexPosition;
 //               https://github.com/ashima/webgl-noise
 // 
 
-vec3 mod289(vec3 x) {
+/*vec3 mod289(vec3 x) {
   return x - floor(x * (1.0 / 289.0)) * 289.0;
 }
 
@@ -77,14 +91,14 @@ float snoise(vec2 v)
   g.x  = a0.x  * x0.x  + h.x  * x0.y;
   g.yz = a0.yz * x12.xz + h.yz * x12.yw;
   return 130.0 * dot(m, g);
-}
+}*/
 //////////////////////////////////
 
 void main()
 {
-	outColor = texture(tex, Texcoord);
+	//outColor = texture(tex, Texcoord);
 	//float diffuse = 0.01 * 1; //Table
-	float diffuse = 0.02 * 1;
+	/*float diffuse = 0.02 * 1;
 	
 	vec3 light = normalize(vec3(0, 1, -1));
 	vec3 light2 = normalize(vec3(0, 1, -1));
@@ -105,8 +119,24 @@ void main()
 	
 	vec4 sColor = normalize(vec4(outColor.xyz + vec3(6.0, 6.0, 6.0), 1.0)) * 4;
 	
-	vec4 specColor = sColor * speccy * 1.0 * 1 + sColor * speccy2 * 0.03 * 1;
+	vec4 specColor = sColor * speccy * 1.0 * 1 + sColor * speccy2 * 0.03 * 1;*/
 	
-	outColor.xyz = outColor.xyz * 0.4 + outColor.xyz * Color * 0.6 * 1;
-	outColor += max(specColor, 0);
+	//outColor.xyz = outColor.xyz * 0.0 + outColor.xyz * Color * 0.9 * 1;
+	//outColor += max(specColor, 0);
+	
+	outColor = texture(tex, Texcoord);
+	//outColor = vec4(0.7, 0.3, 0.5, 1.0);
+	
+	float diff = 0;
+	float specular = 0;
+	
+	for (int i = 0; i < light_count; i++)
+	{
+		diff += max(dot(normalize(Normal), normalize(ls[i].normal)) * 0.04, 0);
+		float s = dot(Camera_normal, reflect(-normalize(ls[i].normal), normalize(Normal)));
+		specular += max(pow(s, 1000) * 2, 0);
+	}
+	
+	outColor.xyz *= diff;
+	outColor.xyz += vec3(specular);
 }
