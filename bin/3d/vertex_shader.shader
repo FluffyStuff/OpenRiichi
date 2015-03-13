@@ -31,6 +31,7 @@ out vec2 Texcoord;
 out vec3 Normal;
 out lightNormalParameters ls[MAX_LIGHTS];
 out vec3 Camera_normal;
+out vec3 noise_coord;
 
 mat4 rotationMatrix(vec3 axis, float angle)
 {
@@ -81,6 +82,7 @@ mat4 translate(vec3 vec)
 void main()
 {
     Texcoord = texcoord.xy;
+	noise_coord = position.xyz;
 	
 	vec4 pos = scale(scale_vec) * position
     * rotationMatrix(vec3(0, 1, 0), PI * (rotation_vec.y))
@@ -103,14 +105,14 @@ void main()
 		* rotationMatrix(vec3(1, 0, 0), PI * rotation_vec.x)
 		* rotationMatrix(vec3(0, 0, 1), PI * rotation_vec.z);
     
-		ls[i].normal = normalize(light_source[i].position - (translate(position_vec) * v).xyz);
+		ls[i].normal = light_source[i].position - (translate(position_vec) * v).xyz;
 	}
 	
 	vec4 pn = position
     * rotationMatrix(vec3(0, 1, 0), PI * (rotation_vec.y))
     * rotationMatrix(vec3(1, 0, 0), PI * rotation_vec.x)
 	* rotationMatrix(vec3(0, 0, 1), PI * rotation_vec.z);
-	Camera_normal = normalize(camera_position - pn.xyz);
+	Camera_normal = camera_position - pn.xyz;
 	
 	Normal = (vec4(normalize(normals), 1.0)
 	* rotationMatrix(vec3(0, 1, 0), PI * (rotation_vec.y))

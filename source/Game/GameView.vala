@@ -119,7 +119,7 @@ public class GameView : View
         //state.camera_position = Vec3() { x = pos.x + 0.5f, y = pos.y + 0.5f, z = pos.z + 0.5f };
 
         state.add_3D_object(level);
-        //state.add_3D_object(sky);
+        state.add_3D_object(sky);
 
         for (int i = 0; i < circlers.length; i++)
         {
