@@ -6,10 +6,6 @@ public class GameView : View
 
     private Render3DObject? sky = null;
     private Render3DObject? level = null;
-    /*private LightSource? light = null;
-    private Render3DObject? tile = null;
-    private LightSource? light2 = null;
-    private Render3DObject? tile2 = null;*/
 
     private Circler[] circlers;
     //private Render3DObject? table = null;
@@ -37,7 +33,7 @@ public class GameView : View
         level = store.load_3D_object("./3d/ball");
         sky = store.load_3D_object("./3d/sky");
 
-        int amount = 20;
+        int amount = 4;
         circlers = new Circler[amount];
         Rand rnd = new Rand();
 
@@ -60,7 +56,8 @@ public class GameView : View
         tile.position = Vec3() { y = 12.5f };
         tile.scale = Vec3() { x = 1.0f, y = 1.0f, z = 1.0f };
         field.position = Vec3() { y = 12.4f };
-        field.scale = Vec3() { x = 9.6f, z = 9.6f };*/
+        field.scale = Vec3() { x = 9.6f, z = 9.6f
+        };*/
     }
 
     private int last_x = 0;
@@ -74,10 +71,12 @@ public class GameView : View
     private float camera_z = 0;
 
     private double derp = 0;
+    private double speed = 1;
 
     public override void do_process(double dt)
     {
-        derp += dt;
+        //dt *= speed;
+        derp += dt * speed;
         //int slow = 300;
         camera_x += accel_x;
         camera_y += accel_y;
@@ -88,9 +87,9 @@ public class GameView : View
             circlers[i].light.position =
             Vec3()
             {
-                x = (float)Math.sin(circlers[i].amount.x * derp / 10) * 10,
-                y = (float)Math.cos(circlers[i].amount.y * derp / 10) * 10,
-                z = (float)Math.sin(circlers[i].amount.z * derp / 10) * 10
+                x = (float)Math.sin(circlers[i].amount.x * derp / 100) * 10,
+                y = (float)Math.cos(circlers[i].amount.y * derp / 100) * 10,
+                z = (float)Math.sin(circlers[i].amount.z * derp / 100) * 10
             };
             circlers[i].obj.position = circlers[i].light.position;
         }
@@ -105,7 +104,7 @@ public class GameView : View
         //table.rotation = Vec3() { x = (float)last_y / slow + rotation * 0.25f, y = (float)last_x / (float)slow + (float)rotation, z = rotation * 0.1f };
         //table.rotation = Vec3() { x = rotation * 0.25f, y = rotation, z = rotation * 0.1f };
         //tile.rotation = Vec3() { x = rotation * 0.25f, y = rotation, z = rotation * 0.1f };
-        level.rotation = Vec3() { z = (float)derp * 0.025f, x = (float)derp * 0.01851f, y = (float)derp * 0.007943f };
+        level.rotation = Vec3() { /*z = (float)derp * 0.025f, x = (float)derp * 0.01851f,*/ y = (float)derp * 0.007943f };
         level.position = Vec3() { z = (float)Math.cos(derp / 10) * 2, x = (float)Math.sin(derp / 10) * 2 };
 
         //tile.position = Vec3() { y = -0.5f, z = 2.5f };
@@ -116,10 +115,11 @@ public class GameView : View
         //state.add_scene();
         int slow = 300;
         state.camera_rotation = Vec3(){ x = 1 - (float)last_y / slow, y = - (float)last_x / slow };
-        //state.camera_rotation = Vec3(){ x = 0, y = 0, z = 0f };
         state.camera_position = Vec3(){ x = camera_x, y = camera_y, z = camera_z };
+        //state.camera_position = Vec3() { x = pos.x + 0.5f, y = pos.y + 0.5f, z = pos.z + 0.5f };
+
         state.add_3D_object(level);
-        state.add_3D_object(sky);
+        //state.add_3D_object(sky);
 
         for (int i = 0; i < circlers.length; i++)
         {
@@ -181,6 +181,12 @@ public class GameView : View
             accel_x = 0;
             accel_y = 0;
             accel_z = 0;
+            break;
+        case '+':
+            this.speed *= 2;
+            break;
+        case '-':
+            this.speed /= 2;
             break;
         default:
             print("%i\n", (int)key);

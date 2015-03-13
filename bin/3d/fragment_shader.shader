@@ -1,10 +1,6 @@
-#version 450 core
-
-struct lightSourceParameters 
-{
-   vec3 position;
-   vec3 spotDirection;
-};
+#version 330 core
+#define MAX_LIGHTS 4
+#define PI 3.1415926535897932384626433832795
 
 struct lightNormalParameters
 {
@@ -13,8 +9,7 @@ struct lightNormalParameters
 
 in vec2 Texcoord;
 in vec3 Normal;
-//in vec3 Position;
-in lightNormalParameters ls[20];
+in lightNormalParameters ls[MAX_LIGHTS];
 in vec3 Camera_normal;
 out vec4 outColor;
 uniform sampler2D tex;
@@ -32,7 +27,7 @@ uniform int light_count;
 //               https://github.com/ashima/webgl-noise
 // 
 
-/*vec3 mod289(vec3 x) {
+vec3 mod289(vec3 x) {
   return x - floor(x * (1.0 / 289.0)) * 289.0;
 }
 
@@ -91,52 +86,52 @@ float snoise(vec2 v)
   g.x  = a0.x  * x0.x  + h.x  * x0.y;
   g.yz = a0.yz * x12.xz + h.yz * x12.yw;
   return 130.0 * dot(m, g);
-}*/
+}
 //////////////////////////////////
+
+mat4 rotationMatrix(vec3 axis, float angle)
+{
+	axis = normalize(axis);
+	float s = sin(angle);
+	float c = cos(angle);
+	float oc = 1.0 - c;
+	return mat4(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,  0.0,
+				oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,  0.0,
+				oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c,           0.0,
+				0.0,                                0.0,                                0.0,                                1.0);
+}
 
 void main()
 {
-	//outColor = texture(tex, Texcoord);
-	//float diffuse = 0.01 * 1; //Table
-	/*float diffuse = 0.02 * 1;
+	vec3 normal = normalize(Normal);
 	
-	vec3 light = normalize(vec3(0, 1, -1));
-	vec3 light2 = normalize(vec3(0, 1, -1));
+	float noise = 0;
 	
-	float noise = snoise(Texcoord.xy * 8) * 0.5 * 0 + snoise(Texcoord.xy * 400) * 0.5;
-	float n1 = cos(noise);
-	float n2 = sin(noise);
-	float n3 = snoise(vec2(n1, n2));
+	for (int i = 1; i <= 256; i *= 2)
+		noise += snoise(Texcoord * i);
+	noise = sin(cos(sin(noise)));
 	
-	vec3 orig = normalize(Normal);
-	vec3 n = normalize(vec3(Normal.x + Normal.x * n1 * diffuse, Normal.y + Normal.y * n2 * diffuse, Normal.z + Normal.z * n3 * diffuse));
-	
-	vec3 Color = vec3(1.0, 1.0, 1.0) * (0.016 *1 + max(0, (dot(light2, n.xyz))) * 1.0);
-	
-	float specOffset = max(dot(light, n.xyz), 0);
-	float speccy2 = pow(specOffset, 10);
-	float speccy = pow(speccy2, 30);
-	
-	vec4 sColor = normalize(vec4(outColor.xyz + vec3(6.0, 6.0, 6.0), 1.0)) * 4;
-	
-	vec4 specColor = sColor * speccy * 1.0 * 1 + sColor * speccy2 * 0.03 * 1;*/
-	
-	//outColor.xyz = outColor.xyz * 0.0 + outColor.xyz * Color * 0.9 * 1;
-	//outColor += max(specColor, 0);
+	float s = 0.1;
+	normal = ((vec4(normal, 1.0)
+	* rotationMatrix(vec3(1, 1, 1), noise * s)
+	).xyz);
 	
 	outColor = texture(tex, Texcoord);
-	//outColor = vec4(0.7, 0.3, 0.5, 1.0);
 	
 	float diff = 0;
 	float specular = 0;
+	vec3 c = outColor.xyz;
 	
 	for (int i = 0; i < light_count; i++)
 	{
-		diff += max(dot(normalize(Normal), normalize(ls[i].normal)) * 0.04, 0);
-		float s = dot(Camera_normal, reflect(-normalize(ls[i].normal), normalize(Normal)));
-		specular += max(pow(s, 1000) * 2, 0);
+		diff += max(dot(normal, normalize(ls[i].normal)) / light_count, 0);
+		float s = max(dot(normalize(Camera_normal), reflect(-normalize(ls[i].normal), normal)), 0);
+		
+		specular += pow(s, 10) * 0.01;
+		specular += pow(s, 100) * 0.1;
+		specular += pow(s, 1000) * 1;
 	}
 	
-	outColor.xyz *= diff;
-	outColor.xyz += vec3(specular);
+	outColor.xyz *= diff * 0.4;
+	outColor.xyz += c * specular * 1.8 + vec3(specular * 0.5);
 }

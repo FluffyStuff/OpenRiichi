@@ -187,7 +187,7 @@ public class OpenGLRenderer : RenderTarget
         glClearColor((GLfloat)state.back_color.r, (GLfloat)state.back_color.g, (GLfloat)state.back_color.b, (GLfloat)state.back_color.a);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glUniform3f(camera_position_attrib, (GLfloat)state.camera_position.x, (GLfloat)state.camera_position.y, (GLfloat)state.camera_position.z);
+        //glUniform3f(camera_position_attrib, (GLfloat)state.camera_position.x, (GLfloat)state.camera_position.y, (GLfloat)state.camera_position.z);
         glUniform3f(camera_rotation_attrib, (GLfloat)state.camera_rotation.x, (GLfloat)state.camera_rotation.y, (GLfloat)state.camera_rotation.z);
         glUniform1f(aspect_ratio_attrib, (GLfloat)state.screen_width / state.screen_height);
         glUniform1i(light_count_attrib, (GLint)state.lights.size);
@@ -198,13 +198,18 @@ public class OpenGLRenderer : RenderTarget
             glUniform3f(light_source_attrib, (GLfloat)state.lights[i].position.x, (GLfloat)state.lights[i].position.y, (GLfloat)state.lights[i].position.z);
         }
 
+        Vec3 pos;
+
         foreach (Render3DObject obj in state.objects)
-            render_3D_object(obj);
+            pos = render_3D_object(obj);
+
+        pos = Vec3() { x = pos.x + 1, y = pos.y + 1, z = pos.z + 1 };
+        glUniform3f(camera_position_attrib, (GLfloat)pos.x, (GLfloat)pos.y, (GLfloat)pos.z);
 
         window.swap();
     }
 
-    private void render_3D_object(Render3DObject obj)
+    private Vec3 render_3D_object(Render3DObject obj)
     {
         OpenGLTextureResourceHandle handle = (OpenGLTextureResourceHandle)get_texture(obj.texture.handle);
         glBindTexture(GL_TEXTURE_2D, (GLuint)handle.handle);
@@ -212,8 +217,11 @@ public class OpenGLRenderer : RenderTarget
         OpenGLObject3DResourceHandle obj_handle = (OpenGLObject3DResourceHandle)get_3D_object(obj.handle);
         glBindBuffer(GL_ARRAY_BUFFER, (GLuint)obj_handle.handle);
 
+        Vec3 pos = new Vec3() { x = obj.position.x, y = obj.position.y, z = obj.position.z };
+
         glUniform3f(rotation_attrib, (GLfloat)obj.rotation.x, (GLfloat)obj.rotation.y, (GLfloat)obj.rotation.z);
-        glUniform3f(position_attrib, (GLfloat)obj.position.x, (GLfloat)obj.position.y, (GLfloat)obj.position.z);
+        //glUniform3f(position_attrib, (GLfloat)obj.position.x, (GLfloat)obj.position.y, (GLfloat)obj.position.z);
+        glUniform3f(position_attrib, (GLfloat)pos.x, (GLfloat)pos.y, (GLfloat)pos.z);
         glUniform3f(scale_attrib, (GLfloat)obj.scale.x, (GLfloat)obj.scale.y, (GLfloat)obj.scale.z);
 
         GLsizei len = (GLsizei)(10 * sizeof(float));
@@ -225,6 +233,8 @@ public class OpenGLRenderer : RenderTarget
         glVertexAttribPointer(nor_attrib, 3, GL_FLOAT, GL_FALSE, len, (GLvoid[])(7 * sizeof(GLfloat)));
 
         glDrawArrays(GL_TRIANGLES, 0, (GLsizei)obj_handle.triangle_count);
+
+        return pos;
     }
 
     private void setup_projection(RenderState state, bool ortho)

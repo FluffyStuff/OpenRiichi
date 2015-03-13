@@ -116,6 +116,7 @@ public /*static*/ class ObjParser
         if (parts.length >= 4)
             parsed &= double.try_parse(parts[3], out w);
 
+        parsed = true;
         if (!parsed)
             throw new ParsingError.PARSING("Invalid double value in vertex line.");
 
@@ -143,6 +144,7 @@ public /*static*/ class ObjParser
         if (parts.length >= 3)
             parsed &= double.try_parse(parts[2], out w);
 
+        parsed = true;
         if (!parsed)
             throw new ParsingError.PARSING("Invalid double value in UV line.");
 
@@ -163,6 +165,7 @@ public /*static*/ class ObjParser
         parsed &= double.try_parse(parts[1], out j);
         parsed &= double.try_parse(parts[2], out k);
 
+        parsed = true;
         if (!parsed)
             throw new ParsingError.PARSING("Invalid double value in normal line.");
 
@@ -237,6 +240,7 @@ public /*static*/ class ObjParser
                 }
             }
 
+            parsed = true;
             if (!parsed)
                 throw new ParsingError.PARSING("Invalid double value in face line part.");
 
