@@ -206,7 +206,7 @@ void main()
 		noise += snoise(noise_coord * i) / a;
 	}
 	
-	normal = ((vec4(normal, 1.0) * rotationMatrix(vec3(1, 1, 1), noise * perlin_strength)).xyz);
+	normal = (vec4(normal, 1.0) * rotationMatrix(vec3(1, 1, 1), noise * perlin_strength)).xyz;
 	
 	outColor = texture(tex, Texcoord);
 	
@@ -229,18 +229,23 @@ void main()
 		diff += d / lnlen * linear_factor;
 		diff += d / pow(lnlen, 2) * quadratic_factor;
 		
-		float s = max(dot(cm, reflect(-ln, normal)), 0);
-		float spec = 0;
-		spec += pow(s, 50) * 0.01;
-		spec += pow(s, 100) * 0.05;
-		spec += pow(s, 1000) * 1;
-		spec += pow(s, 10000) * 2;
-		
-		specular += spec * constant_factor;
-		specular += spec / lnlen * linear_factor;
-		specular += spec / pow(lnlen, 2) * quadratic_factor;
+		if (dot(ln, normal) > 0) // Only reflect on the correct side
+		{
+			float s = max(dot(cm, reflect(-ln, normal)), 0);
+			float spec = 0;
+			spec += pow(s, 50) * 0.01;
+			spec += pow(s, 100) * 0.05;
+			spec += pow(s, 1000) * 1;
+			spec += pow(s, 10000) * 2;
+			
+			specular += spec * constant_factor;
+			specular += spec / lnlen * linear_factor;
+			specular += spec / pow(lnlen, 2) * quadratic_factor;
+		}
 	}
 	
 	outColor.xyz *= diff;
-	outColor.xyz += (c * specular * 0.5 *0 + vec3(specular)) * 4;
+	outColor.xyz += max((c * specular * 0.5 *0 + vec3(specular)) * 4, 0);
+	
+	outColor.xyz /= max(pow(length(Camera_normal) / 5, 1.0) / 10, 1);
 }

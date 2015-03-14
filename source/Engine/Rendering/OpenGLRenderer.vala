@@ -187,7 +187,7 @@ public class OpenGLRenderer : RenderTarget
         glClearColor((GLfloat)state.back_color.r, (GLfloat)state.back_color.g, (GLfloat)state.back_color.b, (GLfloat)state.back_color.a);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        //glUniform3f(camera_position_attrib, (GLfloat)state.camera_position.x, (GLfloat)state.camera_position.y, (GLfloat)state.camera_position.z);
+        glUniform3f(camera_position_attrib, (GLfloat)state.camera_position.x, (GLfloat)state.camera_position.y, (GLfloat)state.camera_position.z);
         glUniform3f(camera_rotation_attrib, (GLfloat)state.camera_rotation.x, (GLfloat)state.camera_rotation.y, (GLfloat)state.camera_rotation.z);
         glUniform1f(aspect_ratio_attrib, (GLfloat)state.screen_width / state.screen_height);
         glUniform1i(light_count_attrib, (GLint)state.lights.size);

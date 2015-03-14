@@ -7,9 +7,13 @@ public class GameView : View
     private Render3DObject? sky = null;
     private Render3DObject? level = null;
 
+    private Render3DObject[] balls;
     private Circler[] circlers;
     //private Render3DObject? table = null;
     //private Render3DObject? field = null;
+
+    int light_count = 4;
+    int ball_count = 5;
 
     private class Circler
     {
@@ -19,6 +23,7 @@ public class GameView : View
             this.cos = cos;
             light = new LightSource();
             obj = store.load_3D_object("./3d/box");
+            obj.scale = Vec3() { x = 0.5f, y = 0.5f, z = 0.5f };
         }
 
         public Vec3 amount { get; private set; }
@@ -30,14 +35,20 @@ public class GameView : View
     public override void do_load_resources(IResourceStore store)
     {
         parent_window.set_cursor_hidden(true);
-        level = store.load_3D_object("./3d/ball");
+        //level = store.load_3D_object("./3d/level");
         sky = store.load_3D_object("./3d/sky");
 
-        int amount = 4;
-        circlers = new Circler[amount];
+        circlers = new Circler[light_count];
+        balls = new Render3DObject[ball_count];
         Rand rnd = new Rand();
 
-        for (int i = 0; i < amount; i++)
+        for (int i = 0; i < ball_count; i++)
+        {
+            balls[i] = store.load_3D_object("./3d/ball");
+            //balls[i].scale = Vec3() { x = 1, y = 0.001f, z = 1 };
+        }
+
+        for (int i = 0; i < light_count; i++)
         {
             Vec3 vec = Vec3() { x = (float)rnd.next_double(), y = (float)rnd.next_double(), z = (float)rnd.next_double() };
             bool[] bools = new bool[3];
@@ -82,6 +93,12 @@ public class GameView : View
         camera_y += accel_y;
         camera_z += accel_z;
 
+        for (int i = 0; i < balls.length; i++)
+        {
+            float p = 2 * (float)Math.PI * i / balls.length;
+            balls[i].position = Vec3() { z = (float)Math.cos(derp / 100 + p) * ball_count * 3, x = (float)Math.sin(derp / 100 + p) * ball_count * 3 };
+        }
+
         for (int i = 0; i < circlers.length; i++)
         {
             circlers[i].light.position =
@@ -104,8 +121,9 @@ public class GameView : View
         //table.rotation = Vec3() { x = (float)last_y / slow + rotation * 0.25f, y = (float)last_x / (float)slow + (float)rotation, z = rotation * 0.1f };
         //table.rotation = Vec3() { x = rotation * 0.25f, y = rotation, z = rotation * 0.1f };
         //tile.rotation = Vec3() { x = rotation * 0.25f, y = rotation, z = rotation * 0.1f };
-        level.rotation = Vec3() { /*z = (float)derp * 0.025f, x = (float)derp * 0.01851f,*/ y = (float)derp * 0.007943f };
-        level.position = Vec3() { z = (float)Math.cos(derp / 10) * 2, x = (float)Math.sin(derp / 10) * 2 };
+
+        //level.rotation = Vec3() { /*z = (float)derp * 0.025f, x = (float)derp * 0.01851f,*/ y = (float)derp * 0.007943f };
+        //level.position = Vec3() { z = (float)Math.cos(derp / 10) * 2, x = (float)Math.sin(derp / 10) * 2 };
 
         //tile.position = Vec3() { y = -0.5f, z = 2.5f };
     }
@@ -118,8 +136,13 @@ public class GameView : View
         state.camera_position = Vec3(){ x = camera_x, y = camera_y, z = camera_z };
         //state.camera_position = Vec3() { x = pos.x + 0.5f, y = pos.y + 0.5f, z = pos.z + 0.5f };
 
-        state.add_3D_object(level);
+        //state.add_3D_object(level);
         state.add_3D_object(sky);
+
+        for (int i = 0; i < balls.length; i++)
+        {
+            state.add_3D_object(balls[i]);
+        }
 
         for (int i = 0; i < circlers.length; i++)
         {

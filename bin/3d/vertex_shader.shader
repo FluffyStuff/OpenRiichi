@@ -85,7 +85,7 @@ void main()
 	noise_coord = position.xyz;
 	
 	vec4 pos = scale(scale_vec) * position
-    * rotationMatrix(vec3(0, 1, 0), PI * (rotation_vec.y))
+    * rotationMatrix(vec3(0, 1, 0), PI * rotation_vec.y)
     * rotationMatrix(vec3(1, 0, 0), PI * rotation_vec.x)
 	* rotationMatrix(vec3(0, 0, 1), PI * rotation_vec.z);
 	
@@ -101,21 +101,22 @@ void main()
 	for (int i = 0; i < light_count; i++)
 	{
 		vec4 v = scale(scale_vec) * position
-		* rotationMatrix(vec3(0, 1, 0), PI * (rotation_vec.y))
+		* rotationMatrix(vec3(0, 1, 0), PI * rotation_vec.y)
 		* rotationMatrix(vec3(1, 0, 0), PI * rotation_vec.x)
 		* rotationMatrix(vec3(0, 0, 1), PI * rotation_vec.z);
     
 		ls[i].normal = light_source[i].position - (translate(position_vec) * v).xyz;
 	}
 	
-	vec4 pn = position
-    * rotationMatrix(vec3(0, 1, 0), PI * (rotation_vec.y))
+	vec4 pn = scale(scale_vec) * position
+    * rotationMatrix(vec3(0, 1, 0), PI * rotation_vec.y)
     * rotationMatrix(vec3(1, 0, 0), PI * rotation_vec.x)
 	* rotationMatrix(vec3(0, 0, 1), PI * rotation_vec.z);
-	Camera_normal = camera_position - pn.xyz;
+	Camera_normal = camera_position - (translate(position_vec) * pn).xyz;
 	
-	Normal = (vec4(normalize(normals), 1.0)
-	* rotationMatrix(vec3(0, 1, 0), PI * (rotation_vec.y))
+	vec3 sn = normalize(vec3(normals.x / scale_vec.x, normals.y / scale_vec.y, normals.z / scale_vec.z));
+	Normal = (vec4(sn, 1.0)
+	* rotationMatrix(vec3(0, 1, 0), PI * rotation_vec.y)
     * rotationMatrix(vec3(1, 0, 0), PI * rotation_vec.x)
 	* rotationMatrix(vec3(0, 0, 1), PI * rotation_vec.z)).xyz;
 }
