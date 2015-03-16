@@ -42,6 +42,7 @@
 			<Add directory="C:/vala-0.12.0/lib/gtk-2.0/include" />
 		</Compiler>
 		<Unit filename="Makefile" />
+		<Unit filename="source/Engine/Audio/libaubio.vala" />
 		<Unit filename="source/Engine/Files/FileLoader.vala" />
 		<Unit filename="source/Engine/Files/ObjParser.vala" />
 		<Unit filename="source/Engine/Rendering/IRenderTarget.vala" />

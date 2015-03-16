@@ -69,6 +69,8 @@ public abstract class RenderWindow
     private IWindowTarget window;
     public IRenderTarget renderer;
     private bool running;
+    private GLib.Timer timer;
+    private double last_time = 0;
 
     public RenderWindow(IWindowTarget window, IRenderTarget renderer)
     {
@@ -82,6 +84,7 @@ public abstract class RenderWindow
         running = true;
 
         load_resources(renderer.resource_store);
+        timer = new GLib.Timer();
 
         while (running)
         {
@@ -108,7 +111,11 @@ public abstract class RenderWindow
     // Returns the delta time in seconds
     private double get_delta()
     {
-        return 0.01;
+        double time = timer.elapsed();
+        double dt = time - last_time;
+        last_time = time;
+
+        return time;
     }
 
     private void load_resources(IResourceStore store)

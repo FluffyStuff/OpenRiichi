@@ -17,6 +17,8 @@ public class OpenGLRenderer : RenderTarget
     private GLint rotation_attrib = -1;
     private GLint position_attrib = -1;
     private GLint scale_attrib = -1;
+    private GLint alpha_attrib = -1;
+    private GLint light_multi_attrib = -1;
 
     private GLint camera_rotation_attrib = -1;
     private GLint camera_position_attrib = -1;
@@ -136,6 +138,8 @@ public class OpenGLRenderer : RenderTarget
         camera_position_attrib = glGetUniformLocation(shader_program, "camera_position");
         light_count_attrib = glGetUniformLocation(shader_program, "light_count");
         aspect_ratio_attrib = glGetUniformLocation(shader_program, "aspect_ratio");
+        alpha_attrib = glGetUniformLocation(shader_program, "alpha");
+        light_multi_attrib = glGetUniformLocation(shader_program, "light_multiplier");
 
         if (glGetError() != 0)
             print("GL shader program failure!!!\n");
@@ -217,12 +221,14 @@ public class OpenGLRenderer : RenderTarget
         OpenGLObject3DResourceHandle obj_handle = (OpenGLObject3DResourceHandle)get_3D_object(obj.handle);
         glBindBuffer(GL_ARRAY_BUFFER, (GLuint)obj_handle.handle);
 
-        Vec3 pos = new Vec3() { x = obj.position.x, y = obj.position.y, z = obj.position.z };
+        Vec3 pos = Vec3() { x = obj.position.x, y = obj.position.y, z = obj.position.z };
 
         glUniform3f(rotation_attrib, (GLfloat)obj.rotation.x, (GLfloat)obj.rotation.y, (GLfloat)obj.rotation.z);
         //glUniform3f(position_attrib, (GLfloat)obj.position.x, (GLfloat)obj.position.y, (GLfloat)obj.position.z);
         glUniform3f(position_attrib, (GLfloat)pos.x, (GLfloat)pos.y, (GLfloat)pos.z);
         glUniform3f(scale_attrib, (GLfloat)obj.scale.x, (GLfloat)obj.scale.y, (GLfloat)obj.scale.z);
+        glUniform1f(alpha_attrib, (GLfloat)obj.alpha);
+        glUniform1f(light_multi_attrib, (GLfloat)obj.light_multiplier);
 
         GLsizei len = (GLsizei)(10 * sizeof(float));
         glEnableVertexAttribArray(pos_attrib);

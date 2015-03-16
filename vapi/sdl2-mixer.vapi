@@ -47,6 +47,7 @@ namespace SDLMixer {
 	[CCode (cname="Mix_GetSynchroValue")]
 	public static int get_synchro_value();
 
+	[CCode (cname = "mix_func")]
 	public delegate void MixFunction(void* udata, uchar[] stream);
 	public delegate void MusicFinishedCallback();
 	public delegate void ChannelFinishedCallback(int channel);
@@ -89,7 +90,7 @@ namespace SDLMixer {
 		public static void* get_hook_data();
 
 		[CCode (cname="Mix_HookMusic")]
-		public static void hook_mixer(MixFunction? f, void* arg);
+		public static void hook_mixer(/*MixFunction?*/void* f, void* arg);
 
 		[CCode (cname="Mix_HookMusicFinished")]
 		public static void hook_finished(MusicFinishedCallback cb);

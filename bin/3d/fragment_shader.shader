@@ -18,6 +18,8 @@ in vec3 noise_coord;
 out vec4 outColor;
 uniform sampler2D tex;
 uniform int light_count;
+uniform float alpha;
+uniform float light_multiplier;
 
 //////////////////////////////////
 
@@ -216,8 +218,8 @@ void main()
 	
 	for (int i = 0; i < light_count; i++)
 	{
-		float constant_factor = 0.01;
-		float linear_factor = 0.1;
+		float constant_factor = 0.02;
+		float linear_factor = 0.4;
 		float quadratic_factor = 0.4;
 		
 		float lnlen = max(length(ls[i].normal), 1);
@@ -244,8 +246,9 @@ void main()
 		}
 	}
 	
-	outColor.xyz *= diff;
-	outColor.xyz += max((c * specular * 0.5 *0 + vec3(specular)) * 4, 0);
+	outColor.xyz *= diff * light_multiplier;
+	outColor.xyz += max((c * specular * 0.5 *0 + vec3(specular)) * 4, 0) * light_multiplier;
 	
 	outColor.xyz /= max(pow(length(Camera_normal) / 5, 1.0) / 10, 1);
+	outColor.a = alpha;
 }

@@ -5,31 +5,25 @@ public class GameView : View
     //private float rotation = 0;
 
     private Render3DObject? sky = null;
-    private Render3DObject? level = null;
+    //private Render3DObject? level = null;
 
     private Render3DObject[] balls;
     private Circler[] circlers;
     //private Render3DObject? table = null;
     //private Render3DObject? field = null;
 
-    int light_count = 4;
-    int ball_count = 5;
+    private float[] values;
+    private float[] samples;
+    public SDLMusicHook music;
+    private RunningAverage[] avgs;
 
-    private class Circler
+    int light_count = 20;
+    int ball_count = 10;
+
+    public GameView()
     {
-        public Circler(Vec3 amount, bool[] cos, IResourceStore store)
-        {
-            this.amount = amount;
-            this.cos = cos;
-            light = new LightSource();
-            obj = store.load_3D_object("./3d/box");
-            obj.scale = Vec3() { x = 0.5f, y = 0.5f, z = 0.5f };
-        }
-
-        public Vec3 amount { get; private set; }
-        public bool[] cos { get; private set; }
-        public LightSource light { get; private set; }
-        public Render3DObject obj { get; private set; }
+        values = libaubio.load("Standerwick - Valyrian - test.wav", out samples);
+        print("?: " + samples.length.to_string() + "\n");
     }
 
     public override void do_load_resources(IResourceStore store)
@@ -37,13 +31,16 @@ public class GameView : View
         parent_window.set_cursor_hidden(true);
         //level = store.load_3D_object("./3d/level");
         sky = store.load_3D_object("./3d/sky");
+        sky.light_multiplier = 0;
 
         circlers = new Circler[light_count];
         balls = new Render3DObject[ball_count];
         Rand rnd = new Rand();
+        avgs = new RunningAverage[ball_count];
 
         for (int i = 0; i < ball_count; i++)
         {
+            avgs[i] = new RunningAverage(6);
             balls[i] = store.load_3D_object("./3d/ball");
             //balls[i].scale = Vec3() { x = 1, y = 0.001f, z = 1 };
         }
@@ -58,6 +55,7 @@ public class GameView : View
 
             circlers[i] = new Circler(vec, bools, store);
         }
+        music = new SDLMusicHook(samples);
 
         //table = store.load_3D_object("./3d/table");
         /*field = store.load_3D_object("./3d/field");
@@ -87,16 +85,39 @@ public class GameView : View
     public override void do_process(double dt)
     {
         //dt *= speed;
-        derp += dt * speed;
+        //derp += dt * speed;
+        derp = dt;
         //int slow = 300;
         camera_x += accel_x;
         camera_y += accel_y;
         camera_z += accel_z;
 
+        int r = 44100;
+        int s = 512;
+
+        //print(derp.to_string() + "\n");
+
         for (int i = 0; i < balls.length; i++)
         {
+            float val = 0;
+            for (int j = 0; j < 10; j++)
+            {
+                float sq = values[(int)(derp * r / s) * 512 + (i+3) * 10 + j];
+                val += sq*sq;
+            }
+
+            val /= 10;
+            val = (float)Math.sqrt(val);
+            val = avgs[i].add(val);
+
+            val /= 5;
+            val *= val;
+
+            float scale = 1 + val;
+
             float p = 2 * (float)Math.PI * i / balls.length;
-            balls[i].position = Vec3() { z = (float)Math.cos(derp / 100 + p) * ball_count * 3, x = (float)Math.sin(derp / 100 + p) * ball_count * 3 };
+            balls[i].position = Vec3() { z = (float)Math.cos(derp / 10 + p) * ball_count * 3, x = (float)Math.sin(derp / 10 + p) * ball_count * 3, y = -5 };
+            balls[i].scale = Vec3() { x = scale, y = scale, z = scale };
         }
 
         for (int i = 0; i < circlers.length; i++)
@@ -104,9 +125,9 @@ public class GameView : View
             circlers[i].light.position =
             Vec3()
             {
-                x = (float)Math.sin(circlers[i].amount.x * derp / 100) * 10,
-                y = (float)Math.cos(circlers[i].amount.y * derp / 100) * 10,
-                z = (float)Math.sin(circlers[i].amount.z * derp / 100) * 10
+                x = (float)Math.sin(circlers[i].amount.x * derp / 10) * 10,
+                y = (float)Math.cos(circlers[i].amount.y * derp / 10) * 10,
+                z = (float)Math.sin(circlers[i].amount.z * derp / 10) * 10
             };
             circlers[i].obj.position = circlers[i].light.position;
         }
@@ -128,6 +149,9 @@ public class GameView : View
         //tile.position = Vec3() { y = -0.5f, z = 2.5f };
     }
 
+    float lst = 0;
+    float run = 0;
+    RunningAverage cam = new RunningAverage(10);
     public override void do_render(RenderState state, IResourceStore store)
     {
         //state.add_scene();
@@ -135,8 +159,31 @@ public class GameView : View
         state.camera_rotation = Vec3(){ x = 1 - (float)last_y / slow, y = - (float)last_x / slow };
         state.camera_position = Vec3(){ x = camera_x, y = camera_y, z = camera_z };
         //state.camera_position = Vec3() { x = pos.x + 0.5f, y = pos.y + 0.5f, z = pos.z + 0.5f };
+        int r = 44100;
+        int s = 512;
+        float val = avgs[0].average;
+        float scale = val;
+        float abs = scale - lst;
+        abs = abs > 0 ? abs : -abs;
+        abs = (float)Math.sqrt(abs) * 50;
+        run += cam.add(abs);
+        lst = scale;
+        float speed = 3;
 
+        state.camera_position = Vec3() { z = (float)Math.cos((derp) * Math.PI / 10 * speed) * 40, y = 10, x = (float)Math.sin((derp) * Math.PI / 10 * speed) * 40 };
+        state.camera_rotation = Vec3()
+        {
+            y = (float)(-derp / 10 * speed) + (float)(Math.cos(run / 500) / 500),
+            x = (float)(Math.sin(derp / 5) / Math.PI / 6 - 0.1) + (float)(Math.sin(run / 500) / 500),
+            z = 0
+        };
         //state.add_3D_object(level);
+        //if (derp > 174)
+        val /= 1;
+        val *= val / 5;
+        print("val: " + val.to_string() + "\n");
+        if (derp > 14)
+            sky.light_multiplier = (float)(val);
         state.add_3D_object(sky);
 
         for (int i = 0; i < balls.length; i++)
@@ -215,5 +262,53 @@ public class GameView : View
             print("%i\n", (int)key);
             break;
         }
+    }
+
+    private class Circler
+    {
+        public Circler(Vec3 amount, bool[] cos, IResourceStore store)
+        {
+            this.amount = amount;
+            this.cos = cos;
+            light = new LightSource();
+            obj = store.load_3D_object("./3d/box");
+            obj.scale = Vec3() { x = 0.5f, y = 0.5f, z = 0.5f };
+        }
+
+        public Vec3 amount { get; private set; }
+        public bool[] cos { get; private set; }
+        public LightSource light { get; private set; }
+        public Render3DObject obj { get; private set; }
+    }
+
+    private class RunningAverage
+    {
+        private int window_size;
+        private int index = 0;
+        private float sum = 0;
+        private float last = 0;
+        private float[] values;
+
+        public RunningAverage(int window_size)
+        {
+            this.window_size = window_size;
+            values = new float[window_size];
+        }
+
+        public float add(float val)
+        {
+            if (val == last)
+                return sum / window_size;
+            last = val;
+
+            sum -= values[index];
+            sum += val;
+            values[index] = val;
+            index = (index + 1) % window_size;
+
+            return sum / window_size;
+        }
+
+        public float average { get { return sum / window_size; } }
     }
 }

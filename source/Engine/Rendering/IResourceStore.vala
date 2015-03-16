@@ -81,6 +81,8 @@ public class Render3DObject
         rotation = { };
         position = { };
         scale = Vec3() { x = 1, y = 1, z = 1 };
+        alpha = 1;
+        light_multiplier = 1;
     }
 
     public RenderTexture texture { get; private set; }
@@ -88,6 +90,8 @@ public class Render3DObject
     public Vec3 rotation { get; set; }
     public Vec3 position { get; set; }
     public Vec3 scale { get; set; }
+    public float alpha { get; set; }
+    public float light_multiplier { get; set; }
 }
 
 public class LightSource
