@@ -1,5 +1,5 @@
 #version 330 core
-#define MAX_LIGHTS 4
+#define MAX_LIGHTS 20
 #define PI 3.1415926535897932384626433832795
 
 #define perlin_grain 1.0
@@ -213,13 +213,13 @@ void main()
 	outColor = texture(tex, Texcoord);
 	
 	float diff = 0;
-	float specular = 0;
+	vec3 specular = vec3(0);
 	vec3 c = outColor.xyz;
 	
 	for (int i = 0; i < light_count; i++)
 	{
 		float constant_factor = 0.02;
-		float linear_factor = 0.4;
+		float linear_factor = 0.8;
 		float quadratic_factor = 0.4;
 		
 		float lnlen = max(length(ls[i].normal), 1);
@@ -240,14 +240,26 @@ void main()
 			spec += pow(s, 1000) * 1;
 			spec += pow(s, 10000) * 2;
 			
-			specular += spec * constant_factor;
-			specular += spec / lnlen * linear_factor;
-			specular += spec / pow(lnlen, 2) * quadratic_factor;
+			vec3 col = vec3(0);
+			
+			float p = 0;
+			p += spec * constant_factor;
+			p += spec / lnlen * linear_factor;
+			p += spec / pow(lnlen, 2) * quadratic_factor;
+			
+			p = max(p, 0);
+			
+			if (i % 3 == 0)
+				specular.r += p;
+			else if (i % 3 == 1)
+				specular.g += p;
+			else
+				specular.b += p;
 		}
 	}
 	
 	outColor.xyz *= diff * light_multiplier;
-	outColor.xyz += max((c * specular * 0.5 *0 + vec3(specular)) * 4, 0) * light_multiplier;
+	outColor.xyz += specular * 4 * light_multiplier;
 	
 	outColor.xyz /= max(pow(length(Camera_normal) / 5, 1.0) / 10, 1);
 	outColor.a = alpha;

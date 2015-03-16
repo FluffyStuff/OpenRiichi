@@ -1,5 +1,5 @@
 #version 330 core
-#define MAX_LIGHTS 4
+#define MAX_LIGHTS 20
 #define PI 3.1415926535897932384626433832795
 
 struct lightSourceParameters 

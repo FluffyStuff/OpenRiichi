@@ -180,7 +180,7 @@ public class GameView : View
         //state.add_3D_object(level);
         //if (derp > 174)
         val /= 1;
-        val *= val / 5;
+        val *= val * 3;
         print("val: " + val.to_string() + "\n");
         if (derp > 14)
             sky.light_multiplier = (float)(val);
