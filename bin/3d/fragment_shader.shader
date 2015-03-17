@@ -20,6 +20,7 @@ uniform sampler2D tex;
 uniform int light_count;
 uniform float alpha;
 uniform float light_multiplier;
+uniform float color_modifier;
 
 //////////////////////////////////
 
@@ -201,6 +202,13 @@ void main()
 	
 	float noise = 0;
 	
+	vec3 noises = vec3
+	(
+		snoise(noise_coord / 2 + 512 + 0.5 * color_modifier),
+		snoise(noise_coord / 2 + 768 + 0.6 * color_modifier),
+		snoise(noise_coord / 2 + 1536 + 0.7 * color_modifier)
+	);
+	
 	for (int i = 1; i <= 128; i *= 2)
 	{
 		float a = i;
@@ -211,6 +219,10 @@ void main()
 	normal = (vec4(normal, 1.0) * rotationMatrix(vec3(1, 1, 1), noise * perlin_strength)).xyz;
 	
 	outColor = texture(tex, Texcoord);
+	//outColor.xyz += noises * color_modifier;
+	outColor.r += 25 * color_modifier;
+	outColor.b += 5 * color_modifier;
+	outColor.g += 10 * color_modifier;
 	
 	float diff = 0;
 	float specular = 0;

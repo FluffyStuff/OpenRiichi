@@ -32,6 +32,7 @@ public class GameView : View
         //level = store.load_3D_object("./3d/level");
         sky = store.load_3D_object("./3d/sky");
         sky.light_multiplier = 0;
+        sky.color_modifier = 0;
 
         circlers = new Circler[light_count];
         balls = new Render3DObject[ball_count];
@@ -112,7 +113,8 @@ public class GameView : View
 
             val /= 5;
             val *= val;
-
+            balls[i].color_modifier = val;
+            //print("val: " + val.to_string() + "\n");
             float scale = 1 + val;
 
             float p = 2 * (float)Math.PI * i / balls.length;
@@ -181,7 +183,7 @@ public class GameView : View
         //if (derp > 174)
         val /= 1;
         val *= val / 5;
-        print("val: " + val.to_string() + "\n");
+        //print("val: " + val.to_string() + "\n");
         if (derp > 14)
             sky.light_multiplier = (float)(val);
         state.add_3D_object(sky);

@@ -6,10 +6,14 @@ public class OpenGLRenderer : RenderTarget
 {
     string[] vertex_source;
     string[] fragment_source;
-
+	string[] post_process_vertex_source;
+	string[] post_process_fragment_source;
     private GLuint shader_program;
+	private GLuint post_process_shader_program;
     private GLuint vertex_shader;
     private GLuint fragment_shader;
+	private GLuint post_process_vertex_shader;
+	private GLuint post_process_fragment_shader;
     private GLint pos_attrib = 0;
     private GLint tex_attrib = 1;
     private GLint nor_attrib = 2;
@@ -19,6 +23,7 @@ public class OpenGLRenderer : RenderTarget
     private GLint scale_attrib = -1;
     private GLint alpha_attrib = -1;
     private GLint light_multi_attrib = -1;
+    private GLint diffuse_color_attrib = -1;
 
     private GLint camera_rotation_attrib = -1;
     private GLint camera_position_attrib = -1;
@@ -66,12 +71,32 @@ public class OpenGLRenderer : RenderTarget
 
         return true;
     }
+	private void build_shader(GLuint target_shader, string type) 
+	{
+		glCompileShader(target_shader);
 
+        GLint success[1] = {-1};
+        glGetShaderiv(target_shader, GL_COMPILE_STATUS, success);
+
+        if (success[0] == GL_FALSE)
+        {
+            print("%s Shader compilation failure!!!\n", type);
+
+            GLsizei log_size[1];
+            glGetShaderiv(target_shader, GL_INFO_LOG_LENGTH, log_size);
+            GLubyte[] error_log = new GLubyte[log_size[0]];
+            glGetShaderInfoLog(target_shader, log_size[0], log_size, error_log);
+
+            for (int i = 0; i < log_size[0]; i++)
+                print("%c", error_log[i]);
+        }
+
+	}
     private void init_shader()
     {
         vertex_source = FileLoader.load("./3d/vertex_shader.shader");
         fragment_source = FileLoader.load("./3d/fragment_shader.shader");
-
+		
         vertex_shader = glCreateShader(GL_VERTEX_SHADER);
         fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
 
@@ -83,39 +108,9 @@ public class OpenGLRenderer : RenderTarget
         glShaderSource(vertex_shader, (GLsizei)vertex_source.length, vertex_source, (GLint[])0);
         glShaderSource(fragment_shader, (GLsizei)fragment_source.length, fragment_source, (GLint[])0);
 
-        glCompileShader(vertex_shader);
+        build_shader(vertex_shader, "vertex");
 
-        GLint success[1] = {-1};
-        glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, success);
-
-        if (success[0] == GL_FALSE)
-        {
-            print("Vertex shader compilation failure!!!\n");
-
-            GLsizei log_size[1];
-            glGetShaderiv(vertex_shader, GL_INFO_LOG_LENGTH, log_size);
-            GLubyte[] error_log = new GLubyte[log_size[0]];
-            glGetShaderInfoLog(vertex_shader, log_size[0], log_size, error_log);
-
-            for (int i = 0; i < log_size[0]; i++)
-                print("%c", error_log[i]);
-        }
-
-        glCompileShader(fragment_shader);
-        glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, success);
-
-        if (success[0] == GL_FALSE)
-        {
-            print("Fragment shader compilation failure!!!\n");
-
-            GLsizei log_size[1];
-            glGetShaderiv(fragment_shader, GL_INFO_LOG_LENGTH, log_size);
-            GLubyte[] error_log = new GLubyte[log_size[0]];
-            glGetShaderInfoLog(fragment_shader, log_size[0], log_size, error_log);
-
-            for (int i = 0; i < log_size[0]; i++)
-                print("%c", error_log[i]);
-        }
+        build_shader(fragment_shader, "fragment");
 
         shader_program = glCreateProgram();
 
@@ -140,11 +135,43 @@ public class OpenGLRenderer : RenderTarget
         aspect_ratio_attrib = glGetUniformLocation(shader_program, "aspect_ratio");
         alpha_attrib = glGetUniformLocation(shader_program, "alpha");
         light_multi_attrib = glGetUniformLocation(shader_program, "light_multiplier");
+        diffuse_color_attrib = glGetUniformLocation(shader_program, "diffuse_color");
 
         if (glGetError() != 0)
             print("GL shader program failure!!!\n");
     }
+	private void init_post_processing_shader()
+	{
+		post_processing_vertex_source = FileLoader.load("./3d/bloom_vertex_shader.shader");
+        post_processing_fragment_source = FileLoader.load("./3d/bloom_fragment_shader.shader");
+		
+        post_processing_vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+        post_processing_fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
 
+        for (int i = 0; i < post_processing_vertex_source.length; i++)
+            post_processing_vertex_source[i] = post_processing_vertex_source[i] + "\n";
+        for (int i = 0; i < fragment_source.length; i++)
+            post_processing_fragment_source[i] = post_processing_fragment_source[i] + "\n";
+		
+		glShaderSource(post_processing_vertex_shader, (GLsizei)post_processing_vertex_source.length, post_processing_vertex_source, (GLint[])0);
+		glShaderSource(post_processing_fragment_shader, (GLsizei)post_processing_fragment_source.length, post_processing_fragment_source, (GLint[])0);
+
+		build_shader(post_processing_vertex_shader, "post processing vertex");
+
+		build_shader(post_processing_fragment_shader, "post processing fragment");
+
+		post_processing_shader_program = glCreateProgram();
+
+		glAttachShader(post_processing_shader_program, post_processing_vertex_shader);
+		glAttachShader(post_processing_shader_program, post_processing_fragment_shader);
+		glBindFragDataLocation(post_processing_shader_program, 0, "outColor");
+
+		glLinkProgram(post_processing_shader_program);
+		glUseProgram(post_processing_shader_program);
+
+		if (glGetError() != 0)
+			print("GL shader program failure!!!\n");
+	}
     public override void render(RenderState state)
     {
         render_scene(state);
@@ -199,7 +226,11 @@ public class OpenGLRenderer : RenderTarget
         for (int i = 0; i < state.lights.size; i++)
         {
             GLint light_source_attrib = glGetUniformLocation(shader_program, "light_source[" + i.to_string() + "].position");
+            GLint light_color_attrib = glGetUniformLocation(shader_program, "light_source[" + i.to_string() + "].color");
+            GLint light_intensity_attrib = glGetUniformLocation(shader_program, "light_source[" + i.to_string() + "].intensity");
             glUniform3f(light_source_attrib, (GLfloat)state.lights[i].position.x, (GLfloat)state.lights[i].position.y, (GLfloat)state.lights[i].position.z);
+            glUniform3f(light_color_attrib, (GLfloat)state.lights[i].color.x, (GLfloat)state.lights[i].color.y, (GLfloat)state.lights[i].color.z);
+            glUniform1f(light_intensity_attrib, (GLfloat)state.lights[i].intensity);
         }
 
         Vec3 pos;
@@ -229,6 +260,7 @@ public class OpenGLRenderer : RenderTarget
         glUniform3f(scale_attrib, (GLfloat)obj.scale.x, (GLfloat)obj.scale.y, (GLfloat)obj.scale.z);
         glUniform1f(alpha_attrib, (GLfloat)obj.alpha);
         glUniform1f(light_multi_attrib, (GLfloat)obj.light_multiplier);
+        glUniform3f(diffuse_color_attrib, (GLfloat)obj.diffuse_color.x, (GLfloat)obj.diffuse_color.y, (GLfloat)obj.diffuse_color.z);
 
         GLsizei len = (GLsizei)(10 * sizeof(float));
         glEnableVertexAttribArray(pos_attrib);
