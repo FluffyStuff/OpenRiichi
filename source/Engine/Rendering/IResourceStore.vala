@@ -83,7 +83,6 @@ public class Render3DObject
         scale = Vec3() { x = 1, y = 1, z = 1 };
         alpha = 1;
         light_multiplier = 1;
-        color_modifier = 0;
     }
 
     public RenderTexture texture { get; private set; }
@@ -93,17 +92,20 @@ public class Render3DObject
     public Vec3 scale { get; set; }
     public float alpha { get; set; }
     public float light_multiplier { get; set; }
-    public float color_modifier { get; set; }
+    public Vec3 diffuse_color { get; set; }
 }
 
 public class LightSource
 {
     public LightSource()
     {
-
+        color = Vec3() { x = 1, y = 1, z = 1 };
+        intensity = 1;
     }
 
     public Vec3 position { get; set; }
+    public Vec3 color { get; set; }
+    public float intensity { get; set; }
 }
 
 public struct Vec3
