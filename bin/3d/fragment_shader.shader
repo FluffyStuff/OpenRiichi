@@ -1,4 +1,4 @@
-#version 450 core
+#version 330 core
 #define MAX_LIGHTS 8
 #define PI 3.1415926535897932384626433832795
 
@@ -10,7 +10,6 @@ uniform int light_count;
 uniform float alpha;
 uniform float light_multiplier;
 uniform vec3 diffuse_color;
-
 in vec2 Texcoord;
 in vec3 Normal;
 in vec3 Camera_normal;
@@ -196,6 +195,7 @@ mat4 rotationMatrix(vec3 axis, float angle)
 				0.0,                                0.0,                                0.0,                                1.0);
 }
 
+
 void main()
 {
 	vec3 normal = normalize(Normal);
@@ -272,4 +272,5 @@ void main()
 	
 	outColor.xyz /= max(pow(length(Camera_normal) / 5, 1.0) / 10, 1);
 	outColor.a = alpha;
+
 }

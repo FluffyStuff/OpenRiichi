@@ -6,14 +6,14 @@ public class OpenGLRenderer : RenderTarget
 {
     string[] vertex_source;
     string[] fragment_source;
-	string[] post_process_vertex_source;
-	string[] post_process_fragment_source;
+	string[] post_processing_vertex_source;
+	string[] post_processing_fragment_source;
     private GLuint shader_program;
-	private GLuint post_process_shader_program;
+	private GLuint post_processing_shader_program;
     private GLuint vertex_shader;
     private GLuint fragment_shader;
-	private GLuint post_process_vertex_shader;
-	private GLuint post_process_fragment_shader;
+	private GLuint post_processing_vertex_shader;
+	private GLuint post_processing_fragment_shader;
     private GLint pos_attrib = 0;
     private GLint tex_attrib = 1;
     private GLint nor_attrib = 2;
@@ -71,7 +71,7 @@ public class OpenGLRenderer : RenderTarget
 
         return true;
     }
-	private void build_shader(GLuint target_shader, string type) 
+	private void build_shader(GLuint target_shader, string type)
 	{
 		glCompileShader(target_shader);
 
@@ -96,7 +96,7 @@ public class OpenGLRenderer : RenderTarget
     {
         vertex_source = FileLoader.load("./3d/vertex_shader.shader");
         fragment_source = FileLoader.load("./3d/fragment_shader.shader");
-		
+
         vertex_shader = glCreateShader(GL_VERTEX_SHADER);
         fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
 
@@ -137,6 +137,7 @@ public class OpenGLRenderer : RenderTarget
         light_multi_attrib = glGetUniformLocation(shader_program, "light_multiplier");
         diffuse_color_attrib = glGetUniformLocation(shader_program, "diffuse_color");
 
+
         if (glGetError() != 0)
             print("GL shader program failure!!!\n");
     }
@@ -144,7 +145,7 @@ public class OpenGLRenderer : RenderTarget
 	{
 		post_processing_vertex_source = FileLoader.load("./3d/bloom_vertex_shader.shader");
         post_processing_fragment_source = FileLoader.load("./3d/bloom_fragment_shader.shader");
-		
+
         post_processing_vertex_shader = glCreateShader(GL_VERTEX_SHADER);
         post_processing_fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
 
@@ -152,7 +153,7 @@ public class OpenGLRenderer : RenderTarget
             post_processing_vertex_source[i] = post_processing_vertex_source[i] + "\n";
         for (int i = 0; i < fragment_source.length; i++)
             post_processing_fragment_source[i] = post_processing_fragment_source[i] + "\n";
-		
+
 		glShaderSource(post_processing_vertex_shader, (GLsizei)post_processing_vertex_source.length, post_processing_vertex_source, (GLint[])0);
 		glShaderSource(post_processing_fragment_shader, (GLsizei)post_processing_fragment_source.length, post_processing_fragment_source, (GLint[])0);
 
