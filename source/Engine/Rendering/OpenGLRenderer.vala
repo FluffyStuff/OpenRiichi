@@ -19,6 +19,7 @@ public class OpenGLRenderer : RenderTarget
     private GLint scale_attrib = -1;
     private GLint alpha_attrib = -1;
     private GLint light_multi_attrib = -1;
+    private GLint diffuse_color_attrib = -1;
 
     private GLint camera_rotation_attrib = -1;
     private GLint camera_position_attrib = -1;
@@ -140,6 +141,7 @@ public class OpenGLRenderer : RenderTarget
         aspect_ratio_attrib = glGetUniformLocation(shader_program, "aspect_ratio");
         alpha_attrib = glGetUniformLocation(shader_program, "alpha");
         light_multi_attrib = glGetUniformLocation(shader_program, "light_multiplier");
+        diffuse_color_attrib = glGetUniformLocation(shader_program, "diffuse_color");
 
         if (glGetError() != 0)
             print("GL shader program failure!!!\n");
@@ -199,7 +201,11 @@ public class OpenGLRenderer : RenderTarget
         for (int i = 0; i < state.lights.size; i++)
         {
             GLint light_source_attrib = glGetUniformLocation(shader_program, "light_source[" + i.to_string() + "].position");
+            GLint light_color_attrib = glGetUniformLocation(shader_program, "light_source[" + i.to_string() + "].color");
+            GLint light_intensity_attrib = glGetUniformLocation(shader_program, "light_source[" + i.to_string() + "].intensity");
             glUniform3f(light_source_attrib, (GLfloat)state.lights[i].position.x, (GLfloat)state.lights[i].position.y, (GLfloat)state.lights[i].position.z);
+            glUniform3f(light_color_attrib, (GLfloat)state.lights[i].color.x, (GLfloat)state.lights[i].color.y, (GLfloat)state.lights[i].color.z);
+            glUniform1f(light_intensity_attrib, (GLfloat)state.lights[i].intensity);
         }
 
         Vec3 pos;
@@ -229,6 +235,7 @@ public class OpenGLRenderer : RenderTarget
         glUniform3f(scale_attrib, (GLfloat)obj.scale.x, (GLfloat)obj.scale.y, (GLfloat)obj.scale.z);
         glUniform1f(alpha_attrib, (GLfloat)obj.alpha);
         glUniform1f(light_multi_attrib, (GLfloat)obj.light_multiplier);
+        glUniform3f(diffuse_color_attrib, (GLfloat)obj.diffuse_color.x, (GLfloat)obj.diffuse_color.y, (GLfloat)obj.diffuse_color.z);
 
         GLsizei len = (GLsizei)(10 * sizeof(float));
         glEnableVertexAttribArray(pos_attrib);

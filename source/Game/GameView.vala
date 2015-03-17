@@ -7,7 +7,7 @@ public class GameView : View
     private Render3DObject? sky = null;
     //private Render3DObject? level = null;
 
-    private Render3DObject[] balls;
+    private Ball[] balls;
     private Circler[] circlers;
     //private Render3DObject? table = null;
     //private Render3DObject? field = null;
@@ -17,7 +17,7 @@ public class GameView : View
     public SDLMusicHook music;
     private RunningAverage[] avgs;
 
-    int light_count = 20;
+    int light_count = 8;
     int ball_count = 10;
 
     public GameView()
@@ -34,15 +34,16 @@ public class GameView : View
         sky.light_multiplier = 0;
 
         circlers = new Circler[light_count];
-        balls = new Render3DObject[ball_count];
+        balls = new Ball[ball_count];
         Rand rnd = new Rand();
         avgs = new RunningAverage[ball_count];
 
         for (int i = 0; i < ball_count; i++)
         {
             avgs[i] = new RunningAverage(6);
-            balls[i] = store.load_3D_object("./3d/ball");
-            //balls[i].scale = Vec3() { x = 1, y = 0.001f, z = 1 };
+
+            Vec3 color = Vec3() { x = (float)rnd.next_double() * 0.1f, y = -(float)rnd.next_double() * 2, z = -(float)rnd.next_double() * 4 };
+            balls[i] = new Ball(color, store);
         }
 
         for (int i = 0; i < light_count; i++)
@@ -116,8 +117,14 @@ public class GameView : View
             float scale = 1 + val;
 
             float p = 2 * (float)Math.PI * i / balls.length;
-            balls[i].position = Vec3() { z = (float)Math.cos(derp / 10 + p) * ball_count * 3, x = (float)Math.sin(derp / 10 + p) * ball_count * 3, y = -5 };
-            balls[i].scale = Vec3() { x = scale, y = scale, z = scale };
+            balls[i].obj.position = Vec3() { z = (float)Math.cos(derp / 10 + p) * ball_count * 3, x = (float)Math.sin(derp / 10 + p) * ball_count * 3, y = -5 };
+            balls[i].obj.scale = Vec3() { x = scale, y = scale, z = scale };
+
+            float color_mul = Math.fminf(Math.fmaxf(0, (float)derp - 105), 1) * -val;
+            balls[i].obj.diffuse_color = Vec3() { x = color_mul * 0.2f, y = color_mul * 2, z = color_mul * 3 };
+
+            if (derp > 154)
+                balls[i].obj.diffuse_color = Vec3() { x = balls[i].color.x * val, y = balls[i].color.y * val, z = balls[i].color.z * val };
         }
 
         for (int i = 0; i < circlers.length; i++)
@@ -130,6 +137,21 @@ public class GameView : View
                 z = (float)Math.sin(circlers[i].amount.z * derp / 10) * 10
             };
             circlers[i].obj.position = circlers[i].light.position;
+
+            float color_mul = Math.fminf(Math.fmaxf(1, ((float)derp - 181) * 24), 12);
+
+            float x = 0.3f / color_mul;
+            float y = 0.3f / color_mul;
+            float z = 0.3f / color_mul;
+
+            if (i % 3 == 0)
+                x *= color_mul * color_mul;
+            else if (i % 3 == 1)
+                y *= color_mul * color_mul;
+            else
+                z *= color_mul * color_mul;
+
+            circlers[i].light.color = Vec3() { x = x, y = y, z = z };
         }
 
         /*light.position = Vec3() { x = (float)Math.cos(derp / 10 + 2) * 15f, y = 3 + (float)Math.cos(derp / 8 + 2) * 3f, z = (float)Math.sin(derp / 10 + 2) * 15f };
@@ -181,18 +203,19 @@ public class GameView : View
         //if (derp > 174)
         val /= 1;
         val *= val * 3;
-        print("val: " + val.to_string() + "\n");
-        if (derp > 14)
-            sky.light_multiplier = (float)(val);
+        //print("val: " + val.to_string() + "\n");
+        if (derp > 14.5)
+            sky.light_multiplier = 1;//(float)(val);
         state.add_3D_object(sky);
 
         for (int i = 0; i < balls.length; i++)
         {
-            state.add_3D_object(balls[i]);
+            state.add_3D_object(balls[i].obj);
         }
 
         for (int i = 0; i < circlers.length; i++)
         {
+            circlers[i].light.intensity = val / light_count * 2;
             state.add_light_source(circlers[i].light);
             state.add_3D_object(circlers[i].obj);
         }
@@ -262,6 +285,18 @@ public class GameView : View
             print("%i\n", (int)key);
             break;
         }
+    }
+
+    private class Ball
+    {
+        public Ball(Vec3 color, IResourceStore store)
+        {
+            this.color = color;
+            obj = store.load_3D_object("./3d/ball");
+        }
+
+        public Vec3 color { get; private set; }
+        public Render3DObject obj { get; private set; }
     }
 
     private class Circler

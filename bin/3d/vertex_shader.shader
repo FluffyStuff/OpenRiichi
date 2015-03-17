@@ -1,16 +1,13 @@
-#version 330 core
-#define MAX_LIGHTS 20
+#version 450 core
+#define MAX_LIGHTS 8
 #define PI 3.1415926535897932384626433832795
 
 struct lightSourceParameters 
 {
    vec3 position;
-   vec3 spotDirection;
-};
-
-struct lightNormalParameters
-{
-   vec3 normal;
+   vec3 color;
+   float intensity;
+   /*vec3 spotDirection;*/
 };
 
 uniform vec3 camera_rotation;
@@ -19,19 +16,21 @@ uniform vec3 rotation_vec;
 uniform vec3 position_vec;
 uniform vec3 scale_vec;
 uniform float aspect_ratio;
-uniform lightSourceParameters light_source[MAX_LIGHTS];
 uniform int light_count;
+uniform lightSourceParameters light_source[MAX_LIGHTS];
 
 in vec4 position;
 in vec3 texcoord;
 in vec3 normals;
 
-out vec3 Color;
 out vec2 Texcoord;
 out vec3 Normal;
-out lightNormalParameters ls[MAX_LIGHTS];
 out vec3 Camera_normal;
 out vec3 noise_coord;
+
+out vec3 light_normals[MAX_LIGHTS];
+out float light_intensity[MAX_LIGHTS];
+out vec3 light_colors[MAX_LIGHTS];
 
 mat4 rotationMatrix(vec3 axis, float angle)
 {
@@ -105,7 +104,10 @@ void main()
 		* rotationMatrix(vec3(1, 0, 0), PI * rotation_vec.x)
 		* rotationMatrix(vec3(0, 0, 1), PI * rotation_vec.z);
     
-		ls[i].normal = light_source[i].position - (translate(position_vec) * v).xyz;
+		light_normals[i] = light_source[i].position - (translate(position_vec) * v).xyz;
+		//ls[i].intensity = 1;//light_source[i].intensity;
+		light_intensity[i] = light_source[i].intensity;
+		light_colors[i] = light_source[i].color;
 	}
 	
 	vec4 pn = scale(scale_vec) * position

@@ -1,25 +1,26 @@
-#version 330 core
-#define MAX_LIGHTS 20
+#version 450 core
+#define MAX_LIGHTS 8
 #define PI 3.1415926535897932384626433832795
 
 #define perlin_grain 1.0
 #define perlin_strength 0.1
 
-struct lightNormalParameters
-{
-   vec3 normal;
-};
-
-in vec2 Texcoord;
-in vec3 Normal;
-in lightNormalParameters ls[MAX_LIGHTS];
-in vec3 Camera_normal;
-in vec3 noise_coord;
-out vec4 outColor;
 uniform sampler2D tex;
 uniform int light_count;
 uniform float alpha;
 uniform float light_multiplier;
+uniform vec3 diffuse_color;
+
+in vec2 Texcoord;
+in vec3 Normal;
+in vec3 Camera_normal;
+in vec3 noise_coord;
+
+in vec3 light_normals[MAX_LIGHTS];
+in float light_intensity[MAX_LIGHTS];
+in vec3 light_colors[MAX_LIGHTS];
+
+out vec4 outColor;
 
 //////////////////////////////////
 
@@ -211,6 +212,7 @@ void main()
 	normal = (vec4(normal, 1.0) * rotationMatrix(vec3(1, 1, 1), noise * perlin_strength)).xyz;
 	
 	outColor = texture(tex, Texcoord);
+	outColor.xyz += diffuse_color;
 	
 	float diff = 0;
 	vec3 specular = vec3(0);
@@ -218,18 +220,23 @@ void main()
 	
 	for (int i = 0; i < light_count; i++)
 	{
+		float intensity = light_intensity[i];
+		
 		float constant_factor = 0.02;
 		float linear_factor = 0.8;
 		float quadratic_factor = 0.4;
 		
-		float lnlen = max(length(ls[i].normal), 1);
-		vec3 ln = normalize(ls[i].normal);
+		float lnlen = max(length(light_normals[i]), 1);
+		vec3 ln = normalize(light_normals[i]);
 		vec3 cm = normalize(Camera_normal);
 		
 		float d = max(dot(normal, ln) / 1, 0);
-		diff += d * constant_factor;
-		diff += d / lnlen * linear_factor;
-		diff += d / pow(lnlen, 2) * quadratic_factor;
+		float plus = 0;
+		plus += d * constant_factor;
+		plus += d / lnlen * linear_factor;
+		plus += d / pow(lnlen, 2) * quadratic_factor;
+		
+		diff += plus * intensity;
 		
 		if (dot(ln, normal) > 0) // Only reflect on the correct side
 		{
@@ -247,19 +254,21 @@ void main()
 			p += spec / lnlen * linear_factor;
 			p += spec / pow(lnlen, 2) * quadratic_factor;
 			
-			p = max(p, 0);
+			p = max(p, 0) * intensity;
 			
-			if (i % 3 == 0)
+			specular += light_colors[i] * p;
+			
+			/*if (i % 3 == 0)
 				specular.r += p;
 			else if (i % 3 == 1)
 				specular.g += p;
 			else
-				specular.b += p;
+				specular.b += p;*/
 		}
 	}
 	
 	outColor.xyz *= diff * light_multiplier;
-	outColor.xyz += specular * 4 * light_multiplier;
+	outColor.xyz += specular * 4 * light_multiplier * 4;
 	
 	outColor.xyz /= max(pow(length(Camera_normal) / 5, 1.0) / 10, 1);
 	outColor.a = alpha;
