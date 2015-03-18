@@ -14,6 +14,10 @@ public class OpenGLRenderer : RenderTarget
     private GLuint fragment_shader;
 	private GLuint post_processing_vertex_shader;
 	private GLuint post_processing_fragment_shader;
+	private GLuint frame_buffer_object;
+	private GLuint frame_buffer_object_texture;
+	private GLuint color_buffer;
+	private GLuint frame_buffer_object_vertices;
     private GLint pos_attrib = 0;
     private GLint tex_attrib = 1;
     private GLint nor_attrib = 2;
@@ -24,7 +28,6 @@ public class OpenGLRenderer : RenderTarget
     private GLint alpha_attrib = -1;
     private GLint light_multi_attrib = -1;
     private GLint diffuse_color_attrib = -1;
-
     private GLint camera_rotation_attrib = -1;
     private GLint camera_position_attrib = -1;
     private GLint aspect_ratio_attrib = -1;
@@ -141,6 +144,61 @@ public class OpenGLRenderer : RenderTarget
         if (glGetError() != 0)
             print("GL shader program failure!!!\n");
     }
+    private void on_reshape()
+    {
+        glBindTexture(GL_TEXTURE_2D, frame_buffer_object_texture);
+        glTexImage2D(GL_TEXTURE_2D, 0, (GLint)GL_RGBA, (GLsizei)view_width, (GLsizei)view_height, 0, (GLint)GL_RGBA, GL_UNSIGNED_BYTE, null);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        glBindRenderbuffer((GLenum)GL_RENDERBUFFER, color_buffer);
+        glRenderbufferStorage((GLenum)GL_RENDERBUFFER, (GLenum)GL_DEPTH_COMPONENT16, (GLsizei)view_width, (GLsizei)view_height);
+        glBindRenderbuffer((GLenum)GL_RENDERBUFFER, 0);
+    }
+    private void frame_buffer()
+    {
+        glActiveTexture(GL_TEXTURE0);
+        GLuint[] tmp = new GLuint[1];
+        tmp[0] = frame_buffer_object_texture;
+        glGenTextures(1, tmp);
+        frame_buffer_object_texture = tmp[0];
+        glBindTexture(GL_TEXTURE_2D, frame_buffer_object_texture);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexImage2D(GL_TEXTURE_2D, 0, (GLint)GL_RGBA, (GLsizei)view_width, (GLsizei)view_height, 0, (GLenum)GL_RGBA, GL_UNSIGNED_BYTE, null);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        tmp[0] = color_buffer;
+        glGenRenderbuffers(1, tmp);
+        color_buffer = tmp[0];
+        glBindRenderbuffer((GLenum)GL_RENDERBUFFER, color_buffer);
+        glRenderbufferStorage((GLenum)GL_RENDERBUFFER, (GLenum)GL_DEPTH_COMPONENT16, (GLsizei)view_width, (GLsizei)view_height);
+
+        tmp[0] = frame_buffer_object;
+        glGenFramebuffers(1, tmp);
+        frame_buffer_object = tmp[0];
+        glBindFramebuffer(GL_FRAMEBUFFER, frame_buffer_object);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, frame_buffer_object_texture, 0);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, (GLenum)GL_DEPTH_ATTACHMENT, (GLenum)GL_RENDERBUFFER, color_buffer);
+        GLenum status;
+        if ((status = glCheckFramebufferStatus(GL_FRAMEBUFFER)) != GL_FRAMEBUFFER_COMPLETE) {
+            print("glCheckFramebufferStatus: error %p", (void*)status);
+            return;
+        }
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+
+        GLfloat[] frame_buffer_vertices = {-1, -1,1, -1,-1, 1,1, 1};
+
+        tmp[0] = frame_buffer_object_vertices;
+        glGenBuffers(1, tmp);
+        frame_buffer_object_vertices = tmp[0];
+        glBindBuffer(GL_ARRAY_BUFFER, frame_buffer_object_vertices);
+        glBufferData(GL_ARRAY_BUFFER, 8, (GL.GLvoid[])frame_buffer_vertices, GL_STATIC_DRAW);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        init_post_processing_shader();
+    }
+
 	private void init_post_processing_shader()
 	{
 		post_processing_vertex_source = FileLoader.load("./3d/bloom_vertex_shader.shader");

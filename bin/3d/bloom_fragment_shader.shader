@@ -1,6 +1,6 @@
 uniform sampler2D tex; 
 in vec2 Texcoord;
-
+out vec4 outColor;
  
 const float blurSize = 1.0/512.0; 
  
@@ -26,5 +26,5 @@ void main(void)
 	sum += texture2D(tex, vec2(Texcoord.x, Texcoord.y + 2.0*blurSize)) * 0.12;
 	sum += texture2D(tex, vec2(Texcoord.x, Texcoord.y + 3.0*blurSize)) * 0.09;
 	sum += texture2D(tex, vec2(Texcoord.x, Texcoord.y + 4.0*blurSize)) * 0.05;
-	gl_FragColor = sum*intensity + texture2D(tex, Texcoord);
+	outColor = sum*intensity + texture2D(tex, Texcoord);
 }
