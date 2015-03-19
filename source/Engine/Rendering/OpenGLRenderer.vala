@@ -18,6 +18,8 @@ public class OpenGLRenderer : RenderTarget
 	private GLuint frame_buffer_object_texture[1];
 	private GLuint color_buffer[1];
 	private GLuint frame_buffer_object_vertices[1];
+	private GLuint vertexbuffer[1];
+	private GLuint VertexArrayID[1];
     private GLint pos_attrib = 0;
     private GLint tex_attrib = 1;
     private GLint nor_attrib = 2;
@@ -76,6 +78,7 @@ public class OpenGLRenderer : RenderTarget
         init_shader();
         init_frame_buffer();
         init_post_processing_shader();
+        triangletest();
         return true;
     }
 	private void build_shader(GLuint target_shader, string type)
@@ -167,13 +170,13 @@ public class OpenGLRenderer : RenderTarget
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         //print("width = %d, height = %d", state.screen_width, state.screen_height);
-        glTexImage2D(GL_TEXTURE_2D, 0, (GLint)GL_RGBA, (GLsizei)1280, (GLsizei)800, 0, GL_RGBA, GL_UNSIGNED_BYTE, null);
-        //glBindTexture(GL_TEXTURE_2D, 0);
+        glTexImage2D(GL_TEXTURE_2D, 0, (GLint)GL_RGBA, (GLsizei)1280, (GLsizei)800, 0, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid[]?)0);
+        glBindTexture(GL_TEXTURE_2D, 0);
 
         glGenRenderbuffers(1, color_buffer);
         glBindRenderbuffer(GL_RENDERBUFFER, color_buffer[0]);
         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, (GLsizei)1280, (GLsizei)800);
-        //glBindRenderbuffer(GL_RENDERBUFFER, 0);
+        glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
         glGenFramebuffers(1, frame_buffer_object);
         glBindFramebuffer(GL_FRAMEBUFFER, frame_buffer_object[0]);
@@ -184,15 +187,16 @@ public class OpenGLRenderer : RenderTarget
             print("glCheckFramebufferStatus: error %d", (int)status);
             //return;
         }
-        //glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 
 
-        GLfloat[] frame_buffer_vertices = {-1, -1,1, -1,-1, 1,1, 1};
+        GLfloat[] frame_buffer_vertices = {-1,-1, 1, -1, -1,1, 1, 1};
         glGenBuffers(1, frame_buffer_object_vertices);
         glBindBuffer(GL_ARRAY_BUFFER, frame_buffer_object_vertices[0]);
         glBufferData(GL_ARRAY_BUFFER, 8, (GL.GLvoid[])frame_buffer_vertices, GL_STATIC_DRAW);
-        //glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+
     }
 
 	private void init_post_processing_shader()
@@ -220,7 +224,7 @@ public class OpenGLRenderer : RenderTarget
 		post_processing_shader_program = glCreateProgram();
 		glAttachShader(post_processing_shader_program, post_processing_vertex_shader);
 		glAttachShader(post_processing_shader_program, post_processing_fragment_shader);
-		glBindFragDataLocation(post_processing_shader_program, 0, "outColor2");
+		glBindFragDataLocation(post_processing_shader_program, 0, "outColor");
         glBindAttribLocation(post_processing_shader_program, pp_tex_attrib, "iTexcoord");
 		glLinkProgram(post_processing_shader_program);
 
@@ -230,9 +234,15 @@ public class OpenGLRenderer : RenderTarget
 		if (glGetError() != 0)
 			print("GL shader program failure!!!\n");
 	}
+
     public override void render(RenderState state)
     {
+        glBindFramebuffer(GL_FRAMEBUFFER,frame_buffer_object[0]);
         render_scene(state);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        post_process_draw();
+        glViewport(0,0,1280,800);
+        window.swap();
     }
 
     protected override IObject3DResourceHandle do_load_3D_object(Resource3DObject obj)
@@ -269,26 +279,36 @@ public class OpenGLRenderer : RenderTarget
 
         return new OpenGLTextureResourceHandle(tex[0]);
     }
+    private void triangletest()
+    {
+        GLfloat vbd[9] ={(GLfloat)(-1.0),(GLfloat)(-1.0),(GLfloat)(0.0),(GLfloat)(1.0),(GLfloat)(-1.0),(GLfloat)(0.0),(GLfloat)(0.0),(GLfloat)(1.0),(GLfloat)(0.0)};
+        // This will identify our vertex buffer
+
+        // Generate 1 buffer, put the resulting identifier in vertexbuffer
+        glGenBuffers(1, vertexbuffer);
+        // The following commands will talk about our 'vertexbuffer' buffer
+        glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer[0]);
+        // Give our vertices to OpenGL.
+        glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)vbd.length*4, (GLvoid[]?)vbd, GL_STATIC_DRAW);
+    }
     private void post_process_draw()
     {
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glClearColor((GLfloat)0.0, (GLfloat)0.0, (GLfloat)0.0, (GLfloat)1.0);
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
         glUseProgram(post_processing_shader_program);
-        glBindTexture(GL_TEXTURE_2D, pp_texture_location);
-        glUniform1i(pp_texture_location, /*GL_TEXTURE*/0);
-
+        glBindTexture(GL_TEXTURE_2D, frame_buffer_object_texture[0]);
+        glUniform1i(pp_texture_location, /*GL_TEXTURE*/1);
         glEnableVertexAttribArray(pp_tex_attrib);
         GLsizei len = (GLsizei)(10 * sizeof(float));
-        glVertexAttribPointer(pp_tex_attrib, 3, GL_FLOAT, GL_FALSE, len, (GLvoid[])(4 * sizeof(GLfloat)));
+        glVertexAttribPointer(pp_tex_attrib, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid[])0);
         glBindBuffer(GL_ARRAY_BUFFER, frame_buffer_object_vertices[0]);
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        glDrawArrays(GL_TRIANGLES, 0, 4);
         glDisableVertexAttribArray(pp_tex_attrib);
     }
     private void render_scene(RenderState state)
     {
-        glBindFramebuffer(GL_FRAMEBUFFER, frame_buffer_object[0]);
+
         setup_projection(state, true);
         glClearColor((GLfloat)state.back_color.r, (GLfloat)state.back_color.g, (GLfloat)state.back_color.b, (GLfloat)state.back_color.a);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -315,9 +335,8 @@ public class OpenGLRenderer : RenderTarget
 
         pos = Vec3() { x = pos.x + 1, y = pos.y + 1, z = pos.z + 1 };
         glUniform3f(camera_position_attrib, (GLfloat)pos.x, (GLfloat)pos.y, (GLfloat)pos.z);
-        //glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        //post_process_draw();
-        window.swap();
+
+
     }
 
     private Vec3 render_3D_object(Render3DObject obj)
@@ -359,6 +378,6 @@ public class OpenGLRenderer : RenderTarget
         view_height = state.screen_height;
 
         glViewport(0, 0, (GLsizei)view_width, (GLsizei)view_height);
-        on_reshape();
+        //on_reshape();
     }
 }
