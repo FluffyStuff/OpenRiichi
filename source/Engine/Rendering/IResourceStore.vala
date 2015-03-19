@@ -1,3 +1,5 @@
+using Gee;
+
 public interface IResourceStore : Object
 {
     public abstract Render3DObject? load_3D_object(string name);
@@ -11,6 +13,7 @@ public abstract class ResourceStore : IResourceStore, Object
 public class OpenGLResourceStore : ResourceStore
 {
     private unowned OpenGLRenderer renderer;
+    private ArrayList<OpenGLResourceCacheObject> cache = new ArrayList<OpenGLResourceCacheObject>();
 
     public OpenGLResourceStore(OpenGLRenderer renderer)
     {
@@ -19,6 +22,10 @@ public class OpenGLResourceStore : ResourceStore
 
     public override Render3DObject? load_3D_object(string name)
     {
+        OpenGLResourceCacheObject? cache = get_cache_object(name);
+        if (cache != null)
+            return new Render3DObject(cache.texture, cache.handle);
+
         int width, height;
         uchar *image = SOIL.load_image(name + ".png", out width, out height, null, SOIL.LoadFlags.RGB);
 
@@ -34,8 +41,37 @@ public class OpenGLResourceStore : ResourceStore
         RenderTexture tex = new RenderTexture(texture_handle);
         Render3DObject obj_3d = new Render3DObject(tex, obj_handle);
 
+        cache_object(name, obj_handle, tex);
+
         return obj_3d;
     }
+
+    private void cache_object(string name, uint handle, RenderTexture texture)
+    {
+        cache.add(new OpenGLResourceCacheObject(name, handle, texture));
+    }
+
+    private OpenGLResourceCacheObject? get_cache_object(string name)
+    {
+        foreach (OpenGLResourceCacheObject obj in cache)
+            if (obj.name == name)
+                return obj;
+        return null;
+    }
+}
+
+private class OpenGLResourceCacheObject
+{
+    public OpenGLResourceCacheObject(string name, uint handle, RenderTexture texture)
+    {
+        this.name = name;
+        this.handle = handle;
+        this.texture = texture;
+    }
+
+    public string name { get; private set; }
+    public uint handle { get; private set; }
+    public RenderTexture texture { get; private set; }
 }
 
 public class ResourceTexture

@@ -18,11 +18,11 @@ cleanLinux:
 
 Debug:
 	$(VALAC) $(DEBUG) $(O) $(DIRS) $(PKGS) $(LIBS) $(VAPI)
-	-RCEDIT /I bin\RiichiMahjong.exe RiichiMahjong.ico
+	-RCEDIT /I bin\RiichiMahjong.exe Icon.ico
 
 Release:
 	$(VALAC) -X -mwindows $(O) $(DIRS) $(PKGS) $(LIBS) $(VAPI)
-	-RCEDIT /I bin\RiichiMahjong.exe RiichiMahjong.ico
+	-RCEDIT /I bin\RiichiMahjong.exe Icon.ico
 
 	-robocopy bin rsc/archive/RiichiMahjong *.* /MIR
 	-robocopy rsc/dlls/main rsc/archive/RiichiMahjong *.*

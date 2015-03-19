@@ -70,6 +70,18 @@ namespace Aubio
 	{
 		[CCode (cname="new_aubio_source")]
 		public Source(string file, uint samplerate, uint hop_size);
-		public void do(FVector read_to, ref uint read);
+		public void do(FVector in, ref uint read);
+	}
+	
+	[Compact]
+	[CCode (cname="aubio_tempo_t", free_function="del_aubio_tempo")]
+	public class Tempo
+	{
+		[CCode (cname = "new_aubio_tempo")]
+		public Tempo(string method, uint buf_size, uint hop_size, uint sample_rate);
+		public void do(FVector in, FVector out);
+		public void set_silence(float silence);
+		public void set_threshold(float threshold);
+		public float get_bpm();
 	}
 }

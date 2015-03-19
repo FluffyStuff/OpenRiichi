@@ -24,6 +24,7 @@ public class OpenGLRenderer : RenderTarget
     private GLint camera_rotation_attrib = -1;
     private GLint camera_position_attrib = -1;
     private GLint aspect_ratio_attrib = -1;
+    private GLint focal_length_attrib = -1;
     private GLint light_count_attrib = -1;
 
     private GLContext context;
@@ -60,7 +61,7 @@ public class OpenGLRenderer : RenderTarget
         glEnable(GL_MULTISAMPLE);
 
         // TODO: Put this somewhere
-        sdl_window.set_icon(SDLImage.load("textures/Icon.png"));
+        sdl_window.set_icon(SDLImage.load("./Data/Icon.png"));
         sdl_window.set_size(1280, 800);
 
         init_shader();
@@ -70,8 +71,8 @@ public class OpenGLRenderer : RenderTarget
 
     private void init_shader()
     {
-        vertex_source = FileLoader.load("./3d/vertex_shader.shader");
-        fragment_source = FileLoader.load("./3d/fragment_shader.shader");
+        vertex_source = FileLoader.load("./Data/vertex_shader.shader");
+        fragment_source = FileLoader.load("./Data/fragment_shader.shader");
 
         vertex_shader = glCreateShader(GL_VERTEX_SHADER);
         fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -139,6 +140,7 @@ public class OpenGLRenderer : RenderTarget
         camera_position_attrib = glGetUniformLocation(shader_program, "camera_position");
         light_count_attrib = glGetUniformLocation(shader_program, "light_count");
         aspect_ratio_attrib = glGetUniformLocation(shader_program, "aspect_ratio");
+        focal_length_attrib = glGetUniformLocation(shader_program, "focal_length");
         alpha_attrib = glGetUniformLocation(shader_program, "alpha");
         light_multi_attrib = glGetUniformLocation(shader_program, "light_multiplier");
         diffuse_color_attrib = glGetUniformLocation(shader_program, "diffuse_color");
@@ -196,6 +198,7 @@ public class OpenGLRenderer : RenderTarget
         glUniform3f(camera_position_attrib, (GLfloat)state.camera_position.x, (GLfloat)state.camera_position.y, (GLfloat)state.camera_position.z);
         glUniform3f(camera_rotation_attrib, (GLfloat)state.camera_rotation.x, (GLfloat)state.camera_rotation.y, (GLfloat)state.camera_rotation.z);
         glUniform1f(aspect_ratio_attrib, (GLfloat)state.screen_width / state.screen_height);
+        glUniform1f(focal_length_attrib, (GLfloat)state.focal_length);
         glUniform1i(light_count_attrib, (GLint)state.lights.size);
 
         for (int i = 0; i < state.lights.size; i++)
