@@ -4,7 +4,7 @@ DIRS  = source/*.vala source/Engine/Files/*.vala source/Engine/Rendering/*.vala 
 PKGS  = --thread --target-glib 2.32 --pkg gio-2.0 --pkg glew --pkg gee-1.0 --pkg gl --pkg sdl2-mixer --pkg sdl2-image --pkg sdl2 --pkg SOIL --pkg aubio
 LIBS  = -X lib/SOIL/libSOIL.a -X lib/SDL/SDL2_net.lib -X lib/SDL/SDL2_image.lib -X lib/SDL/SDL2_mixer.lib -X lib/SDL/SDL2.lib -X lib/GLEW/glew32s.lib -X lib/GL/libopengl32.a -X lib/AUBIO/libaubio.dll.a
 VAPI  = --vapidir=vapi
-O     = -o bin/RiichiMahjong
+O     = -o bin/Demoscene
 DEBUG = --save-temps -g -D DEBUG
 
 Linux:
@@ -18,11 +18,11 @@ cleanLinux:
 
 Debug:
 	$(VALAC) $(DEBUG) $(O) $(DIRS) $(PKGS) $(LIBS) $(VAPI)
-	-RCEDIT /I bin\RiichiMahjong.exe Icon.ico
+	-RCEDIT /I bin\Demoscene.exe Icon.ico
 
 Release:
 	$(VALAC) -X -mwindows $(O) $(DIRS) $(PKGS) $(LIBS) $(VAPI)
-	-RCEDIT /I bin\RiichiMahjong.exe Icon.ico
+	-RCEDIT /I bin\Demoscene.exe Icon.ico
 
 	-robocopy bin rsc/archive/RiichiMahjong *.* /MIR
 	-robocopy rsc/dlls/main rsc/archive/RiichiMahjong *.*
@@ -34,15 +34,11 @@ cleanDebug: cleanWindows
 cleanRelease: cleanWindows
 
 cleanWindows:
-	rm bin RiichiMahjong.exe
+	rm bin Demoscene.exe
 	rm source *.c
+	rm source/Engine/Audio *.c
 	rm source/Engine/Files *.c
 	rm source/Engine/Rendering *.c
 	rm source/Game *.c
-	rm source/Game/Bot *.c
-	rm source/Game/Interface *.c
-	rm source/Game/Networking *.c
-	rm source/Game/Player *.c
 	rm source/Helper *.c
-	rm source/Menu *.c
 	rm source/Server *.c

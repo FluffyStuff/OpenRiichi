@@ -211,7 +211,7 @@ public class OpenGLRenderer : RenderTarget
             glUniform1f(light_intensity_attrib, (GLfloat)state.lights[i].intensity);
         }
 
-        Vec3 pos;
+        Vec3 pos = {};
 
         foreach (Render3DObject obj in state.objects)
             pos = render_3D_object(obj);
