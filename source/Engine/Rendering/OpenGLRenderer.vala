@@ -19,7 +19,7 @@ public class OpenGLRenderer : RenderTarget
 	private GLuint color_buffer[1];
 	private GLuint frame_buffer_object_vertices[1];
 	private GLuint vertexbuffer[1];
-	private GLuint VertexArrayID[1];
+	private GLuint vertex_array_ID[1];
     private GLint pos_attrib = 0;
     private GLint tex_attrib = 1;
     private GLint nor_attrib = 2;
@@ -37,7 +37,6 @@ public class OpenGLRenderer : RenderTarget
     private GLint aspect_ratio_attrib = -1;
     private GLint focal_length_attrib = -1;
     private GLint light_count_attrib = -1;
-    private GLint postproc_attrib = -1;
 
     private GLContext context;
     private unowned Window sdl_window;
@@ -50,6 +49,7 @@ public class OpenGLRenderer : RenderTarget
         base(window);
         sdl_window = window.sdl_window;
         store = new OpenGLResourceStore(this);
+
     }
 
     protected override bool init()
@@ -76,11 +76,11 @@ public class OpenGLRenderer : RenderTarget
         // TODO: Put this somewhere
         sdl_window.set_icon(SDLImage.load("./Data/Icon.png"));
         sdl_window.set_size(1280, 800);
-
+        glGenVertexArrays(1, vertex_array_ID);
+        glBindVertexArray(vertex_array_ID[0]);
         init_shader();
         init_frame_buffer();
         init_post_processing_shader();
-        triangletest();
         return true;
     }
 
@@ -107,8 +107,8 @@ public class OpenGLRenderer : RenderTarget
 
     private void init_shader()
     {
-        vertex_source = FileLoader.load("./Data/vertex_shader.shader");
-        fragment_source = FileLoader.load("./Data/fragment_shader.shader");
+        vertex_source = FileLoader.load("G:/Mahjong/bin/Data/vertex_shader.shader");
+        fragment_source = FileLoader.load("G:/Mahjong/bin/Data/fragment_shader.shader");
 
         vertex_shader = glCreateShader(GL_VERTEX_SHADER);
         fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -159,7 +159,7 @@ public class OpenGLRenderer : RenderTarget
     private void on_reshape()
     {
         glBindTexture(GL_TEXTURE_2D, frame_buffer_object_texture[0]);
-        glTexImage2D(GL_TEXTURE_2D, 0, (GLint)GL_RGBA, (GLsizei)view_width, (GLsizei)view_height, 0, (GLint)GL_RGBA, GL_UNSIGNED_BYTE, null);
+        glTexImage2D(GL_TEXTURE_2D, 0, (GLint)GL_SRGB_ALPHA, (GLsizei)view_width, (GLsizei)view_height, 0, (GLint)GL_RGBA, GL_UNSIGNED_BYTE, null);
         //glBindTexture(GL_TEXTURE_2D, 0);
         glBindRenderbuffer(GL_RENDERBUFFER, color_buffer[0]);
         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, (GLsizei)view_width, (GLsizei)view_height);
@@ -176,7 +176,7 @@ public class OpenGLRenderer : RenderTarget
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         //print("width = %d, height = %d", state.screen_width, state.screen_height);
-        glTexImage2D(GL_TEXTURE_2D, 0, (GLint)GL_RGBA, (GLsizei)1280, (GLsizei)800, 0, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid[]?)0);
+        glTexImage2D(GL_TEXTURE_2D, 0, (GLint)GL_SRGB_ALPHA, (GLsizei)1280, (GLsizei)800, 0, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid[]?)0);
         glBindTexture(GL_TEXTURE_2D, 0);
 
         glGenRenderbuffers(1, color_buffer);
@@ -198,14 +198,14 @@ public class OpenGLRenderer : RenderTarget
         GLfloat[] frame_buffer_vertices = {-1,-1, 1, -1, -1,1, 1, 1};
         glGenBuffers(1, frame_buffer_object_vertices);
         glBindBuffer(GL_ARRAY_BUFFER, frame_buffer_object_vertices[0]);
-        glBufferData(GL_ARRAY_BUFFER, 8, (GL.GLvoid[])frame_buffer_vertices, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, (GLsizei)(8*sizeof(float)), (GL.GLvoid[])frame_buffer_vertices, GL_STATIC_DRAW);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
 
 	private void init_post_processing_shader()
 	{
-		post_processing_vertex_source = FileLoader.load("./3d/bloom_vertex_shader.shader");
-        post_processing_fragment_source = FileLoader.load("./3d/bloom_fragment_shader.shader");
+		post_processing_vertex_source = FileLoader.load("G:/Mahjong/bin/Data/bloom_vertex_shader.shader");
+        post_processing_fragment_source = FileLoader.load("G:/Mahjong/bin/Data/bloom_fragment_shader.shader");
 
         post_processing_vertex_shader = glCreateShader(GL_VERTEX_SHADER);
         post_processing_fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -230,7 +230,6 @@ public class OpenGLRenderer : RenderTarget
         glBindAttribLocation(post_processing_shader_program, pp_tex_attrib, "iTexcoord");
 		glLinkProgram(post_processing_shader_program);
 
-
 		pp_texture_location = glGetUniformLocation(post_processing_shader_program, "texi");
 
 		if (glGetError() != 0)
@@ -243,7 +242,8 @@ public class OpenGLRenderer : RenderTarget
         render_scene(state);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         post_process_draw();
-        glViewport(0,0,1280,800);
+        //glViewport(0,0,1280,800);
+        glUseProgram(shader_program);
         window.swap();
     }
 
@@ -282,18 +282,6 @@ public class OpenGLRenderer : RenderTarget
         return new OpenGLTextureResourceHandle(tex[0]);
     }
 
-    private void triangletest()
-    {
-        GLfloat vbd[9] ={(GLfloat)(-1.0),(GLfloat)(-1.0),(GLfloat)(0.0),(GLfloat)(1.0),(GLfloat)(-1.0),(GLfloat)(0.0),(GLfloat)(0.0),(GLfloat)(1.0),(GLfloat)(0.0)};
-        // This will identify our vertex buffer
-
-        // Generate 1 buffer, put the resulting identifier in vertexbuffer
-        glGenBuffers(1, vertexbuffer);
-        // The following commands will talk about our 'vertexbuffer' buffer
-        glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer[0]);
-        // Give our vertices to OpenGL.
-        glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)vbd.length*4, (GLvoid[]?)vbd, GL_STATIC_DRAW);
-    }
 
     private void post_process_draw()
     {
@@ -302,12 +290,14 @@ public class OpenGLRenderer : RenderTarget
 
         glUseProgram(post_processing_shader_program);
         glBindTexture(GL_TEXTURE_2D, frame_buffer_object_texture[0]);
-        glUniform1i(pp_texture_location, /*GL_TEXTURE*/1);
+        glUniform1i(pp_texture_location, 0);
+
         glEnableVertexAttribArray(pp_tex_attrib);
-        GLsizei len = (GLsizei)(10 * sizeof(float));
-        glVertexAttribPointer(pp_tex_attrib, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid[])0);
+        //GLsizei len = (GLsizei)(10 * sizeof(float));
         glBindBuffer(GL_ARRAY_BUFFER, frame_buffer_object_vertices[0]);
-        glDrawArrays(GL_TRIANGLES, 0, 4);
+        glVertexAttribPointer(pp_tex_attrib, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid[])0);
+
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
         glDisableVertexAttribArray(pp_tex_attrib);
     }
 
@@ -381,6 +371,6 @@ public class OpenGLRenderer : RenderTarget
         view_height = state.screen_height;
 
         glViewport(0, 0, (GLsizei)view_width, (GLsizei)view_height);
-        //on_reshape();
+        on_reshape();
     }
 }
