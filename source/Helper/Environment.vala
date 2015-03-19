@@ -8,11 +8,7 @@ public static class Environment
 #endif
 {
     public static Window window;
-    private static Rand rand;
     private static bool initialized = false;
-
-    private static Cursor? default_cursor;
-    private static Cursor? hover_cursor;
 
     public static bool init()
     {

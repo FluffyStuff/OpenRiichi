@@ -21,7 +21,6 @@ public class AubioAnalysis
         print("Start reading audio samples.\n");
 
         float[] list = new float[0];
-        float[] tempo = new float[0];
         uint read = 0;
         uint total_read = 0;
 
