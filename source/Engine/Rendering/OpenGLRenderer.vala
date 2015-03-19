@@ -59,6 +59,7 @@ public class OpenGLRenderer : RenderTarget
 
         SDL.GL.set_attribute(GLattr.CONTEXT_MAJOR_VERSION, 4);
         SDL.GL.set_attribute(GLattr.CONTEXT_MINOR_VERSION, 0);
+        SDL.GL.set_attribute(GLattr.CONTEXT_PROFILE_MASK, 1); // Core Profile
         SDL.GL.set_swapinterval(1);
         GLEW.init();
 
