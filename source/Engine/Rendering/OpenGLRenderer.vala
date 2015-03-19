@@ -14,13 +14,15 @@ public class OpenGLRenderer : RenderTarget
     private GLuint fragment_shader;
 	private GLuint post_processing_vertex_shader;
 	private GLuint post_processing_fragment_shader;
-	private GLuint frame_buffer_object;
-	private GLuint frame_buffer_object_texture;
-	private GLuint color_buffer;
-	private GLuint frame_buffer_object_vertices;
+	private GLuint frame_buffer_object[1];
+	private GLuint frame_buffer_object_texture[1];
+	private GLuint color_buffer[1];
+	private GLuint frame_buffer_object_vertices[1];
     private GLint pos_attrib = 0;
     private GLint tex_attrib = 1;
     private GLint nor_attrib = 2;
+    private GLint pp_tex_attrib = 1;
+    private GLint pp_texture_location = -1;
     private GLint texture_location = -1;
     private GLint rotation_attrib = -1;
     private GLint position_attrib = -1;
@@ -32,6 +34,7 @@ public class OpenGLRenderer : RenderTarget
     private GLint camera_position_attrib = -1;
     private GLint aspect_ratio_attrib = -1;
     private GLint light_count_attrib = -1;
+    private GLint postproc_attrib = -1;
 
     private GLContext context;
     private unowned Window sdl_window;
@@ -71,7 +74,8 @@ public class OpenGLRenderer : RenderTarget
         sdl_window.set_size(1280, 800);
 
         init_shader();
-
+        init_frame_buffer();
+        init_post_processing_shader();
         return true;
     }
 	private void build_shader(GLuint target_shader, string type)
@@ -146,61 +150,54 @@ public class OpenGLRenderer : RenderTarget
     }
     private void on_reshape()
     {
-        glBindTexture(GL_TEXTURE_2D, frame_buffer_object_texture);
+        glBindTexture(GL_TEXTURE_2D, frame_buffer_object_texture[0]);
         glTexImage2D(GL_TEXTURE_2D, 0, (GLint)GL_RGBA, (GLsizei)view_width, (GLsizei)view_height, 0, (GLint)GL_RGBA, GL_UNSIGNED_BYTE, null);
-        glBindTexture(GL_TEXTURE_2D, 0);
-        glBindRenderbuffer((GLenum)GL_RENDERBUFFER, color_buffer);
-        glRenderbufferStorage((GLenum)GL_RENDERBUFFER, (GLenum)GL_DEPTH_COMPONENT16, (GLsizei)view_width, (GLsizei)view_height);
-        glBindRenderbuffer((GLenum)GL_RENDERBUFFER, 0);
+        //glBindTexture(GL_TEXTURE_2D, 0);
+        glBindRenderbuffer(GL_RENDERBUFFER, color_buffer[0]);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, (GLsizei)view_width, (GLsizei)view_height);
+        //glBindRenderbuffer(GL_RENDERBUFFER, 0);
     }
-    private void frame_buffer()
+    private void init_frame_buffer()
     {
         glActiveTexture(GL_TEXTURE0);
-        GLuint[] tmp = new GLuint[1];
-        tmp[0] = frame_buffer_object_texture;
-        glGenTextures(1, tmp);
-        frame_buffer_object_texture = tmp[0];
-        glBindTexture(GL_TEXTURE_2D, frame_buffer_object_texture);
+        glGenTextures(1, frame_buffer_object_texture);
+        glBindTexture(GL_TEXTURE_2D, frame_buffer_object_texture[0]);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexImage2D(GL_TEXTURE_2D, 0, (GLint)GL_RGBA, (GLsizei)view_width, (GLsizei)view_height, 0, (GLenum)GL_RGBA, GL_UNSIGNED_BYTE, null);
-        glBindTexture(GL_TEXTURE_2D, 0);
-        tmp[0] = color_buffer;
-        glGenRenderbuffers(1, tmp);
-        color_buffer = tmp[0];
-        glBindRenderbuffer((GLenum)GL_RENDERBUFFER, color_buffer);
-        glRenderbufferStorage((GLenum)GL_RENDERBUFFER, (GLenum)GL_DEPTH_COMPONENT16, (GLsizei)view_width, (GLsizei)view_height);
+        //print("width = %d, height = %d", state.screen_width, state.screen_height);
+        glTexImage2D(GL_TEXTURE_2D, 0, (GLint)GL_RGBA, (GLsizei)1280, (GLsizei)800, 0, GL_RGBA, GL_UNSIGNED_BYTE, null);
+        //glBindTexture(GL_TEXTURE_2D, 0);
 
-        tmp[0] = frame_buffer_object;
-        glGenFramebuffers(1, tmp);
-        frame_buffer_object = tmp[0];
-        glBindFramebuffer(GL_FRAMEBUFFER, frame_buffer_object);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, frame_buffer_object_texture, 0);
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, (GLenum)GL_DEPTH_ATTACHMENT, (GLenum)GL_RENDERBUFFER, color_buffer);
+        glGenRenderbuffers(1, color_buffer);
+        glBindRenderbuffer(GL_RENDERBUFFER, color_buffer[0]);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, (GLsizei)1280, (GLsizei)800);
+        //glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+        glGenFramebuffers(1, frame_buffer_object);
+        glBindFramebuffer(GL_FRAMEBUFFER, frame_buffer_object[0]);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, frame_buffer_object_texture[0], 0);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, color_buffer[0]);
         GLenum status;
         if ((status = glCheckFramebufferStatus(GL_FRAMEBUFFER)) != GL_FRAMEBUFFER_COMPLETE) {
-            print("glCheckFramebufferStatus: error %p", (void*)status);
-            return;
+            print("glCheckFramebufferStatus: error %d", (int)status);
+            //return;
         }
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        //glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 
 
         GLfloat[] frame_buffer_vertices = {-1, -1,1, -1,-1, 1,1, 1};
-
-        tmp[0] = frame_buffer_object_vertices;
-        glGenBuffers(1, tmp);
-        frame_buffer_object_vertices = tmp[0];
-        glBindBuffer(GL_ARRAY_BUFFER, frame_buffer_object_vertices);
+        glGenBuffers(1, frame_buffer_object_vertices);
+        glBindBuffer(GL_ARRAY_BUFFER, frame_buffer_object_vertices[0]);
         glBufferData(GL_ARRAY_BUFFER, 8, (GL.GLvoid[])frame_buffer_vertices, GL_STATIC_DRAW);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        init_post_processing_shader();
+        //glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
 
 	private void init_post_processing_shader()
 	{
+
 		post_processing_vertex_source = FileLoader.load("./3d/bloom_vertex_shader.shader");
         post_processing_fragment_source = FileLoader.load("./3d/bloom_fragment_shader.shader");
 
@@ -209,24 +206,26 @@ public class OpenGLRenderer : RenderTarget
 
         for (int i = 0; i < post_processing_vertex_source.length; i++)
             post_processing_vertex_source[i] = post_processing_vertex_source[i] + "\n";
-        for (int i = 0; i < fragment_source.length; i++)
+        for (int i = 0; i < post_processing_fragment_source.length; i++)
             post_processing_fragment_source[i] = post_processing_fragment_source[i] + "\n";
 
 		glShaderSource(post_processing_vertex_shader, (GLsizei)post_processing_vertex_source.length, post_processing_vertex_source, (GLint[])0);
 		glShaderSource(post_processing_fragment_shader, (GLsizei)post_processing_fragment_source.length, post_processing_fragment_source, (GLint[])0);
+
 
 		build_shader(post_processing_vertex_shader, "post processing vertex");
 
 		build_shader(post_processing_fragment_shader, "post processing fragment");
 
 		post_processing_shader_program = glCreateProgram();
-
 		glAttachShader(post_processing_shader_program, post_processing_vertex_shader);
 		glAttachShader(post_processing_shader_program, post_processing_fragment_shader);
-		glBindFragDataLocation(post_processing_shader_program, 0, "outColor");
-
+		glBindFragDataLocation(post_processing_shader_program, 0, "outColor2");
+        glBindAttribLocation(post_processing_shader_program, pp_tex_attrib, "iTexcoord");
 		glLinkProgram(post_processing_shader_program);
-		glUseProgram(post_processing_shader_program);
+
+
+		pp_texture_location = glGetUniformLocation(post_processing_shader_program, "texi");
 
 		if (glGetError() != 0)
 			print("GL shader program failure!!!\n");
@@ -270,9 +269,26 @@ public class OpenGLRenderer : RenderTarget
 
         return new OpenGLTextureResourceHandle(tex[0]);
     }
+    private void post_process_draw()
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glClearColor((GLfloat)0.0, (GLfloat)0.0, (GLfloat)0.0, (GLfloat)1.0);
+        glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
+        glUseProgram(post_processing_shader_program);
+        glBindTexture(GL_TEXTURE_2D, pp_texture_location);
+        glUniform1i(pp_texture_location, /*GL_TEXTURE*/0);
+
+        glEnableVertexAttribArray(pp_tex_attrib);
+        GLsizei len = (GLsizei)(10 * sizeof(float));
+        glVertexAttribPointer(pp_tex_attrib, 3, GL_FLOAT, GL_FALSE, len, (GLvoid[])(4 * sizeof(GLfloat)));
+        glBindBuffer(GL_ARRAY_BUFFER, frame_buffer_object_vertices[0]);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        glDisableVertexAttribArray(pp_tex_attrib);
+    }
     private void render_scene(RenderState state)
     {
+        glBindFramebuffer(GL_FRAMEBUFFER, frame_buffer_object[0]);
         setup_projection(state, true);
         glClearColor((GLfloat)state.back_color.r, (GLfloat)state.back_color.g, (GLfloat)state.back_color.b, (GLfloat)state.back_color.a);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -299,7 +315,8 @@ public class OpenGLRenderer : RenderTarget
 
         pos = Vec3() { x = pos.x + 1, y = pos.y + 1, z = pos.z + 1 };
         glUniform3f(camera_position_attrib, (GLfloat)pos.x, (GLfloat)pos.y, (GLfloat)pos.z);
-
+        //glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        //post_process_draw();
         window.swap();
     }
 
@@ -342,5 +359,6 @@ public class OpenGLRenderer : RenderTarget
         view_height = state.screen_height;
 
         glViewport(0, 0, (GLsizei)view_width, (GLsizei)view_height);
+        on_reshape();
     }
 }

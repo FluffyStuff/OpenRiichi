@@ -1737,7 +1737,7 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "GL_DEPTH32F_STENCIL8_NV")]
 	public const int GL_DEPTH32F_STENCIL8_NV;
 	[CCode (cheader_filename = "GL/glew.h", cname = "GL_DEPTH_ATTACHMENT")]
-	public const int GL_DEPTH_ATTACHMENT;
+	public const GLenum GL_DEPTH_ATTACHMENT;
 	[CCode (cheader_filename = "GL/glew.h", cname = "GL_DEPTH_ATTACHMENT_EXT")]
 	public const int GL_DEPTH_ATTACHMENT_EXT;
 	[CCode (cheader_filename = "GL/glew.h", cname = "GL_DEPTH_ATTACHMENT_OES")]
@@ -1765,9 +1765,9 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "GL_DEPTH_CLEAR_VALUE")]
 	public const int GL_DEPTH_CLEAR_VALUE;
 	[CCode (cheader_filename = "GL/glew.h", cname = "GL_DEPTH_COMPONENT")]
-	public const int GL_DEPTH_COMPONENT;
+	public const GLenum GL_DEPTH_COMPONENT;
 	[CCode (cheader_filename = "GL/glew.h", cname = "GL_DEPTH_COMPONENT16")]
-	public const int GL_DEPTH_COMPONENT16;
+	public const GLenum GL_DEPTH_COMPONENT16;
 	[CCode (cheader_filename = "GL/glew.h", cname = "GL_DEPTH_COMPONENT16_ARB")]
 	public const int GL_DEPTH_COMPONENT16_ARB;
 	[CCode (cheader_filename = "GL/glew.h", cname = "GL_DEPTH_COMPONENT16_NONLINEAR_NV")]
@@ -6367,7 +6367,7 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "GL_RENDER")]
 	public const int GL_RENDER;
 	[CCode (cheader_filename = "GL/glew.h", cname = "GL_RENDERBUFFER")]
-	public const int GL_RENDERBUFFER;
+	public const GLenum GL_RENDERBUFFER;
 	[CCode (cheader_filename = "GL/glew.h", cname = "GL_RENDERBUFFER_ALPHA_SIZE")]
 	public const int GL_RENDERBUFFER_ALPHA_SIZE;
 	[CCode (cheader_filename = "GL/glew.h", cname = "GL_RENDERBUFFER_ALPHA_SIZE_EXT")]
@@ -6631,7 +6631,7 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "GL_RGB9_E5_EXT")]
 	public const int GL_RGB9_E5_EXT;
 	[CCode (cheader_filename = "GL/glew.h", cname = "GL_RGBA")]
-	public const int GL_RGBA;
+	public const GLenum GL_RGBA;
 	[CCode (cheader_filename = "GL/glew.h", cname = "GL_RGBA12")]
 	public const int GL_RGBA12;
 	[CCode (cheader_filename = "GL/glew.h", cname = "GL_RGBA12_EXT")]
@@ -8555,7 +8555,7 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "GL_TRIANGLE_MESH_SUN")]
 	public const int GL_TRIANGLE_MESH_SUN;
 	[CCode (cheader_filename = "GL/glew.h", cname = "GL_TRIANGLE_STRIP")]
-	public const int GL_TRIANGLE_STRIP;
+	public const GLenum GL_TRIANGLE_STRIP;
 	[CCode (cheader_filename = "GL/glew.h", cname = "GL_TRIANGLE_STRIP_ADJACENCY")]
 	public const int GL_TRIANGLE_STRIP_ADJACENCY;
 	[CCode (cheader_filename = "GL/glew.h", cname = "GL_TRIANGLE_STRIP_ADJACENCY_ARB")]
