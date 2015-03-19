@@ -2,52 +2,77 @@ using GL;
 
 public class GameView : View
 {
-    //private float rotation = 0;
-
     private Render3DObject? sky = null;
-    //private Render3DObject? level = null;
-
     private Ball[] balls;
     private Circler[] circlers;
-    //private Render3DObject? table = null;
-    //private Render3DObject? field = null;
+    private CameraController camera_controller = new CameraController();
 
-    private float[] values;
-    private float[] samples;
-    public SDLMusicHook music;
-    private RunningAverage[] avgs;
+    private SDLMusic music;
+    private AubioAnalysis aubio;
+    private const double music_start_time = 125; // This is probably where we want to start the scene, as not to become to long and dry
 
-    int light_count = 8;
-    int ball_count = 10;
+    private GLib.Timer timer;
+    private double time_offset = music_start_time;
+
+    const int light_count = 9;
+    const int ball_count = 10;
+
+    const int rand_seed = 1; // Random seed for ball colors and light speeds
+
+    // Audio timings
+    const float background_start = 139;
+    const float ball_red_start = 229.5f;
+    const float ball_color_start = 278.4f;
+    const float background_color_start = 305.9f;
+
+    // Audio stuff
+    const int sample_rate = 44100;
+    const int buffer_size = 512;
+    const int hop_size = 512;
 
     public GameView()
     {
-        values = libaubio.load("Standerwick - Valyrian - test.wav", out samples);
-        print("?: " + samples.length.to_string() + "\n");
+        string name = "./Data/Standerwick - Valyrian";
+        aubio = new AubioAnalysis(name + ".wav", sample_rate, buffer_size, hop_size);
+        aubio.analyse();
+        music = new SDLMusic(sample_rate);
+        music.load(name + ".mp3");
+        timer = new GLib.Timer();
+    }
+
+    private double get_time()
+    {
+        double time = timer.elapsed();
+
+        time_offset = Math.fmin(time + time_offset, (int)((double)aubio.length / sample_rate)) - time;
+        time_offset = Math.fmax(time + time_offset, 0) - time;
+
+        return time + time_offset;
     }
 
     public override void do_load_resources(IResourceStore store)
     {
+        print("Start loading 3D objects.\n");
+
         parent_window.set_cursor_hidden(true);
-        //level = store.load_3D_object("./3d/level");
-        sky = store.load_3D_object("./3d/sky");
-        sky.light_multiplier = 0;
+        sky = store.load_3D_object("./Data/sky");
 
         circlers = new Circler[light_count];
         balls = new Ball[ball_count];
-        Rand rnd = new Rand();
-        avgs = new RunningAverage[ball_count];
+        Rand rnd = new Rand.with_seed(rand_seed);
 
+        // Create balls
         for (int i = 0; i < ball_count; i++)
         {
-            avgs[i] = new RunningAverage(6);
-
-            Vec3 color = Vec3() { x = (float)rnd.next_double() * 0.1f, y = -(float)rnd.next_double() * 2, z = -(float)rnd.next_double() * 4 };
+            // Create colors for the balls which are used a bit into the song
+            Vec3 color = Vec3() { x = -(float)rnd.next_double() * 0.1f, y = -(float)rnd.next_double() * 1.5f, z = -(float)rnd.next_double() * 3 };
             balls[i] = new Ball(color, store);
         }
 
+        // Create lights
         for (int i = 0; i < light_count; i++)
         {
+            // Create movement speeds for lights
             Vec3 vec = Vec3() { x = (float)rnd.next_double(), y = (float)rnd.next_double(), z = (float)rnd.next_double() };
             bool[] bools = new bool[3];
             bools[0] = rnd.boolean();
@@ -56,94 +81,70 @@ public class GameView : View
 
             circlers[i] = new Circler(vec, bools, store);
         }
-        music = new SDLMusicHook(samples);
 
-        //table = store.load_3D_object("./3d/table");
-        /*field = store.load_3D_object("./3d/field");
+        music.play(time_offset);
+        timer.start();
 
-        table.position = Vec3() { y = -0.163f };
-        table.scale = Vec3() { x = 10, y = 10, z = 10 };
-        tile.position = Vec3() { y = 12.5f };
-        tile.scale = Vec3() { x = 1.0f, y = 1.0f, z = 1.0f };
-        field.position = Vec3() { y = 12.4f };
-        field.scale = Vec3() { x = 9.6f, z = 9.6f
-        };*/
+        print("Finished loading 3D objects.\n");
     }
 
-    private int last_x = 0;
-    private int last_y = 0;
-
-    private float accel_x = 0;
-    private float accel_y = 0;
-    private float accel_z = 0;
-    private float camera_x = 0;
-    private float camera_y = 0;
-    private float camera_z = 0;
-
-    private double derp = 0;
-    private double speed = 1;
+    private double time = 0;
 
     public override void do_process(double dt)
     {
-        //dt *= speed;
-        //derp += dt * speed;
-        derp = dt;
-        //int slow = 300;
+        time = get_time();
+
         camera_x += accel_x;
         camera_y += accel_y;
         camera_z += accel_z;
 
-        int r = 44100;
-        int s = 512;
-
-        //print(derp.to_string() + "\n");
-
         for (int i = 0; i < balls.length; i++)
         {
-            float val = 0;
-            for (int j = 0; j < 10; j++)
-            {
-                float sq = values[(int)(derp * r / s) * 512 + (i+3) * 10 + j];
-                val += sq*sq;
-            }
-
-            val /= 10;
-            val = (float)Math.sqrt(val);
-            val = avgs[i].add(val);
-
+            // Get ball scale
+            float val = aubio.get_amplitude(time, i + 3, 6, 10);
             val /= 5;
             val *= val;
-
             float scale = 1 + val;
-
-            float p = 2 * (float)Math.PI * i / balls.length;
-            balls[i].obj.position = Vec3() { z = (float)Math.cos(derp / 10 + p) * ball_count * 3, x = (float)Math.sin(derp / 10 + p) * ball_count * 3, y = -5 };
             balls[i].obj.scale = Vec3() { x = scale, y = scale, z = scale };
 
-            float color_mul = Math.fminf(Math.fmaxf(0, (float)derp - 105), 1) * -val;
+            // Set position of the balls in a circle
+            float ball_speed = 2.0f;
+            float p = 2 * (float)Math.PI * i / balls.length;
+            balls[i].obj.position = Vec3() { z = (float)Math.cos(time * ball_speed + p) * ball_count * 3, x = (float)Math.sin(time * ball_speed + p) * ball_count * 3, y = -5 };
+
+            // Make the balls red in the middle of the song
+            float color_mul = Math.fminf(Math.fmaxf(0, (float)time - ball_red_start), 1) * -val;
             balls[i].obj.diffuse_color = Vec3() { x = color_mul * 0.2f, y = color_mul * 2, z = color_mul * 3 };
 
-            if (derp > 154)
+            // Make the balls colory later in the song
+            if (time > ball_color_start)
                 balls[i].obj.diffuse_color = Vec3() { x = balls[i].color.x * val, y = balls[i].color.y * val, z = balls[i].color.z * val };
         }
 
+        // Calculate the intensity of the lights in accordance with the base amplitude
+        float val = aubio.get_amplitude(time, 3, 6, 10) * 1.5f;
+        val *= val * 6 / light_count;
+
         for (int i = 0; i < circlers.length; i++)
         {
+            // Calculate light positions
             circlers[i].light.position =
             Vec3()
             {
-                x = (float)Math.sin(circlers[i].amount.x * derp / 10) * 10,
-                y = (float)Math.cos(circlers[i].amount.y * derp / 10) * 10,
-                z = (float)Math.sin(circlers[i].amount.z * derp / 10) * 10
+                x = (float)Math.sin(circlers[i].amount.x * time / 3) * 15,
+                y = (float)Math.cos(circlers[i].amount.y * time / 3) * 20,
+                z = (float)Math.sin(circlers[i].amount.z * time / 3) * 15
             };
             circlers[i].obj.position = circlers[i].light.position;
 
-            float color_mul = Math.fminf(Math.fmaxf(1, ((float)derp - 181) * 24), 12);
+            // Set the colorful background color of the lights at the end of the song
+            float color_mul = Math.fminf(Math.fmaxf(1, ((float)time - background_color_start) * 24), 10);
 
             float x = 0.3f / color_mul;
             float y = 0.3f / color_mul;
             float z = 0.3f / color_mul;
 
+            // Increase R, G or B color
             if (i % 3 == 0)
                 x *= color_mul * color_mul;
             else if (i % 3 == 1)
@@ -152,89 +153,76 @@ public class GameView : View
                 z *= color_mul * color_mul;
 
             circlers[i].light.color = Vec3() { x = x, y = y, z = z };
+            circlers[i].light.intensity = val;
         }
 
-        /*light.position = Vec3() { x = (float)Math.cos(derp / 10 + 2) * 15f, y = 3 + (float)Math.cos(derp / 8 + 2) * 3f, z = (float)Math.sin(derp / 10 + 2) * 15f };
-        tile.position = light.position;
-
-        light2.position = Vec3() { x = 0, y = (float)Math.cos(derp / 5) * 10f, z = (float)Math.sin(derp / 5) * 10f };
-        tile2.position = light2.position;*/
-        //rotation += (float)dt * 0.02f;
-        //tile.rotation = Vec3() { x = (float)last_y / slow + rotation * 0.25f, y = (float)last_x / (float)slow + (float)rotation, z = rotation * 0.1f };
-        //table.rotation = Vec3() { x = (float)last_y / slow + rotation * 0.25f, y = (float)last_x / (float)slow + (float)rotation, z = rotation * 0.1f };
-        //table.rotation = Vec3() { x = rotation * 0.25f, y = rotation, z = rotation * 0.1f };
-        //tile.rotation = Vec3() { x = rotation * 0.25f, y = rotation, z = rotation * 0.1f };
-
-        //level.rotation = Vec3() { /*z = (float)derp * 0.025f, x = (float)derp * 0.01851f,*/ y = (float)derp * 0.007943f };
-        //level.position = Vec3() { z = (float)Math.cos(derp / 10) * 2, x = (float)Math.sin(derp / 10) * 2 };
-
-        //tile.position = Vec3() { y = -0.5f, z = 2.5f };
+        // Deactivate the background until a little later at the beginning of the song
+        // Linearly increase the background brightness at the end of the song
+        if (time > background_start)
+        {
+            float mul = Math.fminf(Math.fmaxf(0.02f, ((float)time - background_color_start) * 1), 0.5f);
+            sky.light_multiplier = mul;
+            mul /= 100;
+            mul = 0;
+            sky.diffuse_color = Vec3() { x = mul, y = mul, z = mul * 4 };
+        }
+        else
+            sky.light_multiplier = 0;
     }
 
-    float lst = 0;
-    float run = 0;
-    RunningAverage cam = new RunningAverage(10);
     public override void do_render(RenderState state, IResourceStore store)
     {
-        //state.add_scene();
         int slow = 300;
-        state.camera_rotation = Vec3(){ x = 1 - (float)last_y / slow, y = - (float)last_x / slow };
-        state.camera_position = Vec3(){ x = camera_x, y = camera_y, z = camera_z };
-        //state.camera_position = Vec3() { x = pos.x + 0.5f, y = pos.y + 0.5f, z = pos.z + 0.5f };
-        int r = 44100;
-        int s = 512;
-        float val = avgs[0].average;
-        float scale = val;
-        float abs = scale - lst;
-        abs = abs > 0 ? abs : -abs;
-        abs = (float)Math.sqrt(abs) * 50;
-        run += cam.add(abs);
-        lst = scale;
-        float speed = 3;
 
-        state.camera_position = Vec3() { z = (float)Math.cos((derp) * Math.PI / 10 * speed) * 40, y = 10, x = (float)Math.sin((derp) * Math.PI / 10 * speed) * 40 };
-        state.camera_rotation = Vec3()
+        // Set scene camera or custom camera position
+        if (!custom_camera)
         {
-            y = (float)(-derp / 10 * speed) + (float)(Math.cos(run / 500) / 500),
-            x = (float)(Math.sin(derp / 5) / Math.PI / 6 - 0.1) + (float)(Math.sin(run / 500) / 500),
-            z = 0
-        };
-        //state.add_3D_object(level);
-        //if (derp > 174)
-        val /= 1;
-        val *= val * 3;
-        //print("val: " + val.to_string() + "\n");
-        if (derp > 14.5)
-            sky.light_multiplier = 1;//(float)(val);
-        state.add_3D_object(sky);
+            camera_controller.set_camera((float)get_time(), state, aubio, 0);
 
-        for (int i = 0; i < balls.length; i++)
+            accel_x = 0;
+            accel_y = 0;
+            accel_z = 0;
+            camera_x = state.camera_position.x;
+            camera_y = state.camera_position.y;
+            camera_z = state.camera_position.z;
+            last_x = (int)(-slow * state.camera_rotation.y);
+            last_y = (int)(-slow * (state.camera_rotation.x - 1));
+        }
+        else
         {
-            state.add_3D_object(balls[i].obj);
+            state.camera_rotation = Vec3(){ x = 1 - (float)last_y / slow, y = - (float)last_x / slow };
+            state.camera_position = Vec3(){ x = camera_x, y = camera_y, z = camera_z };
         }
 
+        // Add balls to scene
+        for (int i = 0; i < balls.length; i++)
+            state.add_3D_object(balls[i].obj);
+
+        // Add lights and their boxes to scene
         for (int i = 0; i < circlers.length; i++)
         {
-            circlers[i].light.intensity = val / light_count * 2;
             state.add_light_source(circlers[i].light);
             state.add_3D_object(circlers[i].obj);
         }
-        /*state.add_light_source(light);
-        state.add_3D_object(tile);
-        state.add_light_source(light2);
-        state.add_3D_object(tile2);*/
-        //state.add_3D_object(table);
-        //state.add_3D_object(field);
-        //state.finish_scene();
+
+        // Add sky to scene
+        state.add_3D_object(sky);
     }
+
+    private int last_x = 0;
+    private int last_y = 0;
+    private float accel_x = 0;
+    private float accel_y = 0;
+    private float accel_z = 0;
+    private float camera_x = 0;
+    private float camera_y = 0;
+    private float camera_z = 0;
+    private bool custom_camera = false;
 
     protected override void do_mouse_move(int x, int y)
     {
         last_x += x;
         last_y += y;
-        //int slow = 300;
-        //tile.rotation = Vec3() { x = (float)y / slow + rotation * 0.25f, y = (float)x / slow + rotation, z = rotation * 0.1f };
-        //table.rotation = Vec3() { x = (float)y / slow, y = (float)x / slow };
     }
 
     protected override void do_key_press(char key)
@@ -244,8 +232,6 @@ public class GameView : View
 
         switch (key)
         {
-            //case 27 :
-            //case 'q':
         case ' ':
             accel_y += speed;
             break;
@@ -276,10 +262,17 @@ public class GameView : View
             accel_z = 0;
             break;
         case '+':
-            this.speed *= 2;
+        case 87: //+
+            time_offset += 10;
+            music.play(get_time());
             break;
         case '-':
-            this.speed /= 2;
+        case 86: //-
+            time_offset -= 10;
+            music.play(get_time());
+            break;
+        case 58: //F1
+            custom_camera = !custom_camera;
             break;
         default:
             print("%i\n", (int)key);
@@ -292,7 +285,7 @@ public class GameView : View
         public Ball(Vec3 color, IResourceStore store)
         {
             this.color = color;
-            obj = store.load_3D_object("./3d/ball");
+            obj = store.load_3D_object("./Data/ball");
         }
 
         public Vec3 color { get; private set; }
@@ -306,7 +299,7 @@ public class GameView : View
             this.amount = amount;
             this.cos = cos;
             light = new LightSource();
-            obj = store.load_3D_object("./3d/box");
+            obj = store.load_3D_object("./Data/box");
             obj.scale = Vec3() { x = 0.5f, y = 0.5f, z = 0.5f };
         }
 
@@ -316,12 +309,45 @@ public class GameView : View
         public Render3DObject obj { get; private set; }
     }
 
-    private class RunningAverage
+    // A class for custom camera angles etc
+    private class CameraController
+    {
+        public void set_camera
+        (
+            float current_time,
+            RenderState state,
+            AubioAnalysis analysis,
+            // Take in timings here
+            float rotation_start_time
+        )
+        {
+            if (current_time > rotation_start_time)
+                rotation_position(state, current_time);
+        }
+
+        private void rotation_position(RenderState state, float time)
+        {
+            float speed = 3;
+
+            state.camera_position = Vec3() { z = (float)Math.cos((time) * Math.PI / 10 * speed) * 45, y = 10, x = (float)Math.sin((time) * Math.PI / 10 * speed) * 45 };
+            state.camera_rotation = Vec3()
+            {
+                y = (float)(-time / 10 * speed),
+                x = (float)(Math.sin(time / 5 + 2.7) / Math.PI / 6 - 0.1),
+                z = 0
+            };
+
+            // We could do for example: (float)Math.sin(time);
+            state.focal_length = 1;
+        }
+    }
+
+    /*private class RunningAverage
     {
         private int window_size;
         private int index = 0;
+        private int count = 0;
         private float sum = 0;
-        private float last = 0;
         private float[] values;
 
         public RunningAverage(int window_size)
@@ -332,18 +358,15 @@ public class GameView : View
 
         public float add(float val)
         {
-            if (val == last)
-                return sum / window_size;
-            last = val;
-
-            sum -= values[index];
-            sum += val;
+            sum += val - values[index];
             values[index] = val;
             index = (index + 1) % window_size;
+            if (count < window_size)
+                count++;
 
-            return sum / window_size;
+            return average;
         }
 
-        public float average { get { return sum / window_size; } }
-    }
+        public float average { get { return sum / count; } }
+    }*/
 }

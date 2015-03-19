@@ -28,19 +28,11 @@ public class MainWindow : RenderWindow
                 int x = 0, y = 0;
                 Cursor.get_relative_state(ref x, ref y);
                 main_view.mouse_move(x, y);
-                //back_color = { (float)x / width, 0, (float)y / height, 0 };
-                //window.get_size(out width, out height);
-                //view.mouse_move(x, height - y, color_id);
             }
             else if (e.type == EventType.MOUSEBUTTONDOWN || e.type == EventType.MOUSEBUTTONUP)
-            {
-                int x = 0, y = 0;
-                Cursor.get_state(ref x, ref y);
-                //window.get_size(out width, out height);
-                //view.mouse_click(x, height - y, e.button.button, e.type == EventType.MOUSEBUTTONUP, color_id);
-            }
+                ;
             else if (e.type == EventType.MOUSEWHEEL)
-                ;//view.mouse_wheel(e.wheel.y);
+                ;
         }
 
         main_view.process(dt);
@@ -115,7 +107,7 @@ public abstract class RenderWindow
         double dt = time - last_time;
         last_time = time;
 
-        return time;
+        return dt;
     }
 
     private void load_resources(IResourceStore store)
@@ -228,6 +220,7 @@ public class RenderState
     {
         screen_width = width;
         screen_height = height;
+        focal_length = 1;
     }
 
     public void add_3D_object(Render3DObject object)
@@ -248,6 +241,7 @@ public class RenderState
     public Color back_color { get; set; }
     public Vec3 camera_position { get; set; }
     public Vec3 camera_rotation { get; set; }
+    public float focal_length { get; set; }
 }
 
 public class MainView : View
