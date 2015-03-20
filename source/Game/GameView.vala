@@ -36,7 +36,7 @@ public class GameView : View
         aubio = new AubioAnalysis(name + ".wav", sample_rate, buffer_size, hop_size);
         aubio.analyse();
         music = new SDLMusic(sample_rate);
-        music.load(name + ".mp3");
+        music.load(name + ".ogg");
         timer = new GLib.Timer();
     }
 

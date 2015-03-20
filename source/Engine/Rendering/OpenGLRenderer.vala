@@ -107,8 +107,8 @@ public class OpenGLRenderer : RenderTarget
 
     private void init_shader()
     {
-        vertex_source = FileLoader.load("G:/Mahjong/bin/Data/vertex_shader.shader");
-        fragment_source = FileLoader.load("G:/Mahjong/bin/Data/fragment_shader.shader");
+        vertex_source = FileLoader.load("./Data/vertex_shader.shader");
+        fragment_source = FileLoader.load("./Data/fragment_shader.shader");
 
         vertex_shader = glCreateShader(GL_VERTEX_SHADER);
         fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -204,8 +204,8 @@ public class OpenGLRenderer : RenderTarget
 
 	private void init_post_processing_shader()
 	{
-		post_processing_vertex_source = FileLoader.load("G:/Mahjong/bin/Data/bloom_vertex_shader.shader");
-        post_processing_fragment_source = FileLoader.load("G:/Mahjong/bin/Data/bloom_fragment_shader.shader");
+		post_processing_vertex_source = FileLoader.load("./Data/bloom_vertex_shader.shader");
+        post_processing_fragment_source = FileLoader.load("./Data/bloom_fragment_shader.shader");
 
         post_processing_vertex_shader = glCreateShader(GL_VERTEX_SHADER);
         post_processing_fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);

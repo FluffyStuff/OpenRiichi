@@ -6,7 +6,7 @@ public class SDLMusic
 
     public SDLMusic(int sample_rate)
     {
-        SDLMixer.open(sample_rate, 0x8010, 2, 1024);
+        open(sample_rate, 0x8010, 2, 1024);
     }
 
     public void load(string name)
@@ -19,6 +19,6 @@ public class SDLMusic
     public void play(double time)
     {
         music.halt();
-        music.fade_in(0, 500, time);
+        music.fade_in(0, 300, time);
     }
 }
