@@ -322,10 +322,10 @@ public class GameView : View
         )
         {
             if (current_time > rotation_start_time)
-                rotation_position(state, current_time);
+                rotation_position(state, current_time, analysis);
         }
 
-        private void rotation_position(RenderState state, float time)
+        private void rotation_position(RenderState state, float time, AubioAnalysis analysis)
         {
             float speed = 3;
 
@@ -337,8 +337,8 @@ public class GameView : View
                 z = 0
             };
 
-            // We could do for example: (float)Math.sin(time);
-            state.focal_length = 1;
+            float val = 1.2f - analysis.get_amplitude(time, 2, 8, 12) / 30;
+            state.focal_length = val;
         }
     }
 

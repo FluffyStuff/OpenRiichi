@@ -173,8 +173,8 @@ public class OpenGLRenderer : RenderTarget
         glBindTexture(GL_TEXTURE_2D, frame_buffer_object_texture[0]);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (GLint)GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (GLint)GL_CLAMP_TO_EDGE);
         //print("width = %d, height = %d", state.screen_width, state.screen_height);
         glTexImage2D(GL_TEXTURE_2D, 0, (GLint)GL_SRGB_ALPHA, (GLsizei)1280, (GLsizei)800, 0, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid[]?)0);
         glBindTexture(GL_TEXTURE_2D, 0);
