@@ -1,44 +1,44 @@
 #version 330 core
 uniform sampler2D texi; 
+
 in vec2 oTexcoord;
 out vec4 outColor;
 uniform float bloomy;
 uniform float blacking;
 uniform float intensity;
-
-vec4 bloom()
+const float blurSize = 1.0/1024.0;
+vec4 bloom_vertical( vec4 sum)
 {
 	vec2 coord = oTexcoord;
-	vec4 sum = vec4(0.0);
-	float radius1 = 0.43;
-	sum += texture2D(texi, coord + vec2(-1.5, -1.5)* radius1);
-	sum += texture2D(texi, coord + vec2(-2.5, 0)  * radius1);
-	sum += texture2D(texi, coord + vec2(-1.5, 1.5) * radius1);
-	sum += texture2D(texi, coord + vec2(0, 2.5) * radius1);
-	sum += texture2D(texi, coord + vec2(1.5, 1.5) * radius1);
-	sum += texture2D(texi, coord + vec2(2.5, 0) * radius1);
-	sum += texture2D(texi, coord + vec2(1.5, -1.5) * radius1);
-	sum += texture2D(texi, coord + vec2(0, -2.5) * radius1);
-	
-	float radius2 = 1.8;
-	sum += texture2D(texi, coord + vec2(-1.5, -1.5)* radius2);
-	sum += texture2D(texi, coord + vec2(-2.5, 0)  * radius2);
-	sum += texture2D(texi, coord + vec2(-1.5, 1.5) * radius2);
-	sum += texture2D(texi, coord + vec2(0, 2.5) * radius2);
-	sum += texture2D(texi, coord + vec2(1.5, 1.5) * radius2);
-	sum += texture2D(texi, coord + vec2(2.5, 0) * radius2);
-	sum += texture2D(texi, coord + vec2(1.5, -1.5) * radius2);
-	sum += texture2D(texi, coord + vec2(0, -2.5) * radius2);
-	
-	sum *= 0.04;
-	sum -= vec4(0.3,0.3,0.3,0.3);
-	sum = max(sum, vec4(0,0,0,0));
-	vec2 pos = (oTexcoord - vec2(0.5,0.5))*2;
-	float dist = dot(pos,pos);
-	dist = 1 -0.42*dist;
-	vec4 color= (texture2D(texi, oTexcoord) * intensity + sum )* dist;
+	sum += texture2D(texi, vec2(coord.x, coord.y - 4.0*blurSize)) * 0.05;
+	sum += texture2D(texi, vec2(coord.x, coord.y - 3.0*blurSize)) * 0.09;
+	sum += texture2D(texi, vec2(coord.x, coord.y - 2.0*blurSize)) * 0.12;
+	sum += texture2D(texi, vec2(coord.x, coord.y - blurSize)) * 0.15;
+	sum += texture2D(texi, vec2(coord.x, coord.y)) * 0.22;
+	sum += texture2D(texi, vec2(coord.x, coord.y + blurSize)) * 0.15;
+	sum += texture2D(texi, vec2(coord.x, coord.y + 2.0*blurSize)) * 0.12;
+	sum += texture2D(texi, vec2(coord.x, coord.y + 3.0*blurSize)) * 0.09;
+	sum += texture2D(texi, vec2(coord.x, coord.y + 4.0*blurSize)) * 0.05;
+	vec4 color = sum*intensity + texture2D(texi, coord);
 	return color;
 }
+vec4 bloom_horizontal()
+{
+	vec2 coord = oTexcoord;
+	vec4 sum = texture2D(texi,coord);
+	sum += texture2D(texi, vec2(coord.x - 4.0*blurSize, coord.y)) * 0.05;
+	sum += texture2D(texi, vec2(coord.x - 3.0*blurSize, coord.y)) * 0.09;
+	sum += texture2D(texi, vec2(coord.x - 2.0*blurSize, coord.y)) * 0.12;
+	sum += texture2D(texi, vec2(coord.x - blurSize, coord.y)) * 0.15;
+	sum += texture2D(texi, vec2(coord.x, coord.y)) * 0.22;
+	sum += texture2D(texi, vec2(coord.x + blurSize, coord.y)) * 0.15;
+	sum += texture2D(texi, vec2(coord.x + 2.0*blurSize, coord.y)) * 0.12;
+	sum += texture2D(texi, vec2(coord.x + 3.0*blurSize, coord.y)) * 0.09;
+	sum += texture2D(texi, vec2(coord.x + 4.0*blurSize, coord.y)) * 0.05;
+	//vec4 color = sum*intensity + texture2D(texi, coord); 
+	return bloom_vertical(sum);
+}
+
 vec4 blackwhite(vec4 color)
 {
 	float value =(color.r + color.g + color.b) /3; 
@@ -51,11 +51,11 @@ vec4 blackwhite(vec4 color)
 void main(void)
 {	
 	vec4 color;
-	if(bloomy < 0.5)
-		color = bloom();
+	if(bloomy > 0.5)
+		color = bloom_horizontal();
 	else
 		color = texture2D(texi, oTexcoord);
-	if(blacking < 0.5)
+	if(blacking > 0.5)
 		outColor = blackwhite(color);
 	else
 		outColor = color;
