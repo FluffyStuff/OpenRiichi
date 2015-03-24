@@ -299,8 +299,8 @@ public class OpenGLRenderer : RenderTarget
         glBindTexture(GL_TEXTURE_2D, frame_buffer_object_texture[0]);
         glUniform1i(pp_texture_location, 0);
         glUniform1f(bloomy_attrib, (GLfloat)1.0);//bloomy and blacking are actually bools. dont ask
-        glUniform1f(blacking_attrib, (GLfloat)1.0);
-        glUniform1f(intensity_attrib, (GLfloat)0.8);
+        glUniform1f(blacking_attrib, (GLfloat)0.0);
+        glUniform1f(intensity_attrib, (GLfloat)1.35);
         glEnableVertexAttribArray(pp_tex_attrib);
         //GLsizei len = (GLsizei)(10 * sizeof(float));
         glBindBuffer(GL_ARRAY_BUFFER, frame_buffer_object_vertices[0]);
