@@ -4,7 +4,7 @@ in vec2 oTexcoord;
 out vec4 outColor;
 uniform float bloomy;
 uniform float blacking;
-const float intensity = 0.8;
+uniform float intensity;
 
 vec4 bloom()
 {
