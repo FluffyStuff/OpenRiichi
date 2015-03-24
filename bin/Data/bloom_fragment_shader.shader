@@ -2,10 +2,11 @@
 uniform sampler2D texi; 
 in vec2 oTexcoord;
 out vec4 outColor;
-
+uniform float bloomy;
+uniform float blacking;
 const float intensity = 0.8;
 
-void main(void)
+vec4 bloom()
 {
 	vec2 coord = oTexcoord;
 	vec4 sum = vec4(0.0);
@@ -35,6 +36,27 @@ void main(void)
 	vec2 pos = (oTexcoord - vec2(0.5,0.5))*2;
 	float dist = dot(pos,pos);
 	dist = 1 -0.42*dist;
-	
-	outColor = (texture2D(texi, oTexcoord) * intensity + sum )* dist;
+	vec4 color= (texture2D(texi, oTexcoord) * intensity + sum )* dist;
+	return color;
+}
+vec4 blackwhite(vec4 color)
+{
+	float value =(color.r + color.g + color.b) /3; 
+	color.r = value;
+	color.g = value;
+	color.b = value;
+	return color;
+}
+
+void main(void)
+{	
+	vec4 color;
+	if(bloomy < 0.5)
+		color = bloom();
+	else
+		color = texture2D(texi, oTexcoord);
+	if(blacking < 0.5)
+		outColor = blackwhite(color);
+	else
+		outColor = color;
 }

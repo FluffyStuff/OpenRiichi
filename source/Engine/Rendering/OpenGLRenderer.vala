@@ -30,6 +30,8 @@ public class OpenGLRenderer : RenderTarget
     private GLint position_attrib = -1;
     private GLint scale_attrib = -1;
     private GLint alpha_attrib = -1;
+    private GLint bloomy_attrib = -1;
+    private GLint blacking_attrib = -1;
     private GLint light_multi_attrib = -1;
     private GLint diffuse_color_attrib = -1;
     private GLint camera_rotation_attrib = -1;
@@ -231,6 +233,9 @@ public class OpenGLRenderer : RenderTarget
 		glLinkProgram(post_processing_shader_program);
 
 		pp_texture_location = glGetUniformLocation(post_processing_shader_program, "texi");
+		bloomy_attrib = glGetUniformLocation(post_processing_shader_program,"bloomy");
+		blacking_attrib = glGetUniformLocation(post_processing_shader_program,"blacking");
+
 
 		if (glGetError() != 0)
 			print("GL shader program failure!!!\n");
@@ -291,7 +296,8 @@ public class OpenGLRenderer : RenderTarget
         glUseProgram(post_processing_shader_program);
         glBindTexture(GL_TEXTURE_2D, frame_buffer_object_texture[0]);
         glUniform1i(pp_texture_location, 0);
-
+        glUniform1f(bloomy_attrib, (GLfloat)0.0);
+        glUniform1f(blacking_attrib, (GLfloat)1.0);
         glEnableVertexAttribArray(pp_tex_attrib);
         //GLsizei len = (GLsizei)(10 * sizeof(float));
         glBindBuffer(GL_ARRAY_BUFFER, frame_buffer_object_vertices[0]);
