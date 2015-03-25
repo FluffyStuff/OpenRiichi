@@ -248,7 +248,7 @@ public class OpenGLRenderer : RenderTarget
         glBindFramebuffer(GL_FRAMEBUFFER,frame_buffer_object[0]);
         render_scene(state);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        post_process_draw();
+        post_process_draw(state);
         //glViewport(0,0,1280,800);
         glUseProgram(shader_program);
         window.swap();
@@ -290,7 +290,7 @@ public class OpenGLRenderer : RenderTarget
     }
 
 
-    private void post_process_draw()
+    private void post_process_draw(RenderState state)
     {
         glClearColor((GLfloat)0.0, (GLfloat)0.0, (GLfloat)0.0, (GLfloat)1.0);
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
@@ -298,9 +298,18 @@ public class OpenGLRenderer : RenderTarget
         glUseProgram(post_processing_shader_program);
         glBindTexture(GL_TEXTURE_2D, frame_buffer_object_texture[0]);
         glUniform1i(pp_texture_location, 0);
-        glUniform1f(bloomy_attrib, (GLfloat)1.0);//bloomy and blacking are actually bools. dont ask
-        glUniform1f(blacking_attrib, (GLfloat)0.0);
-        glUniform1f(intensity_attrib, (GLfloat)1.35);
+        if(state.blacking)
+            glUniform1f(blacking_attrib, (GLfloat)1.0);
+        else
+            glUniform1f(blacking_attrib, (GLfloat)0.0);
+        if(state.bloom)
+            glUniform1f(bloomy_attrib, (GLfloat)1.0);//bloomy and blacking are actually bools. dont ask
+        else if(state.bloomy)
+            glUniform1f(bloomy_attrib, (GLfloat)2.0);
+        else
+            glUniform1f(bloomy_attrib, (GLfloat)0.0);
+        //glUniform1f(blacking_attrib, (GLfloat)0.0);
+        glUniform1f(intensity_attrib, (GLfloat)0.35);
         glEnableVertexAttribArray(pp_tex_attrib);
         //GLsizei len = (GLsizei)(10 * sizeof(float));
         glBindBuffer(GL_ARRAY_BUFFER, frame_buffer_object_vertices[0]);
