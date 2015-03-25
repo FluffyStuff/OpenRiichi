@@ -127,6 +127,7 @@ public class GameView : View
 
         // Calculate the intensity of the lights in accordance with the base amplitude
         float val = aubio.get_amplitude(time, 3, 6, 10) * 1.5f;
+        perlin_strength = 0.2f + (float)Math.pow(val / 4, 2) / 6;
         val *= val * 6 / light_count;
 
         for (int i = 0; i < circlers.length; i++)
