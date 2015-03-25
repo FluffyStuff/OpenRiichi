@@ -3,13 +3,15 @@
 #define PI 3.1415926535897932384626433832795
 
 #define perlin_grain 1.5
-#define perlin_strength 0.25
+//#define perlin_strength 0.25
 
 uniform sampler2D tex;
 uniform int light_count;
 uniform float alpha;
 uniform float light_multiplier;
+uniform float perlin_strength;
 uniform vec3 diffuse_color;
+
 in vec2 Texcoord;
 in vec3 Normal;
 in vec3 Camera_normal;
@@ -202,11 +204,14 @@ void main()
 	
 	float noise = 0;
 	
-	for (int i = 1; i <= 128; i *= 2)
+	if (perlin_strength > 0)
 	{
-		float a = i;
-		a = pow(a, perlin_grain);
-		noise += snoise(noise_coord * i) / a;
+		for (int i = 1; i <= 128; i *= 2)
+		{
+			float a = i;
+			a = pow(a, perlin_grain);
+			noise += snoise(noise_coord * i) / a;
+		}
 	}
 	
 	normal = (vec4(normal, 1.0) * rotationMatrix(vec3(1, 1, 1), noise * perlin_strength)).xyz;

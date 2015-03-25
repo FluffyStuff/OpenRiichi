@@ -53,7 +53,10 @@ void main(void)
 	float bloom_size = 9;
 	float amplification = 10;
 	
-	vec4 color = texture2D(texi, oTexcoord) + get_bloom(bloom_size) * bloom * amplification;
+	vec4 color = texture2D(texi, oTexcoord);
+	
+	if (bloom > 0)
+		color += get_bloom(bloom_size) * bloom * amplification;
 	
 	if (blacking)
 		outColor = blackwhite(color);

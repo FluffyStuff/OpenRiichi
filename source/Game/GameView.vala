@@ -8,7 +8,9 @@ public class GameView : View
     private CameraController camera_controller = new CameraController();
     private bool black_filter = false;
     private bool do_bloom = true;
+    private bool do_perlin = true;
     private float bloom_intensity = 0.6f;
+    private float perlin_strength = 0.25f;
     private SDLMusic music;
     private AubioAnalysis aubio;
     private const double music_start_time = 125; // This is probably where we want to start the scene, as not to become to long and dry
@@ -211,8 +213,8 @@ public class GameView : View
         state.add_3D_object(sky);
 
         state.blacking = black_filter;
-
         state.bloom = do_bloom ? bloom_intensity : 0;
+        state.perlin_strength = do_perlin ? perlin_strength : 0;
     }
 
     private int last_x = 0;
@@ -288,6 +290,9 @@ public class GameView : View
             break;
         case 61: //F4
             black_filter = !black_filter;
+            break;
+        case 62: //F5
+            do_perlin = !do_perlin;
             break;
         default:
             print("%i\n", (int)key);

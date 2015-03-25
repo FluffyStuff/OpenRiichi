@@ -30,6 +30,7 @@ public class OpenGLRenderer : RenderTarget
     private GLint position_attrib = -1;
     private GLint scale_attrib = -1;
     private GLint alpha_attrib = -1;
+    private GLint perlin_strength_attrib = -1;
     private GLint bloom_attrib = -1;
     private GLint blacking_attrib = -1;
     private GLint intensity_attrib = -1;
@@ -151,6 +152,7 @@ public class OpenGLRenderer : RenderTarget
         aspect_ratio_attrib = glGetUniformLocation(shader_program, "aspect_ratio");
         focal_length_attrib = glGetUniformLocation(shader_program, "focal_length");
         alpha_attrib = glGetUniformLocation(shader_program, "alpha");
+        perlin_strength_attrib = glGetUniformLocation(shader_program, "perlin_strength");
         light_multi_attrib = glGetUniformLocation(shader_program, "light_multiplier");
         diffuse_color_attrib = glGetUniformLocation(shader_program, "diffuse_color");
 
@@ -323,6 +325,7 @@ public class OpenGLRenderer : RenderTarget
         glUniform1f(aspect_ratio_attrib, (GLfloat)state.screen_width / state.screen_height);
         glUniform1f(focal_length_attrib, (GLfloat)state.focal_length);
         glUniform1i(light_count_attrib, (GLint)state.lights.size);
+        glUniform1f(perlin_strength_attrib, (GLfloat)state.perlin_strength);
 
         for (int i = 0; i < state.lights.size; i++)
         {
@@ -334,16 +337,11 @@ public class OpenGLRenderer : RenderTarget
             glUniform1f(light_intensity_attrib, (GLfloat)state.lights[i].intensity);
         }
 
-        Vec3 pos = {};
-
         foreach (Render3DObject obj in state.objects)
-            pos = render_3D_object(obj);
-
-        pos = Vec3() { x = pos.x + 1, y = pos.y + 1, z = pos.z + 1 };
-        glUniform3f(camera_position_attrib, (GLfloat)pos.x, (GLfloat)pos.y, (GLfloat)pos.z);
+            render_3D_object(obj);
     }
 
-    private Vec3 render_3D_object(Render3DObject obj)
+    private void render_3D_object(Render3DObject obj)
     {
         OpenGLTextureResourceHandle handle = (OpenGLTextureResourceHandle)get_texture(obj.texture.handle);
         glBindTexture(GL_TEXTURE_2D, (GLuint)handle.handle);
@@ -370,8 +368,6 @@ public class OpenGLRenderer : RenderTarget
         glVertexAttribPointer(nor_attrib, 3, GL_FLOAT, GL_FALSE, len, (GLvoid[])(7 * sizeof(GLfloat)));
 
         glDrawArrays(GL_TRIANGLES, 0, (GLsizei)obj_handle.triangle_count);
-
-        return pos;
     }
 
     private void setup_projection(RenderState state, bool ortho)

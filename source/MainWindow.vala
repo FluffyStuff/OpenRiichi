@@ -221,6 +221,7 @@ public class RenderState
         screen_width = width;
         screen_height = height;
         focal_length = 1;
+        perlin_strength = 0;
     }
 
     public void add_3D_object(Render3DObject object)
@@ -233,8 +234,10 @@ public class RenderState
     {
         _lights.add(light);
     }
-    public bool blacking { get; set;}
-    public float bloom { get; set;}
+
+    public bool blacking { get; set; }
+    public float bloom { get; set; }
+    public float perlin_strength { get; set; }
     public int screen_width { get; private set; }
     public int screen_height { get; private set; }
     public Gee.ArrayList<Render3DObject> objects { get { return objs; } }
