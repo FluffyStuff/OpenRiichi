@@ -234,8 +234,7 @@ public class RenderState
         _lights.add(light);
     }
     public bool blacking { get; set;}
-    public bool bloom {get; set;}
-    public bool bloomy{get; set;}
+    public float bloom { get; set;}
     public int screen_width { get; private set; }
     public int screen_height { get; private set; }
     public Gee.ArrayList<Render3DObject> objects { get { return objs; } }

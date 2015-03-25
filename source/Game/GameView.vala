@@ -6,9 +6,9 @@ public class GameView : View
     private Ball[] balls;
     private Circler[] circlers;
     private CameraController camera_controller = new CameraController();
-    private bool blacky = false;
-    private bool bloomi = false;
-    private bool ubloomi = false;
+    private bool black_filter = false;
+    private bool do_bloom = true;
+    private float bloom_intensity = 0.6f;
     private SDLMusic music;
     private AubioAnalysis aubio;
     private const double music_start_time = 125; // This is probably where we want to start the scene, as not to become to long and dry
@@ -209,18 +209,10 @@ public class GameView : View
 
         // Add sky to scene
         state.add_3D_object(sky);
-        if(blacky)
-            state.blacking = true;
-        else
-            state.blacking = false;
-        if(bloomi)
-            state.bloom = true;
-        else
-            state.bloom = false;
-        if(ubloomi)
-            state.bloomy = true;
-        else
-            state.bloomy = false;
+
+        state.blacking = black_filter;
+
+        state.bloom = do_bloom ? bloom_intensity : 0;
     }
 
     private int last_x = 0;
@@ -289,15 +281,13 @@ public class GameView : View
             custom_camera = !custom_camera;
             break;
         case 59: //F2
-            blacky = !blacky;
+            black_filter = !black_filter;
             break;
         case 60: //F3
-            bloomi = !bloomi;
-            ubloomi = false;
+            do_bloom = !do_bloom;
             break;
         case 61: //F4
-            ubloomi = !ubloomi;
-            bloomi = false;
+            black_filter = !black_filter;
             break;
         default:
             print("%i\n", (int)key);

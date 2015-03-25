@@ -30,7 +30,7 @@ public class OpenGLRenderer : RenderTarget
     private GLint position_attrib = -1;
     private GLint scale_attrib = -1;
     private GLint alpha_attrib = -1;
-    private GLint bloomy_attrib = -1;
+    private GLint bloom_attrib = -1;
     private GLint blacking_attrib = -1;
     private GLint intensity_attrib = -1;
     private GLint light_multi_attrib = -1;
@@ -234,7 +234,7 @@ public class OpenGLRenderer : RenderTarget
 		glLinkProgram(post_processing_shader_program);
 
 		pp_texture_location = glGetUniformLocation(post_processing_shader_program, "texi");
-		bloomy_attrib = glGetUniformLocation(post_processing_shader_program,"bloomy");
+		bloom_attrib = glGetUniformLocation(post_processing_shader_program,"bloom");
 		blacking_attrib = glGetUniformLocation(post_processing_shader_program,"blacking");
 		intensity_attrib = glGetUniformLocation(post_processing_shader_program,"intensity");
 
@@ -298,16 +298,9 @@ public class OpenGLRenderer : RenderTarget
         glUseProgram(post_processing_shader_program);
         glBindTexture(GL_TEXTURE_2D, frame_buffer_object_texture[0]);
         glUniform1i(pp_texture_location, 0);
-        if(state.blacking)
-            glUniform1f(blacking_attrib, (GLfloat)1.0);
-        else
-            glUniform1f(blacking_attrib, (GLfloat)0.0);
-        if(state.bloom)
-            glUniform1f(bloomy_attrib, (GLfloat)1.0);//bloomy and blacking are actually bools. dont ask
-        else if(state.bloomy)
-            glUniform1f(bloomy_attrib, (GLfloat)2.0);
-        else
-            glUniform1f(bloomy_attrib, (GLfloat)0.0);
+
+        glUniform1i(blacking_attrib, (GLboolean)(state.blacking ? 1 : 0));
+        glUniform1f(bloom_attrib, (GLfloat)state.bloom);
         //glUniform1f(blacking_attrib, (GLfloat)0.0);
         glUniform1f(intensity_attrib, (GLfloat)0.35);
         glEnableVertexAttribArray(pp_tex_attrib);
