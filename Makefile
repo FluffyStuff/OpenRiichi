@@ -13,7 +13,7 @@ Linux:
 	$(VALAC) -D LINUX --save-temps --pkg glib-2.0 $(DEBUG) $(O) $(DIRS) $(PKGS) $(VAPI) -X /usr/lib/libSOIL.so -X /usr/lib/x86_64-linux-gnu/libSDL2_image.so -X /usr/lib/x86_64-linux-gnu/libSDL2_mixer.so -X lib/SDL/SDL2.lib -X lib/GLEW/glew32s.lib -X lib/GL/libopengl32.a --Xcc=-lm
 
 cleanLinux:
-	rm bin/RiichiMahjong
+	rm bin/Demoscene
 	rm -r *.c
 
 Debug:
@@ -43,4 +43,3 @@ cleanWindows:
 	rm source/Engine/Rendering *.c
 	rm source/Game *.c
 	rm source/Helper *.c
-	rm source/Server *.c

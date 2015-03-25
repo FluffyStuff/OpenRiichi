@@ -23,17 +23,17 @@ vec4 get_bloom(float size)
 	float bias = 3.5; // Stupid, but we need it because we have such a short range available
 	float intensity_curve = 2; // Make the bloom intensity dependant on the combined color amplitude
 	
-	float half = size / 2;
+	float halfed = size / 2;
 	vec4 sum = vec4(0);
 	
 	ivec2 tex_size = textureSize(texi, 0);
 	
-	for (float i = -half; i < half; i++)
+	for (float i = -halfed; i < halfed; i++)
 	{
-		for (float j = -half; j < half; j++)
+		for (float j = -halfed; j < halfed; j++)
 		{
-			float strength = half - sqrt(i*i + j*j);
-			strength /= half;
+			float strength = halfed - sqrt(i*i + j*j);
+			strength /= halfed;
 			strength = max(strength, 0);
 			
 			vec4 color = texture2D(texi, vec2(oTexcoord.x + i / tex_size.x * bias, oTexcoord.y + j / tex_size.y * bias));
