@@ -18,7 +18,6 @@ public class OpenGLRenderer : RenderTarget
 	private GLuint frame_buffer_object_texture[1];
 	private GLuint color_buffer[1];
 	private GLuint frame_buffer_object_vertices[1];
-	private GLuint vertexbuffer[1];
 	private GLuint vertex_array_ID[1];
     private GLint pos_attrib = 0;
     private GLint tex_attrib = 1;

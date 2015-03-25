@@ -17,10 +17,12 @@ cleanLinux:
 	rm -r *.c
 
 Debug:
+	$(eval SHELL = C:/Windows/System32/cmd.exe)
 	$(VALAC) $(DEBUG) $(O) $(DIRS) $(PKGS) $(LIBS) $(VAPI)
 	-RCEDIT /I bin\Demoscene.exe Icon.ico
 
 Release:
+	$(eval SHELL = C:/Windows/System32/cmd.exe)
 	$(VALAC) -X -mwindows $(O) $(DIRS) $(PKGS) $(LIBS) $(VAPI)
 	-RCEDIT /I bin\Demoscene.exe Icon.ico
 
