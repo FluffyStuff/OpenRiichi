@@ -236,6 +236,7 @@ public class RenderState
     }
 
     public bool blacking { get; set; }
+    public bool vertical {get; set;}
     public float bloom { get; set; }
     public float perlin_strength { get; set; }
     public int screen_width { get; private set; }
