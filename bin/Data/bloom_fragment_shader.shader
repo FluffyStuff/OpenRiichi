@@ -77,16 +77,16 @@ vec4 bloom_v(float size){
 }
 
 vec4 bloom_h(float size){
-	ivec2 tex_size = textureSize(texi, 0);
+	ivec2 tex_size = textureSize(texi_2nd_pass, 0);
 	float halfed = size /2;
 	float bias = 3.5;
-	vec4 sum = texture2D(texi, oTexcoord);
+	vec4 sum = texture2D(texi_2nd_pass, oTexcoord);
 	for(float i = -halfed; i < halfed; i++)
 	{
 		float strength = halfed - i;
 		strength /= halfed;
 		strength = max(strength, 0);
-		vec4 color = texture2D(texi, vec2(oTexcoord.x, oTexcoord.y + i / tex_size.y * bias));
+		vec4 color = texture2D(texi_2nd_pass, vec2(oTexcoord.x, oTexcoord.y + i / tex_size.y * bias));
 		sum+= color * strength / (size * size);
 	}
 	/*sum += texture2D(texi, vec2(oTexcoord.x, oTexcoord.y - 4.0*blurSize)) * 0.05;

@@ -16,6 +16,7 @@ public class OpenGLRenderer : RenderTarget
 	private GLuint post_processing_fragment_shader;
 	private GLuint frame_buffer_object[1];
 	private GLuint frame_buffer_object_texture[1];
+	private GLuint second_pass_object_texture[1];
 	private GLuint color_buffer[1];
 	private GLuint frame_buffer_object_vertices[1];
 	private GLuint vertex_array_ID[1];
@@ -24,6 +25,7 @@ public class OpenGLRenderer : RenderTarget
     private GLint nor_attrib = 2;
     private GLint pp_tex_attrib = 1;
     private GLint pp_texture_location = -1;
+    private GLint second_pass_tex_location = -1;
     private GLint texture_location = -1;
     private GLint rotation_attrib = -1;
     private GLint position_attrib = -1;
@@ -183,6 +185,16 @@ public class OpenGLRenderer : RenderTarget
         //print("width = %d, height = %d", state.screen_width, state.screen_height);
         glTexImage2D(GL_TEXTURE_2D, 0, (GLint)GL_SRGB_ALPHA, (GLsizei)1280, (GLsizei)800, 0, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid[]?)0);
         glBindTexture(GL_TEXTURE_2D, 0);
+        glActiveTexture(GL_TEXTURE1);
+        glGenTextures(1, second_pass_object_texture);
+        glBindTexture(GL_TEXTURE_2D, second_pass_object_texture[0]);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (GLint)GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (GLint)GL_CLAMP_TO_EDGE);
+        //print("width = %d, height = %d", state.screen_width, state.screen_height);
+        glTexImage2D(GL_TEXTURE_2D, 0, (GLint)GL_SRGB_ALPHA, (GLsizei)1280, (GLsizei)800, 0, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid[]?)0);
+        glBindTexture(GL_TEXTURE_2D, 0);
 
         glGenRenderbuffers(1, color_buffer);
         glBindRenderbuffer(GL_RENDERBUFFER, color_buffer[0]);
@@ -192,6 +204,7 @@ public class OpenGLRenderer : RenderTarget
         glGenFramebuffers(1, frame_buffer_object);
         glBindFramebuffer(GL_FRAMEBUFFER, frame_buffer_object[0]);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, frame_buffer_object_texture[0], 0);
+        //glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, second_pass_object_texture[0], 0);
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, color_buffer[0]);
         GLenum status;
         if ((status = glCheckFramebufferStatus(GL_FRAMEBUFFER)) != GL_FRAMEBUFFER_COMPLETE) {
@@ -236,6 +249,7 @@ public class OpenGLRenderer : RenderTarget
 		glLinkProgram(post_processing_shader_program);
 
 		pp_texture_location = glGetUniformLocation(post_processing_shader_program, "texi");
+		second_pass_tex_location = glGetUniformLocation(post_processing_shader_program,"texi_2nd_pass");
 		bloom_attrib = glGetUniformLocation(post_processing_shader_program,"bloom");
 		blacking_attrib = glGetUniformLocation(post_processing_shader_program,"blacking");
 		vertical_attrib = glGetUniformLocation(post_processing_shader_program,"vertical");
@@ -252,6 +266,7 @@ public class OpenGLRenderer : RenderTarget
         render_scene(state);
         //glBindFramebuffer(GL_FRAMEBUFFER, 0);
         post_process_draw(state);
+        second_pass_object_texture = frame_buffer_object_texture;
         //glViewport(0,0,1280,800);
         glUseProgram(shader_program);
         window.swap();
@@ -297,9 +312,8 @@ public class OpenGLRenderer : RenderTarget
     {
         //glClearColor((GLfloat)0.0, (GLfloat)0.0, (GLfloat)0.0, (GLfloat)1.0);
        // glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-
         glUseProgram(post_processing_shader_program);
-        glBindTexture(GL_TEXTURE_2D, frame_buffer_object_texture[0]);
+        glBindTexture(GL_TEXTURE_2D, second_pass_object_texture[0]);
         glUniform1i(pp_texture_location, 0);
 
         glUniform1i(blacking_attrib, (GLboolean)0);
@@ -321,7 +335,7 @@ public class OpenGLRenderer : RenderTarget
         glUseProgram(post_processing_shader_program);
         glBindTexture(GL_TEXTURE_2D, frame_buffer_object_texture[0]);
         glUniform1i(pp_texture_location, 0);
-
+        glUniform1i(second_pass_tex_location, 0);
         glUniform1i(blacking_attrib, (GLboolean)(state.blacking ? 1 : 0));
         glUniform1f(bloom_attrib, (GLfloat)state.bloom);
         glUniform1i(vertical_attrib, (GLboolean)0);
