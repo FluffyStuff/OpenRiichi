@@ -1,6 +1,7 @@
 #version 330 core
-uniform sampler2D texi;
-uniform sampler2D texi_2nd_pass;
+#define PI 3.1415926535897932384626433832795
+#define E1 2.7182818284590452353602874713526
+uniform sampler2D textures[2];
 
 in vec2 oTexcoord;
 out vec4 outColor;
@@ -19,104 +20,59 @@ vec4 blackwhite(vec4 color)
 	return color;
 }
 
-vec4 get_bloom(float size)
+float gauss(float x)
 {
-	float bias = 3.5; // Stupid, but we need it because we have such a short range available
-	float intensity_curve = 2; // Make the bloom intensity dependant on the combined color amplitude
-	
+	float sigma = 1;
+	return 1 / (sqrt(2*PI*sigma*sigma))*pow(E1, -x*x/(2*sigma*sigma));
+}
+
+vec4 bloom_h(float size, sampler2D texture)
+{
+	ivec2 tex_size = textureSize(texture, 0);
 	float halfed = size / 2;
 	vec4 sum = vec4(0);
 	
-	ivec2 tex_size = textureSize(texi, 0);
+	for (float i = -halfed; i < halfed; i++)
+	{
+		float strength = max(gauss(i / 20), 0);
+		vec4 color = texture2D(texture, vec2(oTexcoord.x + i / tex_size.x, oTexcoord.y));
+		sum += color * strength / size;
+	}
+	
+	return sum;
+}
+
+vec4 bloom_v(float size, sampler2D texture)
+{
+	ivec2 tex_size = textureSize(texture, 0);
+	float halfed = size / 2;
+	vec4 sum = vec4(0);
 	
 	for (float i = -halfed; i < halfed; i++)
 	{
-		for (float j = -halfed; j < halfed; j++)
-		{
-			float strength = halfed - sqrt(i*i + j*j);
-			strength /= halfed;
-			strength = max(strength, 0);
-			
-			vec4 color = texture2D(texi, vec2(oTexcoord.x + i / tex_size.x * bias, oTexcoord.y + j / tex_size.y * bias));
-			
-			float s = (color.r + color.g + color.b) / 3;
-			s = pow(s, intensity_curve);
-			
-			sum += color * strength / (size * size);
-		}
+		float strength = max(gauss(i / 20), 0);
+		vec4 color = texture2D(texture, vec2(oTexcoord.x, oTexcoord.y + i / tex_size.y));
+		sum += color * strength / size;
 	}
 	
-	return sum;
-}
-
-vec4 bloom_v(float size){
-	ivec2 tex_size = textureSize(texi, 0);
-	float halfed = size /2;
-	float bias = 3.5;
-	vec4 sum = texture2D(texi, oTexcoord);
-	for(float i = -halfed; i < halfed; i++)
-	{
-		float strength = halfed - i;
-		strength /= halfed;
-		strength = max(strength, 0);
-		vec4 color = texture2D(texi, vec2(oTexcoord.x + i / tex_size.x * bias, oTexcoord.y));
-		sum+= color * strength / (size * size);
-	}
-	
-	
-	/*sum += texture2D(texi, vec2(oTexcoord.x - 4.0*blurSize, oTexcoord.y)) * 0.05;
-	sum += texture2D(texi, vec2(oTexcoord.x - 3.0*blurSize, oTexcoord.y)) * 0.09;
-	sum += texture2D(texi, vec2(oTexcoord.x - 2.0*blurSize, oTexcoord.y)) * 0.12;
-	sum += texture2D(texi, vec2(oTexcoord.x - blurSize, oTexcoord.y)) * 0.15;
-	sum += texture2D(texi, vec2(oTexcoord.x, oTexcoord.y)) * 0.16;
-	sum += texture2D(texi, vec2(oTexcoord.x + blurSize, oTexcoord.y)) * 0.15;
-	sum += texture2D(texi, vec2(oTexcoord.x + 2.0*blurSize, oTexcoord.y)) * 0.12;
-	sum += texture2D(texi, vec2(oTexcoord.x + 3.0*blurSize, oTexcoord.y)) * 0.09;
-	sum += texture2D(texi, vec2(oTexcoord.x + 4.0*blurSize, oTexcoord.y)) * 0.05;*/
-	return sum;
-}
-
-vec4 bloom_h(float size){
-	ivec2 tex_size = textureSize(texi_2nd_pass, 0);
-	float halfed = size /2;
-	float bias = 3.5;
-	vec4 sum = texture2D(texi_2nd_pass, oTexcoord);
-	for(float i = -halfed; i < halfed; i++)
-	{
-		float strength = halfed - i;
-		strength /= halfed;
-		strength = max(strength, 0);
-		vec4 color = texture2D(texi_2nd_pass, vec2(oTexcoord.x, oTexcoord.y + i / tex_size.y * bias));
-		sum+= color * strength / (size * size);
-	}
-	/*sum += texture2D(texi, vec2(oTexcoord.x, oTexcoord.y - 4.0*blurSize)) * 0.05;
-	sum += texture2D(texi, vec2(oTexcoord.x, oTexcoord.y - 3.0*blurSize)) * 0.09;
-	sum += texture2D(texi, vec2(oTexcoord.x, oTexcoord.y - 2.0*blurSize)) * 0.12;
-	sum += texture2D(texi, vec2(oTexcoord.x, oTexcoord.y - blurSize)) * 0.15;
-	sum += texture2D(texi, vec2(oTexcoord.x, oTexcoord.y)) * 0.16;
-	sum += texture2D(texi, vec2(oTexcoord.x, oTexcoord.y + blurSize)) * 0.15;
-	sum += texture2D(texi, vec2(oTexcoord.x, oTexcoord.y + 2.0*blurSize)) * 0.12;
-	sum += texture2D(texi, vec2(oTexcoord.x, oTexcoord.y + 3.0*blurSize)) * 0.09;
-	sum += texture2D(texi, vec2(oTexcoord.x, oTexcoord.y + 4.0*blurSize)) * 0.05;*/
 	return sum;
 }
 
 void main(void)
 {
-	float bloom_size = 50;
-	float amplification = 10;
+	float bloom_size = 100;
+	float amplification = 15;
 	
-	vec4 color = texture2D(texi, oTexcoord);
+	vec4 color = texture2D(textures[0], oTexcoord);
 	
 	if (bloom > 0)
 	{
-		//color += get_bloom(bloom_size) * bloom * amplification;
-		if(vertical){
-			color = bloom_v(bloom_size);
-		}
+		if (vertical)
+			color = vec4(bloom_v(bloom_size, textures[0]).xyz, 1.0) * amplification * bloom;
 		else
-			color += bloom_h(bloom_size)*intensity*amplification;
+			color += vec4(bloom_h(bloom_size, textures[1]).xyz, 1.0) * amplification * bloom;
 	}
+	
 	if (blacking)
 		outColor = blackwhite(color);
 	else

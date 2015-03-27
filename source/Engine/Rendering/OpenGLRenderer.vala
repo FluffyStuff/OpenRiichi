@@ -16,6 +16,7 @@ public class OpenGLRenderer : RenderTarget
 	private GLuint post_processing_fragment_shader;
 	private GLuint frame_buffer_object[1];
 	private GLuint frame_buffer_object_texture[1];
+	private GLuint second_pass_object[1];
 	private GLuint second_pass_object_texture[1];
 	private GLuint color_buffer[1];
 	private GLuint frame_buffer_object_vertices[1];
@@ -25,7 +26,6 @@ public class OpenGLRenderer : RenderTarget
     private GLint nor_attrib = 2;
     private GLint pp_tex_attrib = 1;
     private GLint pp_texture_location = -1;
-    private GLint second_pass_tex_location = -1;
     private GLint texture_location = -1;
     private GLint rotation_attrib = -1;
     private GLint position_attrib = -1;
@@ -43,6 +43,7 @@ public class OpenGLRenderer : RenderTarget
     private GLint aspect_ratio_attrib = -1;
     private GLint focal_length_attrib = -1;
     private GLint light_count_attrib = -1;
+    private const GLint samplers[2] = {0,1};
 
     private GLContext context;
     private unowned Window sdl_window;
@@ -165,12 +166,12 @@ public class OpenGLRenderer : RenderTarget
 
     private void on_reshape()
     {
+        glBindTexture(GL_TEXTURE_2D, second_pass_object_texture[0]);
+        glTexImage2D(GL_TEXTURE_2D, 0, (GLint)GL_SRGB_ALPHA, (GLsizei)view_width, (GLsizei)view_height, 0, (GLint)GL_RGBA, GL_UNSIGNED_BYTE, null);
         glBindTexture(GL_TEXTURE_2D, frame_buffer_object_texture[0]);
         glTexImage2D(GL_TEXTURE_2D, 0, (GLint)GL_SRGB_ALPHA, (GLsizei)view_width, (GLsizei)view_height, 0, (GLint)GL_RGBA, GL_UNSIGNED_BYTE, null);
-        //glBindTexture(GL_TEXTURE_2D, 0);
         glBindRenderbuffer(GL_RENDERBUFFER, color_buffer[0]);
         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, (GLsizei)view_width, (GLsizei)view_height);
-        //glBindRenderbuffer(GL_RENDERBUFFER, 0);
     }
 
     private void init_frame_buffer()
@@ -204,14 +205,20 @@ public class OpenGLRenderer : RenderTarget
         glGenFramebuffers(1, frame_buffer_object);
         glBindFramebuffer(GL_FRAMEBUFFER, frame_buffer_object[0]);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, frame_buffer_object_texture[0], 0);
-        //glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, second_pass_object_texture[0], 0);
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, color_buffer[0]);
+
+        glGenFramebuffers(1, second_pass_object);
+        glBindFramebuffer(GL_FRAMEBUFFER, second_pass_object[0]);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, second_pass_object_texture[0], 0);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, color_buffer[0]);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
         GLenum status;
         if ((status = glCheckFramebufferStatus(GL_FRAMEBUFFER)) != GL_FRAMEBUFFER_COMPLETE) {
             print("glCheckFramebufferStatus: error %d", (int)status);
             //return;
         }
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 
         GLfloat[] frame_buffer_vertices = {-1,-1, 1, -1, -1,1, 1, 1};
         glGenBuffers(1, frame_buffer_object_vertices);
@@ -248,13 +255,11 @@ public class OpenGLRenderer : RenderTarget
         glBindAttribLocation(post_processing_shader_program, pp_tex_attrib, "iTexcoord");
 		glLinkProgram(post_processing_shader_program);
 
-		pp_texture_location = glGetUniformLocation(post_processing_shader_program, "texi");
-		second_pass_tex_location = glGetUniformLocation(post_processing_shader_program,"texi_2nd_pass");
+		pp_texture_location = glGetUniformLocation(post_processing_shader_program, "textures");
 		bloom_attrib = glGetUniformLocation(post_processing_shader_program,"bloom");
 		blacking_attrib = glGetUniformLocation(post_processing_shader_program,"blacking");
 		vertical_attrib = glGetUniformLocation(post_processing_shader_program,"vertical");
 		intensity_attrib = glGetUniformLocation(post_processing_shader_program,"intensity");
-
 
 		if (glGetError() != 0)
 			print("GL shader program failure!!!\n");
@@ -262,13 +267,13 @@ public class OpenGLRenderer : RenderTarget
 
     public override void render(RenderState state)
     {
-        glBindFramebuffer(GL_FRAMEBUFFER,frame_buffer_object[0]);
-        render_scene(state);
-        //glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        post_process_draw(state);
-        second_pass_object_texture = frame_buffer_object_texture;
-        //glViewport(0,0,1280,800);
         glUseProgram(shader_program);
+        glBindFramebuffer(GL_FRAMEBUFFER, frame_buffer_object[0]);
+        render_scene(state);
+
+        glUseProgram(post_processing_shader_program);
+        post_process_draw(state);
+
         window.swap();
     }
 
@@ -310,44 +315,32 @@ public class OpenGLRenderer : RenderTarget
 
     private void post_process_draw(RenderState state)
     {
-        //glClearColor((GLfloat)0.0, (GLfloat)0.0, (GLfloat)0.0, (GLfloat)1.0);
-       // glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-        glUseProgram(post_processing_shader_program);
-        glBindTexture(GL_TEXTURE_2D, second_pass_object_texture[0]);
-        glUniform1i(pp_texture_location, 0);
+        //1st pass
+        glBindFramebuffer(GL_FRAMEBUFFER, second_pass_object[0]);
+        glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+        glBindTexture(GL_TEXTURE_2D, frame_buffer_object_texture[0]);
 
         glUniform1i(blacking_attrib, (GLboolean)0);
         glUniform1f(bloom_attrib, (GLfloat)state.bloom);
         glUniform1i(vertical_attrib, (GLboolean)1);
-        //glUniform1f(blacking_attrib, (GLfloat)0.0);
         glUniform1f(intensity_attrib, (GLfloat)0.8);
-        glEnableVertexAttribArray(pp_tex_attrib);
-        //GLsizei len = (GLsizei)(10 * sizeof(float));
+
         glBindBuffer(GL_ARRAY_BUFFER, frame_buffer_object_vertices[0]);
         glVertexAttribPointer(pp_tex_attrib, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid[])0);
-
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-        glDisableVertexAttribArray(pp_tex_attrib);
+
+        //2nd pass
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glClearColor((GLfloat)0.0, (GLfloat)0.0, (GLfloat)0.0, (GLfloat)1.0);
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, second_pass_object_texture[0]);
+        glActiveTexture(GL_TEXTURE0);
+        glUniform1iv(pp_texture_location, 2, samplers);
 
-        glUseProgram(post_processing_shader_program);
-        glBindTexture(GL_TEXTURE_2D, frame_buffer_object_texture[0]);
-        glUniform1i(pp_texture_location, 0);
-        glUniform1i(second_pass_tex_location, 0);
         glUniform1i(blacking_attrib, (GLboolean)(state.blacking ? 1 : 0));
-        glUniform1f(bloom_attrib, (GLfloat)state.bloom);
         glUniform1i(vertical_attrib, (GLboolean)0);
-        //glUniform1f(blacking_attrib, (GLfloat)0.0);
-        glUniform1f(intensity_attrib, (GLfloat)0.8);
-        glEnableVertexAttribArray(pp_tex_attrib);
-        //GLsizei len = (GLsizei)(10 * sizeof(float));
-        glBindBuffer(GL_ARRAY_BUFFER, frame_buffer_object_vertices[0]);
-        glVertexAttribPointer(pp_tex_attrib, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid[])0);
 
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-        glDisableVertexAttribArray(pp_tex_attrib);
     }
 
     private void render_scene(RenderState state)
@@ -388,7 +381,6 @@ public class OpenGLRenderer : RenderTarget
         Vec3 pos = Vec3() { x = obj.position.x, y = obj.position.y, z = obj.position.z };
 
         glUniform3f(rotation_attrib, (GLfloat)obj.rotation.x, (GLfloat)obj.rotation.y, (GLfloat)obj.rotation.z);
-        //glUniform3f(position_attrib, (GLfloat)obj.position.x, (GLfloat)obj.position.y, (GLfloat)obj.position.z);
         glUniform3f(position_attrib, (GLfloat)pos.x, (GLfloat)pos.y, (GLfloat)pos.z);
         glUniform3f(scale_attrib, (GLfloat)obj.scale.x, (GLfloat)obj.scale.y, (GLfloat)obj.scale.z);
         glUniform1f(alpha_attrib, (GLfloat)obj.alpha);
