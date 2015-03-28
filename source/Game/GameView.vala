@@ -34,6 +34,8 @@ public class GameView : View
     const int buffer_size = 512;
     const int hop_size = 512;
 
+    bool is_paused = false;
+
     public GameView()
     {
         string name = "./Data/Standerwick - Valyrian";
@@ -171,8 +173,9 @@ public class GameView : View
             mul = 0;
             sky.diffuse_color = Vec3() { x = mul, y = mul, z = mul * 4 };
         }
-        else
+		else {
             sky.light_multiplier = 0;
+    }
     }
 
     public override void do_render(RenderState state, IResourceStore store)
@@ -270,15 +273,30 @@ public class GameView : View
             accel_y = 0;
             accel_z = 0;
             break;
+		case 'p':
+			is_paused = !is_paused;
+			if(is_paused) {
+				timer.stop();
+				music.pause();
+			}
+			else {
+				timer.continue();
+				music.play(get_time());
+			}
+			break;
         case '+':
         case 87: //+
             time_offset += 10;
+            if(!is_paused) {
             music.play(get_time());
+            }
             break;
         case '-':
         case 86: //-
             time_offset -= 10;
+            if(!is_paused) {
             music.play(get_time());
+            }
             break;
         case 58: //F1
             custom_camera = !custom_camera;

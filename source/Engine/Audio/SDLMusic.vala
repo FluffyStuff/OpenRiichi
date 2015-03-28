@@ -21,4 +21,8 @@ public class SDLMusic
         music.halt();
         music.fade_in(0, 300, time);
     }
+
+    public void pause() {
+        music.halt();
+    }
 }
