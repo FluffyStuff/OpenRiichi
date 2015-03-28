@@ -6,6 +6,7 @@ public class GameView : View
     private Ball[] balls;
     private Circler[] circlers;
     private CameraController camera_controller = new CameraController();
+    private FreeLookCamera free_look_camera = new FreeLookCamera();
     private bool black_filter = false;
     private bool do_bloom = true;
     private bool do_perlin = true;
@@ -34,7 +35,9 @@ public class GameView : View
     const int buffer_size = 512;
     const int hop_size = 512;
 
-    bool is_paused = false;
+    private bool custom_camera = false;
+    private bool is_paused = false;
+    private double time = 0;
 
     public GameView()
     {
@@ -94,88 +97,86 @@ public class GameView : View
         print("Finished loading 3D objects.\n");
     }
 
-    private double time = 0;
-
     public override void do_process(double dt)
     {
-        time = get_time();
+		time = get_time();
 
-        camera_x += accel_x;
-        camera_y += accel_y;
-        camera_z += accel_z;
+        if(custom_camera) {
+            free_look_camera.update();
+        }
 
-        for (int i = 0; i < balls.length; i++)
-        {
-            // Get ball scale
-            float val = aubio.get_amplitude(time, i + 3, 6, 10);
-            val /= 5;
-            val *= val;
-            float scale = 1 + val;
-            balls[i].obj.scale = Vec3() { x = scale, y = scale, z = scale };
+		for (int i = 0; i < balls.length; i++)
+		{
+			// Get ball scale
+			float val = aubio.get_amplitude(time, i + 3, 6, 10);
+			val /= 5;
+			val *= val;
+			float scale = 1 + val;
+			balls[i].obj.scale = Vec3() { x = scale, y = scale, z = scale };
 
-            // Set position of the balls in a circle
-            float ball_speed = 2.0f;
-            float p = 2 * (float)Math.PI * i / balls.length;
+			// Set position of the balls in a circle
+			float ball_speed = 2.0f;
+			float p = 2 * (float)Math.PI * i / balls.length;
             balls[i].obj.position = Vec3() { z = (float)Math.cos(time * ball_speed + p) * ball_count * 3, x = (float)Math.sin(time * ball_speed + p) * ball_count * 3, y = -5 };
 
-            // Make the balls red in the middle of the song
-            float color_mul = Math.fminf(Math.fmaxf(0, (float)time - ball_red_start), 1) * -val;
-            balls[i].obj.diffuse_color = Vec3() { x = color_mul * 0.2f, y = color_mul * 2, z = color_mul * 3 };
+			// Make the balls red in the middle of the song
+			float color_mul = Math.fminf(Math.fmaxf(0, (float)time - ball_red_start), 1) * -val;
+			balls[i].obj.diffuse_color = Vec3() { x = color_mul * 0.2f, y = color_mul * 2, z = color_mul * 3 };
 
-            // Make the balls colory later in the song
-            if (time > ball_color_start)
-                balls[i].obj.diffuse_color = Vec3() { x = balls[i].color.x * val, y = balls[i].color.y * val, z = balls[i].color.z * val };
-        }
+			// Make the balls colory later in the song
+			if (time > ball_color_start)
+				balls[i].obj.diffuse_color = Vec3() { x = balls[i].color.x * val, y = balls[i].color.y * val, z = balls[i].color.z * val };
+		}
 
-        // Calculate the intensity of the lights in accordance with the base amplitude
-        float val = aubio.get_amplitude(time, 3, 6, 10) * 1.5f;
-        perlin_strength = 0.2f + (float)Math.pow(val / 4, 2) / 6;
-        val *= val * 6 / light_count;
+		// Calculate the intensity of the lights in accordance with the base amplitude
+		float val = aubio.get_amplitude(time, 3, 6, 10) * 1.5f;
+		perlin_strength = 0.2f + (float)Math.pow(val / 4, 2) / 6;
+		val *= val * 6 / light_count;
 
-        for (int i = 0; i < circlers.length; i++)
-        {
-            // Calculate light positions
-            circlers[i].light.position =
-            Vec3()
-            {
-                x = (float)Math.sin(circlers[i].amount.x * time / 3) * 15,
-                y = (float)Math.cos(circlers[i].amount.y * time / 3) * 20,
-                z = (float)Math.sin(circlers[i].amount.z * time / 3) * 15
-            };
-            circlers[i].obj.position = circlers[i].light.position;
+		for (int i = 0; i < circlers.length; i++)
+		{
+			// Calculate light positions
+			circlers[i].light.position =
+			Vec3()
+			{
+				x = (float)Math.sin(circlers[i].amount.x * time / 3) * 15,
+				y = (float)Math.cos(circlers[i].amount.y * time / 3) * 20,
+				z = (float)Math.sin(circlers[i].amount.z * time / 3) * 15
+			};
+			circlers[i].obj.position = circlers[i].light.position;
 
-            // Set the colorful background color of the lights at the end of the song
-            float color_mul = Math.fminf(Math.fmaxf(1, ((float)time - background_color_start) * 24), 10);
+			// Set the colorful background color of the lights at the end of the song
+			float color_mul = Math.fminf(Math.fmaxf(1, ((float)time - background_color_start) * 24), 10);
 
-            float x = 0.3f / color_mul;
-            float y = 0.3f / color_mul;
-            float z = 0.3f / color_mul;
+			float x = 0.3f / color_mul;
+			float y = 0.3f / color_mul;
+			float z = 0.3f / color_mul;
 
-            // Increase R, G or B color
-            if (i % 3 == 0)
-                x *= color_mul * color_mul;
-            else if (i % 3 == 1)
-                y *= color_mul * color_mul;
-            else
-                z *= color_mul * color_mul;
+			// Increase R, G or B color
+			if (i % 3 == 0)
+				x *= color_mul * color_mul;
+			else if (i % 3 == 1)
+				y *= color_mul * color_mul;
+			else
+				z *= color_mul * color_mul;
 
-            circlers[i].light.color = Vec3() { x = x, y = y, z = z };
-            circlers[i].light.intensity = val;
-        }
+			circlers[i].light.color = Vec3() { x = x, y = y, z = z };
+			circlers[i].light.intensity = val;
+		}
 
-        // Deactivate the background until a little later at the beginning of the song
-        // Linearly increase the background brightness at the end of the song
-        if (time > background_start)
-        {
-            float mul = Math.fminf(Math.fmaxf(0.02f, ((float)time - background_color_start) * 1), 0.5f);
-            sky.light_multiplier = mul;
-            mul /= 100;
-            mul = 0;
-            sky.diffuse_color = Vec3() { x = mul, y = mul, z = mul * 4 };
-        }
+		// Deactivate the background until a little later at the beginning of the song
+		// Linearly increase the background brightness at the end of the song
+		if (time > background_start)
+		{
+			float mul = Math.fminf(Math.fmaxf(0.02f, ((float)time - background_color_start) * 1), 0.5f);
+			sky.light_multiplier = mul;
+			mul /= 100;
+			mul = 0;
+			sky.diffuse_color = Vec3() { x = mul, y = mul, z = mul * 4 };
+		}
 		else {
-            sky.light_multiplier = 0;
-    }
+			sky.light_multiplier = 0;
+		}
     }
 
     public override void do_render(RenderState state, IResourceStore store)
@@ -186,20 +187,12 @@ public class GameView : View
         if (!custom_camera)
         {
             camera_controller.set_camera((float)get_time(), state, aubio, 0);
-
-            accel_x = 0;
-            accel_y = 0;
-            accel_z = 0;
-            camera_x = state.camera_position.x;
-            camera_y = state.camera_position.y;
-            camera_z = state.camera_position.z;
-            last_x = (int)(-slow * state.camera_rotation.y);
-            last_y = (int)(-slow * (state.camera_rotation.x - 1));
+            free_look_camera.set_camera_by_state(state);
         }
         else
         {
-            state.camera_rotation = Vec3(){ x = 1 - (float)last_y / slow, y = - (float)last_x / slow };
-            state.camera_position = Vec3(){ x = camera_x, y = camera_y, z = camera_z };
+            state.camera_rotation = free_look_camera.get_rotation();
+            state.camera_position = free_look_camera.get_position();
         }
 
         // Add balls to scene
@@ -221,57 +214,51 @@ public class GameView : View
         state.perlin_strength = do_perlin ? perlin_strength : 0;
     }
 
-    private int last_x = 0;
-    private int last_y = 0;
-    private float accel_x = 0;
-    private float accel_y = 0;
-    private float accel_z = 0;
-    private float camera_x = 0;
-    private float camera_y = 0;
-    private float camera_z = 0;
-    private bool custom_camera = false;
-
     protected override void do_mouse_move(int x, int y)
     {
-        last_x += x;
-        last_y += y;
+        if(custom_camera) {
+            free_look_camera.rotateCamera(x, y);
+        }
     }
 
     protected override void do_key_press(char key)
     {
-        int slow = 300;
-        float speed = 0.001f;
-
         switch (key)
         {
         case ' ':
-            accel_y += speed;
+            if(custom_camera) {
+                free_look_camera.move_up();
+            }
             break;
         case 'c':
-            accel_y -= speed;
+            if(custom_camera) {
+                free_look_camera.move_up(true);
+            }
             break;
         case 'w':
-            accel_z += (float)Math.cos((float)last_x / slow * Math.PI) * (float)Math.cos((float)last_y / slow * Math.PI) * speed;
-            accel_x += (float)Math.sin((float)last_x / slow * Math.PI) * (float)Math.cos((float)last_y / slow * Math.PI) * speed;
-            accel_y += (float)Math.sin((float)last_y / slow * Math.PI) * speed;
+            if(custom_camera) {
+                free_look_camera.move_forward();
+            }
             break;
         case 's':
-            accel_z -= (float)Math.cos((float)last_x / slow * Math.PI) * (float)Math.cos((float)last_y / slow * Math.PI) * speed;
-            accel_x -= (float)Math.sin((float)last_x / slow * Math.PI) * (float)Math.cos((float)last_y / slow * Math.PI) * speed;
-            accel_y -= (float)Math.sin((float)last_y / slow * Math.PI) * speed;
+            if(custom_camera) {
+                free_look_camera.move_forward(true);
+            }
             break;
         case 'a':
-            accel_z -= (float)Math.sin((float)last_x / slow * Math.PI) * speed;
-            accel_x += (float)Math.cos((float)last_x / slow * Math.PI) * speed;
+           if(custom_camera) {
+                free_look_camera.move_left();
+            }
             break;
         case 'd':
-            accel_z += (float)Math.sin((float)last_x / slow * Math.PI) * speed;
-            accel_x -= (float)Math.cos((float)last_x / slow * Math.PI) * speed;
+           if(custom_camera) {
+                free_look_camera.move_left(true);
+            }
             break;
         case 'x':
-            accel_x = 0;
-            accel_y = 0;
-            accel_z = 0;
+            if(custom_camera) {
+                free_look_camera.stop();
+            }
             break;
 		case 'p':
 			is_paused = !is_paused;
@@ -288,14 +275,14 @@ public class GameView : View
         case 87: //+
             time_offset += 10;
             if(!is_paused) {
-            music.play(get_time());
+				music.play(get_time());
             }
             break;
         case '-':
         case 86: //-
             time_offset -= 10;
             if(!is_paused) {
-            music.play(get_time());
+				music.play(get_time());
             }
             break;
         case 58: //F1
@@ -348,11 +335,90 @@ public class GameView : View
         public Render3DObject obj { get; private set; }
     }
 
+    private class FreeLookCamera
+    {
+        public FreeLookCamera()
+        {
+            this.accel_x = 0;
+            this.accel_y = 0;
+            this.accel_z = 0;
+            this.camera_x = 0;
+            this.camera_y = 0;
+            this.camera_z = 0;
+        }
+
+        public int slow = 300;
+        public float speed = 0.005f;
+        public float accel_x { get; set; }
+        public float accel_y { get; set; }
+        public float accel_z { get; set; }
+
+        public float camera_x { get; set; }
+        public float camera_y { get; set; }
+        public float camera_z { get; set; }
+
+        public int last_x { get; set; }
+        public int last_y { get; set; }
+
+        public void stop() {
+            accel_x = 0;
+            accel_y = 0;
+            accel_z = 0;
+        }
+
+        public void move_left(bool reverse = false) {
+            var dir = reverse ? -1 : 1;
+            accel_x += dir * (float)Math.cos((float)last_x / slow * Math.PI) * speed;
+            accel_z -= (-dir) * (float)Math.sin((float)last_x / slow * Math.PI) * speed;
+        }
+
+        public void move_forward(bool reverse = false) {
+            var dir = reverse ? -1 : 1;
+            accel_x += dir * (float)Math.sin((float)last_x / slow * Math.PI) * (float)Math.cos((float)last_y / slow * Math.PI) * speed;
+            accel_y += dir * (float)Math.sin((float)last_y / slow * Math.PI) * speed;
+            accel_z += dir * (float)Math.cos((float)last_x / slow * Math.PI) * (float)Math.cos((float)last_y / slow * Math.PI) * speed;
+        }
+
+        public void move_up(bool reverse = false) {
+            var dir = reverse ? -1 : 1;
+            accel_y +=  dir * speed;
+        }
+
+        public void rotateCamera(int x, int y) {
+            last_x += x;
+            last_y += y;
+        }
+
+        public void set_camera_by_state(RenderState state) {
+            accel_x = 0;
+            accel_y = 0;
+            accel_z = 0;
+            camera_x = state.camera_position.x;
+            camera_y = state.camera_position.y;
+            camera_z = state.camera_position.z;
+            last_x = (int)(-slow * state.camera_rotation.y);
+            last_y = (int)(-slow * (state.camera_rotation.x - 1));
+        }
+
+        public void update() {
+            camera_x += accel_x;
+            camera_y += accel_y;
+            camera_z += accel_z;
+        }
+
+        public Vec3 get_rotation() {
+            return Vec3() { x = 1 - (float)last_y / slow, y = - (float)last_x / slow };
+        }
+
+        public Vec3 get_position() {
+            return Vec3() { x = camera_x, y = camera_y, z = camera_z };
+        }
+    }
+
     // A class for custom camera angles etc
     private class CameraController
     {
-        public void set_camera
-        (
+        public void set_camera(
             float current_time,
             RenderState state,
             AubioAnalysis analysis,
