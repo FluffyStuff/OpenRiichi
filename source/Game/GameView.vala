@@ -181,8 +181,6 @@ public class GameView : View
 
     public override void do_render(RenderState state, IResourceStore store)
     {
-        int slow = 300;
-
         // Set scene camera or custom camera position
         if (!custom_camera)
         {
@@ -259,6 +257,11 @@ public class GameView : View
             if(custom_camera) {
                 free_look_camera.stop();
             }
+            break;
+		case 'z':
+		    if(custom_camera) {
+                free_look_camera.accelerated = !free_look_camera.accelerated;
+		    }
             break;
 		case 'p':
 			is_paused = !is_paused;
@@ -339,6 +342,7 @@ public class GameView : View
     {
         public FreeLookCamera()
         {
+            this.accelerated = false;
             this.accel_x = 0;
             this.accel_y = 0;
             this.accel_z = 0;
@@ -347,46 +351,62 @@ public class GameView : View
             this.camera_z = 0;
         }
 
-        public int slow = 300;
-        public float speed = 0.005f;
-        public float accel_x { get; set; }
-        public float accel_y { get; set; }
-        public float accel_z { get; set; }
+        public bool accelerated { get; set; }
+        private const int slow = 300;
+        private const float accel = 0.005f;
+        private const float speed = 400.0f;
+        private float accel_x { get; set; }
+        private float accel_y { get; set; }
+        private float accel_z { get; set; }
+        private float camera_x { get; set; }
+        private float camera_y { get; set; }
+        private float camera_z { get; set; }
 
-        public float camera_x { get; set; }
-        public float camera_y { get; set; }
-        public float camera_z { get; set; }
-
-        public int last_x { get; set; }
-        public int last_y { get; set; }
-
-        public void stop() {
-            accel_x = 0;
-            accel_y = 0;
-            accel_z = 0;
-        }
+        private int last_x { get; set; }
+        private int last_y { get; set; }
 
         public void move_left(bool reverse = false) {
-            var dir = reverse ? -1 : 1;
-            accel_x += dir * (float)Math.cos((float)last_x / slow * Math.PI) * speed;
-            accel_z -= (-dir) * (float)Math.sin((float)last_x / slow * Math.PI) * speed;
+            int dir = reverse ? -1 : 1;
+            accel_x += dir * (float)Math.cos((float)last_x / slow * Math.PI) * accel;
+            accel_z -= dir * (float)Math.sin((float)last_x / slow * Math.PI) * accel;
+
+            if(!accelerated) {
+                accel_x *= speed;
+                accel_z *= speed;
+        }
         }
 
         public void move_forward(bool reverse = false) {
-            var dir = reverse ? -1 : 1;
-            accel_x += dir * (float)Math.sin((float)last_x / slow * Math.PI) * (float)Math.cos((float)last_y / slow * Math.PI) * speed;
-            accel_y += dir * (float)Math.sin((float)last_y / slow * Math.PI) * speed;
-            accel_z += dir * (float)Math.cos((float)last_x / slow * Math.PI) * (float)Math.cos((float)last_y / slow * Math.PI) * speed;
+            int dir = reverse ? -1 : 1;
+            accel_x += dir * (float)Math.sin((float)last_x / slow * Math.PI) * (float)Math.cos((float)last_y / slow * Math.PI) * accel;
+            accel_y += dir * (float)Math.sin((float)last_y / slow * Math.PI) * accel;
+            accel_z += dir * (float)Math.cos((float)last_x / slow * Math.PI) * (float)Math.cos((float)last_y / slow * Math.PI) * accel;
+
+            if(!accelerated) {
+                accel_x *= speed;
+                accel_y *= speed;
+                accel_z *= speed;
+            }
         }
 
         public void move_up(bool reverse = false) {
-            var dir = reverse ? -1 : 1;
-            accel_y +=  dir * speed;
+            int dir = reverse ? -1 : 1;
+            accel_y +=  dir * accel;
+
+            if(!accelerated) {
+                accel_y *= speed;
+            }
         }
 
         public void rotateCamera(int x, int y) {
             last_x += x;
             last_y += y;
+        }
+
+        public void stop() {
+            accel_x = 0;
+            accel_y = 0;
+            accel_z = 0;
         }
 
         public void set_camera_by_state(RenderState state) {
@@ -404,6 +424,10 @@ public class GameView : View
             camera_x += accel_x;
             camera_y += accel_y;
             camera_z += accel_z;
+
+            if(!accelerated) {
+                stop();
+            }
         }
 
         public Vec3 get_rotation() {
