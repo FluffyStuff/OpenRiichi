@@ -184,7 +184,7 @@ public class GameView : View
         // Set scene camera or custom camera position
         if (!custom_camera)
         {
-            camera_controller.set_camera((float)get_time(), state, aubio, 0);
+            camera_controller.set_camera((float)get_time(), state, aubio);
             free_look_camera.set_camera_by_state(state);
         }
         else
@@ -442,32 +442,79 @@ public class GameView : View
     // A class for custom camera angles etc
     private class CameraController
     {
-        public void set_camera(
-            float current_time,
-            RenderState state,
-            AubioAnalysis analysis,
-            // Take in timings here
-            float rotation_start_time
-        )
+        private const float start_time = 125;
+        private const float rotation_start_time = 12;
+        private const float speed = 3;
+
+        public void set_camera(float time, RenderState state, AubioAnalysis analysis)
         {
-            if (current_time > rotation_start_time)
-                rotation_position(state, current_time, analysis);
+        	float t = time - start_time;
+			if (t <= rotation_start_time && t > 0) {
+                zoom_in(t, state, analysis);
         }
 
-        private void rotation_position(RenderState state, float time, AubioAnalysis analysis)
-        {
-            float speed = 3;
+            if (t > rotation_start_time || t < 0) {
+                rotation_position(time, state, analysis);
+            }
+        }
 
-            state.camera_position = Vec3() { z = (float)Math.cos((time) * Math.PI / 10 * speed) * 45, y = 10, x = (float)Math.sin((time) * Math.PI / 10 * speed) * 45 };
+        private void zoom_in(float time, RenderState state, AubioAnalysis analysis) {
+            float dt = time / rotation_start_time;
+            Vec3 p0 = Vec3() { x = 600, y = 400, z = 0 };
+            Vec3 p1 = Vec3() { x = 600, y = -50, z = 0 };
+            Vec3 p2 = Vec3() { x = 70, y = -50, z = 0 };
+            Vec3 p3 = Vec3() { x = 70, y = 10, z = 0 };
+
+            var point = CalculateBezierPoint(dt, p0, p1, p2, p3);
+            state.camera_position = point;
+
             state.camera_rotation = Vec3()
             {
-                y = (float)(-time / 10 * speed),
+                x = 0,
+                y = -0.5f,
+                z = 0
+            };
+        }
+
+        private void rotation_position(float time, RenderState state, AubioAnalysis analysis)
+        {
+            state.camera_position = Vec3() { z = (float)Math.cos((time) * Math.PI / 10 * speed) * 45, y = 10, x = (float)Math.sin((time) * Math.PI / 10 * speed) * 45 };
+            state.camera_rotation = Vec3() {
                 x = (float)(Math.sin(time / 5 + 2.7) / Math.PI / 6 - 0.1),
+                y = (float)(-time / 10 * speed),
                 z = 0
             };
 
             float val = 1.2f - analysis.get_amplitude(time, 2, 8, 12) / 30;
             state.focal_length = val;
+        }
+
+        private Vec3 CalculateBezierPoint(float t, Vec3 p0, Vec3 p1, Vec3 p2, Vec3 p3)
+        {
+            float u = 1 - t;
+            float tt = t*t;
+            float uu = u*u;
+            float uuu = uu*u;
+            float ttt = tt*t;
+
+            Vec3 p = Vec3() {
+                x = uuu * p0.x,
+				y = uuu * p0.y,
+				z = uuu * p0.z
+            };
+
+            p.x += uu * t * p1.x;
+            p.y += uu * t * p1.y;
+            p.z += uu * t * p1.z;
+
+            p.x += u * tt * p2.x;
+            p.y += u * tt * p2.y;
+            p.z += u * tt * p2.z;
+
+            p.x += ttt * p3.x;
+            p.y += ttt * p3.y;
+            p.z += ttt * p3.z;
+            return p;
         }
     }
 
