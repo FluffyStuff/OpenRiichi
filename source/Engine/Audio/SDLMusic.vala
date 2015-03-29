@@ -19,6 +19,6 @@ public class SDLMusic
     public void play(double time)
     {
         music.halt();
-        music.fade_in(0, 300, time);
+        music.fade_in(0, 500, time);
     }
 }

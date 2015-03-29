@@ -13,7 +13,7 @@ public class GameView : View
     private float perlin_strength = 0.25f;
     private SDLMusic music;
     private AubioAnalysis aubio;
-    private const double music_start_time = 125; // This is probably where we want to start the scene, as not to become to long and dry
+    private const double music_start_time = 137;//125; // This is probably where we want to start the scene, as not to become to long and dry
 
     private GLib.Timer timer;
     private double time_offset = music_start_time;

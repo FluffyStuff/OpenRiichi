@@ -272,5 +272,4 @@ void main()
 	
 	outColor.xyz /= max(pow(length(Camera_normal) / 5, 1.0) / 10, 1);
 	outColor.a = alpha;
-
 }

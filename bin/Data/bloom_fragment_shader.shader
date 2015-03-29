@@ -1,6 +1,7 @@
 #version 330 core
 #define PI 3.1415926535897932384626433832795
 #define E1 2.7182818284590452353602874713526
+#define E2 0.3989422804014326779399460599343
 uniform sampler2D textures[2];
 
 in vec2 oTexcoord;
@@ -22,8 +23,7 @@ vec4 blackwhite(vec4 color)
 
 float gauss(float x)
 {
-	float sigma = 1;
-	return 1 / (sqrt(2*PI*sigma*sigma))*pow(E1, -x*x/(2*sigma*sigma));
+	return E2 * pow(E1, -x*x/2);
 }
 
 vec4 bloom_h(float size, sampler2D texture)
@@ -34,7 +34,7 @@ vec4 bloom_h(float size, sampler2D texture)
 	
 	for (float i = -halfed; i < halfed; i++)
 	{
-		float strength = max(gauss(i / 20), 0);
+		float strength = max(gauss(i / size * 5), 0);
 		vec4 color = texture2D(texture, vec2(oTexcoord.x + i / tex_size.x, oTexcoord.y));
 		sum += color * strength / size;
 	}
@@ -50,7 +50,7 @@ vec4 bloom_v(float size, sampler2D texture)
 	
 	for (float i = -halfed; i < halfed; i++)
 	{
-		float strength = max(gauss(i / 20), 0);
+		float strength = max(gauss(i / size * 5), 0);
 		vec4 color = texture2D(texture, vec2(oTexcoord.x, oTexcoord.y + i / tex_size.y));
 		sum += color * strength / size;
 	}
@@ -60,7 +60,7 @@ vec4 bloom_v(float size, sampler2D texture)
 
 void main(void)
 {
-	float bloom_size = 100;
+	float bloom_size = 150;
 	float amplification = 15;
 	
 	vec4 color = texture2D(textures[0], oTexcoord);
