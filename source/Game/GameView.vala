@@ -457,7 +457,7 @@ public class GameView : View
         	if(time < 125) {
                 rotation_position(time, state, analysis);
         	}
-        	else if(time < 137) {
+        	else if(time < 139) {
                 zoom_in(time, state, analysis);
         	}
         	else if (time < 160) {
@@ -495,8 +495,8 @@ public class GameView : View
             	y = 10,
 				z = Math.cosf(160 * fPI / 10 * speed) * 45
 			};
-			Vec3 p1 = Vec3() { x = 0, y = 30, z = 0 };
-			Vec3 p2 = Vec3() { x = 0, y = 30, z = 0 };
+			Vec3 p1 = Vec3() { x = 45, y = 30, z = 0 };
+			Vec3 p2 = Vec3() { x = 45, y = 30, z = 0 };
 			Vec3 p3 = Vec3() { x = 0, y = 70, z = 0 };
 
 			state.camera_position = calc_bezier_point(dt, p0, p1, p2, p3);
@@ -507,8 +507,17 @@ public class GameView : View
         }
 
         private void stay_alof(float time, RenderState state, AubioAnalysis analysis) {
-        	state.camera_position = Vec3() { x = 0, y = 70, z = 0 };
+        	state.camera_position = Vec3() {
+        		x = 0,
+        		y = 70,
+        		z = 0
+			};
 			look_at_point(state, Vec3(){x = 0, y = -7, z = 0});
+			state.camera_rotation = Vec3() {
+				x = state.camera_rotation.x,
+				y = state.camera_rotation.y,
+				z = (time - 170)/17
+			};
 			float val = 1.2f - analysis.get_amplitude(time, 2, 8, 12) / 15;
             state.focal_length = val;
         }
@@ -548,7 +557,7 @@ public class GameView : View
 			if(startWobbly < time && time < stopWobbly) {
 				float e = (1 - Math.cosf((time - startWobbly) * fPI / 10 * speed));
 				float r = Math.sinf((time - startWobbly) * fPI / 10 * speed);
-				dist += e * 10;
+				dist += e * 5;
 				yWob += e * 7;
 				zWob += r * 0.06f;
 			}
