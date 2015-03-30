@@ -191,7 +191,7 @@ public class GameView : View
         {
             state.camera_rotation = free_look_camera.get_rotation();
             state.camera_position = free_look_camera.get_position();
-        }
+		}
 
         // Add balls to scene
         for (int i = 0; i < balls.length; i++)
@@ -355,32 +355,35 @@ public class GameView : View
         private const int slow = 300;
         private const float accel = 0.005f;
         private const float speed = 400.0f;
+		private const float fPI = (float)Math.PI;
         private float accel_x { get; set; }
         private float accel_y { get; set; }
         private float accel_z { get; set; }
         private float camera_x { get; set; }
         private float camera_y { get; set; }
         private float camera_z { get; set; }
+        private float rotation_x { get; set; }
+        private float rotation_y { get; set; }
 
         private int last_x { get; set; }
         private int last_y { get; set; }
 
         public void move_left(bool reverse = false) {
             int dir = reverse ? -1 : 1;
-            accel_x += dir * (float)Math.cos((float)last_x / slow * Math.PI) * accel;
-            accel_z -= dir * (float)Math.sin((float)last_x / slow * Math.PI) * accel;
+            accel_x += dir * Math.cosf((float)last_x / slow * fPI) * accel;
+            accel_z -= dir * Math.sinf((float)last_x / slow * fPI) * accel;
 
             if(!accelerated) {
                 accel_x *= speed;
                 accel_z *= speed;
-        }
+            }
         }
 
         public void move_forward(bool reverse = false) {
             int dir = reverse ? -1 : 1;
-            accel_x += dir * (float)Math.sin((float)last_x / slow * Math.PI) * (float)Math.cos((float)last_y / slow * Math.PI) * accel;
-            accel_y += dir * (float)Math.sin((float)last_y / slow * Math.PI) * accel;
-            accel_z += dir * (float)Math.cos((float)last_x / slow * Math.PI) * (float)Math.cos((float)last_y / slow * Math.PI) * accel;
+            accel_x += dir * Math.sinf((float)last_x / slow * fPI) * Math.cosf((float)last_y / slow * fPI) * accel;
+            accel_y += dir * Math.sinf((float)last_y / slow * fPI) * accel;
+            accel_z += dir * Math.cosf((float)last_x / slow * fPI) * Math.cosf((float)last_y / slow * fPI) * accel;
 
             if(!accelerated) {
                 accel_x *= speed;
@@ -401,6 +404,8 @@ public class GameView : View
         public void rotateCamera(int x, int y) {
             last_x += x;
             last_y += y;
+            rotation_x = 1 - (float)last_y / slow;
+			rotation_y = -(float)last_x / slow;
         }
 
         public void stop() {
@@ -418,20 +423,21 @@ public class GameView : View
             camera_z = state.camera_position.z;
             last_x = (int)(-slow * state.camera_rotation.y);
             last_y = (int)(-slow * (state.camera_rotation.x - 1));
+            rotation_x = 1 - (float)last_y / slow;
+			rotation_y = -(float)last_x / slow;
         }
 
         public void update() {
             camera_x += accel_x;
             camera_y += accel_y;
             camera_z += accel_z;
-
-            if(!accelerated) {
+			if(!accelerated) {
                 stop();
             }
         }
 
         public Vec3 get_rotation() {
-            return Vec3() { x = 1 - (float)last_y / slow, y = - (float)last_x / slow };
+            return Vec3() { x = rotation_x, y = rotation_y };
         }
 
         public Vec3 get_position() {
@@ -443,53 +449,141 @@ public class GameView : View
     private class CameraController
     {
         private const float start_time = 125;
-        private const float rotation_start_time = 12;
         private const float speed = 3;
+        private	const float fPI = (float)Math.PI;
 
         public void set_camera(float time, RenderState state, AubioAnalysis analysis)
         {
-        	float t = time - start_time;
-			if (t <= rotation_start_time && t > 0) {
-                zoom_in(t, state, analysis);
-        }
-
-            if (t > rotation_start_time || t < 0) {
+        	if(time < 125) {
+                rotation_position(time, state, analysis);
+        	}
+        	else if(time < 137) {
+                zoom_in(time, state, analysis);
+        	}
+        	else if (time < 160) {
+                rotation_position(time, state, analysis);
+        	}
+        	else if (time < 170) {
+				move_to_middle(time, state, analysis);
+        	}
+        	else if (time < 198) {
+				stay_alof(time, state, analysis);
+        	}
+			else if (time < 229.5f) {
+				move_back(time, state, analysis);
+        	}
+        	else if(time < 500) {
                 rotation_position(time, state, analysis);
             }
         }
 
         private void zoom_in(float time, RenderState state, AubioAnalysis analysis) {
-            float dt = time / rotation_start_time;
+            float dt = (time - start_time) / 12;
             Vec3 p0 = Vec3() { x = 600, y = 400, z = 0 };
             Vec3 p1 = Vec3() { x = 600, y = -50, z = 0 };
-            Vec3 p2 = Vec3() { x = 70, y = -50, z = 0 };
-            Vec3 p3 = Vec3() { x = 70, y = 10, z = 0 };
+            Vec3 p2 = Vec3() { x = 60, y = -50, z = 0 };
+            Vec3 p3 = Vec3() { x = 60, y = 10, z = 0 };
 
-            var point = CalculateBezierPoint(dt, p0, p1, p2, p3);
-            state.camera_position = point;
+            state.camera_position = calc_bezier_point(dt, p0, p1, p2, p3);
+            state.camera_rotation = Vec3() { x = 0, y = -0.5f, z = 0 };
+        }
 
-            state.camera_rotation = Vec3()
-            {
-                x = 0,
-                y = -0.5f,
-                z = 0
-            };
+		private void move_to_middle(float time, RenderState state, AubioAnalysis analysis) {
+            float dt = (time - 160) / 10;
+            Vec3 p0 = Vec3() {
+            	x = Math.sinf(160 * fPI / 10 * speed) * 45,
+            	y = 10,
+				z = Math.cosf(160 * fPI / 10 * speed) * 45
+			};
+			Vec3 p1 = Vec3() { x = 0, y = 30, z = 0 };
+			Vec3 p2 = Vec3() { x = 0, y = 30, z = 0 };
+			Vec3 p3 = Vec3() { x = 0, y = 70, z = 0 };
+
+			state.camera_position = calc_bezier_point(dt, p0, p1, p2, p3);
+			look_at_point(state, Vec3(){x = 0, y = -7, z = 0});
+
+			float val = 1.2f - analysis.get_amplitude(time, 2, 8, 12) / 30;
+            state.focal_length = val;
+        }
+
+        private void stay_alof(float time, RenderState state, AubioAnalysis analysis) {
+        	state.camera_position = Vec3() { x = 0, y = 70, z = 0 };
+			look_at_point(state, Vec3(){x = 0, y = -7, z = 0});
+			float val = 1.2f - analysis.get_amplitude(time, 2, 8, 12) / 15;
+            state.focal_length = val;
+        }
+
+		private void move_back(float time, RenderState state, AubioAnalysis analysis) {
+        	float dt = (time - 198) / 31.5f;
+        	Vec3 p0 = Vec3() { x = 0, y = 70, z = 0 };
+			Vec3 p3 = Vec3() {
+				x = Math.cosf(229.5f * fPI / 10 * speed) * 45,
+            	y = 10,
+            	z = Math.sinf(229.5f * fPI / 10 * speed) * 45
+			};
+			Vec3 p1 = Vec3() { x = p3.x*5, y = 110, z = p3.z*5 };
+			Vec3 p2 = Vec3() { x = p3.x*5, y = 110, z = p3.z*5 };
+
+			state.camera_position = calc_bezier_point(dt, p0, p1, p2, p3);
+			look_at_point(state, Vec3(){x = 0, y = -7, z = 0});
+			//fix for my broken look_at function
+			state.camera_rotation = Vec3() {
+				x = state.camera_rotation.x,
+				y = state.camera_rotation.y + 1,
+				z = 0
+			};
+
+			float val = 1.2f - analysis.get_amplitude(time, 2, 8, 12) / 30;
+            state.focal_length = val;
         }
 
         private void rotation_position(float time, RenderState state, AubioAnalysis analysis)
         {
-            state.camera_position = Vec3() { z = (float)Math.cos((time) * Math.PI / 10 * speed) * 45, y = 10, x = (float)Math.sin((time) * Math.PI / 10 * speed) * 45 };
-            state.camera_rotation = Vec3() {
-                x = (float)(Math.sin(time / 5 + 2.7) / Math.PI / 6 - 0.1),
-                y = (float)(-time / 10 * speed),
-                z = 0
+			float startWobbly = 278.4f;
+			float stopWobbly = 332.4f;
+        	float dist = 45;
+        	float yWob = 10;
+        	float zWob = 0;
+
+			if(startWobbly < time && time < stopWobbly) {
+				float e = (1 - Math.cosf((time - startWobbly) * fPI / 10 * speed));
+				float r = Math.sinf((time - startWobbly) * fPI / 10 * speed);
+				dist += e * 10;
+				yWob += e * 7;
+				zWob += r * 0.06f;
+			}
+
+			state.camera_position = Vec3() {
+            	z = Math.cosf(time * fPI / 10 * speed) * dist,
+            	y = yWob,
+            	x = Math.sinf(time * fPI / 10 * speed) * dist
+			};
+
+			state.camera_rotation = Vec3() {
+                x = Math.sinf(time / 5 + 2.7f) / fPI / 6 - 0.1f,
+                y = -time / 10 * speed,
+                z = zWob
             };
 
-            float val = 1.2f - analysis.get_amplitude(time, 2, 8, 12) / 30;
+			float val = 1.2f - analysis.get_amplitude(time, 2, 8, 12) / 30;
             state.focal_length = val;
         }
 
-        private Vec3 CalculateBezierPoint(float t, Vec3 p0, Vec3 p1, Vec3 p2, Vec3 p3)
+		public void look_at_point(RenderState state, Vec3 point = Vec3() { x=0, y=0, z=0 }) {
+			float x = point.x - state.camera_position.x;
+			float y = point.y - state.camera_position.y;
+			float z = point.z - state.camera_position.z;
+			float magn = Math.sqrtf(x*x + y*y + z*z);
+			float rotation_x = 0.5f - (Math.acosf(y/magn) / fPI);
+			float rotation_y = (x != 0) ? (Math.atanf(z/x) / fPI) - 0.5f : 0;
+			state.camera_rotation = Vec3() {
+				x = rotation_x,
+				y = rotation_y,
+				z = 0
+			};
+        }
+
+        private Vec3 calc_bezier_point(float t, Vec3 p0, Vec3 p1, Vec3 p2, Vec3 p3)
         {
             float u = 1 - t;
             float tt = t*t;
