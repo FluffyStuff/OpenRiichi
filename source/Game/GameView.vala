@@ -14,7 +14,7 @@ public class GameView : View
     private float perlin_strength = 0.25f;
     private SDLMusic music;
     private AubioAnalysis aubio;
-    private const double music_start_time = 137;//125; // This is probably where we want to start the scene, as not to become to long and dry
+    private const double music_start_time = 125; // This is probably where we want to start the scene, as not to become to long and dry
 
     private GLib.Timer timer;
     private double time_offset = music_start_time;
@@ -443,7 +443,7 @@ public class GameView : View
     private class CameraController
     {
         private const float start_time = 125;
-        private const float rotation_start_time = 12;
+        private const float rotation_start_time = 14;
         private const float speed = 3;
 
         public void set_camera(float time, RenderState state, AubioAnalysis analysis)
