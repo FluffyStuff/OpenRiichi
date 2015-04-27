@@ -5,24 +5,24 @@
 		<Option title="RiichiMahjong" />
 		<Option makefile_is_custom="1" />
 		<Option pch_mode="2" />
-		<Option compiler="vala" />
+		<Option compiler="vala_compiler" />
 		<Build>
 			<Target title="Debug">
-				<Option output="bin/Demoscene" prefix_auto="1" extension_auto="1" />
+				<Option output="bin/RiichiMahjong" prefix_auto="1" extension_auto="1" />
 				<Option working_dir="bin/" />
 				<Option object_output="obj/Debug/" />
 				<Option type="1" />
-				<Option compiler="vala" />
+				<Option compiler="vala_compiler" />
 				<Compiler>
 					<Add option="-g" />
 				</Compiler>
 			</Target>
 			<Target title="Release">
-				<Option output="bin/Demoscene" prefix_auto="1" extension_auto="1" />
+				<Option output="bin/RiichiMahjong" prefix_auto="1" extension_auto="1" />
 				<Option working_dir="bin/" />
 				<Option object_output="obj/Release/" />
 				<Option type="1" />
-				<Option compiler="vala" />
+				<Option compiler="vala_compiler" />
 				<Compiler>
 					<Add option="-O2" />
 				</Compiler>
@@ -34,7 +34,7 @@
 				<Option output="bin/RiichiMahjong" prefix_auto="1" extension_auto="1" />
 				<Option working_dir="bin/" />
 				<Option type="1" />
-				<Option compiler="vala" />
+				<Option compiler="vala_compiler" />
 			</Target>
 		</Build>
 		<Compiler>
