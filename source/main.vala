@@ -1,9 +1,11 @@
 public static int main(string[] args)
 {
-    if (!Environment.init())
+    Environment environment = new Environment();
+    if (!environment.init())
         return -1;
 
-    SDLWindowTarget sdlWindow = new SDLWindowTarget(Environment.window);
+    SDL.Window wnd = environment.createWindow("RiichiMahjong", 1280, 800);
+    SDLWindowTarget sdlWindow = new SDLWindowTarget(wnd);
     OpenGLRenderer renderer = new OpenGLRenderer(sdlWindow);
     MainWindow window = new MainWindow(sdlWindow, renderer);
 

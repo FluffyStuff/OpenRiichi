@@ -120,11 +120,6 @@ public /*static*/ class ObjParser
         if (!parsed)
             throw new ParsingError.PARSING("Invalid double value in vertex line.");
 
-        //x += 2.5f;
-        //y -= 1.2f;
-        //z = -z;
-        //w = 2.0f;
-
         return ModelVertex() { x = (float)x, y = (float)y, z = (float)z, w = (float)w };
     }
 
@@ -294,9 +289,13 @@ public class ModelData
     public ModelData(ModelTriangle[] triangles)
     {
         this.triangles = triangles;
+
+        points = calc_points(triangles);
+        median = calc_median(points);
+        size = calc_size(points);
     }
 
-    public ModelPoint[] create_points()
+    private static ModelPoint[] calc_points(ModelTriangle[] triangles)
     {
         ModelPoint[] points = new ModelPoint[triangles.length * 3];
 
@@ -307,44 +306,48 @@ public class ModelData
             points[3*i+0] = ModelPoint() { vertex = triangles[i].vertex_c, uv = triangles[i].uv_c, normal = triangles[i].normal_c };
         }
 
-        /*float[,] p =
-        {
-            {  -0.5f, -0.5f, 0.0f, 1.0f  },
-            {  -0.5f,  0.5f, 0.0f, 1.0f  },
-            {   0.5f,  0.5f, 0.0f, 1.0f  },
-            {   0.5f, -0.5f, 0.0f, 1.0f  }
-        };
-
-        float[,] uv =
-        {
-            {  0.0f, 0.0f  },
-            {  0.0f, 1.0f  },
-            {  1.0f, 1.0f  },
-            {  1.0f, 0.0f  }
-        };
-
-        ModelPoint a = ModelPoint() { vertex = ModelVertex() { x = p[0,0], y = p[0,1], z = p[0,2], w = p[0,3] }, uv = ModelUV() { u = uv[0,0], v = uv[0,1] } };
-        ModelPoint b = ModelPoint() { vertex = ModelVertex() { x = p[1,0], y = p[1,1], z = p[1,2], w = p[1,3] }, uv = ModelUV() { u = uv[1,0], v = uv[1,1] } };
-        ModelPoint c = ModelPoint() { vertex = ModelVertex() { x = p[2,0], y = p[2,1], z = p[2,2], w = p[2,3] }, uv = ModelUV() { u = uv[2,0], v = uv[2,1] } };
-        ModelPoint d = ModelPoint() { vertex = ModelVertex() { x = p[3,0], y = p[3,1], z = p[3,2], w = p[3,3] }, uv = ModelUV() { u = uv[3,0], v = uv[3,1] } };
-
-        points = new ModelPoint[] { a, d, c, a, c, b };
-
-        for (int i = 0; i < points.length; i++)
-        {
-            for (int j = 0; j < 10; j++)
-            {
-                float f = *((float*)points + sizeof(ModelPoint) / 4 * i + j);
-                print("%f ", f);
-            }
-
-            print("\n");
-        }*/
-
         return points;
     }
 
+    private static Vec3 calc_median(ModelPoint[] points)
+    {
+        Vec3 sum = {};
+
+        foreach (ModelPoint p in points)
+        {
+            sum.x += p.vertex.x;
+            sum.y += p.vertex.y;
+            sum.z += p.vertex.z;
+        }
+
+        return Vec3() { x = sum.x / points.length, y = sum.y / points.length, z = sum.z / points.length };
+    }
+
+    private static Vec3 calc_size(ModelPoint[] points)
+    {
+        Vec3 min = {}, max = {};
+
+        if (points.length > 0)
+            min = max = Vec3() { x = points[0].vertex.x, y = points[0].vertex.y, z = points[0].vertex.z };
+
+        for (int i = 1; i < points.length; i++)
+        {
+            ModelVertex p = points[i].vertex;
+            min.x = Math.fminf(min.x, p.x);
+            min.y = Math.fminf(min.y, p.y);
+            min.z = Math.fminf(min.z, p.z);
+            max.x = Math.fmaxf(max.x, p.x);
+            max.y = Math.fmaxf(max.y, p.y);
+            max.z = Math.fmaxf(max.z, p.z);
+        }
+
+        return Vec3() { x = max.x - min.x, y = max.y - min.y, z = max.z - min.z };
+    }
+
     public ModelTriangle[] triangles { get; private set; }
+    public ModelPoint[] points { get; private set; }
+    public Vec3 median { get; private set; }
+    public Vec3 size { get; private set; }
 }
 
 public struct ModelPoint

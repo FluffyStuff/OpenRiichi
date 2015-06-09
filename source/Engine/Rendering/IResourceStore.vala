@@ -24,7 +24,7 @@ public class OpenGLResourceStore : ResourceStore
     {
         OpenGLResourceCacheObject? cache = get_cache_object(name);
         if (cache != null)
-            return new Render3DObject(cache.texture, cache.handle);
+            return new Render3DObject(cache.texture, cache.handle, cache.median, cache.size);
 
         int width, height;
         uchar *image = SOIL.load_image(name + ".png", out width, out height, null, SOIL.LoadFlags.RGB);
@@ -35,20 +35,20 @@ public class OpenGLResourceStore : ResourceStore
         string[] lines = FileLoader.load(name + ".obj");
         ModelData data = ObjParser.parse(lines);
 
-        Resource3DObject obj = new Resource3DObject(data.create_points());
+        Resource3DObject obj = new Resource3DObject(data.points);
         uint obj_handle = renderer.load_3D_object(obj);
 
         RenderTexture tex = new RenderTexture(texture_handle);
-        Render3DObject obj_3d = new Render3DObject(tex, obj_handle);
+        Render3DObject obj_3d = new Render3DObject(tex, obj_handle, data.median, data.size);
 
-        cache_object(name, obj_handle, tex);
+        cache_object(name, obj_handle, tex, data.median, data.size);
 
         return obj_3d;
     }
 
-    private void cache_object(string name, uint handle, RenderTexture texture)
+    private void cache_object(string name, uint handle, RenderTexture texture, Vec3 median, Vec3 size)
     {
-        cache.add(new OpenGLResourceCacheObject(name, handle, texture));
+        cache.add(new OpenGLResourceCacheObject(name, handle, texture, median, size));
     }
 
     private OpenGLResourceCacheObject? get_cache_object(string name)
@@ -62,16 +62,20 @@ public class OpenGLResourceStore : ResourceStore
 
 private class OpenGLResourceCacheObject
 {
-    public OpenGLResourceCacheObject(string name, uint handle, RenderTexture texture)
+    public OpenGLResourceCacheObject(string name, uint handle, RenderTexture texture, Vec3 median, Vec3 size)
     {
         this.name = name;
         this.handle = handle;
         this.texture = texture;
+        this.median = median;
+        this.size = size;
     }
 
     public string name { get; private set; }
     public uint handle { get; private set; }
     public RenderTexture texture { get; private set; }
+    public Vec3 median { get; private set; }
+    public Vec3 size { get; private set; }
 }
 
 public class ResourceTexture
@@ -106,47 +110,4 @@ public class RenderTexture
     }
 
     public uint handle { get; private set; }
-}
-
-public class Render3DObject
-{
-    public Render3DObject(RenderTexture? texture, uint handle)
-    {
-        this.texture = texture;
-        this.handle = handle;
-        rotation = { };
-        position = { };
-        scale = Vec3() { x = 1, y = 1, z = 1 };
-        alpha = 1;
-        light_multiplier = 1;
-    }
-
-    public RenderTexture texture { get; private set; }
-    public uint handle { get; private set; }
-    public Vec3 rotation { get; set; }
-    public Vec3 position { get; set; }
-    public Vec3 scale { get; set; }
-    public float alpha { get; set; }
-    public float light_multiplier { get; set; }
-    public Vec3 diffuse_color { get; set; }
-}
-
-public class LightSource
-{
-    public LightSource()
-    {
-        color = Vec3() { x = 1, y = 1, z = 1 };
-        intensity = 1;
-    }
-
-    public Vec3 position { get; set; }
-    public Vec3 color { get; set; }
-    public float intensity { get; set; }
-}
-
-public struct Vec3
-{
-    float x;
-    float y;
-    float z;
 }

@@ -6,9 +6,49 @@
 			<Cursor1 position="3989" topLine="0" />
 		</Cursor>
 	</File>
+	<File name="source\Engine\Rendering\IResourceStore.vala" open="0" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2338" topLine="28" />
+		</Cursor>
+	</File>
+	<File name="source\Engine\Rendering\OpenGLRenderer.vala" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="3232" topLine="45" />
+		</Cursor>
+	</File>
 	<File name="source\Helper\Environment.vala" open="0" top="0" tabpos="24" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
 			<Cursor1 position="853" topLine="72" />
+		</Cursor>
+	</File>
+	<File name="source\MainWindow.vala" open="1" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="374" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="source\Helper\Sound.vala" open="0" top="0" tabpos="9" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="364" topLine="31" />
+		</Cursor>
+	</File>
+	<File name="Makefile" open="1" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1673" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="source\Engine\Files\ObjParser.vala" open="0" top="0" tabpos="23" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="5427" topLine="142" />
+		</Cursor>
+	</File>
+	<File name="source\Game\GameView.vala" open="1" top="1" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2631" topLine="57" />
+		</Cursor>
+	</File>
+	<File name="source\Engine\Rendering\IResourceHandle.vala" open="0" top="0" tabpos="19" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="683" topLine="0" />
 		</Cursor>
 	</File>
 	<File name="source\Helper\Helper.vala" open="0" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -21,11 +61,6 @@
 			<Cursor1 position="497" topLine="189" />
 		</Cursor>
 	</File>
-	<File name="source\Helper\Sound.vala" open="0" top="0" tabpos="9" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="364" topLine="31" />
-		</Cursor>
-	</File>
 	<File name="source\Helper\Texture.vala" open="0" top="0" tabpos="20" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
 			<Cursor1 position="431" topLine="21" />
@@ -36,44 +71,9 @@
 			<Cursor1 position="3659" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="source\Engine\Rendering\IResourceStore.vala" open="0" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="2338" topLine="28" />
-		</Cursor>
-	</File>
-	<File name="source\Engine\Files\ObjParser.vala" open="0" top="0" tabpos="23" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="5427" topLine="142" />
-		</Cursor>
-	</File>
 	<File name="source\main.vala" open="1" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
 			<Cursor1 position="340" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="source\Engine\Rendering\OpenGLRenderer.vala" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="12643" topLine="261" />
-		</Cursor>
-	</File>
-	<File name="source\MainWindow.vala" open="1" top="1" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="4638" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="source\Game\GameView.vala" open="1" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="789" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="Makefile" open="1" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="1421" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="source\Engine\Rendering\IResourceHandle.vala" open="0" top="0" tabpos="19" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="683" topLine="0" />
 		</Cursor>
 	</File>
 </CodeBlocks_layout_file>
