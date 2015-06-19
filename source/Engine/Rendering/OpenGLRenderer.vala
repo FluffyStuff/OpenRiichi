@@ -164,16 +164,6 @@ public class OpenGLRenderer : RenderTarget
             print("GL shader program failure!!!\n");
     }
 
-    private void on_reshape()
-    {
-        glBindTexture(GL_TEXTURE_2D, second_pass_object_texture[0]);
-        glTexImage2D(GL_TEXTURE_2D, 0, (GLint)GL_SRGB_ALPHA, (GLsizei)view_width, (GLsizei)view_height, 0, (GLint)GL_RGBA, GL_UNSIGNED_BYTE, null);
-        glBindTexture(GL_TEXTURE_2D, frame_buffer_object_texture[0]);
-        glTexImage2D(GL_TEXTURE_2D, 0, (GLint)GL_SRGB_ALPHA, (GLsizei)view_width, (GLsizei)view_height, 0, (GLint)GL_RGBA, GL_UNSIGNED_BYTE, null);
-        glBindRenderbuffer(GL_RENDERBUFFER, color_buffer[0]);
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, (GLsizei)view_width, (GLsizei)view_height);
-    }
-
     private void init_frame_buffer()
     {
         glActiveTexture(GL_TEXTURE0);
@@ -406,6 +396,16 @@ public class OpenGLRenderer : RenderTarget
         view_height = state.screen_height;
 
         glViewport(0, 0, (GLsizei)view_width, (GLsizei)view_height);
-        on_reshape();
+        reshape();
+    }
+
+    private void reshape()
+    {
+        glBindTexture(GL_TEXTURE_2D, second_pass_object_texture[0]);
+        glTexImage2D(GL_TEXTURE_2D, 0, (GLint)GL_SRGB_ALPHA, (GLsizei)view_width, (GLsizei)view_height, 0, (GLint)GL_RGBA, GL_UNSIGNED_BYTE, null);
+        glBindTexture(GL_TEXTURE_2D, frame_buffer_object_texture[0]);
+        glTexImage2D(GL_TEXTURE_2D, 0, (GLint)GL_SRGB_ALPHA, (GLsizei)view_width, (GLsizei)view_height, 0, (GLint)GL_RGBA, GL_UNSIGNED_BYTE, null);
+        glBindRenderbuffer(GL_RENDERBUFFER, color_buffer[0]);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, (GLsizei)view_width, (GLsizei)view_height);
     }
 }

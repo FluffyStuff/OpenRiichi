@@ -3,6 +3,9 @@ using Gee;
 public class RenderPlayer
 {
     private Vec3 center;
+    //private Vec3 hand_position;
+    //private Vec3 pond_position;
+    //private Vec3 discard_position;
     private float player_offset;
     private float wall_offset;
     private int seat;
@@ -11,16 +14,20 @@ public class RenderPlayer
     //private RenderPond pond;
     //private RenderCalls calls;
 
-    public RenderPlayer(Vec3 center, int seat, float player_offset, float wall_offset)
+    public RenderPlayer(Vec3 center, int seat, float player_offset, float wall_offset, Vec3 tile_size)
     {
         this.center = center;
-        this.player_offset = player_offset;
+        this.player_offset = player_offset - 3 * tile_size.z;
         this.wall_offset = wall_offset;
         this.seat = seat;
 
-        Vec3 pos = center;
-        pos.z -= player_offset;
-        hand = new RenderHand(pos);
+        Vec3 pos = Vec3() { z = - this.player_offset };
+
+        pos = Calculations.rotate_y({}, (float)seat / 2, pos);
+        pos = Calculations.vec3_plus(center, pos);
+        print("Seat: " + seat.to_string() + " PosX: " + pos.x.to_string() + " PosY: " + pos.y.to_string() + " PosZ: " + pos.z.to_string() + "\n");
+
+        hand = new RenderHand(pos, seat);
         //pond = new RenderPond();
         //calls = new RenderCalls();
     }
@@ -30,18 +37,20 @@ public class RenderPlayer
         hand.add_tile(tile);
     }
 
-    //private void
+    public ArrayList<RenderTile> hand_tiles { get { return hand.tiles; } }
 }
 
 private class RenderHand
 {
-    private ArrayList<RenderTile> tiles = new ArrayList<RenderTile>();
     private Vec3 tile_size;
     private Vec3 position;
+    private int seat;
 
-    public RenderHand(Vec3 position)
+    public RenderHand(Vec3 position, int seat)
     {
+        tiles = new ArrayList<RenderTile>();
         this.position = position;
+        this.seat = seat;
     }
 
     public void add_tile(RenderTile tile)
@@ -57,21 +66,24 @@ private class RenderHand
         {
             Vec3 pos = Vec3()
             {
-                x = (i - ((float)tiles.size + 1) / 2) * tile_size.x,
-                y = tile_size.z / 2,
-                z = tile_size.z * 5
+                x = (i - ((float)tiles.size - 1) / 2) * tile_size.x,
+                y = tile_size.z / 2
             };
-            pos.x += position.x;
-            pos.y += position.y;
-            pos.z += position.z;
+
+            pos = Calculations.rotate_y({}, (float)seat / 2, pos);
+            pos = Calculations.vec3_plus(position, pos);
             tiles[i].position = pos;
 
             Vec3 rot = Vec3()
             {
-                x = -0.5f
+                x = -0.5f/*,
+                y = (float)seat / 2*/
             };
 
+            tiles[i].rotation = {0,0,0};
             tiles[i].rotation = rot;
         }
     }
+
+    public ArrayList<RenderTile> tiles { get; private set; }
 }

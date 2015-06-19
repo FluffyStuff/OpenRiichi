@@ -1,11 +1,11 @@
-public class Vector
+public class Vector2
 {
-    public Vector.empty()
+    public Vector2.empty()
     {
         this(0, 0, 0);
     }
 
-    public Vector(float x, float y, float z)
+    public Vector2(float x, float y, float z)
     {
         this.x = x;
         this.y = y;

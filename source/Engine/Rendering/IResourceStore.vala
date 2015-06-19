@@ -24,7 +24,7 @@ public class OpenGLResourceStore : ResourceStore
     {
         OpenGLResourceCacheObject? cache = get_cache_object(name);
         if (cache != null)
-            return new Render3DObject(cache.texture, cache.handle, cache.median, cache.size);
+            return new Render3DObject(cache.texture, cache.handle, cache.center, cache.size);
 
         int width, height;
         uchar *image = SOIL.load_image(name + ".png", out width, out height, null, SOIL.LoadFlags.RGB);
@@ -39,16 +39,16 @@ public class OpenGLResourceStore : ResourceStore
         uint obj_handle = renderer.load_3D_object(obj);
 
         RenderTexture tex = new RenderTexture(texture_handle);
-        Render3DObject obj_3d = new Render3DObject(tex, obj_handle, data.median, data.size);
+        Render3DObject obj_3d = new Render3DObject(tex, obj_handle, data.center, data.size);
 
-        cache_object(name, obj_handle, tex, data.median, data.size);
+        cache_object(name, obj_handle, tex, data.center, data.size);
 
         return obj_3d;
     }
 
-    private void cache_object(string name, uint handle, RenderTexture texture, Vec3 median, Vec3 size)
+    private void cache_object(string name, uint handle, RenderTexture texture, Vec3 center, Vec3 size)
     {
-        cache.add(new OpenGLResourceCacheObject(name, handle, texture, median, size));
+        cache.add(new OpenGLResourceCacheObject(name, handle, texture, center, size));
     }
 
     private OpenGLResourceCacheObject? get_cache_object(string name)
@@ -62,19 +62,19 @@ public class OpenGLResourceStore : ResourceStore
 
 private class OpenGLResourceCacheObject
 {
-    public OpenGLResourceCacheObject(string name, uint handle, RenderTexture texture, Vec3 median, Vec3 size)
+    public OpenGLResourceCacheObject(string name, uint handle, RenderTexture texture, Vec3 center, Vec3 size)
     {
         this.name = name;
         this.handle = handle;
         this.texture = texture;
-        this.median = median;
+        this.center = center;
         this.size = size;
     }
 
     public string name { get; private set; }
     public uint handle { get; private set; }
     public RenderTexture texture { get; private set; }
-    public Vec3 median { get; private set; }
+    public Vec3 center { get; private set; }
     public Vec3 size { get; private set; }
 }
 

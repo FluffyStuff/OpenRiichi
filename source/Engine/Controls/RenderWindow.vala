@@ -3,7 +3,6 @@ using SDL;
 public abstract class RenderWindow
 {
     private IWindowTarget window;
-    public IRenderTarget renderer;
     private bool running;
     private GLib.Timer timer;
     private double last_time = 0;
@@ -77,6 +76,7 @@ public abstract class RenderWindow
 
     protected abstract void do_process(double dt);
 
+    public IRenderTarget renderer { get; private set; }
     public View main_view { get; private set; }
     public bool fullscreen { get { return window.fullscreen; } set { window.fullscreen = value; } }
     public Color back_color { get; set; }

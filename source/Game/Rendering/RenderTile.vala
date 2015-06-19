@@ -1,7 +1,5 @@
 public class RenderTile
 {
-    private Render3DObject tile;
-
     public RenderTile(IResourceStore store)
     {
         tile = store.load_3D_object("./Data/models/box");
@@ -10,6 +8,19 @@ public class RenderTile
     public void render(RenderState state)
     {
         state.add_3D_object(tile);
+    }
+
+    public void set_hovered(bool hovered)
+    {
+        if (hovered)
+            tile.diffuse_color = Vec3()
+            {
+                x = 1,
+                y = 1,
+                z = 0.5f
+            };
+        else
+            tile.diffuse_color = {};
     }
 
     public Vec3 position
@@ -25,4 +36,5 @@ public class RenderTile
     }
 
     public Vec3 object_size { get { return tile.object_size; } }
+    public Render3DObject tile { get; private set; }
 }

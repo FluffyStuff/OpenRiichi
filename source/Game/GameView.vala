@@ -1,10 +1,17 @@
 using GL;
+using Gee;
 
 public class GameView : View
 {
+    private Camera camera = new Camera();
     private LightSource light1 = new LightSource();
     private LightSource light2 = new LightSource();
+
+    private RenderTile width_collision;
+    private RenderTile height_collision;
+
     private RenderTable table;
+    private RenderWall wall;
     private RenderPlayer players[4];
     private RenderTile tiles[136];
 
@@ -14,18 +21,33 @@ public class GameView : View
 
     public override void do_load_resources(IResourceStore store)
     {
-        parent_window.set_cursor_hidden(true);
+        //parent_window.set_cursor_hidden(true);
 
-        table = new RenderTable(store);
+        // TODO: Only load model
+        Render3DObject tile = store.load_3D_object("./Data/models/box");
+        Vec3 tile_size = tile.object_size;
+
+        table = new RenderTable(store, 0);
+
+        float scale = 0.3f;
+        width_collision = new RenderTile(store);
+        width_collision.tile.scale = { scale, scale, scale };
+        height_collision = new RenderTile(store);
+        height_collision.tile.scale = { scale, scale, scale };
 
         for (int i = 0; i < tiles.length; i++)
             tiles[i] = new RenderTile(store);
 
-        for (int i = 0; i < players.length; i++)
-            players[i] = new RenderPlayer(table.center, 0, table.player_offset, 0);
+        wall = new RenderWall(tiles, tile_size, table.center, table.wall_offset, 0, 7);
 
-        for (int i = 0; i < 13; i++)
-            players[0].add_to_hand(tiles[i]);
+        for (int i = 0; i < players.length; i++)
+            players[i] = new RenderPlayer(table.center, i, table.player_offset, 0, tile_size);
+
+        for (int i = 0; i < 8; i++)
+            for (int j = 0; j < 4; j++)
+                players[i%4].add_to_hand(wall.draw_wall());
+        for (int i = 0; i < 3; i++)
+            players[i].add_to_hand(wall.draw_wall());
 
         light1.color = Vec3() { x = 1, y = 1, z = 1 };
         light1.intensity = 5;
@@ -34,6 +56,8 @@ public class GameView : View
         light2.color = Vec3() { x = 1, y = 1, z = 1 };
         light2.intensity = 20;
         light2.position = Vec3() { x = 0, y = 30, z = -50 };
+
+        rot = {};
     }
 
     private int last_x = 0;
@@ -47,6 +71,7 @@ public class GameView : View
     private float camera_z = 0;
 
     private double derp = 0;
+    private Vec3 rot;
 
     public override void do_process(double dt)
     {
@@ -54,26 +79,32 @@ public class GameView : View
         camera_x += accel_x;
         camera_y += accel_y;
         camera_z += accel_z;
-        //light.color = Vec3() { x = 0.0f, y = 1, z = 0.0f };
-        //rotation += (float)dt * 0.02f;
-        //tile.rotation = Vec3() { x = (float)last_y / slow + rotation * 0.25f, y = (float)last_x / (float)slow + (float)rotation, z = rotation * 0.1f };
-        //table.rotation = Vec3() { x = (float)last_y / slow + rotation * 0.25f, y = (float)last_x / (float)slow + (float)rotation, z = rotation * 0.1f };
-        //table.rotation = Vec3() { x = rotation * 0.25f, y = rotation, z = rotation * 0.1f };
-        //tile.rotation = Vec3() { x = rotation * 0.25f, y = rotation, z = rotation * 0.1f };
 
-        //tile.position = Vec3() { y = -0.5f, z = 2.5f };
+        int slow = 300;
+        camera.pitch = (float)last_y / slow;
+        camera.yaw = (float)last_x / slow;
+        camera.position = Vec3(){ x = camera_x, y = camera_y, z = camera_z };
+
+        ArrayList<RenderTile> tiles = players[1].hand_tiles;
+
+        for (int i = 0; i < tiles.size; i++)
+            tiles[i].set_hovered(i == (int)derp % tiles.size);
+
+        tiles = players[0].hand_tiles;
+        tiles[0].rotation = rot;
+
+        do_mouse_check();
     }
 
     private float bloom_intensity = 0.2f;
     private float perlin_strength = 0.25f;
     public override void do_render(RenderState state, IResourceStore store)
     {
-        //state.add_scene();
-        int slow = 300;
-        state.camera_rotation = Vec3(){ x = 1 - (float)last_y / slow, y = - (float)last_x / slow };
-        state.camera_position = Vec3(){ x = camera_x, y = camera_y, z = camera_z };
+        state.set_camera(camera);
         state.add_light_source(light1);
         state.add_light_source(light2);
+        state.add_3D_object(width_collision.tile);
+        state.add_3D_object(height_collision.tile);
 
         table.render(state, store);
         for (int i = 0; i < tiles.length; i++)
@@ -87,15 +118,43 @@ public class GameView : View
     {
         last_x += x;
         last_y += y;
-        //int slow = 300;
-        //tile.rotation = Vec3() { x = (float)y / slow + rotation * 0.25f, y = (float)x / slow + rotation, z = rotation * 0.1f };
-        //table.rotation = Vec3() { x = (float)y / slow, y = (float)x / slow };
+    }
+
+    private void do_mouse_check()
+    {
+        float width = 1280;
+        float height = 800;
+        float focal_length = camera.focal_length;
+        float aspect_ratio = width / height;
+        Mat4 projectionMat = parent_window.renderer.get_projection_matrix((float)Math.PI / 3 * focal_length, aspect_ratio, 0.5f * Math.fmaxf(aspect_ratio, 1), 30 * Math.fmaxf(aspect_ratio, 1));
+        Mat4 modelViewMat = parent_window.renderer.get_view_matrix(camera);
+
+        Vec3 ray = Calculations.get_ray(projectionMat, modelViewMat, last_x, last_y, width, height);
+
+        // TODO: Change
+        ArrayList<RenderTile> tiles = players[0].hand_tiles;
+
+        for (int i = 0; i < tiles.size; i++)
+        {
+            RenderTile tile = tiles.get(i);
+            Vec3 point = tile.position;
+            //float collision_distance = Calculations.get_collision_distance(tile.tile, camera.position, ray);
+            Vec3 collision_distance = Calculations.get_collision_distance(tile.tile, camera.position, ray, true);
+            width_collision.position = collision_distance;
+            collision_distance = Calculations.get_collision_distance(tile.tile, camera.position, ray, false);
+            height_collision.position = collision_distance;
+            //print("Dist: %f\n", collision_distance);
+            break;
+        }
     }
 
     protected override void do_key_press(char key)
     {
         int slow = 300;
         float speed = 0.001f;
+
+        //float last_x = 0;
+        //float last_y = 0;
 
         switch (key)
         {
@@ -118,17 +177,43 @@ public class GameView : View
             accel_y -= (float)Math.sin((float)last_y / slow * Math.PI) * speed;
             break;
         case 'a':
-            accel_z -= (float)Math.sin((float)last_x / slow * Math.PI) * speed;
-            accel_x += (float)Math.cos((float)last_x / slow * Math.PI) * speed;
-            break;
-        case 'd':
             accel_z += (float)Math.sin((float)last_x / slow * Math.PI) * speed;
             accel_x -= (float)Math.cos((float)last_x / slow * Math.PI) * speed;
+            break;
+        case 'd':
+            accel_z -= (float)Math.sin((float)last_x / slow * Math.PI) * speed;
+            accel_x += (float)Math.cos((float)last_x / slow * Math.PI) * speed;
             break;
         case 'x':
             accel_x = 0;
             accel_y = 0;
             accel_z = 0;
+            break;
+        case 86:
+            print("Z: %f\n", camera.rotation.z);
+            camera.roll += 0.1f;
+            break;
+        case 87:
+            print("Z: %f\n", camera.rotation.z);
+            camera.roll -= 0.1f;
+            break;
+        case 89:
+            rot.x += 0.1f;
+            break;
+        case 90:
+            rot.x -= 0.1f;
+            break;
+        case 92:
+            rot.y += 0.1f;
+            break;
+        case 93:
+            rot.y -= 0.1f;
+            break;
+        case 95:
+            rot.z += 0.1f;
+            break;
+        case 96:
+            rot.z -= 0.1f;
             break;
         default:
             print("%i\n", (int)key);

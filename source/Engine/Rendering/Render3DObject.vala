@@ -1,10 +1,10 @@
 public class Render3DObject
 {
-    public Render3DObject(RenderTexture? texture, uint handle, Vec3 median, Vec3 size)
+    public Render3DObject(RenderTexture? texture, uint handle, Vec3 center, Vec3 size)
     {
         this.texture = texture;
         this.handle = handle;
-        object_median = median;
+        object_center = center;
         object_size = size;
         rotation = { };
         position = { };
@@ -15,7 +15,7 @@ public class Render3DObject
 
     public RenderTexture texture { get; private set; }
     public uint handle { get; private set; }
-    public Vec3 object_median { get; private set; }
+    public Vec3 object_center { get; private set; }
     public Vec3 object_size { get; private set; }
     public Vec3 rotation { get; set; }
     public Vec3 position { get; set; }

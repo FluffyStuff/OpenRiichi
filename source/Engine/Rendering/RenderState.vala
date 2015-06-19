@@ -22,6 +22,13 @@ public class RenderState
         _lights.add(light);
     }
 
+    public void set_camera(Camera camera)
+    {
+        camera_position = camera.position;
+        camera_rotation = camera.rotation;
+        focal_length = camera.focal_length;
+    }
+
     public bool blacking { get; set; }
     public bool vertical {get; set;}
     public float bloom { get; set; }

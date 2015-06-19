@@ -291,8 +291,10 @@ public class ModelData
         this.triangles = triangles;
 
         points = calc_points(triangles);
-        median = calc_median(points);
-        size = calc_size(points);
+        Vec3 s, c;
+        calc(points, out s, out c);
+        size = s;
+        center = c;
     }
 
     private static ModelPoint[] calc_points(ModelTriangle[] triangles)
@@ -309,7 +311,7 @@ public class ModelData
         return points;
     }
 
-    private static Vec3 calc_median(ModelPoint[] points)
+    /*private static Vec3 calc_median(ModelPoint[] points)
     {
         Vec3 sum = {};
 
@@ -321,10 +323,11 @@ public class ModelData
         }
 
         return Vec3() { x = sum.x / points.length, y = sum.y / points.length, z = sum.z / points.length };
-    }
+    }*/
 
-    private static Vec3 calc_size(ModelPoint[] points)
+    private static void calc(ModelPoint[] points, out Vec3 size, out Vec3 center)
     {
+        size = center = {};
         Vec3 min = {}, max = {};
 
         if (points.length > 0)
@@ -341,12 +344,13 @@ public class ModelData
             max.z = Math.fmaxf(max.z, p.z);
         }
 
-        return Vec3() { x = max.x - min.x, y = max.y - min.y, z = max.z - min.z };
+        size = Vec3() { x = max.x - min.x, y = max.y - min.y, z = max.z - min.z };
+        center = Vec3() { x = (max.x + min.x) / 2, y = (max.y + min.y) / 2, z = (max.z - min.z) / 2 };
     }
 
     public ModelTriangle[] triangles { get; private set; }
     public ModelPoint[] points { get; private set; }
-    public Vec3 median { get; private set; }
+    public Vec3 center { get; private set; }
     public Vec3 size { get; private set; }
 }
 
