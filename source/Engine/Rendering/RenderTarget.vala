@@ -164,31 +164,17 @@ public abstract class RenderTarget : Object, IRenderTarget
         return new Mat4.with_vecs(v1, v2, v3, v4);
     }
 
-    private static Mat4 translate(Vec3 vec)
+    /*public Mat4 get_view_matrix(Camera camera)
     {
-        float[] vals =
-        {
-            1,     0,     0,     0,
-            0,     1,     0,     0,
-            0,     0,     1,     0,
-            vec.x, vec.y, vec.z, 1
-        };
-
-        return new Mat4.with_array(vals);
-    }
-
-    public Mat4 get_view_matrix(Camera camera)
-    {
-        float pi = (float)Math.PI;
         Mat4 x = Calculations.rotation_matrix({1, 0, 0}, pi * camera.rotation.x);
         Mat4 y = Calculations.rotation_matrix({0, 1, 0}, pi * camera.rotation.y);
         Mat4 z = Calculations.rotation_matrix({0, 0, 1}, pi * camera.rotation.z);
 
-        Mat4 pos = translate(camera.position);
+        Mat4 pos = Calculations.translate(camera.position);
         Mat4 m = z.mul_mat(y).mul_mat(x);
 
         return m.mul_mat(pos);
-    }
+    }*/
 
     public abstract void render(RenderState state);
 

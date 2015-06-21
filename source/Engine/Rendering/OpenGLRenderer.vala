@@ -38,8 +38,7 @@ public class OpenGLRenderer : RenderTarget
     private GLint intensity_attrib = -1;
     private GLint light_multi_attrib = -1;
     private GLint diffuse_color_attrib = -1;
-    private GLint camera_rotation_attrib = -1;
-    private GLint camera_position_attrib = -1;
+    private GLint view_transform_attrib = -1;
     private GLint aspect_ratio_attrib = -1;
     private GLint focal_length_attrib = -1;
     private GLint light_count_attrib = -1;
@@ -149,8 +148,7 @@ public class OpenGLRenderer : RenderTarget
         rotation_attrib = glGetUniformLocation(shader_program, "rotation_vec");
         position_attrib = glGetUniformLocation(shader_program, "position_vec");
         scale_attrib = glGetUniformLocation(shader_program, "scale_vec");
-        camera_rotation_attrib = glGetUniformLocation(shader_program, "camera_rotation");
-        camera_position_attrib = glGetUniformLocation(shader_program, "camera_position");
+        view_transform_attrib = glGetUniformLocation(shader_program, "view_transform");
         light_count_attrib = glGetUniformLocation(shader_program, "light_count");
         aspect_ratio_attrib = glGetUniformLocation(shader_program, "aspect_ratio");
         focal_length_attrib = glGetUniformLocation(shader_program, "focal_length");
@@ -333,14 +331,14 @@ public class OpenGLRenderer : RenderTarget
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     }
 
+    int blerp = 0;
     private void render_scene(RenderState state)
     {
         setup_projection(state, true);
         glClearColor((GLfloat)state.back_color.r, (GLfloat)state.back_color.g, (GLfloat)state.back_color.b, (GLfloat)state.back_color.a);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glUniform3f(camera_position_attrib, (GLfloat)state.camera_position.x, (GLfloat)state.camera_position.y, (GLfloat)state.camera_position.z);
-        glUniform3f(camera_rotation_attrib, (GLfloat)state.camera_rotation.x, (GLfloat)state.camera_rotation.y, (GLfloat)state.camera_rotation.z);
+        glUniformMatrix4fv(view_transform_attrib, 1 /*only setting 1 matrix*/, (GLboolean)false /*transpose?*/, (GLfloat[])state.view_transform.get_data());
         glUniform1f(aspect_ratio_attrib, (GLfloat)state.screen_width / state.screen_height);
         glUniform1f(focal_length_attrib, (GLfloat)state.focal_length);
         glUniform1i(light_count_attrib, (GLint)state.lights.size);

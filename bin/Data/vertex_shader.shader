@@ -10,13 +10,16 @@ struct lightSourceParameters
 	/*vec3 spotDirection;*/
 };
 
-uniform vec3 camera_rotation;
-uniform vec3 camera_position;
+uniform mat4 view_transform;
+uniform mat4 projection_transform;
+
 uniform vec3 rotation_vec;
 uniform vec3 position_vec;
 uniform vec3 scale_vec;
+
 uniform float aspect_ratio;
 uniform float focal_length;
+
 uniform int light_count;
 uniform lightSourceParameters light_source[MAX_LIGHTS];
 
@@ -33,18 +36,6 @@ out vec3 light_normals[MAX_LIGHTS];
 out float light_intensity[MAX_LIGHTS];
 out vec3 light_colors[MAX_LIGHTS];
 
-mat4 rotationMatrix(vec3 axis, float angle)
-{
-	axis = normalize(axis);
-	float s = sin(angle);
-	float c = cos(angle);
-	float oc = 1.0 - c;
-	return mat4(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,  0.0,
-				oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,  0.0,
-				oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c,           0.0,
-				0.0,                                0.0,                                0.0,                                1.0);
-}
-
 mat4 view_frustum
 (
 	float angle_of_view,
@@ -59,6 +50,18 @@ mat4 view_frustum
 		vec4(0.0, 0.0,    (z_far+z_near)/(z_far-z_near),  -1.0),
 		vec4(0.0, 0.0, 2.0*z_far*z_near /(z_far-z_near),   0.0)
 	);
+}
+
+mat4 rotate(vec3 axis, float angle)
+{
+	axis = normalize(axis);
+	float s = sin(angle);
+	float c = cos(angle);
+	float oc = 1.0 - c;
+	return mat4(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,  0.0,
+				oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,  0.0,
+				oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c,           0.0,
+				0.0,                                0.0,                                0.0,                                1.0);
 }
 
 mat4 scale(vec3 vec)
@@ -86,41 +89,23 @@ void main()
 	Texcoord = texcoord.xy;
 	noise_coord = position.xyz;
 	
-	vec4 pos = scale(scale_vec) * position
-	* rotationMatrix(vec3(1, 0, 0), PI * rotation_vec.x)
-	* rotationMatrix(vec3(0, 1, 0), PI * rotation_vec.y)
-	* rotationMatrix(vec3(0, 0, 1), PI * rotation_vec.z);
+	mat4 rotation_matrix = 
+	  rotate(vec3(1, 0, 0), PI * rotation_vec.x)
+	* rotate(vec3(0, 1, 0), PI * rotation_vec.y)
+	* rotate(vec3(0, 0, 1), PI * rotation_vec.z);
+	vec4 transform = scale(scale_vec) * position * rotation_matrix;
 	
-	pos = translate(position_vec) * pos;
-	
-	pos = translate(-camera_position) * pos
-	* rotationMatrix(vec3(1, 0, 0), PI * camera_rotation.x)
-	* rotationMatrix(vec3(0, 1, 0), PI * camera_rotation.y)
-	* rotationMatrix(vec3(0, 0, 1), PI * camera_rotation.z);
-	
+	vec4 pos = view_transform * translate(position_vec) * transform;
 	gl_Position = pos * view_frustum(PI / 3 * focal_length, aspect_ratio, 0.5 * max(aspect_ratio, 1), 30 * max(aspect_ratio, 1));
 	
 	for (int i = 0; i < light_count; i++)
 	{
-		vec4 v = scale(scale_vec) * position
-		* rotationMatrix(vec3(1, 0, 0), PI * rotation_vec.x)
-		* rotationMatrix(vec3(0, 1, 0), PI * rotation_vec.y)
-		* rotationMatrix(vec3(0, 0, 1), PI * rotation_vec.z);
-
-		light_normals[i] = light_source[i].position - (translate(position_vec) * v).xyz;
+		light_normals[i] = light_source[i].position - (translate(position_vec) * transform).xyz;
 		light_intensity[i] = light_source[i].intensity;
 		light_colors[i] = light_source[i].color;
 	}
 	
-	vec4 pn = scale(scale_vec) * position
-	* rotationMatrix(vec3(1, 0, 0), PI * rotation_vec.x)
-	* rotationMatrix(vec3(0, 1, 0), PI * rotation_vec.y)
-	* rotationMatrix(vec3(0, 0, 1), PI * rotation_vec.z);
-	Camera_normal = camera_position - (translate(position_vec) * pn).xyz;
-	
+	Camera_normal = inverse(view_transform)[3].xyz - (translate(position_vec) * transform).xyz;
 	vec3 sn = normalize(vec3(normals.x / scale_vec.x, normals.y / scale_vec.y, normals.z / scale_vec.z));
-	Normal = (vec4(sn, 1.0)
-	* rotationMatrix(vec3(1, 0, 0), PI * rotation_vec.x)
-	* rotationMatrix(vec3(0, 1, 0), PI * rotation_vec.y)
-	* rotationMatrix(vec3(0, 0, 1), PI * rotation_vec.z)).xyz;
+	Normal = (vec4(sn, 1.0) * rotation_matrix).xyz;
 }

@@ -24,8 +24,8 @@ public class RenderState
 
     public void set_camera(Camera camera)
     {
+        view_transform = camera.view_transform.copy();
         camera_position = camera.position;
-        camera_rotation = camera.rotation;
         focal_length = camera.focal_length;
     }
 
@@ -38,7 +38,7 @@ public class RenderState
     public Gee.ArrayList<Render3DObject> objects { get { return objs; } }
     public Gee.ArrayList<LightSource> lights { get { return _lights; } }
     public Color back_color { get; set; }
+    public Mat4 view_transform { get; set; }
     public Vec3 camera_position { get; set; }
-    public Vec3 camera_rotation { get; set; }
     public float focal_length { get; set; }
 }

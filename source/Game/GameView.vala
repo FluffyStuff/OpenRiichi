@@ -127,7 +127,7 @@ public class GameView : View
         float focal_length = camera.focal_length;
         float aspect_ratio = width / height;
         Mat4 projectionMat = parent_window.renderer.get_projection_matrix((float)Math.PI / 3 * focal_length, aspect_ratio, 0.5f * Math.fmaxf(aspect_ratio, 1), 30 * Math.fmaxf(aspect_ratio, 1));
-        Mat4 modelViewMat = parent_window.renderer.get_view_matrix(camera);
+        Mat4 modelViewMat = camera.view_transform;
 
         Vec3 ray = Calculations.get_ray(projectionMat, modelViewMat, last_x, last_y, width, height);
 

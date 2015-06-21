@@ -113,18 +113,24 @@ public class Calculations
         return (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y) + (a.z - b.z) * (a.z - b.z);
     }
 
+    public static Vec3 vec3_neg(Vec3 vec)
+    {
+        return Vec3() { x = -vec.x, y = -vec.y, z = -vec.z };
+    }
+
     public static Vec3 get_ray(Mat4 projectionMat, Mat4 modelViewMat, float point_x, float point_y, float width, float height)
     {
         float normalised_x = -(1 - 2 * point_x / width);
-        float normalised_y =  (1 - 2 * point_y / height);
+        float normalised_y = (1 - 2 * point_y / height);
 
         Mat4 unviewMat = (projectionMat.mul_mat(modelViewMat)).inverse();
 
         Vec4 vec = {normalised_x, normalised_y, 0, 1};
 
         Vec4 near_point = unviewMat.mul_vec(vec);
-        Vec4 camera_pos = modelViewMat.inverse().col(3);
-        Vec4 ray_dir = vec4_minus(near_point, camera_pos);
+        Vec4 ray_dir = near_point;
+        //Vec4 camera_pos = modelViewMat.inverse().col(3);
+        //Vec4 ray_dir = vec4_minus(near_point, camera_pos);
 
         return vec3_norm({ ray_dir.x, ray_dir.y, ray_dir.z });
     }
@@ -238,6 +244,19 @@ public class Calculations
             oc * axis.x * axis.y + axis.z * s, oc * axis.y * axis.y + c,          oc * axis.y * axis.z - axis.x * s,  0,
             oc * axis.z * axis.x - axis.y * s, oc * axis.y * axis.z + axis.x * s, oc * axis.z * axis.z + c,           0,
             0,                                 0,                                 0,                                  1
+        };
+
+        return new Mat4.with_array(vals);
+    }
+
+    public static Mat4 translation_matrix(Vec3 vec)
+    {
+        float[] vals =
+        {
+            1,     0,     0,     0,
+            0,     1,     0,     0,
+            0,     0,     1,     0,
+            vec.x, vec.y, vec.z, 1
         };
 
         return new Mat4.with_array(vals);

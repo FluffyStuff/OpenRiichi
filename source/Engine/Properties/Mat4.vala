@@ -68,6 +68,16 @@ public class Mat4
         return new Mat4.with_vecs(v1, v2, v3, v4);
     }
 
+    public Mat4 copy()
+    {
+        Vec4 v1 = this.v1;
+        Vec4 v2 = this.v2;
+        Vec4 v3 = this.v3;
+        Vec4 v4 = this.v4;
+
+        return new Mat4.with_vecs(v1, v2, v3, v4);
+    }
+
     // this*mat
     public Mat4 mul_mat(Mat4 mat)
     {
@@ -257,5 +267,17 @@ public class Mat4
             invOut[i] = inv[i] * det;
 
         return true;
+    }
+
+    public float[] get_data()
+    {
+        float[] mat = new float[16];
+        Vec4 *v = (Vec4*)mat;
+        v[0] = v1;
+        v[1] = v2;
+        v[2] = v3;
+        v[3] = v4;
+
+        return mat;
     }
 }
