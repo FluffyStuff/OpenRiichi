@@ -10,8 +10,9 @@ struct lightSourceParameters
 	/*vec3 spotDirection;*/
 };
 
+//uniform mat4 model_transform;
 uniform mat4 view_transform;
-uniform mat4 projection_transform;
+//uniform mat4 projection_transform;
 
 uniform vec3 rotation_vec;
 uniform vec3 position_vec;
@@ -47,8 +48,8 @@ mat4 view_frustum
 	return mat4(
 		vec4(1.0/tan(angle_of_view/2),           0.0, 0.0, 0.0),
 		vec4(0.0, aspect_ratio/tan(angle_of_view/2),  0.0, 0.0),
-		vec4(0.0, 0.0,    (z_far+z_near)/(z_far-z_near),  -1.0),
-		vec4(0.0, 0.0, 2.0*z_far*z_near /(z_far-z_near),   0.0)
+		vec4(0.0, 0.0,    (z_far+z_near)/(z_far-z_near),   1.0),
+		vec4(0.0, 0.0, -2.0*z_far*z_near /(z_far-z_near),   0.0)
 	);
 }
 
@@ -93,19 +94,23 @@ void main()
 	  rotate(vec3(1, 0, 0), PI * rotation_vec.x)
 	* rotate(vec3(0, 1, 0), PI * rotation_vec.y)
 	* rotate(vec3(0, 0, 1), PI * rotation_vec.z);
-	vec4 transform = scale(scale_vec) * position * rotation_matrix;
 	
-	vec4 pos = view_transform * translate(position_vec) * transform;
-	gl_Position = pos * view_frustum(PI / 3 * focal_length, aspect_ratio, 0.5 * max(aspect_ratio, 1), 30 * max(aspect_ratio, 1));
+	mat4 t = translate(position_vec);
+	mat4 r = rotation_matrix;
+	mat4 s = scale(scale_vec);
+	
+	mat4 model_transform = t * r * s;
+	mat4 projection_transform = view_frustum(1.5 * focal_length, aspect_ratio, 0.5 * max(aspect_ratio, 1), 30 * max(aspect_ratio, 1));
+	
+	gl_Position = projection_transform * view_transform * model_transform * position;
 	
 	for (int i = 0; i < light_count; i++)
 	{
-		light_normals[i] = light_source[i].position - (translate(position_vec) * transform).xyz;
+		light_normals[i] = light_source[i].position - (model_transform * position).xyz;
 		light_intensity[i] = light_source[i].intensity;
 		light_colors[i] = light_source[i].color;
 	}
 	
-	Camera_normal = inverse(view_transform)[3].xyz - (translate(position_vec) * transform).xyz;
-	vec3 sn = normalize(vec3(normals.x / scale_vec.x, normals.y / scale_vec.y, normals.z / scale_vec.z));
-	Normal = (vec4(sn, 1.0) * rotation_matrix).xyz;
+	Camera_normal = (inverse(view_transform)[3] - (model_transform * position)).xyz;
+	Normal = (vec4(normalize(normals), 1.0) * inverse(model_transform)).xyz;
 }
