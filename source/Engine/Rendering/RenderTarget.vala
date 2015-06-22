@@ -153,28 +153,20 @@ public abstract class RenderTarget : Object, IRenderTarget
         resource_mutex.unlock();
     }
 
-    public Mat4 get_projection_matrix(float view_angle, float aspect_ratio, float z_near, float z_far)
+    public Mat4 get_projection_matrix(float view_angle, float aspect_ratio)
     {
-        float vtan = (float)Math.tan(view_angle / 2);
-        Vec4 v1 = {1 / vtan,                   0,                                     0,  0};
-        Vec4 v2 = {       0, aspect_ratio / vtan,                                     0,  0};
-        Vec4 v3 = {       0,                   0,   (z_far + z_near) / (z_far - z_near), -1};
-        Vec4 v4 = {       0,                   0, 2 * z_far * z_near / (z_far - z_near),  0};
+        view_angle  *= 0.75f;
+        float z_near = 0.5f * Math.fmaxf(aspect_ratio, 1);
+        float z_far  =   30 * Math.fmaxf(aspect_ratio, 1);
+
+        float vtan = (float)Math.tan(view_angle);
+        Vec4 v1 = {1 / vtan,                   0,                                      0, 0};
+        Vec4 v2 = {       0, aspect_ratio / vtan,                                      0, 0};
+        Vec4 v3 = {       0,                   0, (z_far + z_near) / (z_far - z_near), 1};
+        Vec4 v4 = {       0,                   0, -2 * z_far * z_near / (z_far - z_near), 0};
 
         return new Mat4.with_vecs(v1, v2, v3, v4);
     }
-
-    /*public Mat4 get_view_matrix(Camera camera)
-    {
-        Mat4 x = Calculations.rotation_matrix({1, 0, 0}, pi * camera.rotation.x);
-        Mat4 y = Calculations.rotation_matrix({0, 1, 0}, pi * camera.rotation.y);
-        Mat4 z = Calculations.rotation_matrix({0, 0, 1}, pi * camera.rotation.z);
-
-        Mat4 pos = Calculations.translate(camera.position);
-        Mat4 m = z.mul_mat(y).mul_mat(x);
-
-        return m.mul_mat(pos);
-    }*/
 
     public abstract void render(RenderState state);
 

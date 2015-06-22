@@ -118,19 +118,26 @@ public class Calculations
         return Vec3() { x = -vec.x, y = -vec.y, z = -vec.z };
     }
 
-    public static Vec3 get_ray(Mat4 projectionMat, Mat4 modelViewMat, float point_x, float point_y, float width, float height)
+    private static void print_mat(Mat4 mat)
     {
-        float normalised_x = -(1 - 2 * point_x / width);
-        float normalised_y = (1 - 2 * point_y / height);
+        float[] data = mat.get_data();
 
-        Mat4 unviewMat = (projectionMat.mul_mat(modelViewMat)).inverse();
+        print("-----------------------\n");
+        for (int i = 0; i < 4; i++)
+        {
+            print("%f %f %f %f\n", data[4*i+0], data[4*i+1], data[4*i+2], data[4*i+3]);
+        }
+    }
 
-        Vec4 vec = {normalised_x, normalised_y, 0, 1};
+    public static Vec3 get_ray(Mat4 projection_matrix, Mat4 view_matrix, float point_x, float point_y, float width, float height)
+    {
+        float aspect = width / height;
+        float x =  (1 - point_x / width  * 2) / aspect;
+        float y = -(1 - point_y / height * 2) / aspect;
 
-        Vec4 near_point = unviewMat.mul_vec(vec);
-        Vec4 ray_dir = near_point;
-        //Vec4 camera_pos = modelViewMat.inverse().col(3);
-        //Vec4 ray_dir = vec4_minus(near_point, camera_pos);
+        Mat4 unview_matrix = view_matrix.mul_mat(projection_matrix.inverse());
+        Vec4 vec = {x, y, 0, 1};
+        Vec4 ray_dir = unview_matrix.mul_vec(vec);
 
         return vec3_norm({ ray_dir.x, ray_dir.y, ray_dir.z });
     }
@@ -178,7 +185,8 @@ public class Calculations
 
     private static Vec3 collision_surface_distance(Vec3 line_offset, Vec3 line_direction, Vec3 plane_offset, Vec3 plane_direction, Vec3 ortho1, Vec3 ortho2, float width, float height, bool b)
     {
-        Vec3 point = collision(line_offset, line_direction, plane_offset, plane_direction);
+        //Vec3 point = collision(line_offset, line_direction, plane_offset, plane_direction);
+        Vec3 point = collision(line_offset, line_direction, {}, {0,0,1});
         //print("PX: %f PY: %f PZ: %f\n", point.x, point.y, point.z);
         //print("OX: %f OY: %f OZ: %f\n", plane_offset.x, plane_offset.y, plane_offset.z);
         //return point;
@@ -260,5 +268,29 @@ public class Calculations
         };
 
         return new Mat4.with_array(vals);
+    }
+
+    public static Mat4 scale_matrix(Vec3 vec)
+    {
+        float[] vals =
+        {
+            vec.x, 0, 0, 0,
+            0, vec.y, 0, 0,
+            0, 0, vec.z, 0,
+            0, 0,     0, 1
+        };
+
+        return new Mat4.with_array(vals);
+    }
+
+    public static Mat4 get_model_matrix(Vec3 position, Vec3 rotation, Vec3 scale)
+    {
+        float pi = (float)Math.PI;
+        Mat4 x = rotation_matrix({1, 0, 0}, pi * rotation.x);
+        Mat4 y = rotation_matrix({0, 1, 0}, pi * rotation.y);
+        Mat4 z = rotation_matrix({0, 0, 1}, pi * rotation.z);
+        Mat4 rotate = x.mul_mat(y).mul_mat(z);
+
+        return scale_matrix(scale).mul_mat(rotate).mul_mat(translation_matrix(position));
     }
 }

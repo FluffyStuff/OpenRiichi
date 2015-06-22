@@ -81,8 +81,8 @@ public class GameView : View
         camera_z += accel_z;
 
         int slow = 300;
-        camera.pitch = (float)last_y / slow;
-        camera.yaw = (float)last_x / slow;
+        /*camera.pitch = (float)last_y / slow;
+        camera.yaw = (float)last_x / slow;*/
         camera.position = Vec3(){ x = camera_x, y = camera_y, z = camera_z };
 
         ArrayList<RenderTile> tiles = players[1].hand_tiles;
@@ -96,8 +96,8 @@ public class GameView : View
         do_mouse_check();
     }
 
-    private float bloom_intensity = 0.2f;
-    private float perlin_strength = 0.25f;
+    private float bloom_intensity = 0.0f;
+    private float perlin_strength = 0;//0.25f;
     public override void do_render(RenderState state, IResourceStore store)
     {
         state.set_camera(camera);
@@ -116,20 +116,26 @@ public class GameView : View
 
     protected override void do_mouse_move(int x, int y)
     {
+        int slow = 300;
         last_x += x;
         last_y += y;
+
+        Vec3 dir = Calculations.rotate_z({}, -camera.roll, {x,y,0});
+
+        camera.yaw   += dir.x / slow;
+        camera.pitch += dir.y / slow;
     }
 
     private void do_mouse_check()
     {
-        float width = 1280;
-        float height = 800;
+        float width = parent_window.width;
+        float height = parent_window.height;
         float focal_length = camera.focal_length;
         float aspect_ratio = width / height;
-        Mat4 projectionMat = parent_window.renderer.get_projection_matrix((float)Math.PI / 3 * focal_length, aspect_ratio, 0.5f * Math.fmaxf(aspect_ratio, 1), 30 * Math.fmaxf(aspect_ratio, 1));
-        Mat4 modelViewMat = camera.view_transform;
+        Mat4 projection_matrix = parent_window.renderer.get_projection_matrix(focal_length, aspect_ratio);
+        Mat4 view_matrix = camera.get_view_transform(false);
 
-        Vec3 ray = Calculations.get_ray(projectionMat, modelViewMat, last_x, last_y, width, height);
+        Vec3 ray = Calculations.get_ray(projection_matrix, view_matrix, last_x, last_y, width, height);
 
         // TODO: Change
         ArrayList<RenderTile> tiles = players[0].hand_tiles;
@@ -150,11 +156,10 @@ public class GameView : View
 
     protected override void do_key_press(char key)
     {
-        int slow = 300;
         float speed = 0.001f;
 
-        //float last_x = 0;
-        //float last_y = 0;
+        float yaw   = camera.yaw   * (float)Math.PI;
+        float pitch = camera.pitch * (float)Math.PI;
 
         switch (key)
         {
@@ -167,22 +172,22 @@ public class GameView : View
             accel_y -= speed;
             break;
         case 'w':
-            accel_z += (float)Math.cos((float)last_x / slow * Math.PI) * (float)Math.cos((float)last_y / slow * Math.PI) * speed;
-            accel_x += (float)Math.sin((float)last_x / slow * Math.PI) * (float)Math.cos((float)last_y / slow * Math.PI) * speed;
-            accel_y += (float)Math.sin((float)last_y / slow * Math.PI) * speed;
+            accel_z += (float)Math.cos(yaw) * (float)Math.cos(pitch) * speed;
+            accel_x += (float)Math.sin(yaw) * (float)Math.cos(pitch) * speed;
+            accel_y -= (float)Math.sin(pitch) * speed;
             break;
         case 's':
-            accel_z -= (float)Math.cos((float)last_x / slow * Math.PI) * (float)Math.cos((float)last_y / slow * Math.PI) * speed;
-            accel_x -= (float)Math.sin((float)last_x / slow * Math.PI) * (float)Math.cos((float)last_y / slow * Math.PI) * speed;
-            accel_y -= (float)Math.sin((float)last_y / slow * Math.PI) * speed;
+            accel_z -= (float)Math.cos(yaw) * (float)Math.cos(pitch) * speed;
+            accel_x -= (float)Math.sin(yaw) * (float)Math.cos(pitch) * speed;
+            accel_y += (float)Math.sin(pitch) * speed;
             break;
         case 'a':
-            accel_z += (float)Math.sin((float)last_x / slow * Math.PI) * speed;
-            accel_x -= (float)Math.cos((float)last_x / slow * Math.PI) * speed;
+            accel_z += (float)Math.sin(yaw) * speed;
+            accel_x -= (float)Math.cos(yaw) * speed;
             break;
         case 'd':
-            accel_z -= (float)Math.sin((float)last_x / slow * Math.PI) * speed;
-            accel_x += (float)Math.cos((float)last_x / slow * Math.PI) * speed;
+            accel_z -= (float)Math.sin(yaw) * speed;
+            accel_x += (float)Math.cos(yaw) * speed;
             break;
         case 'x':
             accel_x = 0;
@@ -190,11 +195,11 @@ public class GameView : View
             accel_z = 0;
             break;
         case 86:
-            print("Z: %f\n", camera.rotation.z);
+            print("Z: %f\n", camera.roll);
             camera.roll += 0.1f;
             break;
         case 87:
-            print("Z: %f\n", camera.rotation.z);
+            print("Z: %f\n", camera.roll);
             camera.roll -= 0.1f;
             break;
         case 89:

@@ -24,7 +24,7 @@ public class RenderState
 
     public void set_camera(Camera camera)
     {
-        view_transform = camera.view_transform.copy();
+        view_transform = camera.get_view_transform(true);
         camera_position = camera.position;
         focal_length = camera.focal_length;
     }
