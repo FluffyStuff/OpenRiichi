@@ -34,16 +34,6 @@ public class Mat4
 
     public Mat4? inverse()
     {
-        /*float determinant = 0;
-        for (int i = 0; i < 4; i++)
-            determinant = determinant + (a[0][i]*(a[1][(i+1)%3]*a[2][(i+2)%3] - a[1][(i+2)%3]*a[2][(i+1)%3]));
-
-        for (int i = 0; i < 4; i++)
-        {
-            for (int j = 0; j < 4; j++)
-                printf("%.2f\t",((a[(i+1)%3][(j+1)%3] * a[(i+2)%3][(j+2)%3]) - (a[(i+1)%3][(j+2)%3]*a[(i+2)%3][(j+1)%3]))/ determinant);
-            printf("\n");
-        }*/
         float mat[16], inv[16];
 
         Vec4 *v = (Vec4*)mat;
@@ -52,10 +42,7 @@ public class Mat4
         v[2] = v3;
         v[3] = v4;
 
-        if (!gluInvertMatrix(mat, inv))
-            return null;
-
-        return new Mat4.with_array(inv);
+        return gluInvertMatrix(mat, inv) ? new Mat4.with_array(inv) : null;
     }
 
     public Mat4 transpose()
@@ -136,6 +123,18 @@ public class Mat4
             ((float*)(&v3))[c],
             ((float*)(&v4))[c]
         };
+    }
+
+    public float[] get_data()
+    {
+        float[] mat = new float[16];
+        Vec4 *v = (Vec4*)mat;
+        v[0] = v1;
+        v[1] = v2;
+        v[2] = v3;
+        v[3] = v4;
+
+        return mat;
     }
 
     // From Mesa 3D Graphics Library
@@ -267,17 +266,5 @@ public class Mat4
             invOut[i] = inv[i] * det;
 
         return true;
-    }
-
-    public float[] get_data()
-    {
-        float[] mat = new float[16];
-        Vec4 *v = (Vec4*)mat;
-        v[0] = v1;
-        v[1] = v2;
-        v[2] = v3;
-        v[3] = v4;
-
-        return mat;
     }
 }

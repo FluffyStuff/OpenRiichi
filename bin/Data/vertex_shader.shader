@@ -1,6 +1,5 @@
 #version 330 core
 #define MAX_LIGHTS 9
-#define PI 3.1415926535897932384626433832795
 
 struct lightSourceParameters 
 {
@@ -13,10 +12,6 @@ struct lightSourceParameters
 uniform mat4 projection_transform;
 uniform mat4 view_transform;
 uniform mat4 model_transform;
-
-uniform vec3 rotation_vec;
-uniform vec3 position_vec;
-uniform vec3 scale_vec;
 
 uniform int light_count;
 uniform lightSourceParameters light_source[MAX_LIGHTS];

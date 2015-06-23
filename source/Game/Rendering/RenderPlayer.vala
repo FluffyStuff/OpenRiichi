@@ -25,7 +25,6 @@ public class RenderPlayer
 
         pos = Calculations.rotate_y({}, (float)seat / 2, pos);
         pos = Calculations.vec3_plus(center, pos);
-        print("Seat: " + seat.to_string() + " PosX: " + pos.x.to_string() + " PosY: " + pos.y.to_string() + " PosZ: " + pos.z.to_string() + "\n");
 
         hand = new RenderHand(pos, seat);
         //pond = new RenderPond();
@@ -76,8 +75,8 @@ private class RenderHand
 
             Vec3 rot = Vec3()
             {
-                x = -0.5f/*,
-                y = (float)seat / 2*/
+                x = 0.5f,
+                y = -(float)seat / 2
             };
 
             tiles[i].rotation = {0,0,0};

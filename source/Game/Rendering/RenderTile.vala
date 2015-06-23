@@ -15,9 +15,9 @@ public class RenderTile
         if (hovered)
             tile.diffuse_color = Vec3()
             {
-                x = 1,
-                y = 1,
-                z = 0.5f
+                x = 1.5f,
+                y = 1.5f,
+                z = 1.0f
             };
         else
             tile.diffuse_color = {};
