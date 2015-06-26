@@ -2,6 +2,17 @@ public class Calculations
 {
     private Calculations(){}
 
+    public static uint8[] int_to_data(uint32 n)
+    {
+        uint8[] buffer = new uint8[4];
+        buffer[0] = (uint8)(n >> 24);
+        buffer[1] = (uint8)(n >> 16);
+        buffer[2] = (uint8)(n >>  8);
+        buffer[3] = (uint8)n;
+        return buffer;
+}
+
+
     public static Vec3 rotate(Vec3 origin, Vec3 rotation, Vec3 offset)
     {
         Vec3 point = offset;
@@ -133,9 +144,9 @@ public class Calculations
 
     public static float get_collision_distance(Render3DObject obj, Vec3 origin, Vec3 ray)
     {
-        float x_size = obj.object_size.x / 2 * obj.scale.x;
-        float y_size = obj.object_size.y / 2 * obj.scale.y;
-        float z_size = obj.object_size.z / 2 * obj.scale.z;
+        float x_size = obj.model.size.x / 2 * obj.scale.x;
+        float y_size = obj.model.size.y / 2 * obj.scale.y;
+        float z_size = obj.model.size.z / 2 * obj.scale.z;
 
         Vec3 rot = vec3_neg(obj.rotation);
         Vec3 xy_dir = rotate({}, rot, {0, 0, 1});
@@ -174,14 +185,15 @@ public class Calculations
     private static float collision_surface_distance(Vec3 line_offset, Vec3 line_direction, Vec3 plane_offset, Vec3 plane_direction, Vec3 ortho1, Vec3 ortho2, float width, float height)
     {
         Vec3 point = collision(line_offset, line_direction, plane_offset, plane_direction);
+        if (point.x.is_nan() || point.y.is_nan() || point.z.is_nan())
+            return -1;
+
         Vec3 width_col = proj(point, ortho1, plane_offset);
         float width_dist = vec3_dist_sq(plane_offset, width_col);
-
         if (width * width < width_dist)
             return -1;
 
         float height_dist = vec3_dist_sq(point, width_col);
-
         if (height * height < height_dist)
             return -1;
 
@@ -200,7 +212,7 @@ public class Calculations
         float d = vec3_dot(plane_direction, dv);
 
         if (d == 0)
-            print("Line is parallel to or in the plane!\n");
+            return Vec3() { x = float.NAN, y = float.NAN, z = float.NAN };
 
         float u = n / d;
 

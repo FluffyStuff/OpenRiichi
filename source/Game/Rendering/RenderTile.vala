@@ -1,8 +1,39 @@
 public class RenderTile
 {
+    private static Rand rnd = new Rand();
+    // TODO: Use multi texturing
+
     public RenderTile(IResourceStore store)
     {
-        tile = store.load_3D_object("./Data/models/box");
+        RenderModel model = store.load_model("tile");
+        RenderTexture texture = store.load_texture("Tiles/" + get_random_name());
+
+        tile = new Render3DObject(model, texture);
+    }
+
+    private string get_random_name()
+    {
+        int tile = rnd.int_range(0, 10);
+
+        string[] tiles =
+        {
+            "Man",
+            "Sou",
+            "Pin",
+            "Haku",
+            "Hatsu",
+            "Chun",
+            "Kita",
+            "Higashi",
+            "Minami",
+            "Nishi"
+        };
+
+        string ret = tiles[tile];
+        if (tile <= 2)
+            ret += rnd.int_range(1, 10).to_string();
+
+        return ret;
     }
 
     public void render(RenderState state)
@@ -35,6 +66,6 @@ public class RenderTile
         set { tile.rotation = value; }
     }
 
-    public Vec3 object_size { get { return tile.object_size; } }
+    public Vec3 object_size { get { return tile.model.size; } }
     public Render3DObject tile { get; private set; }
 }

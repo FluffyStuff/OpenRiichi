@@ -1,11 +1,9 @@
 public class Render3DObject
 {
-    public Render3DObject(RenderTexture? texture, uint handle, Vec3 center, Vec3 size)
+    public Render3DObject(RenderModel? model, RenderTexture? texture)
     {
+        this.model = model;
         this.texture = texture;
-        this.handle = handle;
-        object_center = center;
-        object_size = size;
         rotation = { };
         position = { };
         scale = Vec3() { x = 1, y = 1, z = 1 };
@@ -13,10 +11,8 @@ public class Render3DObject
         light_multiplier = 1;
     }
 
-    public RenderTexture texture { get; private set; }
-    public uint handle { get; private set; }
-    public Vec3 object_center { get; private set; }
-    public Vec3 object_size { get; private set; }
+    public RenderModel? model { get; set; }
+    public RenderTexture? texture { get; set; }
     public Vec3 rotation { get; set; }
     public Vec3 position { get; set; }
     public Vec3 scale { get; set; }

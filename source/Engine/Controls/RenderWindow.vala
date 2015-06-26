@@ -60,8 +60,36 @@ public abstract class RenderWindow
 
     private void process(double dt)
     {
+        process_events();
         do_process(dt);
         main_view.process(dt);
+    }
+
+    private void process_events()
+    {
+        Event e;
+
+        while (Event.poll(out e) != 0)
+        {
+            if (e.type == EventType.QUIT)
+                finish();
+            else if (e.type == EventType.KEYDOWN)
+            {
+                char key = e.key.keysym.sym;
+                if (!key_press(key))
+                    main_view.key_press(key);
+            }
+            else if (e.type == EventType.MOUSEMOTION)
+            {
+                int x = 0, y = 0;
+                Cursor.get_relative_state(ref x, ref y);
+                main_view.mouse_move(x, y);
+            }
+            else if (e.type == EventType.MOUSEBUTTONDOWN || e.type == EventType.MOUSEBUTTONUP)
+                ;
+            else if (e.type == EventType.MOUSEWHEEL)
+                ;
+        }
     }
 
     public void set_cursor_hidden(bool hidden)
@@ -74,7 +102,12 @@ public abstract class RenderWindow
         window.set_cursor_position(x, y);
     }
 
-    protected abstract void do_process(double dt);
+    protected virtual void do_process(double dt) {}
+
+    protected virtual bool key_press(char key)
+    {
+        return false;
+    }
 
     public IRenderTarget renderer { get; private set; }
     public View main_view { get; private set; }

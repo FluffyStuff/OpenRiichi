@@ -1,4 +1,4 @@
-public abstract class View
+public abstract class View : Object
 {
     private Gee.ArrayList<View> child_views = new Gee.ArrayList<View>();
     protected RenderWindow parent_window;
@@ -8,6 +8,7 @@ public abstract class View
     {
         child_views.add(child);
         child.set_parent(this);
+        child.activated();
     }
 
     private void set_parent(View parent)
@@ -62,9 +63,10 @@ public abstract class View
             view.load_resources(store);
     }
 
-    protected abstract void do_load_resources(IResourceStore store);
-    protected abstract void do_render(RenderState state, IResourceStore store);
-    protected abstract void do_process(double dt);
-    protected abstract void do_mouse_move(int x, int y);
-    protected abstract void do_key_press(char key);
+    protected virtual void activated() {}
+    protected virtual void do_load_resources(IResourceStore store) {}
+    protected virtual void do_render(RenderState state, IResourceStore store) {}
+    protected virtual void do_process(double dt) {}
+    protected virtual void do_mouse_move(int x, int y) {}
+    protected virtual void do_key_press(char key) {}
 }

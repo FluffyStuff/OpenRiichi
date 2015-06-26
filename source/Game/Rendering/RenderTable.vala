@@ -5,8 +5,8 @@ public class RenderTable
 
     public RenderTable(IResourceStore store, int starting_player)
     {
-        table = store.load_3D_object("./Data/models/table");
-        field = store.load_3D_object("./Data/models/field");
+        table = store.load_3D_object("table");
+        field = store.load_3D_object("field");
 
         table.position = Vec3() { y = -0.163f };
         table.scale = Vec3() { x = 10, y = 10, z = 10 };

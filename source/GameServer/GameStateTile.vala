@@ -1,0 +1,7 @@
+namespace GameServer
+{
+    class GameStateTile
+    {
+
+    }
+}

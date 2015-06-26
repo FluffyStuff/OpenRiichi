@@ -262,16 +262,16 @@ public class OpenGLRenderer : RenderTarget
         window.swap();
     }
 
-    protected override IObject3DResourceHandle do_load_3D_object(Resource3DObject obj)
+    protected override IModelResourceHandle do_load_model(ResourceModel model)
     {
         GLsizei len = (GLsizei)(10 * sizeof(float));
         GLuint triangles[1];
 
         glGenBuffers(1, triangles);
         glBindBuffer(GL_ARRAY_BUFFER, triangles[0]);
-        glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)(len * obj.points.length), (GL.GLvoid[])obj.points, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)(len * model.points.length), (GL.GLvoid[])model.points, GL_STATIC_DRAW);
 
-        return new OpenGLObject3DResourceHandle(triangles[0], obj.points.length);
+        return new OpenGLModelResourceHandle(triangles[0], model.points.length);
     }
 
     protected override ITextureResourceHandle do_load_texture(ResourceTexture texture)
@@ -358,11 +358,11 @@ public class OpenGLRenderer : RenderTarget
 
     private void render_3D_object(Render3DObject obj)
     {
-        OpenGLTextureResourceHandle handle = (OpenGLTextureResourceHandle)get_texture(obj.texture.handle);
-        glBindTexture(GL_TEXTURE_2D, (GLuint)handle.handle);
+        OpenGLTextureResourceHandle texture_handle = (OpenGLTextureResourceHandle)get_texture(obj.texture.handle);
+        glBindTexture(GL_TEXTURE_2D, (GLuint)texture_handle.handle);
 
-        OpenGLObject3DResourceHandle obj_handle = (OpenGLObject3DResourceHandle)get_3D_object(obj.handle);
-        glBindBuffer(GL_ARRAY_BUFFER, (GLuint)obj_handle.handle);
+        OpenGLModelResourceHandle model_handle = (OpenGLModelResourceHandle)get_model(obj.model.handle);
+        glBindBuffer(GL_ARRAY_BUFFER, (GLuint)model_handle.handle);
 
         Mat4 model_transform = Calculations.get_model_matrix(obj.position, obj.rotation, obj.scale);
 
@@ -380,7 +380,7 @@ public class OpenGLRenderer : RenderTarget
         glEnableVertexAttribArray(nor_attrib);
         glVertexAttribPointer(nor_attrib, 3, GL_FLOAT, GL_FALSE, len, (GLvoid[])(7 * sizeof(GLfloat)));
 
-        glDrawArrays(GL_TRIANGLES, 0, (GLsizei)obj_handle.triangle_count);
+        glDrawArrays(GL_TRIANGLES, 0, (GLsizei)model_handle.triangle_count);
     }
 
     private void setup_projection(RenderState state, bool ortho)

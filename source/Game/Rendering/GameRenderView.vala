@@ -1,7 +1,7 @@
 using GL;
 using Gee;
 
-public class GameView : View
+public class GameRenderView : View, IGameRenderer
 {
     private Camera camera = new Camera();
     private LightSource light1 = new LightSource();
@@ -12,7 +12,7 @@ public class GameView : View
     private RenderPlayer players[4];
     private RenderTile tiles[136];
 
-    public GameView()
+    public GameRenderView()
     {
     }
 
@@ -21,10 +21,13 @@ public class GameView : View
         //parent_window.set_cursor_hidden(true);
 
         // TODO: Only load model
-        Render3DObject tile = store.load_3D_object("./Data/models/box");
-        Vec3 tile_size = tile.object_size;
+        RenderModel tile = store.load_model("tile");
+        Vec3 tile_size = tile.size;
 
         table = new RenderTable(store, 0);
+
+        camera.position = Vec3() { y = table.center.y + table.wall_offset, z = -table.player_offset * 1.3f };
+        camera.pitch = 0.1f;
 
         for (int i = 0; i < tiles.length; i++)
             tiles[i] = new RenderTile(store);
@@ -47,8 +50,6 @@ public class GameView : View
         light2.color = Vec3() { x = 1, y = 1, z = 1 };
         light2.intensity = 20;
         light2.position = Vec3() { x = 0, y = 30, z = -50 };
-
-        rot = {};
     }
 
     private int last_x = 0;
@@ -62,7 +63,6 @@ public class GameView : View
     private float camera_z = 0;
 
     private double derp = 0;
-    private Vec3 rot;
 
     public override void do_process(double dt)
     {
@@ -70,8 +70,8 @@ public class GameView : View
         camera_x += accel_x;
         camera_y += accel_y;
         camera_z += accel_z;
-        camera.position = Vec3(){ x = camera_x, y = camera_y, z = camera_z };
 
+        //camera.position = Vec3(){ x = camera_x, y = camera_y, z = camera_z };
         do_mouse_check();
     }
 
@@ -93,22 +93,23 @@ public class GameView : View
 
     protected override void do_mouse_move(int x, int y)
     {
-        int slow = 300;
         last_x += x;
         last_y += y;
 
+        /*
         Vec3 dir = Calculations.rotate_z({}, -camera.roll, {x,y,0});
-
+        int slow = 300;
         camera.yaw   += dir.x / slow;
         camera.pitch += dir.y / slow;
+        //*/
     }
 
     private void do_mouse_check()
     {
         float width = parent_window.width;
         float height = parent_window.height;
-        float focal_length = camera.focal_length;
         float aspect_ratio = width / height;
+        float focal_length = camera.focal_length;
         Mat4 projection_matrix = parent_window.renderer.get_projection_matrix(focal_length, aspect_ratio);
         Mat4 view_matrix = camera.get_view_transform(false);
 
@@ -177,5 +178,10 @@ public class GameView : View
             print("%i\n", (int)key);
             break;
         }
+    }
+
+    public void set_active(bool active)
+    {
+
     }
 }

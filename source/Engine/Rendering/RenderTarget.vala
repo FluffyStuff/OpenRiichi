@@ -12,11 +12,11 @@ public abstract class RenderTarget : Object, IRenderTarget
     private Mutex init_mutex = new Mutex();
 
     private Mutex resource_mutex = new Mutex();
+    private uint handle_model_ID = 1;
     private uint handle_texture_ID = 1;
-    private uint handle_3D_object_ID = 1;
-    private ArrayList<Resource3DObject> to_load_3D_objects = new ArrayList<Resource3DObject>();
+    private ArrayList<ResourceModel> to_load_models = new ArrayList<ResourceModel>();
     private ArrayList<ResourceTexture> to_load_textures = new ArrayList<ResourceTexture>();
-    private ArrayList<IObject3DResourceHandle> handles_3D_objects = new ArrayList<IObject3DResourceHandle>();
+    private ArrayList<IModelResourceHandle> handles_models = new ArrayList<IModelResourceHandle>();
     private ArrayList<ITextureResourceHandle> handles_textures = new ArrayList<ITextureResourceHandle>();
 
     protected IWindowTarget window;
@@ -60,12 +60,12 @@ public abstract class RenderTarget : Object, IRenderTarget
         running = false;
     }
 
-    public uint load_3D_object(Resource3DObject obj)
+    public uint load_model(ResourceModel obj)
     {
         uint ret = 0;
         resource_mutex.lock();
-        to_load_3D_objects.add(obj);
-        ret = handle_3D_object_ID++;
+        to_load_models.add(obj);
+        ret = handle_model_ID++;
         resource_mutex.unlock();
 
         return ret;
@@ -82,10 +82,10 @@ public abstract class RenderTarget : Object, IRenderTarget
         return ret;
     }
 
-    protected IObject3DResourceHandle? get_3D_object(uint handle)
+    protected IModelResourceHandle? get_model(uint handle)
     {
         resource_mutex.lock();
-        IObject3DResourceHandle ret = (handle > handles_3D_objects.size) ? null : handles_3D_objects[(int)handle - 1];
+        IModelResourceHandle ret = (handle > handles_models.size) ? null : handles_models[(int)handle - 1];
         resource_mutex.unlock();
 
         return ret;
@@ -135,11 +135,11 @@ public abstract class RenderTarget : Object, IRenderTarget
     private void load_resources()
     {
         resource_mutex.lock();
-        while (to_load_3D_objects.size != 0)
+        while (to_load_models.size != 0)
         {
-            Resource3DObject obj = to_load_3D_objects.remove_at(0);
+            ResourceModel model = to_load_models.remove_at(0);
             resource_mutex.unlock();
-            handles_3D_objects.add(do_load_3D_object(obj));
+            handles_models.add(do_load_model(model));
             resource_mutex.lock();
         }
 
@@ -171,7 +171,7 @@ public abstract class RenderTarget : Object, IRenderTarget
     public abstract void render(RenderState state);
 
     protected abstract bool init();
-    protected abstract IObject3DResourceHandle do_load_3D_object(Resource3DObject obj);
+    protected abstract IModelResourceHandle do_load_model(ResourceModel model);
     protected abstract ITextureResourceHandle do_load_texture(ResourceTexture texture);
 
     public IResourceStore resource_store { get { return store; } }

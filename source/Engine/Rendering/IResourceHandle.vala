@@ -1,11 +1,11 @@
 using GL;
 
-public interface IObject3DResourceHandle : Object {}
+public interface IModelResourceHandle : Object {}
 public interface ITextureResourceHandle : Object {}
 
-public class OpenGLObject3DResourceHandle : IObject3DResourceHandle, Object
+public class OpenGLModelResourceHandle : IModelResourceHandle, Object
 {
-    public OpenGLObject3DResourceHandle(GLuint handle, int triangle_count)
+    public OpenGLModelResourceHandle(GLuint handle, int triangle_count)
     {
         this.handle = handle;
         this.triangle_count = triangle_count;

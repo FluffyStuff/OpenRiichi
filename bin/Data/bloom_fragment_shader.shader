@@ -60,7 +60,7 @@ vec4 bloom_v(float size, sampler2D texture)
 
 void main(void)
 {
-	float bloom_size = 150;
+	float bloom_size = 200;
 	float amplification = 15;
 	
 	vec4 color = texture2D(textures[0], oTexcoord);

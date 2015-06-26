@@ -42,7 +42,7 @@ void main()
 		light_colors[i] = light_source[i].color;
 	}
 	
-	Camera_normal = (inverse(view_transform)[3] - (model_transform * position)).xyz;
+	Camera_normal = inverse(view_transform)[3].xyz - mod_pos;
 	Normal = (vec4(normalize(normals), 1.0) * inverse(model_transform)).xyz;
 	gl_Position = projection_transform * view_transform * model_transform * position;
 }
