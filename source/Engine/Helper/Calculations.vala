@@ -132,14 +132,14 @@ public class Calculations
     public static Vec3 get_ray(Mat4 projection_matrix, Mat4 view_matrix, float point_x, float point_y, float width, float height)
     {
         float aspect = width / height;
-        float x =  (1 - point_x / width  * 2) / aspect;
-        float y = -(1 - point_y / height * 2) / aspect;
+        float x = -(1 - point_x / width  * 2) * aspect;
+        float y =  (1 - point_y / height * 2) * aspect;
 
         Mat4 unview_matrix = view_matrix.mul_mat(projection_matrix.inverse());
         Vec4 vec = {x, y, 0, 1};
         Vec4 ray_dir = unview_matrix.mul_vec(vec);
 
-        return vec3_neg(vec3_norm({ ray_dir.x, ray_dir.y, ray_dir.z }));
+        return (vec3_norm({ ray_dir.x, ray_dir.y, ray_dir.z }));
     }
 
     public static float get_collision_distance(Render3DObject obj, Vec3 origin, Vec3 ray)
@@ -200,7 +200,7 @@ public class Calculations
         return vec3_dist_sq(point, line_offset);
     }
 
-    private static Vec3 collision(Vec3 line_offset, Vec3 line_direction, Vec3 plane_offset, Vec3 plane_direction)
+    public static Vec3 collision(Vec3 line_offset, Vec3 line_direction, Vec3 plane_offset, Vec3 plane_direction)
     {
         Vec3 n1 = line_offset;
         Vec3 n2 = vec3_plus(line_offset, line_direction);

@@ -53,13 +53,12 @@ public class OpenGLResourceStore : IResourceStore, Object
         if (cache != null)
             return (RenderTexture)cache.obj;
 
-        int width, height;
-        uchar *image = SOIL.load_image(TEXTURE_DIR + name + ".png", out width, out height, null, SOIL.LoadFlags.RGB);
+        SoilImage img = SoilWrap.load_image(TEXTURE_DIR + name + ".png");
 
-        ResourceTexture tex = new ResourceTexture((char*)image, width, height);
+        ResourceTexture tex = new ResourceTexture(img.data, img.width, img.height);
         uint handle = renderer.load_texture(tex);
 
-        RenderTexture texture = new RenderTexture(handle, width, height);
+        RenderTexture texture = new RenderTexture(handle, img.width, img.height);
         cache_object(name, CacheObjectType.TEXTURE, texture);
 
         return texture;
@@ -116,6 +115,11 @@ public class ResourceTexture
         this.data = data;
         this.width = width;
         this.height = height;
+    }
+
+    ~ResourceTexture()
+    {
+        delete data;
     }
 
     public char *data { get; private set; }

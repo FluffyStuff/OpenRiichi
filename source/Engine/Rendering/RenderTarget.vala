@@ -155,15 +155,15 @@ public abstract class RenderTarget : Object, IRenderTarget
 
     public Mat4 get_projection_matrix(float view_angle, float aspect_ratio)
     {
-        view_angle  *= 0.75f;
+        view_angle  *= 0.6f;
         float z_near = 0.5f * Math.fmaxf(aspect_ratio, 1);
         float z_far  =   30 * Math.fmaxf(aspect_ratio, 1);
 
         float vtan = (float)Math.tan(view_angle);
-        Vec4 v1 = {1 / vtan,                   0,                                      0, 0};
-        Vec4 v2 = {       0, aspect_ratio / vtan,                                      0, 0};
-        Vec4 v3 = {       0,                   0, (z_far + z_near) / (z_far - z_near), 1};
-        Vec4 v4 = {       0,                   0, -2 * z_far * z_near / (z_far - z_near), 0};
+        Vec4 v1 = {1 / vtan, 0,                   0,                                    0};
+        Vec4 v2 = {0,        aspect_ratio / vtan, 0,                                    0};
+        Vec4 v3 = {0,        0,                   -(z_far + z_near) / (z_far - z_near), -2 * z_far * z_near / (z_far - z_near)};
+        Vec4 v4 = {0,        0,                   -1,                                   0};
 
         return new Mat4.with_vecs(v1, v2, v3, v4);
     }

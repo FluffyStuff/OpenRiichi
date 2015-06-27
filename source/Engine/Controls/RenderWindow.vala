@@ -5,7 +5,7 @@ public abstract class RenderWindow
     private IWindowTarget window;
     private bool running;
     private GLib.Timer timer;
-    private double last_time = 0;
+    private float last_time = 0;
 
     public RenderWindow(IWindowTarget window, IRenderTarget renderer)
     {
@@ -23,7 +23,7 @@ public abstract class RenderWindow
 
         while (running)
         {
-            process(get_delta());
+            process(get_delta(), renderer.resource_store);
             renderer.set_state(render());
             window.pump_events();
             GLib.Thread.usleep(1000);
@@ -39,18 +39,18 @@ public abstract class RenderWindow
     {
         RenderState state = new RenderState(window.width, window.height);
         state.back_color = back_color;
-        main_view.render(state, renderer.resource_store);
+        main_view.render(state);
         return state;
     }
 
     // Returns the delta time in seconds
-    private double get_delta()
+    private DeltaArgs get_delta()
     {
-        double time = timer.elapsed();
-        double dt = time - last_time;
+        float time = (float)timer.elapsed();
+        float dt = time - last_time;
         last_time = time;
 
-        return dt;
+        return new DeltaArgs(time, dt);
     }
 
     private void load_resources(IResourceStore store)
@@ -58,11 +58,11 @@ public abstract class RenderWindow
         main_view.load_resources(store);
     }
 
-    private void process(double dt)
+    private void process(DeltaArgs delta, IResourceStore store)
     {
         process_events();
-        do_process(dt);
-        main_view.process(dt);
+        do_process(delta, store);
+        main_view.process(delta, store);
     }
 
     private void process_events()
@@ -75,15 +75,20 @@ public abstract class RenderWindow
                 finish();
             else if (e.type == EventType.KEYDOWN)
             {
-                char key = e.key.keysym.sym;
+                char k = e.key.keysym.sym;
+                KeyArgs key = new KeyArgs(k);
+
                 if (!key_press(key))
                     main_view.key_press(key);
             }
             else if (e.type == EventType.MOUSEMOTION)
             {
-                int x = 0, y = 0;
-                Cursor.get_relative_state(ref x, ref y);
-                main_view.mouse_move(x, y);
+                int rx = 0, ry = 0, ax = 0, ay = 0;
+                Cursor.get_relative_state(ref rx, ref ry);
+                Cursor.get_state(ref ax, ref ay);
+
+                MouseArgs mouse = new MouseArgs(ax, ay, rx, ry);
+                main_view.mouse_move(mouse);
             }
             else if (e.type == EventType.MOUSEBUTTONDOWN || e.type == EventType.MOUSEBUTTONUP)
                 ;
@@ -102,9 +107,9 @@ public abstract class RenderWindow
         window.set_cursor_position(x, y);
     }
 
-    protected virtual void do_process(double dt) {}
+    protected virtual void do_process(DeltaArgs delta, IResourceStore store) {}
 
-    protected virtual bool key_press(char key)
+    protected virtual bool key_press(KeyArgs key)
     {
         return false;
     }

@@ -303,9 +303,9 @@ public class ModelData
 
         for (int i = 0; i < triangles.length; i++)
         {
-            points[3*i+2] = ModelPoint() { vertex = triangles[i].vertex_a, uv = triangles[i].uv_a, normal = triangles[i].normal_a };
+            points[3*i+0] = ModelPoint() { vertex = triangles[i].vertex_a, uv = triangles[i].uv_a, normal = triangles[i].normal_a };
             points[3*i+1] = ModelPoint() { vertex = triangles[i].vertex_b, uv = triangles[i].uv_b, normal = triangles[i].normal_b };
-            points[3*i+0] = ModelPoint() { vertex = triangles[i].vertex_c, uv = triangles[i].uv_c, normal = triangles[i].normal_c };
+            points[3*i+2] = ModelPoint() { vertex = triangles[i].vertex_c, uv = triangles[i].uv_c, normal = triangles[i].normal_c };
         }
 
         return points;

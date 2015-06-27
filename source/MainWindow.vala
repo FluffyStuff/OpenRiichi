@@ -13,9 +13,9 @@ public class MainWindow : RenderWindow
         back_color = Color() { r = 0, g = 0.01f, b = 0.02f };
     }
 
-    protected override bool key_press(char key)
+    protected override bool key_press(KeyArgs key)
     {
-        switch (key)
+        switch (key.key)
         {
             case 27 :
             case 'q':

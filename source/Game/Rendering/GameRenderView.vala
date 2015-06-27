@@ -26,8 +26,8 @@ public class GameRenderView : View, IGameRenderer
 
         table = new RenderTable(store, 0);
 
-        camera.position = Vec3() { y = table.center.y + table.wall_offset, z = -table.player_offset * 1.3f };
-        camera.pitch = 0.1f;
+        camera.position = Vec3() { y = table.center.y + table.wall_offset, z = table.player_offset * 1.3f };
+        camera.pitch = -0.1f;
 
         for (int i = 0; i < tiles.length; i++)
             tiles[i] = new RenderTile(store);
@@ -49,7 +49,7 @@ public class GameRenderView : View, IGameRenderer
 
         light2.color = Vec3() { x = 1, y = 1, z = 1 };
         light2.intensity = 20;
-        light2.position = Vec3() { x = 0, y = 30, z = -50 };
+        light2.position = Vec3() { x = 0, y = 30, z = 50 };
     }
 
     private int last_x = 0;
@@ -62,28 +62,25 @@ public class GameRenderView : View, IGameRenderer
     private float camera_y = 0;
     private float camera_z = 0;
 
-    private double derp = 0;
-
-    public override void do_process(double dt)
+    public override void do_process(DeltaArgs delta, IResourceStore store)
     {
-        derp += dt;
         camera_x += accel_x;
         camera_y += accel_y;
         camera_z += accel_z;
 
         //camera.position = Vec3(){ x = camera_x, y = camera_y, z = camera_z };
-        do_mouse_check();
+        do_mouse_check(store);
     }
 
     private float bloom_intensity = 0.2f;
     private float perlin_strength = 0;//0.25f;
-    public override void do_render(RenderState state, IResourceStore store)
+    public override void do_render(RenderState state)
     {
         state.set_camera(camera);
         state.add_light_source(light1);
         state.add_light_source(light2);
 
-        table.render(state, store);
+        table.render(state);
         for (int i = 0; i < tiles.length; i++)
             tiles[i].render(state);
 
@@ -91,20 +88,20 @@ public class GameRenderView : View, IGameRenderer
         state.perlin_strength = perlin_strength;
     }
 
-    protected override void do_mouse_move(int x, int y)
+    protected override void do_mouse_move(MouseArgs mouse)
     {
-        last_x += x;
-        last_y += y;
+        last_x = mouse.pos_x;
+        last_y = mouse.pos_y;
 
         /*
         Vec3 dir = Calculations.rotate_z({}, -camera.roll, {x,y,0});
         int slow = 300;
-        camera.yaw   += dir.x / slow;
-        camera.pitch += dir.y / slow;
+        camera.yaw   -= dir.x / slow;
+        camera.pitch -= dir.y / slow;
         //*/
     }
 
-    private void do_mouse_check()
+    private void do_mouse_check(IResourceStore store)
     {
         float width = parent_window.width;
         float height = parent_window.height;
@@ -112,7 +109,6 @@ public class GameRenderView : View, IGameRenderer
         float focal_length = camera.focal_length;
         Mat4 projection_matrix = parent_window.renderer.get_projection_matrix(focal_length, aspect_ratio);
         Mat4 view_matrix = camera.get_view_transform(false);
-
         Vec3 ray = Calculations.get_ray(projection_matrix, view_matrix, last_x, last_y, width, height);
 
         // TODO: Change
@@ -123,17 +119,20 @@ public class GameRenderView : View, IGameRenderer
             RenderTile tile = tiles.get(i);
             float collision_distance = Calculations.get_collision_distance(tile.tile, camera.position, ray);
             tile.set_hovered(collision_distance >= 0);
+
+            //if (collision_distance >= 0)
+                tile.tile.texture = store.load_texture("Tiles/" + tile.get_random_name());
         }
     }
 
-    protected override void do_key_press(char key)
+    protected override void do_key_press(KeyArgs key)
     {
         float speed = 0.001f;
 
         float yaw   = camera.yaw   * (float)Math.PI;
         float pitch = camera.pitch * (float)Math.PI;
 
-        switch (key)
+        switch (key.key)
         {
             //case 27 :
             //case 'q':
@@ -144,14 +143,14 @@ public class GameRenderView : View, IGameRenderer
             accel_y -= speed;
             break;
         case 'w':
-            accel_z += (float)Math.cos(yaw) * (float)Math.cos(pitch) * speed;
-            accel_x += (float)Math.sin(yaw) * (float)Math.cos(pitch) * speed;
-            accel_y -= (float)Math.sin(pitch) * speed;
-            break;
-        case 's':
             accel_z -= (float)Math.cos(yaw) * (float)Math.cos(pitch) * speed;
             accel_x -= (float)Math.sin(yaw) * (float)Math.cos(pitch) * speed;
             accel_y += (float)Math.sin(pitch) * speed;
+            break;
+        case 's':
+            accel_z += (float)Math.cos(yaw) * (float)Math.cos(pitch) * speed;
+            accel_x += (float)Math.sin(yaw) * (float)Math.cos(pitch) * speed;
+            accel_y -= (float)Math.sin(pitch) * speed;
             break;
         case 'a':
             accel_z += (float)Math.sin(yaw) * speed;
@@ -175,7 +174,7 @@ public class GameRenderView : View, IGameRenderer
             camera.roll -= 0.1f;
             break;
         default:
-            print("%i\n", (int)key);
+            print("%i\n", (int)key.key);
             break;
         }
     }

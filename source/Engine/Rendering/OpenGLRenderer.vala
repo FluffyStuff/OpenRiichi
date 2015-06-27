@@ -4,10 +4,6 @@ using Gee;
 
 public class OpenGLRenderer : RenderTarget
 {
-    string[] vertex_source;
-    string[] fragment_source;
-	string[] post_processing_vertex_source;
-	string[] post_processing_fragment_source;
     private GLuint shader_program;
 	private GLuint post_processing_shader_program;
     private GLuint vertex_shader;
@@ -56,6 +52,14 @@ public class OpenGLRenderer : RenderTarget
         sdl_window = window.sdl_window;
         store = new OpenGLResourceStore(this);
 
+    }
+
+    ~OpenGLRenderer()
+    {
+        if (context != null)
+        {
+            SDL.GL.delete_context(context);
+        }
     }
 
     protected override bool init()
@@ -113,8 +117,8 @@ public class OpenGLRenderer : RenderTarget
 
     private void init_shader()
     {
-        vertex_source = FileLoader.load("./Data/vertex_shader.shader");
-        fragment_source = FileLoader.load("./Data/fragment_shader.shader");
+        string[] vertex_source = FileLoader.load("./Data/vertex_shader.shader");
+        string[] fragment_source = FileLoader.load("./Data/fragment_shader.shader");
 
         vertex_shader = glCreateShader(GL_VERTEX_SHADER);
         fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -214,8 +218,8 @@ public class OpenGLRenderer : RenderTarget
 
 	private void init_post_processing_shader()
 	{
-		post_processing_vertex_source = FileLoader.load("./Data/bloom_vertex_shader.shader");
-        post_processing_fragment_source = FileLoader.load("./Data/bloom_fragment_shader.shader");
+		string[] post_processing_vertex_source = FileLoader.load("./Data/bloom_vertex_shader.shader");
+        string[] post_processing_fragment_source = FileLoader.load("./Data/bloom_fragment_shader.shader");
 
         post_processing_vertex_shader = glCreateShader(GL_VERTEX_SHADER);
         post_processing_fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);

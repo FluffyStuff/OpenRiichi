@@ -18,7 +18,7 @@ public class RenderTable
         wall_offset = player_offset / 2.5f;
     }
 
-    public void render(RenderState state, IResourceStore store)
+    public void render(RenderState state)
     {
         state.add_3D_object(table);
         state.add_3D_object(field);

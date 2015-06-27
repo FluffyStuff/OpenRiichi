@@ -11,6 +11,19 @@ public class Render3DObject
         light_multiplier = 1;
     }
 
+    public Render3DObject copy()
+    {
+        Render3DObject obj = new Render3DObject(model, texture);
+        obj.rotation = rotation;
+        obj.position = position;
+        obj.scale = scale;
+        obj.alpha = alpha;
+        obj.light_multiplier = light_multiplier;
+        obj.diffuse_color = diffuse_color;
+
+        return obj;
+    }
+
     public RenderModel? model { get; set; }
     public RenderTexture? texture { get; set; }
     public Vec3 rotation { get; set; }

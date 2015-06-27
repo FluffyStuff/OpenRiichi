@@ -14,7 +14,7 @@ public class RenderState
     public void add_3D_object(Render3DObject object)
     {
         //TODO: create copy
-        objs.add(object);
+        objs.add(object.copy());
     }
 
     public void add_light_source(LightSource light)

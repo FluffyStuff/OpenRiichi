@@ -21,7 +21,7 @@ public class RenderWall
             for (int j = 0; j < 34; j++)
                 wt[j] = tiles[i * 34 + j];
 
-            Vec3 pos = Calculations.vec3_plus(Calculations.rotate_y({}, (float)i / 2, Vec3() { z = -offset }), center);
+            Vec3 pos = Calculations.vec3_plus(Calculations.rotate_y({}, -(float)i / 2, Vec3() { z = offset }), center);
             walls[i] = new WallPart(wt, tile_size, pos, i);
         }
     }
@@ -79,7 +79,7 @@ public class RenderWall
                     y = ((i + 1) % 2 + 0.5f) * tile_size.y
                 };
 
-                tile.position = Calculations.vec3_plus(Calculations.rotate_y({}, (float)rotation / 2, pos), position);
+                tile.position = Calculations.vec3_plus(Calculations.rotate_y({}, -(float)rotation / 2, pos), position);
 
                 tile.rotation = Vec3()
                 {

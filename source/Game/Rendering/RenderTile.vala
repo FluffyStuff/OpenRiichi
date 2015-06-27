@@ -6,12 +6,12 @@ public class RenderTile
     public RenderTile(IResourceStore store)
     {
         RenderModel model = store.load_model("tile");
-        RenderTexture texture = store.load_texture("Tiles/" + get_random_name());
+        RenderTexture texture = store.load_texture("Tiles/" + "Blank");
 
         tile = new Render3DObject(model, texture);
     }
 
-    private string get_random_name()
+    public string get_random_name()
     {
         int tile = rnd.int_range(0, 10);
 

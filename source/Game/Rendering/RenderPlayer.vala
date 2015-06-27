@@ -21,7 +21,7 @@ public class RenderPlayer
         this.wall_offset = wall_offset;
         this.seat = seat;
 
-        Vec3 pos = Vec3() { z = - this.player_offset };
+        Vec3 pos = Vec3() { z = this.player_offset };
 
         pos = Calculations.rotate_y({}, (float)seat / 2, pos);
         pos = Calculations.vec3_plus(center, pos);
@@ -76,7 +76,7 @@ private class RenderHand
             Vec3 rot = Vec3()
             {
                 x = 0.5f,
-                y = -(float)seat / 2
+                y = 1 - (float)seat / 2
             };
 
             tiles[i].rotation = {0,0,0};
