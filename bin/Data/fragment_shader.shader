@@ -219,7 +219,7 @@ void main()
 	outColor = texture(tex, Texcoord);
 	outColor.xyz += diffuse_color;
 	
-	vec3 diffuse = vec3(0);
+	vec3 diffuse = outColor.xyz * 0.02;
 	vec3 specular = vec3(0);
 	vec3 c = outColor.xyz;
 	

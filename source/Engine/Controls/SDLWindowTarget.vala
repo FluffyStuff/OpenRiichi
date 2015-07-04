@@ -5,9 +5,16 @@ public class SDLWindowTarget : Object, IWindowTarget
     private bool is_fullscreen = false;
     private unowned Window window;
 
+    private Cursor normal_cursor;
+    private Cursor hover_cursor;
+
     public SDLWindowTarget(Window window)
     {
         this.window = window;
+
+        normal_cursor = new Cursor.from_system(SystemCursor.ARROW);
+        hover_cursor = new Cursor.from_system(SystemCursor.HAND);
+        current_cursor = CursorType.NORMAL;
     }
 
     public void pump_events()
@@ -49,7 +56,25 @@ public class SDLWindowTarget : Object, IWindowTarget
     public void set_cursor_hidden(bool hidden)
     {
         //SDL.Cursor.show(hidden ? 0 : 1);
-        SDL.Cursor.set_relative_mode(hidden);
+        Cursor.set_relative_mode(hidden);
+    }
+
+    public void set_cursor_type(CursorType type)
+    {
+        if (type == current_cursor)
+            return;
+
+        switch (type)
+        {
+        case CursorType.NORMAL:
+            Cursor.set(normal_cursor);
+            break;
+        case CursorType.HOVER:
+            Cursor.set(hover_cursor);
+            break;
+        }
+
+        current_cursor = type;
     }
 
     public void set_cursor_position(int x, int y)
@@ -58,4 +83,5 @@ public class SDLWindowTarget : Object, IWindowTarget
     }
 
     public Window sdl_window { get { return window; } }
+    public CursorType current_cursor { get; private set; }
 }

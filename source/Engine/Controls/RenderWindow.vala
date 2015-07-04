@@ -65,6 +65,7 @@ public abstract class RenderWindow
         main_view.process(delta, store);
     }
 
+    // TODO: Make this non-SDL specific
     private void process_events()
     {
         Event e;
@@ -87,14 +88,46 @@ public abstract class RenderWindow
                 Cursor.get_relative_state(ref rx, ref ry);
                 Cursor.get_state(ref ax, ref ay);
 
-                MouseArgs mouse = new MouseArgs(ax, ay, rx, ry);
+                MouseMoveArgs mouse = new MouseMoveArgs(ax, ay, rx, ry);
                 main_view.mouse_move(mouse);
             }
             else if (e.type == EventType.MOUSEBUTTONDOWN || e.type == EventType.MOUSEBUTTONUP)
-                ;
+            {
+                MouseButtonEvent ev = e.button;
+
+                MouseEventArgs.Button button = 0;
+                bool unknown = false;
+
+                switch (ev.button)
+                {
+                case 1:
+                    button = MouseEventArgs.Button.LEFT;
+                    break;
+                case 2:
+                    button = MouseEventArgs.Button.CENTER;
+                    break;
+                case 3:
+                    button = MouseEventArgs.Button.RIGHT;
+                    break;
+                default:
+                    unknown = true;
+                    break;
+                }
+
+                if (unknown)
+                    break;
+
+                MouseEventArgs mouse = new MouseEventArgs(button, ev.state == 1);
+                main_view.mouse_event(mouse);
+            }
             else if (e.type == EventType.MOUSEWHEEL)
                 ;
         }
+    }
+
+    public void set_cursor_type(CursorType type)
+    {
+        window.set_cursor_type(type);
     }
 
     public void set_cursor_hidden(bool hidden)

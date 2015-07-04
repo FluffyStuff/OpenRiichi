@@ -1,3 +1,5 @@
+//using Gee;
+
 namespace GameServer
 {
     class ServerController
@@ -36,14 +38,14 @@ namespace GameServer
         {
             bool ready = true;
             int playing = 0;
-            ServerPlayer[] players = new ServerPlayer[this.players.length()];
+            ServerPlayer[] players = new ServerPlayer[4];
 
             int a = 0;
-            foreach (ServerPlayer player in players)
+            foreach (ServerPlayer player in this.players)
             {
                 if (player.state == ServerPlayer.State.PLAYER)
                 {
-                    if (!player.ready)
+                    if (a >= 4 || !player.ready)
                     {
                         ready = false;
                         break;

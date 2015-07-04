@@ -1,39 +1,52 @@
 public class RenderTile
 {
-    private static Rand rnd = new Rand();
     // TODO: Use multi texturing
 
-    public RenderTile(IResourceStore store)
+    public RenderTile(IResourceStore store, Tile tile)
     {
-        RenderModel model = store.load_model("tile");
-        RenderTexture texture = store.load_texture("Tiles/" + "Blank");
+        tile_type = tile;
 
-        tile = new Render3DObject(model, texture);
+        RenderModel model = store.load_model("tile");
+        RenderTexture texture = store.load_texture("Tiles/" + get_tile_type_name(tile_type.tile_type));
+
+        this.tile = new Render3DObject(model, texture);
     }
 
-    public string get_random_name()
+    public void assign_type(Tile type, IResourceStore store)
     {
-        int tile = rnd.int_range(0, 10);
+        tile_type.tile_type = type.tile_type;
+        tile_type.dora = type.dora;
+        tile.texture = store.load_texture("Tiles/" + get_tile_type_name(tile_type.tile_type));
+    }
 
-        string[] tiles =
-        {
-            "Man",
-            "Sou",
-            "Pin",
-            "Haku",
-            "Hatsu",
-            "Chun",
-            "Kita",
-            "Higashi",
-            "Minami",
-            "Nishi"
-        };
+    private static string get_tile_type_name(TileType type)
+    {
+        int t = (int)type;
 
-        string ret = tiles[tile];
-        if (tile <= 2)
-            ret += rnd.int_range(1, 10).to_string();
+        if (type == TileType.BLANK)
+            return "Blank";
+        else if (t >= (int)TileType.MAN1 && t <= (int)TileType.MAN9)
+            return "Man" + (t - (int)TileType.MAN1 + 1).to_string();
+        else if (t >= (int)TileType.PIN1 && t <= (int)TileType.PIN9)
+            return "Pin" + (t - (int)TileType.PIN1 + 1).to_string();
+        else if (t >= (int)TileType.SOU1 && t <= (int)TileType.SOU9)
+            return "Sou" + (t - (int)TileType.SOU1 + 1).to_string();
+        else if (type == TileType.KITA)
+            return "Kita";
+        else if (type == TileType.HIGASHI)
+            return "Higashi";
+        else if (type == TileType.MINAMI)
+            return "Minami";
+        else if (type == TileType.NISHI)
+            return "Nishi";
+        else if (type == TileType.HAKU)
+            return "Haku";
+        else if (type == TileType.HATSU)
+            return "Hatsu";
+        else if (type == TileType.CHUN)
+            return "Chun";
 
-        return ret;
+        return "Blank";
     }
 
     public void render(RenderState state)
@@ -68,4 +81,5 @@ public class RenderTile
 
     public Vec3 object_size { get { return tile.model.size; } }
     public Render3DObject tile { get; private set; }
+    public Tile tile_type { get; private set; }
 }

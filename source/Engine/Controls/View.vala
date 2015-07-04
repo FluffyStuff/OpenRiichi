@@ -37,7 +37,16 @@ public abstract class View : Object
             view.render(state);
     }
 
-    public void mouse_move(MouseArgs mouse)
+    public void mouse_event(MouseEventArgs mouse)
+    {
+        // TODO: Check handled
+        do_mouse_event(mouse);
+
+        foreach (View view in child_views)
+            view.mouse_event(mouse);
+    }
+
+    public void mouse_move(MouseMoveArgs mouse)
     {
         // TODO: Check handled
         do_mouse_move(mouse);
@@ -67,6 +76,7 @@ public abstract class View : Object
     protected virtual void do_load_resources(IResourceStore store) {}
     protected virtual void do_render(RenderState state) {}
     protected virtual void do_process(DeltaArgs delta, IResourceStore store) {}
-    protected virtual void do_mouse_move(MouseArgs mouse) {}
+    protected virtual void do_mouse_event(MouseEventArgs mouse) {}
+    protected virtual void do_mouse_move(MouseMoveArgs mouse) {}
     protected virtual void do_key_press(KeyArgs key) {}
 }

@@ -6,15 +6,36 @@ public class MainView : View
     }
 
     public override void do_render(RenderState state){}
-    protected override void do_mouse_move(MouseArgs mouse){}
+    protected override void do_mouse_event(MouseEventArgs mouse){}
+    protected override void do_mouse_move(MouseMoveArgs mouse){}
     protected override void do_load_resources(IResourceStore store){}
     protected override void do_process(DeltaArgs args, IResourceStore store){}
     protected override void do_key_press(KeyArgs keys){}
 }
 
-public class MouseArgs
+public class MouseEventArgs
 {
-    public MouseArgs(int pos_x, int pos_y, int delta_x, int delta_y)
+    public MouseEventArgs(Button button, bool down)
+    {
+        this.button = button;
+        this.down = down;
+    }
+
+
+    public Button button { get; private set; }
+    public bool down { get; private set; }
+
+    public enum Button
+    {
+        LEFT,
+        CENTER,
+        RIGHT,
+    }
+}
+
+public class MouseMoveArgs
+{
+    public MouseMoveArgs(int pos_x, int pos_y, int delta_x, int delta_y)
     {
         this.pos_x = pos_x;
         this.pos_y = pos_y;

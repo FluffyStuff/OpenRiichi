@@ -1,50 +1,38 @@
 public class GameController
 {
-    private View view;
     private GameState? game;
     private IGameRenderer renderer;
+    private IGameConnection connection;
 
-    public GameController(View view, GameStartState game_start)
+    public GameController(View parent_view, GameStartState game_start)
     {
-        this.view = view;
-
         GameRenderView renderer = new GameRenderView();
-        view.add_child(renderer);
+        parent_view.add_child(renderer);
         this.renderer = renderer;
+        connection = game_start.connection;
 
-        if (game_start.controlled_player != null)
+        //if (game_start.controlled_player != null)
+        {
             create_game(game_start);
+            game.send_message.connect(connection.send_message);
+            renderer.tile_selected.connect(game.tile_selected);
+        }
+    }
+
+    public void process()
+    {
+        ServerMessage message;
+        while ((message = connection.dequeue_message()) != null)
+        {
+            renderer.receive_message(message);
+
+            if (game != null)
+                game.receive_message(message);
+        }
     }
 
     private void create_game(GameStartState game_start)
     {
         game = new GameState(game_start);
-
-
     }
-}
-
-public class GameState
-{
-    public GameState(GameStartState state)
-    {
-
-    }
-}
-
-public class GameStartState
-{
-    public IGameConnection connection { get; private set; }
-    public GamePlayer[] players { get; private set; }
-    public GamePlayer? controlled_player { get; private set; }
-}
-
-public abstract class IGameConnection
-{
-
-}
-
-public class GamePlayer
-{
-
 }
