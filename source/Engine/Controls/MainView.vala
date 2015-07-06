@@ -8,8 +8,8 @@ public class MainView : View
     public override void do_render(RenderState state){}
     protected override void do_mouse_event(MouseEventArgs mouse){}
     protected override void do_mouse_move(MouseMoveArgs mouse){}
-    protected override void do_load_resources(IResourceStore store){}
-    protected override void do_process(DeltaArgs args, IResourceStore store){}
+    protected override void added(){}
+    protected override void do_process(DeltaArgs args){}
     protected override void do_key_press(KeyArgs keys){}
 }
 

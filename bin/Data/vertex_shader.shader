@@ -1,5 +1,5 @@
 #version 330 core
-#define MAX_LIGHTS 9
+#define MAX_LIGHTS 2
 
 struct lightSourceParameters 
 {

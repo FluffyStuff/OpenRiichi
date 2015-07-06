@@ -1,6 +1,6 @@
 namespace GameServer
 {
-    abstract class ServerPlayer : Object
+    public abstract class ServerPlayer : Object
     {
         public signal void disconnected(ServerPlayer player);
         public signal void receive_message(ServerPlayer player, ClientMessage message);
@@ -44,14 +44,24 @@ namespace GameServer
 
     class ServerComputerPlayer : ServerPlayer
     {
+        private BotConnection bot;
         private ServerPlayerConnection connection;
 
-        public ServerComputerPlayer(ServerPlayerConnection connection)
+        public ServerComputerPlayer(Bot bot)
         {
             ready = true;
             state = State.PLAYER;
 
-            this.connection = connection;
+            connection = new ServerPlayerLocalConnection();
+            GameLocalConnection local = new GameLocalConnection();
+            ServerPlayerLocalConnection server = new ServerPlayerLocalConnection();
+
+            server.set_connection(local);
+            local.set_connection(server);
+
+            this.bot = new BotConnection(bot, local);
+
+            connection = server;
             connection.receive_message.connect(forward_message);
         }
 

@@ -1,5 +1,5 @@
 #version 330 core
-#define MAX_LIGHTS 9
+#define MAX_LIGHTS 2
 #define PI 3.1415926535897932384626433832795
 
 #define perlin_grain 1.5

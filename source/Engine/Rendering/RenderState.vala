@@ -9,6 +9,8 @@ public class RenderState
         screen_height = height;
         focal_length = 1;
         perlin_strength = 0;
+
+        set_camera(new Camera());
     }
 
     public void add_3D_object(Render3DObject object)

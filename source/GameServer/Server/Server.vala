@@ -14,6 +14,7 @@ namespace GameServer
         public void create_game(ServerPlayer[] players)
         {
             parser.tile_discard.connect(tile_discard);
+            Rand rnd = new Rand();
 
             if (players != null)
                 foreach (GameStateServerPlayer p in this.players)
@@ -28,19 +29,23 @@ namespace GameServer
                 this.players[i] = player;
             }
 
-            game = new GameStateGame();
-            game.game_draw_tile.connect(game_state_draw_tile);
+            int dealer = rnd.int_range(0, 4);
+            int wall_index = rnd.int_range(1, 13);
+
+            game = new GameStateGame(dealer, wall_index, rnd);
+            game.game_draw_tile.connect(game_draw_tile);
             game.game_discard_tile.connect(game_discard_tile);
+            game.game_flip_dora.connect(game_flip_dora);
             game.game_get_turn_decision.connect(game_get_turn_decision);
             game.game_get_call_decision.connect(game_get_call_decision);
 
-            game.start();
-
             for (int i = 0; i < this.players.length; i++)
             {
-                ServerMessageGameStart start_message = new ServerMessageGameStart(this.players[i].ID);
+                ServerMessageGameStart start_message = new ServerMessageGameStart(this.players[i].ID, dealer, wall_index);
                 this.players[i].server_player.send_message(start_message);
             }
+
+            game.start();
         }
 
         private void subscribe_player(ServerPlayer player)
@@ -86,7 +91,7 @@ namespace GameServer
                 game.player_call_decision(p.game_state_player, decision);
         }*/
 
-        private void game_state_draw_tile(int player_ID, Tile tile)
+        private void game_draw_tile(int player_ID, Tile tile)
         {
             GameStateServerPlayer player = get_server_player(players, player_ID);
             ServerMessageTileAssignment assignment = new ServerMessageTileAssignment(tile);
@@ -113,6 +118,15 @@ namespace GameServer
         {
             game_reveal_tile(tile);
             ServerMessageTileDiscard message = new ServerMessageTileDiscard(player_ID, tile.ID);
+
+            foreach (GameStateServerPlayer pl in players)
+                pl.server_player.send_message(message);
+        }
+
+        private void game_flip_dora(Tile tile)
+        {
+            game_reveal_tile(tile);
+            ServerMessageFlipDora message = new ServerMessageFlipDora(tile.ID);
 
             foreach (GameStateServerPlayer pl in players)
                 pl.server_player.send_message(message);

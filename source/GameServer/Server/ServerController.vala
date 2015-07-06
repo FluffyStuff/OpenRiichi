@@ -2,7 +2,7 @@
 
 namespace GameServer
 {
-    class ServerController
+    public class ServerController
     {
         private Server server;
         private ServerNetworking net;

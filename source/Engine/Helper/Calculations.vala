@@ -135,11 +135,12 @@ public class Calculations
         float x = -(1 - point_x / width  * 2) * aspect;
         float y =  (1 - point_y / height * 2) * aspect;
 
+        // TODO: Why is this the unview matrix?
         Mat4 unview_matrix = view_matrix.mul_mat(projection_matrix.inverse());
         Vec4 vec = {x, y, 0, 1};
         Vec4 ray_dir = unview_matrix.mul_vec(vec);
 
-        return (vec3_norm({ ray_dir.x, ray_dir.y, ray_dir.z }));
+        return vec3_norm({ ray_dir.x, ray_dir.y, ray_dir.z });
     }
 
     public static float get_collision_distance(Render3DObject obj, Vec3 origin, Vec3 ray)

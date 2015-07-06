@@ -6,12 +6,18 @@ public abstract class View : Object
 
     public void add_child(View child)
     {
-        child_views.add(child);
         child.set_parent(this);
-        child.activated();
+        child.added();
+        child_views.add(child);
     }
 
-    private void set_parent(View parent)
+    public void remove_child(View child)
+    {
+        child_views.remove(child);
+        child.set_parent(null);
+    }
+
+    private void set_parent(View? parent)
     {
         this.parent = parent;
 
@@ -21,12 +27,12 @@ public abstract class View : Object
             parent_window = parent.parent_window;
     }
 
-    public void process(DeltaArgs delta, IResourceStore store)
+    public void process(DeltaArgs delta)
     {
-        do_process(delta, store);
+        do_process(delta);
 
         foreach (View view in child_views)
-            view.process(delta, store);
+            view.process(delta);
     }
 
     public void render(RenderState state)
@@ -64,19 +70,12 @@ public abstract class View : Object
             view.key_press(key);
     }
 
-    public void load_resources(IResourceStore store)
-    {
-        do_load_resources(store);
-
-        foreach (View view in child_views)
-            view.load_resources(store);
-    }
-
-    protected virtual void activated() {}
-    protected virtual void do_load_resources(IResourceStore store) {}
+    protected virtual void added() {}
     protected virtual void do_render(RenderState state) {}
-    protected virtual void do_process(DeltaArgs delta, IResourceStore store) {}
+    protected virtual void do_process(DeltaArgs delta) {}
     protected virtual void do_mouse_event(MouseEventArgs mouse) {}
     protected virtual void do_mouse_move(MouseMoveArgs mouse) {}
     protected virtual void do_key_press(KeyArgs key) {}
+
+    protected IResourceStore store { get { return parent_window.store; } }
 }

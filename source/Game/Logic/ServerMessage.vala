@@ -32,6 +32,8 @@ public class ServerMessageParser
             turn_decision((ServerMessageTurnDecision)message);
         else if (message.get_type() == typeof(ServerMessageCallDecision))
             call_decision((ServerMessageCallDecision)message);
+        else if (message.get_type() == typeof(ServerMessageFlipDora))
+            flip_dora((ServerMessageFlipDora)message);
     }
 
     public signal void tile_assignment(ServerMessageTileAssignment message);
@@ -39,6 +41,7 @@ public class ServerMessageParser
     public signal void tile_discard(ServerMessageTileDiscard message);
     public signal void turn_decision(ServerMessageTurnDecision message);
     public signal void call_decision(ServerMessageCallDecision message);
+    public signal void flip_dora(ServerMessageFlipDora message);
 }
 
 public abstract class ServerMessage : Object
@@ -48,12 +51,16 @@ public abstract class ServerMessage : Object
 
 public class ServerMessageGameStart : ServerMessage
 {
-    public ServerMessageGameStart(int player_ID)
+    public ServerMessageGameStart(int player_ID, int dealer, int wall_index)
     {
         this.player_ID = player_ID;
+        this.dealer = dealer;
+        this.wall_index = wall_index;
     }
 
     public int player_ID { get; private set; }
+    public int dealer { get; private set; }
+    public int wall_index { get; private set; }
 }
 
 public class ServerMessageTileAssignment : ServerMessage
@@ -103,3 +110,13 @@ public class ServerMessageCallDecision : ServerMessage
 }
 
 public class ServerMessageTurnDecision : ServerMessage {}
+
+public class ServerMessageFlipDora : ServerMessage
+{
+    public ServerMessageFlipDora(int tile_ID)
+    {
+        this.tile_ID = tile_ID;
+    }
+
+    public int tile_ID { get; private set; }
+}

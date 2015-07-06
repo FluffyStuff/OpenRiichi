@@ -6,7 +6,7 @@ public class RenderTile
     {
         tile_type = tile;
 
-        RenderModel model = store.load_model("tile");
+        RenderModel model = store.load_model("tile", true);
         RenderTexture texture = store.load_texture("Tiles/" + get_tile_type_name(tile_type.tile_type));
 
         this.tile = new Render3DObject(model, texture);

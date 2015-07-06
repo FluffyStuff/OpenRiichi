@@ -5,10 +5,12 @@ namespace GameServer
     class GameStatePlayers
     {
         private GameStatePlayer[] players;
-        private int current_player = 0;
+        private int current_player;
 
-        public GameStatePlayers()
+        public GameStatePlayers(int dealer)
         {
+            current_player = dealer;
+
             players = new GameStatePlayer[4];
 
             for (int i = 0; i < players.length; i++)
@@ -25,16 +27,6 @@ namespace GameServer
 
             return players;
         }
-
-        /*public bool can_call(GameStateTile tile)
-        {
-            return false;
-        }
-
-        public void wait_calls(GameStateTile tile)
-        {
-
-        }*/
 
         public void next_player()
         {

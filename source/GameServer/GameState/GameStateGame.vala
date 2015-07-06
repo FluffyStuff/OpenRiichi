@@ -4,24 +4,39 @@ namespace GameServer
     {
         public signal void game_draw_tile(int player_ID, Tile tile);
         public signal void game_discard_tile(int player_ID, Tile tile);
+        public signal void game_flip_dora(Tile tile);
 
         public signal void game_get_call_decision(int[] receivers, int player_ID, Tile tile);
         public signal void game_get_turn_decision(int player_ID);
 
         private GameState current_state = GameState.STARTING;
-        private GameStateWall tiles = new GameStateWall();
-        private GameStatePlayers players = new GameStatePlayers();
+        private GameStateWall tiles;
+        private GameStatePlayers players;
 
         // Whether the standard game flow has been interrupted
         private bool flow_interrupted = false;
 
-        public GameStateGame()
+        public GameStateGame(int dealer, int wall_index, Rand rnd)
         {
+            tiles = new GameStateWall(dealer, wall_index, rnd);
+            players = new GameStatePlayers(dealer);
         }
 
         public void start()
         {
+            Threading.start0(derp);
+            //initial_draw();
+            //flip_dora();
+            //next_turn();
+        }
+
+        private void derp()
+        {
+            Thread.usleep(2 * 1000000);
+
             initial_draw();
+            flip_dora();
+            next_turn();
         }
 
         public bool tile_discard(int player_ID, int tile_ID)
@@ -68,6 +83,10 @@ namespace GameServer
 
         private void next_turn()
         {
+            // Game over
+            if (tiles.empty)
+                return;
+
             players.next_player();
             GameStatePlayer player = players.get_current_player();
             Tile tile = tiles.draw_wall();
@@ -117,6 +136,12 @@ namespace GameServer
             return true;
         }*/
 
+        private void flip_dora()
+        {
+            Tile tile = tiles.flip_dora();
+            game_flip_dora(tile);
+        }
+
         private void initial_draw()
         {
             // Start initial wall drawing
@@ -147,8 +172,6 @@ namespace GameServer
                 if (p < 3)
                     players.next_player();
             }
-
-            next_turn();
         }
 
         private enum GameState

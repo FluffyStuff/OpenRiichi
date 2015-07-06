@@ -1,6 +1,6 @@
 VALAC = valac
 NAME  = RiichiMahjong
-DIRS  = source/*.vala source/Engine/Controls/*.vala source/Engine/Files/*.vala source/Engine/Helper/*.vala source/Engine/Properties/*.vala source/Engine/Rendering/*.vala source/Game/*.vala source/Game/Logic/*.vala source/Game/Rendering/*.vala source/GameServer/Bots/*.vala source/GameServer/GameState/*.vala source/GameServer/Server/*.vala
+DIRS  = source/*.vala source/Engine/Controls/*.vala source/Engine/Files/*.vala source/Engine/Helper/*.vala source/Engine/Properties/*.vala source/Engine/Rendering/*.vala source/Game/*.vala source/Game/Logic/*.vala source/Game/Rendering/*.vala source/GameServer/Bots/*.vala source/GameServer/GameState/*.vala source/GameServer/Server/*.vala source/MainMenu/*.vala
 #PKGS  = --thread --target-glib 2.32 --pkg gio-2.0 --pkg glew --pkg gee-1.0 --pkg gl --pkg SDL2-mixer --pkg SDL2-image --pkg SDL2 --pkg soil
 PKGS  = --thread --target-glib 2.32 --pkg gio-2.0 --pkg glew --pkg gee-1.0 --pkg gl --pkg sdl2-mixer --pkg sdl2-image --pkg sdl2 --pkg SOIL --pkg aubio
 LIBS  = -X lib/SOIL/libSOIL.a -X lib/SDL/SDL2_net.lib -X lib/SDL/SDL2_image.lib -X lib/SDL/SDL2_mixer.lib -X lib/SDL/SDL2.lib -X lib/GLEW/glew32s.lib -X lib/GL/libopengl32.a -X lib/GEE/libgee.dll.a
@@ -53,3 +53,4 @@ cleanWindows:
 	rm source/GameServer/Bots *.c
 	rm source/GameServer/GameState *.c
 	rm source/GameServer/Server *.c
+	rm source/MainMenu *.c

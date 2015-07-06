@@ -8,7 +8,6 @@ public class RenderPlayer
     //private Vec3 discard_position;
     private float player_offset;
     private float wall_offset;
-    private int seat;
 
     private RenderHand hand;
     private RenderPond pond;
@@ -18,7 +17,7 @@ public class RenderPlayer
     {
         this.center = center;
         this.player_offset = player_offset - 3 * tile_size.z;
-        this.wall_offset = wall_offset + tile_size.z * 2;
+        this.wall_offset = wall_offset + tile_size.z * 3;
         this.seat = seat;
 
         Vec3 pos = Vec3() { z = this.player_offset };
@@ -52,6 +51,7 @@ public class RenderPlayer
     }
 
     public ArrayList<RenderTile> hand_tiles { get { return hand.tiles; } }
+    public int seat { get; private set; }
 }
 
 private class RenderHand
@@ -149,8 +149,19 @@ private class RenderPond
         {
             RenderTile tile = tiles[i];
 
-            int row = i / 6;
-            int col = i % 6;
+            int row = 0;
+            int col = i;
+
+            if (i >= 6)
+            {
+                row++;
+                col -= 6;
+            }
+            if (i >= 12)
+            {
+                row++;
+                col -= 6;
+            }
 
             Vec3 pos = Vec3()
             {

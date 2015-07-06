@@ -28,6 +28,18 @@ public abstract class IGameConnection
         return message;
     }
 
+    public ServerMessage? peek_message()
+    {
+        ServerMessage? message = null;
+
+        mutex.lock();
+        if (queue.size > 0)
+            message = queue.get(0);
+        mutex.unlock();
+
+        return message;
+    }
+
     public abstract void send_message(ClientMessage message);
     public abstract bool authoritative { get; protected set; }
 }

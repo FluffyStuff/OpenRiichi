@@ -42,7 +42,7 @@ public /*static*/ class ObjParser
             //for (int i = 0; i < vp.size; i++)
             //    parameters[i] = parseParameter(vp[i]);
 
-            ModelData[] data = new ModelData[f.size];
+            Triangles[] data = new Triangles[f.size];
 
             for (int n = 0; n < f.size; n++)
             {
@@ -80,11 +80,11 @@ public /*static*/ class ObjParser
                     };
                 }
 
-                data[n] = new ModelData(triangles);
+                data[n] = new Triangles(triangles);
             }
 
             int count = 0;
-            foreach (ModelData d in data)
+            foreach (Triangles d in data)
                 count += d.triangles.length;
 
             ModelTriangle[] triangles = new ModelTriangle[count];
@@ -284,17 +284,39 @@ public struct ModelNormal
     float w;
 }*/
 
+class Triangles
+{
+    public Triangles(ModelTriangle[] triangles)
+    {
+        this.triangles = triangles;
+    }
+
+    public ModelTriangle[] triangles { get; private set; }
+}
+
 public class ModelData
 {
     public ModelData(ModelTriangle[] triangles)
     {
-        this.triangles = triangles;
-
         points = calc_points(triangles);
         Vec3 s, c;
         calc(points, out s, out c);
         size = s;
         center = c;
+    }
+
+    public void center_points()
+    {
+        for (int i = 0; i < points.length; i++)
+        {
+            ModelVertex v = points[i].vertex;
+            v.x -= center.x;
+            v.y -= center.y;
+            v.z -= center.z;
+            points[i].vertex = v;
+        }
+
+        center = {};
     }
 
     private static ModelPoint[] calc_points(ModelTriangle[] triangles)
@@ -345,10 +367,9 @@ public class ModelData
         }
 
         size = Vec3() { x = max.x - min.x, y = max.y - min.y, z = max.z - min.z };
-        center = Vec3() { x = (max.x + min.x) / 2, y = (max.y + min.y) / 2, z = (max.z - min.z) / 2 };
+        center = Vec3() { x = (max.x + min.x) / 2, y = (max.y + min.y) / 2, z = (max.z + min.z) / 2 };
     }
 
-    public ModelTriangle[] triangles { get; private set; }
     public ModelPoint[] points { get; private set; }
     public Vec3 center { get; private set; }
     public Vec3 size { get; private set; }

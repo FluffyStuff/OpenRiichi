@@ -3,6 +3,8 @@ using Gee;
 
 public class GameRenderView : View, IGameRenderer
 {
+    private GameStartState start_state;
+
     private Camera camera = new Camera();
     private LightSource light1 = new LightSource();
     private LightSource light2 = new LightSource();
@@ -10,17 +12,20 @@ public class GameRenderView : View, IGameRenderer
     private RenderTable table;
     private RenderWall wall;
     private RenderPlayer players[4];
+    private RenderPlayer observer;
     private RenderTile tiles[136];
 
     private ServerMessageParser parser = new ServerMessageParser();
-    private IResourceStore store; // Save store for message parsing functions
     private RenderTile? mouse_down_tile;
 
-    public GameRenderView()
+    public GameRenderView(GameStartState state)
     {
+        start_state = state;
+
         parser.tile_assignment.connect(tile_assignment);
         parser.tile_draw.connect(tile_draw);
         parser.tile_discard.connect(tile_discard);
+        parser.flip_dora.connect(flip_dora);
     }
 
     private void tile_assignment(ServerMessageTileAssignment message)
@@ -42,45 +47,50 @@ public class GameRenderView : View, IGameRenderer
         player.discard(tile);
     }
 
+    private void flip_dora(ServerMessageFlipDora message)
+    {
+        wall.flip_dora();
+    }
+
     public void receive_message(ServerMessage message)
     {
         parser.add(message);
     }
 
-    public override void do_load_resources(IResourceStore store)
+    public override void added()
     {
         //parent_window.set_cursor_hidden(true);
 
-        // TODO: Only load model
-        RenderModel tile = store.load_model("tile");
+        RenderModel tile = store.load_model("tile", true);
         Vec3 tile_size = tile.size;
 
-        table = new RenderTable(store, 0);
-
-        camera.position = Vec3() { y = table.center.y + table.wall_offset, z = table.player_offset * 1.3f };
-        camera.pitch = -0.1f;
+        table = new RenderTable(store);
 
         for (int i = 0; i < tiles.length; i++)
             tiles[i] = new RenderTile(store, new Tile(i, TileType.BLANK, false));
 
-        wall = new RenderWall(tiles, tile_size, table.center, table.wall_offset, 0, 7);
+        wall = new RenderWall(tiles, tile_size, table.center, table.wall_offset, start_state.dealer, start_state.wall_index);
 
         for (int i = 0; i < players.length; i++)
             players[i] = new RenderPlayer(table.center, i, table.player_offset, table.wall_offset, tile_size);
 
-        /*for (int i = 0; i < 12; i++)
-            for (int j = 0; j < 4; j++)
-                players[i%4].add_to_hand(wall.draw_wall());
-        for (int i = 0; i < 4; i++)
-            players[i].add_to_hand(wall.draw_wall());*/
+        if (start_state.player_ID != -1)
+            observer = players[start_state.player_ID];
+        else
+            observer = players[0];
+
+        Vec3 pos = Vec3() { y = table.center.y + table.wall_offset };
+        pos = Calculations.vec3_plus(Calculations.rotate_y({}, (float)observer.seat / 2, {0,0,table.player_offset * 1.3f}), pos);
+        camera.position = pos;
+        camera.pitch = -0.1f;
+        camera.yaw = (float)observer.seat / 2;
 
         light1.color = Vec3() { x = 1, y = 1, z = 1 };
         light1.intensity = 10;
         light1.position = Vec3() { x = 0, y = 30, z = 0 };
 
         light2.color = Vec3() { x = 1, y = 1, z = 1 };
-        light2.intensity = 20;
-        light2.position = Vec3() { x = 0, y = 30, z = 50 };
+        light2.intensity = 3;
     }
 
     private int last_x = 0;
@@ -93,9 +103,8 @@ public class GameRenderView : View, IGameRenderer
     private float camera_y = 0;
     private float camera_z = 0;
 
-    public override void do_process(DeltaArgs delta, IResourceStore store)
+    public override void do_process(DeltaArgs delta)
     {
-        this.store = store;
         parser.dequeue();
 
         camera_x += accel_x;
@@ -103,6 +112,7 @@ public class GameRenderView : View, IGameRenderer
         camera_z += accel_z;
 
         //camera.position = Vec3(){ x = camera_x, y = camera_y, z = camera_z };
+        light2.position = camera.position;
 
         RenderTile? tile = get_hover_tile();
         parent_window.set_cursor_type((tile != null) ? CursorType.HOVER : CursorType.NORMAL);
@@ -172,7 +182,7 @@ public class GameRenderView : View, IGameRenderer
         Vec3 ray = Calculations.get_ray(projection_matrix, view_matrix, last_x, last_y, width, height);
 
         // TODO: Change
-        ArrayList<RenderTile> tiles = players[0].hand_tiles;
+        ArrayList<RenderTile> tiles = observer.hand_tiles;
 
         float shortest = 0;
         RenderTile? shortest_tile = null;

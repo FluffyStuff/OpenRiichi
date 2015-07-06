@@ -3,7 +3,7 @@ public class RenderTable
     private Render3DObject table;
     private Render3DObject field;
 
-    public RenderTable(IResourceStore store, int starting_player)
+    public RenderTable(IResourceStore store)
     {
         table = store.load_3D_object("table");
         field = store.load_3D_object("field");

@@ -93,14 +93,11 @@ public abstract class Bot
 
         public void tile_draw(int player_ID, int tile_ID)
         {
-            if (player_ID == this.player_ID)
             players[player_ID].draw(tiles[tile_ID]);
         }
 
         public void tile_discard(int player_ID, int tile_ID)
         {
-            print("Discard ID: %d This: %d\n", player_ID, this.player_ID);
-            if (player_ID == this.player_ID)
             players[player_ID].discard(tiles[tile_ID]);
         }
 
@@ -118,16 +115,12 @@ public abstract class Bot
 
         public void draw(Tile tile)
         {
-            print("Drawing tile: %d\n", tile.ID);
             tiles.add(tile);
         }
 
         public void discard(Tile tile)
         {
-            print("State discarding: %d\n", tile.ID);
-            //print("Pre discard: %d\n", tiles.size);
             tiles.remove(tile);
-            //print("Post discard: %d\n", tiles.size);
         }
 
         public Gee.ArrayList<Tile> hand { get { return tiles; } }

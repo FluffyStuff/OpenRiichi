@@ -67,7 +67,9 @@
 		<Unit filename="source/Engine/Rendering/RenderState.vala" />
 		<Unit filename="source/Engine/Rendering/RenderTarget.vala" />
 		<Unit filename="source/Environment.vala" />
-		<Unit filename="source/GameServer/Bots/ServerNullComputerPlayer.vala" />
+		<Unit filename="source/GameServer/Bots/Bot.vala" />
+		<Unit filename="source/GameServer/Bots/BotConnection.vala" />
+		<Unit filename="source/GameServer/Bots/NullBot.vala" />
 		<Unit filename="source/GameServer/GameState/GameStateCallDecision.vala" />
 		<Unit filename="source/GameServer/GameState/GameStateGame.vala" />
 		<Unit filename="source/GameServer/GameState/GameStatePlayer.vala" />

@@ -28,7 +28,6 @@ class BotConnection
             if (message.get_type() != typeof(ServerMessageGameStart))
                 continue;
 
-            print("Bot will start...\n");
             ServerMessageGameStart start = (ServerMessageGameStart)message;
             connection.received_message.disconnect(message_received);
             bot.start(start.player_ID);

@@ -3,7 +3,7 @@ using Gee;
 public interface IResourceStore : Object
 {
     public abstract Render3DObject? load_3D_object(string name);
-    public abstract RenderModel? load_model(string name);
+    public abstract RenderModel? load_model(string name, bool center);
     public abstract RenderTexture? load_texture(string name);
 
     private const string DATA_DIR = "./Data/";
@@ -23,13 +23,13 @@ public class OpenGLResourceStore : IResourceStore, Object
 
     public Render3DObject? load_3D_object(string name)
     {
-        RenderModel? model = load_model(name);
+        RenderModel? model = load_model(name, false);
         RenderTexture? texture = load_texture(name);
         Render3DObject obj = new Render3DObject(model, texture);
         return obj;
     }
 
-    public RenderModel? load_model(string name)
+    public RenderModel? load_model(string name, bool centered)
     {
         ResourceCacheObject? cache = get_cache_object(name, CacheObjectType.MODEL);
         if (cache != null)
@@ -38,6 +38,8 @@ public class OpenGLResourceStore : IResourceStore, Object
         string[] lines = FileLoader.load(MODEL_DIR + name + ".obj");
         ModelData data = ObjParser.parse(lines);
 
+        if (centered)
+            data.center_points();
         ResourceModel mod = new ResourceModel(data.points);
         uint handle = renderer.load_model(mod);
 
@@ -132,12 +134,12 @@ public class RenderModel : Object
     public RenderModel(uint handle, Vec3 center, Vec3 size)
     {
         this.handle = handle;
-        this.center = center;
+        //this.center = center;
         this.size = size;
     }
 
     public uint handle { get; private set; }
-    public Vec3 center { get; private set; }
+    //public Vec3 center { get; private set; }
     public Vec3 size { get; private set; }
 }
 

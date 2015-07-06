@@ -1,17 +1,20 @@
 public class GameController
 {
+    private GameStartState state;
     private GameState? game;
     private IGameRenderer renderer;
     private IGameConnection connection;
 
     public GameController(View parent_view, GameStartState game_start)
     {
-        GameRenderView renderer = new GameRenderView();
+        this.state = game_start;
+
+        GameRenderView renderer = new GameRenderView(game_start);
         parent_view.add_child(renderer);
         this.renderer = renderer;
         connection = game_start.connection;
 
-        //if (game_start.controlled_player != null)
+        if (game_start.player_ID != -1)
         {
             create_game(game_start);
             game.send_message.connect(connection.send_message);

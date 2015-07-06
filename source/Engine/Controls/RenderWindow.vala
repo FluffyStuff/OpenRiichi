@@ -11,6 +11,7 @@ public abstract class RenderWindow
     {
         this.window = window;
         this.renderer = renderer;
+        store = renderer.resource_store;
         main_view = new MainView(this);
     }
 
@@ -18,12 +19,12 @@ public abstract class RenderWindow
     {
         running = true;
 
-        load_resources(renderer.resource_store);
+        load_resources();
         timer = new GLib.Timer();
 
         while (running)
         {
-            process(get_delta(), renderer.resource_store);
+            process(get_delta());
             renderer.set_state(render());
             window.pump_events();
             GLib.Thread.usleep(1000);
@@ -53,16 +54,15 @@ public abstract class RenderWindow
         return new DeltaArgs(time, dt);
     }
 
-    private void load_resources(IResourceStore store)
+    private void load_resources()
     {
-        main_view.load_resources(store);
     }
 
-    private void process(DeltaArgs delta, IResourceStore store)
+    private void process(DeltaArgs delta)
     {
         process_events();
-        do_process(delta, store);
-        main_view.process(delta, store);
+        do_process(delta);
+        main_view.process(delta);
     }
 
     // TODO: Make this non-SDL specific
@@ -140,7 +140,7 @@ public abstract class RenderWindow
         window.set_cursor_position(x, y);
     }
 
-    protected virtual void do_process(DeltaArgs delta, IResourceStore store) {}
+    protected virtual void do_process(DeltaArgs delta) {}
 
     protected virtual bool key_press(KeyArgs key)
     {
@@ -148,6 +148,7 @@ public abstract class RenderWindow
     }
 
     public IRenderTarget renderer { get; private set; }
+    public IResourceStore store { get; private set; }
     public View main_view { get; private set; }
     public bool fullscreen { get { return window.fullscreen; } set { window.fullscreen = value; } }
     public Color back_color { get; set; }
