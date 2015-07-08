@@ -44,7 +44,7 @@ class BotConnection
 
     private void tile_assignment(ServerMessageTileAssignment message)
     {
-        bot.tile_assign(message.tile);
+        bot.tile_assign(message.get_tile());
     }
 
     private void tile_draw(ServerMessageTileDraw message)

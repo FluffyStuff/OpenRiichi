@@ -24,15 +24,14 @@ namespace GameServer
 
         public void start()
         {
-            Threading.start0(derp);
-            //initial_draw();
-            //flip_dora();
-            //next_turn();
+            initial_draw();
+            flip_dora();
+            next_turn();
         }
 
         private void derp()
         {
-            Thread.usleep(2 * 1000000);
+            //Thread.usleep(2 * 1000000);
 
             initial_draw();
             flip_dora();

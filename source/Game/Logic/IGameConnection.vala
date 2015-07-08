@@ -44,6 +44,40 @@ public abstract class IGameConnection
     public abstract bool authoritative { get; protected set; }
 }
 
+public class GameNetworkConnection : IGameConnection
+{
+    private Connection connection;
+
+    public GameNetworkConnection(Connection connection)
+    {
+        this.connection = connection;
+        connection.message_received.connect(parse_message);
+
+        authoritative = false;
+    }
+
+    public override void send_message(ClientMessage message)
+    {
+        Message msg = new Message(message.serialize());
+        connection.send(msg);
+    }
+
+    private void parse_message(Connection connection, Message message)
+    {
+        SerializableMessage? msg = SerializableMessage.deserialize(message.data);
+
+        if (msg == null || !msg.get_type().is_a(typeof(ServerMessage)))
+        {
+            print("Client discarding message!\n");
+            return;
+        }
+
+        receive_message((ServerMessage)msg);
+    }
+
+    public override bool authoritative { get; private set; }
+}
+
 public class GameLocalConnection : IGameConnection
 {
     private GameServer.ServerPlayerLocalConnection? connection;

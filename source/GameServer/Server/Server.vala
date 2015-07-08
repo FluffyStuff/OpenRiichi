@@ -6,6 +6,8 @@ namespace GameServer
         private GameStateGame game;
         private ClientMessageParser parser = new ClientMessageParser();
 
+        private Mutex mutex = new Mutex();
+
         public Server()
         {
 
@@ -30,7 +32,7 @@ namespace GameServer
             }
 
             int dealer = rnd.int_range(0, 4);
-            int wall_index = rnd.int_range(1, 13);
+            int wall_index = rnd.int_range(2, 13);
 
             game = new GameStateGame(dealer, wall_index, rnd);
             game.game_draw_tile.connect(game_draw_tile);
@@ -67,7 +69,9 @@ namespace GameServer
 
         private void receive_message(ServerPlayer player, ClientMessage message)
         {
+            mutex.lock();
             parser.parse(message, player);
+            mutex.unlock();
         }
 
         private void tile_discard(ClientMessageTileDiscard tile, Object state)
@@ -94,7 +98,7 @@ namespace GameServer
         private void game_draw_tile(int player_ID, Tile tile)
         {
             GameStateServerPlayer player = get_server_player(players, player_ID);
-            ServerMessageTileAssignment assignment = new ServerMessageTileAssignment(tile);
+            ServerMessageTileAssignment assignment = new ServerMessageTileAssignment(tile.ID, (int)tile.tile_type, tile.dora);
             ServerMessageTileDraw draw = new ServerMessageTileDraw(player.ID, tile.ID);
 
             foreach (GameStateServerPlayer p in players)
@@ -108,7 +112,7 @@ namespace GameServer
 
         private void game_reveal_tile(Tile tile)
         {
-            ServerMessageTileAssignment assignment = new ServerMessageTileAssignment(tile);
+            ServerMessageTileAssignment assignment = new ServerMessageTileAssignment(tile.ID, (int)tile.tile_type, tile.dora);
 
             foreach (GameStateServerPlayer p in players)
                 p.server_player.send_message(assignment);

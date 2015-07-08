@@ -1,8 +1,9 @@
 using GameServer;
 
+Networking menu_net;
 class MainMenuView : View
 {
-    private ServerController server;
+    private ServerController? server = null;
     private IGameConnection connection;
 
     public signal void game_start(GameStartState state);
@@ -11,6 +12,10 @@ class MainMenuView : View
     public MainMenuView()
     {
         connection = create_server();
+        typeof(SerializableMessage).class_ref();
+        typeof(ServerMessage).class_ref();
+        typeof(ServerMessageGameStart).class_ref();
+        //connection = join_server();
         connection.received_message.connect(received_message);
 
         Threading.start0(start);
@@ -19,6 +24,7 @@ class MainMenuView : View
     private void start()
     {
         Thread.usleep(1 * 1000000);
+        //create_server();
         server.start_game();
     }
 
@@ -53,9 +59,19 @@ class MainMenuView : View
         game_start(state);
     }
 
+    private IGameConnection join_server()
+    {
+        menu_net = new Networking();
+        Connection connection = menu_net.join("server.fluffy.is", 1337);
+        GameNetworkConnection game_connection = new GameNetworkConnection(connection);
+
+        return game_connection;
+    }
+
     private IGameConnection create_server()
     {
         server = new ServerController();
+        server.listen(1337);
 
         ServerPlayerLocalConnection server_connection = new ServerPlayerLocalConnection();
         GameLocalConnection game_connection = new GameLocalConnection();

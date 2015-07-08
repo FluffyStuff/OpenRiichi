@@ -4,11 +4,13 @@ public class Calculations
 
     public static uint8[] int_to_data(uint32 n)
     {
-        uint8[] buffer = new uint8[4];
-        buffer[0] = (uint8)(n >> 24);
-        buffer[1] = (uint8)(n >> 16);
-        buffer[2] = (uint8)(n >>  8);
-        buffer[3] = (uint8)n;
+        // Don't do this, so we maintain consistency over network
+        //int bytes = (int)sizeof(int) / 8;
+
+        int bytes = 4;
+        uint8[] buffer = new uint8[bytes];
+        for (int i = 0; i < bytes; i++)
+            buffer[i] = (uint8)(n >> ((bytes - i - 1) * 8));
         return buffer;
 }
 

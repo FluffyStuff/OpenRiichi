@@ -82,6 +82,36 @@ namespace GameServer
         public abstract void send_message(ServerMessage message);
     }
 
+    public class ServerPlayerNetworkConnection : ServerPlayerConnection
+    {
+        private Connection connection;
+
+        public ServerPlayerNetworkConnection(Connection connection)
+        {
+            this.connection = connection;
+            connection.message_received.connect(parse_message);
+        }
+
+        public override void send_message(ServerMessage message)
+        {
+            Message msg = new Message(message.serialize());
+            connection.send(msg);
+        }
+
+        private void parse_message(Connection connection, Message message)
+        {
+            SerializableMessage? msg = SerializableMessage.deserialize(message.data);
+
+            //print("Message name: %s\n", msg.get_type().name());
+            if (msg == null || !msg.get_type().is_a(typeof(ClientMessage)))
+            {
+                print("Discarding message!\n");
+                return;
+            }
+            receive_message((ClientMessage)msg);
+        }
+    }
+
     public class ServerPlayerLocalConnection : ServerPlayerConnection
     {
         private unowned GameLocalConnection? connection;

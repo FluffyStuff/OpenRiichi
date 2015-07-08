@@ -19,3 +19,5 @@ public class GameState
 
     public signal void send_message(ClientMessage message);
 }
+
+

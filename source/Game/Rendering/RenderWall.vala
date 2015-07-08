@@ -28,7 +28,11 @@ public class RenderWall
         this.split = split;
         this.start_wall = start_wall;
 
-        Threading.start0(derp);
+        //Threading.start0(derp);
+        ArrayList<RenderTile> left = walls[start_wall].dead_split(split, true);
+        ArrayList<RenderTile> right = walls[(start_wall + 3) % 4].dead_split(split, false);
+
+        dead_wall = new DeadWall(left, right);
     }
 
     int start_wall;
@@ -36,10 +40,6 @@ public class RenderWall
     private void derp()
     {
         Thread.usleep(1 * 1000000);
-        ArrayList<RenderTile> left = walls[start_wall].dead_split(split, true);
-        ArrayList<RenderTile> right = walls[(start_wall + 3) % 4].dead_split(split, false);
-
-        dead_wall = new DeadWall(left, right);
 
     }
 

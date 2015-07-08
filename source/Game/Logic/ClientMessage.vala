@@ -1,4 +1,4 @@
-public abstract class ClientMessage : Object
+public abstract class ClientMessage : SerializableMessage
 {
 
 }
@@ -10,7 +10,7 @@ public class ClientMessageTileDiscard : ClientMessage
         this.tile_ID = tile_ID;
     }
 
-    public int tile_ID { get; private set; }
+    public int tile_ID { get; protected set; }
 }
 
 public class ClientMessageParser

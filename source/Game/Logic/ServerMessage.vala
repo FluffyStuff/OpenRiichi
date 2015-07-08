@@ -44,7 +44,7 @@ public class ServerMessageParser
     public signal void flip_dora(ServerMessageFlipDora message);
 }
 
-public abstract class ServerMessage : Object
+public abstract class ServerMessage : SerializableMessage
 {
 
 }
@@ -58,19 +58,28 @@ public class ServerMessageGameStart : ServerMessage
         this.wall_index = wall_index;
     }
 
-    public int player_ID { get; private set; }
-    public int dealer { get; private set; }
-    public int wall_index { get; private set; }
+    public int player_ID { get; protected set; }
+    public int dealer { get; protected set; }
+    public int wall_index { get; protected set; }
 }
 
 public class ServerMessageTileAssignment : ServerMessage
 {
-    public ServerMessageTileAssignment(Tile tile)
+    public ServerMessageTileAssignment(int tile_ID, int tile_type, bool dora)
     {
-        this.tile = tile;
+        this.tile_ID = tile_ID;
+        this.tile_type = tile_type;
+        this.dora = dora;
     }
 
-    public Tile tile { get; private set; }
+    public Tile get_tile()
+    {
+        return new Tile(tile_ID, (TileType)tile_type, dora);
+    }
+
+    public int tile_ID { get; protected set; }
+    public int tile_type { get; protected set; }
+    public bool dora { get; protected set; }
 }
 
 public class ServerMessageTileDraw : ServerMessage
@@ -81,8 +90,8 @@ public class ServerMessageTileDraw : ServerMessage
         this.tile_ID = tile_ID;
     }
 
-    public int player_ID { get; private set; }
-    public int tile_ID { get; private set; }
+    public int player_ID { get; protected set; }
+    public int tile_ID { get; protected set; }
 }
 
 public class ServerMessageTileDiscard : ServerMessage
@@ -93,8 +102,8 @@ public class ServerMessageTileDiscard : ServerMessage
         this.tile_ID = tile_ID;
     }
 
-    public int player_ID { get; private set; }
-    public int tile_ID { get; private set; }
+    public int player_ID { get; protected set; }
+    public int tile_ID { get; protected set; }
 }
 
 public class ServerMessageCallDecision : ServerMessage
@@ -105,8 +114,8 @@ public class ServerMessageCallDecision : ServerMessage
         this.tile_ID = tile_ID;
     }
 
-    public int player_ID { get; private set; }
-    public int tile_ID { get; private set; }
+    public int player_ID { get; protected set; }
+    public int tile_ID { get; protected set; }
 }
 
 public class ServerMessageTurnDecision : ServerMessage {}
@@ -118,5 +127,5 @@ public class ServerMessageFlipDora : ServerMessage
         this.tile_ID = tile_ID;
     }
 
-    public int tile_ID { get; private set; }
+    public int tile_ID { get; protected set; }
 }

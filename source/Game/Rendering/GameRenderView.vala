@@ -30,7 +30,7 @@ public class GameRenderView : View, IGameRenderer
 
     private void tile_assignment(ServerMessageTileAssignment message)
     {
-        tiles[message.tile.ID].assign_type(message.tile, store);
+        tiles[message.tile_ID].assign_type(message.get_tile(), store);
     }
 
     private void tile_draw(ServerMessageTileDraw message)

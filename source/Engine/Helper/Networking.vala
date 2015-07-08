@@ -3,7 +3,8 @@ using Gee;
 // Asynchronous networking class
 public class Networking
 {
-    public MessageSignal message_received;
+    public signal void connected(Connection connection);
+    public signal void message_received(Connection connection, Message message);
 
     private SocketListener server;
     private bool listening = false;
@@ -11,16 +12,10 @@ public class Networking
 
     private ArrayList<Connection> connections;
     private Mutex mutex;
-    private bool initialized = false;
 
-    public void init()
+    public Networking()
     {
-        if (initialized)
-            return;
-
-        initialized = true;
         connections = new ArrayList<Connection>();
-        message_received = new MessageSignal();
         mutex = new Mutex();
     }
 
@@ -43,7 +38,7 @@ public class Networking
 
     private void message_received_handler(Connection connection, Message message)
     {
-        message_received.message(connection, message);
+        message_received(connection, message);
     }
 
     private void connection_closed(Connection connection)
@@ -53,7 +48,7 @@ public class Networking
         connection.message_received.disconnect(message_received_handler);
         connection.closed.disconnect(connection_closed);
         connections.remove(connection);
-        print("Connection closed. (" + connections.size.to_string() + " left)\n");
+        //print("Connection closed. (" + connections.size.to_string() + " left)\n");
 
         mutex.unlock();
     }
@@ -64,7 +59,7 @@ public class Networking
 
         Connection c = new Connection(connection);
         connections.add(c);
-        print("New connection. (" + connections.size.to_string() + " now)\n");
+        //print("New connection. (" + connections.size.to_string() + " now)\n");
         c.message_received.connect(message_received_handler);
         c.closed.connect(connection_closed);
         c.start();
@@ -76,23 +71,15 @@ public class Networking
 
     private bool new_connection(SocketConnection connection)
     {
-        add_connection(connection);
+        Connection c = add_connection(connection);
+        connected(c);
         return true;
     }
 
-    private void host_worker(Object obj)
+    private void host_worker()
     {
-        if (listening)
-            return;
-
         try
         {
-            uint16 port = ((Obj<uint16>)obj).obj;
-            server_cancel = new Cancellable();
-            server = new SocketListener();
-            server.add_inet_port(port, null);
-            listening = true;
-
             while (true)
             {
                 SocketConnection connection = server.accept(null, server_cancel);
@@ -111,7 +98,23 @@ public class Networking
 
     public bool host(uint16 port)
     {
-        Threading.start1(host_worker, new Obj<uint16>(port));
+        if (listening)
+            return false;
+
+        try
+        {
+            server_cancel = new Cancellable();
+            server = new SocketListener();
+            server.add_inet_port(port, null);
+            listening = true;
+
+            Threading.start0(host_worker);
+        }
+        catch
+        {
+            return false;
+        }
+
         return true;
     }
 
@@ -220,4 +223,219 @@ public class Message : Object
     }
 
     public uint8[] data { get; protected set; }
+}
+
+class UIntData
+{
+    private ArrayList<UInt> data = new ArrayList<UInt>();
+    private int length = 0;
+
+    public void add_data(uint8[] data)
+    {
+        this.data.add(new UInt(data));
+        length += data.length;
+    }
+
+    public uint8[] get_data()
+    {
+        uint8[] ret = new uint8[length];
+
+        int a = 0;
+        for (int i = 0; i < data.size; i++)
+        {
+            UInt u = data[i];
+            uint8[] d = u.data; // Can't inline due to bug in vala
+
+            for (int j = 0; j < d.length; j++)
+                ret[a++] = d[j];
+        }
+
+        return ret;
+    }
+
+    public static uint8[] serialize_string(string str)
+    {
+        return str.data;
+    }
+
+    public static uint8[] serialize_int(int i)
+    {
+        return Calculations.int_to_data(i);
+    }
+
+    private class UInt
+    {
+        public UInt(uint8[] data) { this.data = data; }
+        public uint8[] data;
+    }
+}
+
+class DataUInt
+{
+    private uint8[] data;
+    private int index = 0;
+
+    public DataUInt(uint8[] data)
+    {
+        this.data = data;
+    }
+
+    public int get_int()
+    {
+        // Don't do this, so we maintain consistency over network
+        //int bytes = (int)sizeof(int);
+
+        int bytes = 4;
+
+        int ret = 0;
+        for (int i = 0; i < bytes; i++)
+            ret += (int)data[index++] << ((bytes - i - 1) * 8);
+
+        return ret;
+    }
+
+    public string get_string(int length)
+    {
+        uint8[] str = new uint8[length + 1];
+        str[length] = 0;
+        for (int i = 0; i < length; i++)
+            str[i] = data[index++];
+        string ret = (string)str;
+
+        return ret;
+    }
+}
+
+public abstract class SerializableMessage : Object
+{
+    public static SerializableMessage? deserialize(uint8[] bytes)
+    {
+        DataUInt data = new DataUInt(bytes);
+
+        int type_name_len = data.get_int();
+        string type_name = data.get_string(type_name_len);
+        int param_count = data.get_int();
+
+        print("Class name (%d): %s(%d)\n", type_name_len, type_name, type_name.data.length);
+        //print("Param count: %d\n", param_count);
+
+        Type? type = Type.from_name(type_name);
+        print("Type name: %s\n", type.name());
+        if (!type.is_a(typeof(SerializableMessage)))
+            return null;
+
+        ObjectClass classy = (ObjectClass)type.class_ref();
+        Parameter[] params = new Parameter[param_count];
+        string[] names = new string[param_count];
+        string[] strings = new string[param_count];
+
+        for (int i = 0; i < params.length; i++)
+        {
+            int name_len = data.get_int();
+            string name = data.get_string(name_len);
+            names[i] = name;
+
+            Value val = Value(typeof(string));
+            DataType data_type = (DataType)data.get_int();
+
+            if (data_type == DataType.INT)
+            {
+                val = Value(typeof(int));
+                int v = data.get_int();
+                val.set_int(v);
+                //print("(INT) %s: %d\n", name, v);
+            }
+            else if (data_type == DataType.BOOL)
+            {
+                val = Value(typeof(bool));
+                bool b = (bool)data.get_int();
+                val.set_boolean(b);
+                //print("(BOL) %s: %d\n", name, (int)b);
+            }
+            else if (data_type == DataType.STRING)
+            {
+                val = Value(typeof(string));
+                int len = data.get_int();
+                string str = data.get_string(len);
+                val.set_string(str);
+                //print("(STR) %s: %s\n", name, str);
+            }
+
+            params[i] = Parameter();
+            params[i].name = names[i];
+            params[i].value = val;
+        }
+
+        Object obj = Object.newv(type, params);
+
+        return (SerializableMessage)obj;
+    }
+
+    public uint8[] serialize()
+    {
+        UIntData data = new UIntData();
+
+        ObjectClass cls = (ObjectClass)(this.get_type()).class_ref();
+        ParamSpec[] specs = cls.list_properties();
+        uint8[] name_data = UIntData.serialize_string(get_type().name());
+
+        data.add_data(UIntData.serialize_int(name_data.length));
+        data.add_data(name_data);
+        data.add_data(UIntData.serialize_int(specs.length));
+
+        for (int i = 0; i < specs.length; i++)
+        {
+            ParamSpec p = specs[i];
+            name_data = UIntData.serialize_string(p.get_name());
+
+            data.add_data(UIntData.serialize_int(name_data.length));
+            data.add_data(name_data);
+
+            if (p.value_type == typeof(int))
+            {
+                int type = (int)DataType.INT;
+
+                Value val = Value(typeof(int));
+                get_property(p.get_name(), ref val);
+                int v = val.get_int();
+
+                data.add_data(UIntData.serialize_int(type));
+                data.add_data(UIntData.serialize_int(v));
+            }
+            else if (p.value_type == typeof(bool))
+            {
+                int type = (int)DataType.BOOL;
+
+                Value val = Value(typeof(bool));
+                get_property(p.get_name(), ref val);
+                bool b = val.get_boolean();
+
+                data.add_data(UIntData.serialize_int(type));
+                data.add_data(UIntData.serialize_int((int)b));
+            }
+            else if (p.value_type == typeof(string))
+            {
+                int type = (int)DataType.STRING;
+
+                Value val = Value(typeof(string));
+                get_property(p.get_name(), ref val);
+                string str = val.get_string();
+
+                uint8[] str_data = UIntData.serialize_string(str);
+
+                data.add_data(UIntData.serialize_int(type));
+                data.add_data(UIntData.serialize_int(str_data.length));
+                data.add_data(str_data);
+            }
+        }
+
+        return data.get_data();
+    }
+
+    private enum DataType
+    {
+        INT,
+        BOOL,
+        STRING
+    }
 }

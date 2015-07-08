@@ -95,6 +95,7 @@
 		<Unit filename="source/Game/Rendering/RenderTable.vala" />
 		<Unit filename="source/Game/Rendering/RenderTile.vala" />
 		<Unit filename="source/Game/Rendering/RenderWall.vala" />
+		<Unit filename="source/MainMenu/MainMenuView.vala" />
 		<Unit filename="source/MainWindow.vala" />
 		<Unit filename="source/main.vala" />
 		<Extensions>

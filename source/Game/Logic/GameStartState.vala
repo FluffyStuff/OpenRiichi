@@ -2,7 +2,7 @@ using GameServer;
 
 public class GameStartState
 {
-    public GameStartState(IGameConnection connection, GamePlayer[] players, int player_ID, int dealer, int wall_index, ServerController server)
+    public GameStartState(IGameConnection connection, GamePlayer[] players, int player_ID, int dealer, int wall_index, ServerController? server)
     {
         this.connection = connection;
         this.players = players;
