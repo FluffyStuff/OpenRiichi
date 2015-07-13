@@ -11,10 +11,12 @@ class MainMenuView : View
 
     public MainMenuView()
     {
-        connection = create_server();
+        // TODO: Fix class reflection bug...
         typeof(SerializableMessage).class_ref();
         typeof(ServerMessage).class_ref();
         typeof(ServerMessageGameStart).class_ref();
+
+        connection = create_server();
         //connection = join_server();
         connection.received_message.connect(received_message);
 

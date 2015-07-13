@@ -145,7 +145,7 @@ public class Calculations
         return vec3_norm({ ray_dir.x, ray_dir.y, ray_dir.z });
     }
 
-    public static float get_collision_distance(Render3DObject obj, Vec3 origin, Vec3 ray)
+    public static float get_collision_distance(RenderObject3D obj, Vec3 origin, Vec3 ray)
     {
         float x_size = obj.model.size.x / 2 * obj.scale.x;
         float y_size = obj.model.size.y / 2 * obj.scale.y;

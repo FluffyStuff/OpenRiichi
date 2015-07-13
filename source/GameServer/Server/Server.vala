@@ -1,3 +1,5 @@
+using Gee;
+
 namespace GameServer
 {
     class Server
@@ -15,7 +17,13 @@ namespace GameServer
 
         public void create_game(ServerPlayer[] players)
         {
-            parser.tile_discard.connect(tile_discard);
+            parser.connect(client_tile_discard, typeof(ClientMessageTileDiscard));
+            parser.connect(client_no_call, typeof(ClientMessageNoCall));
+            parser.connect(client_ron, typeof(ClientMessageRon));
+            parser.connect(client_open_kan, typeof(ClientMessageOpenKan));
+            parser.connect(client_pon, typeof(ClientMessagePon));
+            parser.connect(client_chi, typeof(ClientMessageChi));
+
             Rand rnd = new Rand();
 
             if (players != null)
@@ -40,6 +48,10 @@ namespace GameServer
             game.game_flip_dora.connect(game_flip_dora);
             game.game_get_turn_decision.connect(game_get_turn_decision);
             game.game_get_call_decision.connect(game_get_call_decision);
+            game.game_ron.connect(game_ron);
+            game.game_open_kan.connect(game_open_kan);
+            game.game_pon.connect(game_pon);
+            game.game_chi.connect(game_chi);
 
             for (int i = 0; i < this.players.length; i++)
             {
@@ -70,30 +82,53 @@ namespace GameServer
         private void receive_message(ServerPlayer player, ClientMessage message)
         {
             mutex.lock();
-            parser.parse(message, player);
+            parser.execute(player, message);
             mutex.unlock();
         }
 
-        private void tile_discard(ClientMessageTileDiscard tile, Object state)
+        ///////////////////////
+
+        private void client_tile_discard(ServerPlayer player, ClientMessage message)
         {
-            ServerPlayer p = (ServerPlayer)state;
-            GameStateServerPlayer player = get_game_player(players, p);
-            game.tile_discard(player.ID, tile.tile_ID);
+            ClientMessageTileDiscard tile = (ClientMessageTileDiscard)message;
+
+            GameStateServerPlayer p = get_game_player(players, player);
+            game.client_tile_discard(p.ID, tile.tile_ID);
         }
 
-        /*private void player_turn_decision(ServerPlayer player, GameStateTurnDecision decision)
+        private void client_no_call(ServerPlayer player, ClientMessage message)
         {
-            GameStateServerPlayer p = get_gssp(players, player);
-            if (p != null && p.game_state_player != null)
-                game.player_turn_decision(p.game_state_player, decision);
+            GameStateServerPlayer p = get_game_player(players, player);
+            game.client_no_call(p.ID);
         }
 
-        private void player_call_decision(ServerPlayer player, GameStateCallDecision decision)
+        private void client_ron(ServerPlayer player, ClientMessage message)
         {
-            GameStateServerPlayer p = get_gssp(players, player);
-            if (p != null && p.game_state_player != null)
-                game.player_call_decision(p.game_state_player, decision);
-        }*/
+            GameStateServerPlayer p = get_game_player(players, player);
+            game.client_ron(p.ID);
+        }
+
+        private void client_open_kan(ServerPlayer player, ClientMessage message)
+        {
+            GameStateServerPlayer p = get_game_player(players, player);
+            game.client_open_kan(p.ID);
+        }
+
+        private void client_pon(ServerPlayer player, ClientMessage message)
+        {
+            GameStateServerPlayer p = get_game_player(players, player);
+            game.client_pon(p.ID);
+        }
+
+        private void client_chi(ServerPlayer player, ClientMessage message)
+        {
+            ClientMessageChi chi = (ClientMessageChi)message;
+
+            GameStateServerPlayer p = get_game_player(players, player);
+            game.client_chi(p.ID, chi.tile_1_ID, chi.tile_2_ID);
+        }
+
+        ////////////////////////
 
         private void game_draw_tile(int player_ID, Tile tile)
         {
@@ -146,15 +181,52 @@ namespace GameServer
         {
             ServerMessageCallDecision message = new ServerMessageCallDecision(player_ID, tile.ID);
 
-            //foreach (GameStateServerPlayer pl in players)
             foreach (int ID in receivers)
                 get_server_player(players, ID).server_player.send_message(message);
-                //if (pl.ID != player_ID && pl.server_player.state == ServerPlayer.State.PLAYER)
-                //    pl.server_player.send_message(message);
         }
 
+        private void game_ron(int player_ID, int discard_player_ID, Tile tile)
+        {
+            ServerMessageRon message = new ServerMessageRon(player_ID, discard_player_ID, tile.ID);
 
+            foreach (GameStateServerPlayer pl in players)
+                pl.server_player.send_message(message);
+        }
 
+        public void game_open_kan(int player_ID, int discard_player_ID, Tile tile, ArrayList<Tile> tiles)
+        {
+            foreach (Tile t in tiles)
+                game_reveal_tile(t);
+
+            ServerMessageOpenKan message = new ServerMessageOpenKan(player_ID, discard_player_ID, tile.ID, tiles[0].ID, tiles[1].ID, tiles[2].ID);
+
+            foreach (GameStateServerPlayer pl in players)
+                pl.server_player.send_message(message);
+        }
+
+        public void game_pon(int player_ID, int discard_player_ID, Tile tile, ArrayList<Tile> tiles)
+        {
+            foreach (Tile t in tiles)
+                game_reveal_tile(t);
+
+            ServerMessagePon message = new ServerMessagePon(player_ID, discard_player_ID, tile.ID, tiles[0].ID, tiles[1].ID);
+
+            foreach (GameStateServerPlayer pl in players)
+                pl.server_player.send_message(message);
+        }
+
+        public void game_chi(int player_ID, int discard_player_ID, Tile tile, ArrayList<Tile> tiles)
+        {
+            foreach (Tile t in tiles)
+                game_reveal_tile(t);
+
+            ServerMessageChi message = new ServerMessageChi(player_ID, discard_player_ID, tile.ID, tiles[0].ID, tiles[1].ID);
+
+            foreach (GameStateServerPlayer pl in players)
+                pl.server_player.send_message(message);
+        }
+
+        //////////////////////
 
         private static GameStateServerPlayer? get_game_player(GameStateServerPlayer[] players, ServerPlayer player)
         {

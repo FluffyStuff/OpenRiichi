@@ -277,13 +277,6 @@ public struct ModelNormal
     float k;
 }
 
-/*public struct ModelParameter
-{
-    float u;
-    float v;
-    float w;
-}*/
-
 class Triangles
 {
     public Triangles(ModelTriangle[] triangles)

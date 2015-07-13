@@ -102,7 +102,6 @@ namespace GameServer
         {
             SerializableMessage? msg = SerializableMessage.deserialize(message.data);
 
-            //print("Message name: %s\n", msg.get_type().name());
             if (msg == null || !msg.get_type().is_a(typeof(ClientMessage)))
             {
                 print("Discarding message!\n");

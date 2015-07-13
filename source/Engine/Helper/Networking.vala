@@ -308,6 +308,7 @@ class DataUInt
 
 public abstract class SerializableMessage : Object
 {
+    // TODO: Secure against arbitrary code injections...
     public static SerializableMessage? deserialize(uint8[] bytes)
     {
         DataUInt data = new DataUInt(bytes);
@@ -324,10 +325,8 @@ public abstract class SerializableMessage : Object
         if (!type.is_a(typeof(SerializableMessage)))
             return null;
 
-        ObjectClass classy = (ObjectClass)type.class_ref();
         Parameter[] params = new Parameter[param_count];
         string[] names = new string[param_count];
-        string[] strings = new string[param_count];
 
         for (int i = 0; i < params.length; i++)
         {

@@ -1,6 +1,6 @@
-public class Render3DObject
+public class RenderObject3D
 {
-    public Render3DObject(RenderModel? model, RenderTexture? texture)
+    public RenderObject3D(RenderModel? model, RenderTexture? texture)
     {
         this.model = model;
         this.texture = texture;
@@ -11,9 +11,9 @@ public class Render3DObject
         light_multiplier = 1;
     }
 
-    public Render3DObject copy()
+    public RenderObject3D copy()
     {
-        Render3DObject obj = new Render3DObject(model, texture);
+        RenderObject3D obj = new RenderObject3D(model, texture);
         obj.rotation = rotation;
         obj.position = position;
         obj.scale = scale;

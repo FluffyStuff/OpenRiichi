@@ -102,7 +102,7 @@ public abstract class RenderTarget : Object, IRenderTarget
 
     private void render_thread()
     {
-        init_status = init();
+        init_status = init(window.width, window.height);
         init_mutex.lock();
         initialized = true;
         init_mutex.unlock();
@@ -128,7 +128,8 @@ public abstract class RenderTarget : Object, IRenderTarget
 
             render(current_state);
 
-            GLib.Thread.usleep(5000);
+            // TODO: Fix fullscreen v-sync issues
+            Thread.usleep(5000);
         }
     }
 
@@ -170,7 +171,7 @@ public abstract class RenderTarget : Object, IRenderTarget
 
     public abstract void render(RenderState state);
 
-    protected abstract bool init();
+    protected abstract bool init(int width, int height);
     protected abstract IModelResourceHandle do_load_model(ResourceModel model);
     protected abstract ITextureResourceHandle do_load_texture(ResourceTexture texture);
 

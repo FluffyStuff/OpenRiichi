@@ -1,3 +1,5 @@
+using Gee;
+
 namespace GameServer
 {
     class GameStateGame
@@ -6,9 +8,15 @@ namespace GameServer
         public signal void game_discard_tile(int player_ID, Tile tile);
         public signal void game_flip_dora(Tile tile);
 
+        public signal void game_ron(int player_ID, int discard_player_ID, Tile tile);
+        public signal void game_open_kan(int player_ID, int discard_player_ID, Tile tile, ArrayList<Tile> tiles);
+        public signal void game_pon(int player_ID, int discard_player_ID, Tile tile, ArrayList<Tile> tiles);
+        public signal void game_chi(int player_ID, int discard_player_ID, Tile tile, ArrayList<Tile> tiles);
+
         public signal void game_get_call_decision(int[] receivers, int player_ID, Tile tile);
         public signal void game_get_turn_decision(int player_ID);
 
+        private Tile? discard_tile = null;
         private GameState current_state = GameState.STARTING;
         private GameStateWall tiles;
         private GameStatePlayers players;
@@ -29,16 +37,7 @@ namespace GameServer
             next_turn();
         }
 
-        private void derp()
-        {
-            //Thread.usleep(2 * 1000000);
-
-            initial_draw();
-            flip_dora();
-            next_turn();
-        }
-
-        public bool tile_discard(int player_ID, int tile_ID)
+        public bool client_tile_discard(int player_ID, int tile_ID)
         {
             GameStatePlayer player = players.get_current_player();
 
@@ -46,7 +45,7 @@ namespace GameServer
                 return false;
             if (current_state != GameState.WAITING_TURN)
             {
-                print("Not players turn...\n");
+                print("tile_discard: Not players turn...\n");
                 return false;
             }
 
@@ -54,9 +53,11 @@ namespace GameServer
 
             if (tile == null)
             {
-                print("Trying to discard invalid tile...\n");
+                print("tile_discard: Trying to discard invalid tile...\n");
                 return false;
             }
+
+            discard_tile = tile;
 
             player.discard(tile);
             current_state = GameState.WAITING_CALLS;
@@ -71,13 +72,202 @@ namespace GameServer
                 return true;
             }
 
+            print("tile_discard: Get calls...\n");
+
+            players.clear_calls();
+
             int[] pl = new int[call_players.size];
             for (int i = 0; i < pl.length; i++)
-                pl[i] = call_players.get(i).ID;
+            {
+                GameStatePlayer p = call_players.get(i);
+                p.state = GameStatePlayer.PlayerState.WAITING_CALL;
+                pl[i] = p.ID;
+                print("Player %d now waiting for call...\n", p.ID);
+            }
 
             game_get_call_decision(pl, player_ID, tile);
 
             return true;
+        }
+
+        public bool client_no_call(int player_ID)
+        {
+            GameStatePlayer player = players.get_player(player_ID);
+            if (!check_can_call(player))
+                return false;
+
+            player.state = GameStatePlayer.PlayerState.DONE;
+            check_calls_done();
+
+            return true;
+        }
+
+        public void client_ron(int player_ID)
+        {
+            GameStatePlayer player = players.get_player(player_ID);
+            if (!check_can_call(player))
+                return;
+        }
+
+        public void client_open_kan(int player_ID)
+        {
+            GameStatePlayer player = players.get_player(player_ID);
+            if (!check_can_call(player))
+                return;
+
+            ArrayList<Tile>? kan = player.get_open_kan_tiles(discard_tile);
+            if (kan == null)
+            {
+                print("client_open_kan: Player %d trying to do invalid kan!\n", player.ID);
+                return;
+            }
+
+            player.call_decision = new GameStateCallDecision(CallType.KAN, kan);
+            player.state = GameStatePlayer.PlayerState.DONE;
+            check_calls_done();
+        }
+
+        public void client_pon(int player_ID)
+        {
+            GameStatePlayer player = players.get_player(player_ID);
+            if (!check_can_call(player))
+                return;
+
+            ArrayList<Tile>? pon = player.get_pon_tiles(discard_tile);
+            if (pon == null)
+            {
+                print("client_pon: Player %d trying to do invalid pon!\n", player.ID);
+                return;
+            }
+
+            player.call_decision = new GameStateCallDecision(CallType.PON, pon);
+            player.state = GameStatePlayer.PlayerState.DONE;
+            check_calls_done();
+        }
+
+        public void client_chi(int player_ID, int tile_1_ID, int tile_2_ID)
+        {
+            GameStatePlayer player = players.get_player(player_ID);
+            if (!check_can_call(player))
+                return;
+
+        }
+
+        /////////////////////
+
+        private bool check_can_call(GameStatePlayer player)
+        {
+            print("Player %d trying to do a call\n", player.ID);
+            if (current_state != GameState.WAITING_CALLS)
+            {
+                print("check_can_call: Not waiting for calls!\n");
+                return false;
+            }
+
+            if (player.state != GameStatePlayer.PlayerState.WAITING_CALL)
+            {
+                print("check_can_call: Player not waiting on calls!\n");
+                return false;
+            }
+
+            return true;
+        }
+
+        private void check_calls_done()
+        {
+            if (current_state != GameState.WAITING_CALLS)
+            {
+                print("check_calls_done: Not waiting for calls...\n");
+                return;
+            }
+
+            GameStatePlayer? player = null;
+            GameStateCallDecision? decision = null;
+
+            bool undecided = false;
+            foreach (GameStatePlayer p in players.players)
+            {
+                if (p.state == GameStatePlayer.PlayerState.WAITING_CALL)
+                {
+                    undecided = true;
+                    continue;
+                }
+
+                if (p.call_decision == null)
+                    continue;
+
+                if (p.call_decision.call_type == CallType.CHI && decision == null)
+                {
+                    player = p;
+                    decision = p.call_decision;
+                }
+                else if (p.call_decision.call_type == CallType.PON || p.call_decision.call_type == CallType.KAN)
+                {
+                    player = p;
+                    decision = p.call_decision;
+
+                    bool can_ron = false;
+                    foreach (GameStatePlayer pl in players.players)
+                    {
+                        if (pl.state == GameStatePlayer.PlayerState.WAITING_CALL && pl.can_ron(discard_tile))
+                        {
+                            can_ron = true;
+                            break;
+                        }
+                    }
+
+                    if (!can_ron)
+                    {
+                        undecided = false;
+                        break;
+                    }
+                }
+                else if (p.call_decision.call_type == CallType.RON)
+                {
+                    player = p;
+                    decision = p.call_decision;
+                    undecided = false;
+                    break;
+                }
+            }
+
+            if (undecided)
+                return;
+
+            if (decision == null)
+            {
+                next_turn();
+                return;
+            }
+
+            GameStatePlayer discarder = players.get_current_player();
+
+            if (decision.call_type == CallType.CHI)
+            {
+                player.remove_tiles(decision.tiles);
+                game_chi(player.ID, discarder.ID, discard_tile, decision.tiles);
+            }
+            else if (decision.call_type == CallType.PON)
+            {
+                player.remove_tiles(decision.tiles);
+                game_pon(player.ID, discarder.ID, discard_tile, decision.tiles);
+            }
+            else if (decision.call_type == CallType.KAN)
+            {
+                player.remove_tiles(decision.tiles);
+                game_open_kan(player.ID, discarder.ID, discard_tile, decision.tiles);
+            }
+            else if (decision.call_type == CallType.RON)
+            {
+                // Game over
+                game_ron(player.ID, discarder.ID, discard_tile);
+                return;
+            }
+
+            flow_interrupted = true;
+            players.set_current_player(player);
+            current_state = GameState.WAITING_TURN;
+            game_get_turn_decision(player.ID);
         }
 
         private void next_turn()
@@ -86,6 +276,7 @@ namespace GameServer
             if (tiles.empty)
                 return;
 
+            discard_tile = null;
             players.next_player();
             GameStatePlayer player = players.get_current_player();
             Tile tile = tiles.draw_wall();
@@ -94,46 +285,6 @@ namespace GameServer
             game_draw_tile(player.ID, tile);
             game_get_turn_decision(player.ID);
         }
-
-        /*public bool player_turn_decision(GameStatePlayer player, GameStateTurnDecision decision)
-        {
-            if (current_state != GameState.WAITING_TURN)
-                return false;
-
-            if (!players.turn_decision(player, decision))
-                return false;
-
-            if (decision.DecisionType == GameStateTurnDecision.TurnDecision.TSUMO)
-                current_state = GameState.FINISHED;
-            else if (decision.DecisionType == GameStateTurnDecision.TurnDecision.DISCARD)
-            {
-                if (players.can_call(decision.Tile))
-                {
-                    current_state = GameState.WAITING_CALLS;
-                    players.wait_calls(decision.Tile);
-                }
-                else
-                    players.next_player();
-            }
-
-            return true;
-        }
-
-        public bool player_call_decision(GameStatePlayer player, GameStateCallDecision decision)
-        {
-            if (current_state != GameState.WAITING_CALLS)
-                return false;
-
-            if (!players.call_decision(player, decision))
-                return false;
-
-            if (decision.DecisionType == GameStateCallDecision.CallDecision.RON)
-                current_state = GameState.FINISHED;
-            else if (decision.DecisionType != GameStateCallDecision.CallDecision.NONE)
-                flow_interrupted = true;
-
-            return true;
-        }*/
 
         private void flip_dora()
         {

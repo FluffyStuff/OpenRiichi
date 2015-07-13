@@ -15,9 +15,20 @@ namespace GameServer
             discard_tile(tile);
         }
 
-        protected override void do_call_decision(int discarding_player, int tile_ID)
+        protected override void do_call_decision(Bot.BotPlayer discarding_player, Tile tile)
         {
-            no_call();
+            if (TileRules.can_open_kan(state.self.hand, tile))
+            {
+                Thread.usleep(1 * 1000000);
+                call_open_kan();
+            }
+            else if (TileRules.can_pon(state.self.hand, tile))
+            {
+                Thread.usleep(1 * 1000000);
+                call_pon();
+            }
+            else
+                no_call();
         }
     }
 }

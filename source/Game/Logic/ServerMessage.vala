@@ -2,8 +2,14 @@ using Gee;
 
 public class ServerMessageParser
 {
+    private ArrayList<Dispatcher> dispatchers = new ArrayList<Dispatcher>();
     private ArrayList<ServerMessage> queue = new ArrayList<ServerMessage>();
     private Mutex mutex = new Mutex();
+
+    public void connect(ServerMessageDelegate method, Type type)
+    {
+        dispatchers.add(new Dispatcher(method, type));
+    }
 
     public void add(ServerMessage message)
     {
@@ -16,32 +22,35 @@ public class ServerMessageParser
     {
         mutex.lock();
         while (queue.size > 0)
-            parse(queue.remove_at(0));
+            execute(queue.remove_at(0));
         mutex.unlock();
     }
 
-    public void parse(ServerMessage message)
+    public void execute(ServerMessage message)
     {
-        if (message.get_type() == typeof(ServerMessageTileAssignment))
-            tile_assignment((ServerMessageTileAssignment)message);
-        else if (message.get_type() == typeof(ServerMessageTileDraw))
-            tile_draw((ServerMessageTileDraw)message);
-        else if (message.get_type() == typeof(ServerMessageTileDiscard))
-            tile_discard((ServerMessageTileDiscard)message);
-        else if (message.get_type() == typeof(ServerMessageTurnDecision))
-            turn_decision((ServerMessageTurnDecision)message);
-        else if (message.get_type() == typeof(ServerMessageCallDecision))
-            call_decision((ServerMessageCallDecision)message);
-        else if (message.get_type() == typeof(ServerMessageFlipDora))
-            flip_dora((ServerMessageFlipDora)message);
+        Type type = message.get_type();
+        foreach (Dispatcher d in dispatchers)
+        {
+            if (d.param_type == type)
+            {
+                ServerMessageDelegate method = d.method;
+                method(message);
+            }
+        }
     }
 
-    public signal void tile_assignment(ServerMessageTileAssignment message);
-    public signal void tile_draw(ServerMessageTileDraw message);
-    public signal void tile_discard(ServerMessageTileDiscard message);
-    public signal void turn_decision(ServerMessageTurnDecision message);
-    public signal void call_decision(ServerMessageCallDecision message);
-    public signal void flip_dora(ServerMessageFlipDora message);
+    public delegate void ServerMessageDelegate(ServerMessage message);
+    private class Dispatcher
+    {
+        public Dispatcher(ServerMessageDelegate method, Type type)
+        {
+            this.method = method;
+            param_type = type;
+        }
+
+        public ServerMessageDelegate method { get; private set; }
+        public Type param_type { get; private set; }
+    }
 }
 
 public abstract class ServerMessage : SerializableMessage
@@ -128,4 +137,74 @@ public class ServerMessageFlipDora : ServerMessage
     }
 
     public int tile_ID { get; protected set; }
+}
+
+public class ServerMessageRon : ServerMessage
+{
+    public ServerMessageRon(int player_ID, int discard_player_ID, int tile_ID)
+    {
+        this.player_ID = player_ID;
+        this.discard_player_ID = discard_player_ID;
+        this.tile_ID = tile_ID;
+    }
+
+    public int player_ID { get; protected set; }
+    public int discard_player_ID { get; protected set; }
+    public int tile_ID { get; protected set; }
+}
+
+public class ServerMessageOpenKan : ServerMessage
+{
+    public ServerMessageOpenKan(int player_ID, int discard_player_ID, int tile_ID, int tile_1_ID, int tile_2_ID, int tile_3_ID)
+    {
+        this.player_ID = player_ID;
+        this.discard_player_ID = discard_player_ID;
+        this.tile_ID = tile_ID;
+        this.tile_1_ID = tile_1_ID;
+        this.tile_2_ID = tile_2_ID;
+        this.tile_3_ID = tile_3_ID;
+    }
+
+    public int player_ID { get; protected set; }
+    public int discard_player_ID { get; protected set; }
+    public int tile_ID { get; protected set; }
+    public int tile_1_ID { get; protected set; }
+    public int tile_2_ID { get; protected set; }
+    public int tile_3_ID { get; protected set; }
+}
+
+public class ServerMessagePon : ServerMessage
+{
+    public ServerMessagePon(int player_ID, int discard_player_ID, int tile_ID, int tile_1_ID, int tile_2_ID)
+    {
+        this.player_ID = player_ID;
+        this.discard_player_ID = discard_player_ID;
+        this.tile_ID = tile_ID;
+        this.tile_1_ID = tile_1_ID;
+        this.tile_2_ID = tile_2_ID;
+    }
+
+    public int player_ID { get; protected set; }
+    public int discard_player_ID { get; protected set; }
+    public int tile_ID { get; protected set; }
+    public int tile_1_ID { get; protected set; }
+    public int tile_2_ID { get; protected set; }
+}
+
+public class ServerMessageChi : ServerMessage
+{
+    public ServerMessageChi(int player_ID, int discard_player_ID, int tile_ID, int tile_1_ID, int tile_2_ID)
+    {
+        this.player_ID = player_ID;
+        this.discard_player_ID = discard_player_ID;
+        this.tile_ID = tile_ID;
+        this.tile_1_ID = tile_1_ID;
+        this.tile_2_ID = tile_2_ID;
+    }
+
+    public int player_ID { get; protected set; }
+    public int discard_player_ID { get; protected set; }
+    public int tile_ID { get; protected set; }
+    public int tile_1_ID { get; protected set; }
+    public int tile_2_ID { get; protected set; }
 }

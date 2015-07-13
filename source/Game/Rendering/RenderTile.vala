@@ -9,7 +9,7 @@ public class RenderTile
         RenderModel model = store.load_model("tile", true);
         RenderTexture texture = store.load_texture("Tiles/" + get_tile_type_name(tile_type.tile_type));
 
-        this.tile = new Render3DObject(model, texture);
+        this.tile = new RenderObject3D(model, texture);
     }
 
     public void assign_type(Tile type, IResourceStore store)
@@ -49,9 +49,9 @@ public class RenderTile
         return "Blank";
     }
 
-    public void render(RenderState state)
+    public void render(RenderScene3D scene)
     {
-        state.add_3D_object(tile);
+        scene.add_object(tile);
     }
 
     public void set_hovered(bool hovered)
@@ -80,6 +80,6 @@ public class RenderTile
     }
 
     public Vec3 object_size { get { return tile.model.size; } }
-    public Render3DObject tile { get; private set; }
+    public RenderObject3D tile { get; private set; }
     public Tile tile_type { get; private set; }
 }

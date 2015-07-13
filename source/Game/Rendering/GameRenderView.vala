@@ -22,35 +22,93 @@ public class GameRenderView : View, IGameRenderer
     {
         start_state = state;
 
-        parser.tile_assignment.connect(tile_assignment);
-        parser.tile_draw.connect(tile_draw);
-        parser.tile_discard.connect(tile_discard);
-        parser.flip_dora.connect(flip_dora);
+        parser.connect(server_tile_assignment, typeof(ServerMessageTileAssignment));
+        parser.connect(server_tile_draw, typeof(ServerMessageTileDraw));
+        parser.connect(server_tile_discard, typeof(ServerMessageTileDiscard));
+        parser.connect(server_flip_dora, typeof(ServerMessageFlipDora));
+
+        parser.connect(server_ron, typeof(ServerMessageRon));
+        parser.connect(server_open_kan, typeof(ServerMessageOpenKan));
+        parser.connect(server_pon, typeof(ServerMessagePon));
+        parser.connect(server_chi, typeof(ServerMessageChi));
     }
 
-    private void tile_assignment(ServerMessageTileAssignment message)
+    private void server_tile_assignment(ServerMessage message)
     {
-        tiles[message.tile_ID].assign_type(message.get_tile(), store);
+        ServerMessageTileAssignment tile_assignment = (ServerMessageTileAssignment)message;
+        tiles[tile_assignment.tile_ID].assign_type(tile_assignment.get_tile(), store);
     }
 
-    private void tile_draw(ServerMessageTileDraw message)
+    private void server_tile_draw(ServerMessage message)
     {
-        RenderPlayer player = players[message.player_ID];
+        ServerMessageTileDraw tile_draw = (ServerMessageTileDraw)message;
+        RenderPlayer player = players[tile_draw.player_ID];
         player.add_to_hand(wall.draw_wall());
         player.order_tiles();
     }
 
-    private void tile_discard(ServerMessageTileDiscard message)
+    private void server_tile_discard(ServerMessage message)
     {
-        RenderPlayer player = players[message.player_ID];
-        RenderTile tile = tiles[message.tile_ID];
+        ServerMessageTileDiscard tile_discard = (ServerMessageTileDiscard)message;
+        RenderPlayer player = players[tile_discard.player_ID];
+        RenderTile tile = tiles[tile_discard.tile_ID];
         player.discard(tile);
     }
 
-    private void flip_dora(ServerMessageFlipDora message)
+    private void server_flip_dora(ServerMessage message)
     {
         wall.flip_dora();
     }
+
+    private void server_ron(ServerMessage message)
+    {
+        ServerMessageRon ron = (ServerMessageRon)message;
+    }
+
+    private void server_open_kan(ServerMessage message)
+    {
+        ServerMessageOpenKan kan = (ServerMessageOpenKan)message;
+        RenderPlayer player = players[kan.player_ID];
+        RenderPlayer discard_player = players[kan.discard_player_ID];
+
+        RenderTile tile = tiles[kan.tile_ID];
+        RenderTile tile_1 = tiles[kan.tile_1_ID];
+        RenderTile tile_2 = tiles[kan.tile_2_ID];
+        RenderTile tile_3 = tiles[kan.tile_3_ID];
+
+        discard_player.rob_tile(tile);
+        player.open_kan(discard_player, tile, tile_1, tile_2, tile_3);
+    }
+
+    private void server_pon(ServerMessage message)
+    {
+        ServerMessagePon pon = (ServerMessagePon)message;
+        RenderPlayer player = players[pon.player_ID];
+        RenderPlayer discard_player = players[pon.discard_player_ID];
+
+        RenderTile tile   = tiles[pon.tile_ID];
+        RenderTile tile_1 = tiles[pon.tile_1_ID];
+        RenderTile tile_2 = tiles[pon.tile_2_ID];
+
+        discard_player.rob_tile(tile);
+        player.pon(discard_player, tile, tile_1, tile_2);
+    }
+
+    private void server_chi(ServerMessage message)
+    {
+        ServerMessageChi chi = (ServerMessageChi)message;
+        RenderPlayer player = players[chi.player_ID];
+        RenderPlayer discard_player = players[chi.discard_player_ID];
+
+        RenderTile tile   = tiles[chi.tile_ID];
+        RenderTile tile_1 = tiles[chi.tile_1_ID];
+        RenderTile tile_2 = tiles[chi.tile_2_ID];
+
+        discard_player.rob_tile(tile);
+        player.chi(discard_player, tile, tile_1, tile_2);
+    }
+
+    /////////////////////
 
     public void receive_message(ServerMessage message)
     {
@@ -99,19 +157,15 @@ public class GameRenderView : View, IGameRenderer
     private float accel_x = 0;
     private float accel_y = 0;
     private float accel_z = 0;
-    private float camera_x = 0;
-    private float camera_y = 0;
-    private float camera_z = 0;
 
     public override void do_process(DeltaArgs delta)
     {
         parser.dequeue();
 
-        camera_x += accel_x;
-        camera_y += accel_y;
-        camera_z += accel_z;
+        Vec3 pos = camera.position;
+        pos = pos.plus({accel_x, accel_y, accel_z});
 
-        //camera.position = Vec3(){ x = camera_x, y = camera_y, z = camera_z };
+        //camera.position = pos;
         light2.position = camera.position;
 
         RenderTile? tile = get_hover_tile();
@@ -128,16 +182,20 @@ public class GameRenderView : View, IGameRenderer
     private float perlin_strength = 0;//0.25f;
     public override void do_render(RenderState state)
     {
-        state.set_camera(camera);
-        state.add_light_source(light1);
-        state.add_light_source(light2);
+        RenderScene3D scene = new RenderScene3D(state.screen_width, state.screen_height);
 
-        table.render(state);
+        scene.set_camera(camera);
+        scene.add_light_source(light1);
+        scene.add_light_source(light2);
+
+        table.render(scene);
         for (int i = 0; i < tiles.length; i++)
-            tiles[i].render(state);
+            tiles[i].render(scene);
 
-        state.bloom = bloom_intensity;
-        state.perlin_strength = perlin_strength;
+        state.add_scene(scene);
+
+        //scene.bloom = bloom_intensity;
+        //scene.perlin_strength = perlin_strength;
     }
 
     protected override void do_mouse_move(MouseMoveArgs mouse)

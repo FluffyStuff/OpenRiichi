@@ -1,12 +1,12 @@
 public class RenderTable
 {
-    private Render3DObject table;
-    private Render3DObject field;
+    private RenderObject3D table;
+    private RenderObject3D field;
 
     public RenderTable(IResourceStore store)
     {
-        table = store.load_3D_object("table");
-        field = store.load_3D_object("field");
+        table = store.load_object_3D("table");
+        field = store.load_object_3D("field");
 
         table.position = Vec3() { y = -0.163f };
         table.scale = Vec3() { x = 10, y = 10, z = 10 };
@@ -18,10 +18,10 @@ public class RenderTable
         wall_offset = player_offset / 2.5f;
     }
 
-    public void render(RenderState state)
+    public void render(RenderScene3D scene)
     {
-        state.add_3D_object(table);
-        state.add_3D_object(field);
+        scene.add_object(table);
+        scene.add_object(field);
     }
 
     public Vec3 center { get; private set; }

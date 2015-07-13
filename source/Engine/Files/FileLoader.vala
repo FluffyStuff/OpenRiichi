@@ -1,7 +1,9 @@
 using Gee;
 
-public /*static*/ class FileLoader
+public class FileLoader
 {
+    private FileLoader() {}
+
     public static string[]? load(string name)
     {
         var file = File.new_for_path(name);

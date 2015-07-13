@@ -4,7 +4,6 @@ namespace GameServer
 {
     class GameStatePlayers
     {
-        private GameStatePlayer[] players;
         private int current_player;
 
         public GameStatePlayers(int dealer)
@@ -17,12 +16,15 @@ namespace GameServer
                 players[i] = new GameStatePlayer(i);
         }
 
-        public ArrayList<GameStatePlayer> get_call_players(GameStatePlayer exception, Tile tile)
+        public ArrayList<GameStatePlayer> get_call_players(GameStatePlayer caller, Tile tile)
         {
             ArrayList<GameStatePlayer> players = new ArrayList<GameStatePlayer>();
 
             foreach (GameStatePlayer player in this.players)
-                if (player != exception && player.can_call(tile))
+                if (player != caller &&
+                    (player.can_ron(tile) ||
+                     player.can_pon(tile) ||
+                    (((caller.ID + 1) % 4 == player.ID) && player.can_chi(tile))))
                     players.add(player);
 
             return players;
@@ -38,6 +40,11 @@ namespace GameServer
             return players[current_player];
         }
 
+        public void set_current_player(GameStatePlayer player)
+        {
+            current_player = player.ID;
+        }
+
         public GameStatePlayer? get_player(int ID)
         {
             foreach (GameStatePlayer p in players)
@@ -45,5 +52,16 @@ namespace GameServer
                     return p;
             return null;
         }
+
+        public void clear_calls()
+        {
+            foreach (GameStatePlayer player in players)
+            {
+                player.state = GameStatePlayer.PlayerState.DONE;
+                player.call_decision = null;
+            }
+        }
+
+        public GameStatePlayer[] players { get; private set; }
     }
 }
