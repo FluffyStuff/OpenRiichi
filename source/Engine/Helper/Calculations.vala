@@ -94,11 +94,6 @@ public class Calculations
         return Vec3() { x = a.x - b.x, y = a.y - b.y, z = a.z - b.z };
     }
 
-    public static float vec3_dot(Vec3 a, Vec3 b)
-    {
-        return a.x * b.x + a.y * b.y + a.z * b.z;
-    }
-
     public static float vec4_dot(Vec4 a, Vec4 b)
     {
         return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
@@ -211,8 +206,8 @@ public class Calculations
         Vec3 nv = vec3_minus(plane_offset, n1);
         Vec3 dv = vec3_minus(          n2, n1);
 
-        float n = vec3_dot(plane_direction, nv);
-        float d = vec3_dot(plane_direction, dv);
+        float n = plane_direction.dot(nv);
+        float d = plane_direction.dot(dv);
 
         if (d == 0)
             return Vec3() { x = float.NAN, y = float.NAN, z = float.NAN };
@@ -229,7 +224,7 @@ public class Calculations
         Vec3 n = vec3_norm(normal);
         Vec3 q = point;
 
-        return vec3_minus(q, vec3_mul_scalar(n, vec3_dot(vec3_minus(q, p), n)));
+        return vec3_minus(q, vec3_mul_scalar(n, vec3_minus(q, p).dot(n)));
     }
 
     public static Mat4 rotation_matrix(Vec3 axis, float angle)
@@ -285,5 +280,52 @@ public class Calculations
         Mat4 rotate = x.mul_mat(y).mul_mat(z);
 
         return scale_matrix(scale).mul_mat(rotate).mul_mat(translation_matrix(position));
+    }
+
+    public static Mat3 rotation_matrix_3(float angle)
+    {
+        float s = (float)Math.sin(angle);
+        float c = (float)Math.cos(angle);
+
+        //print("S: %f C: %f\n", s, c);
+
+        float[] vals =
+        {
+             c, s, 0,
+            -s, c, 0,
+             0, 0, 1
+        };
+
+        return new Mat3.with_array(vals);
+    }
+
+    public static Mat3 translation_matrix_3(Vec2 vec)
+    {
+        float[] vals =
+        {
+            1,     0,     0,
+            0,     1,     0,
+            vec.x, vec.y, 1
+        };
+
+        return new Mat3.with_array(vals);
+    }
+
+    public static Mat3 scale_matrix_3(Vec2 vec)
+    {
+        float[] vals =
+        {
+            vec.x, 0, 0,
+            0, vec.y, 0,
+            0,     0, 1
+        };
+
+        return new Mat3.with_array(vals);
+    }
+
+    public static Mat3 get_model_matrix_3(Vec2 position, float rotation, Vec2 scale)
+    {
+        Mat3 rot = rotation_matrix_3(rotation * (float)Math.PI);
+        return scale_matrix_3(scale).mul_mat(rot).mul_mat(translation_matrix_3(position));
     }
 }

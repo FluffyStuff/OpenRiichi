@@ -13,4 +13,9 @@ public struct Vec3
     {
         return Vec3() { x = x * scalar, y = y * scalar, z = z * scalar };
     }
+
+    public float dot(Vec3 other)
+    {
+        return x * other.x + y * other.y + z * other.z;
+    }
 }

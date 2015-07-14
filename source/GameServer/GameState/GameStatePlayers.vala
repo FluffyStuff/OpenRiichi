@@ -25,7 +25,10 @@ namespace GameServer
                     (player.can_ron(tile) ||
                      player.can_pon(tile) ||
                     (((caller.ID + 1) % 4 == player.ID) && player.can_chi(tile))))
-                    players.add(player);
+                    {
+                        if (player.ID != 0)
+                        players.add(player);
+                    }
 
             return players;
         }

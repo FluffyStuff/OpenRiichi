@@ -72,8 +72,6 @@ namespace GameServer
                 return true;
             }
 
-            print("tile_discard: Get calls...\n");
-
             players.clear_calls();
 
             int[] pl = new int[call_players.size];
@@ -82,7 +80,7 @@ namespace GameServer
                 GameStatePlayer p = call_players.get(i);
                 p.state = GameStatePlayer.PlayerState.WAITING_CALL;
                 pl[i] = p.ID;
-                print("Player %d now waiting for call...\n", p.ID);
+                //print("Game now waiting on player %d call\n", p.ID);
             }
 
             game_get_call_decision(pl, player_ID, tile);
@@ -157,7 +155,6 @@ namespace GameServer
 
         private bool check_can_call(GameStatePlayer player)
         {
-            print("Player %d trying to do a call\n", player.ID);
             if (current_state != GameState.WAITING_CALLS)
             {
                 print("check_can_call: Not waiting for calls!\n");

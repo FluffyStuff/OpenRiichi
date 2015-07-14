@@ -13,7 +13,7 @@ public class OpenGLShaderProgram3D
     private int vert_texture_attribute;
     private int vert_normal_attribute;
 
-    private int texture_attrib = -1;
+    //private int texture_attrib = -1;
     private int projection_transform_attrib = -1;
     private int view_transform_attrib = -1;
     private int model_transform_attrib = -1;
@@ -60,7 +60,7 @@ public class OpenGLShaderProgram3D
 
         glLinkProgram(program);
 
-        texture_attrib = glGetUniformLocation(program, "tex");
+        //texture_attrib = glGetUniformLocation(program, "tex");
         projection_transform_attrib = glGetUniformLocation(program, "projection_transform");
         view_transform_attrib = glGetUniformLocation(program, "view_transform");
         model_transform_attrib = glGetUniformLocation(program, "model_transform");
@@ -81,6 +81,11 @@ public class OpenGLShaderProgram3D
         return true;
     }
 
+    public void use_program()
+    {
+        glUseProgram(program);
+    }
+
     public void apply_scene(Mat4 projection_transform, Mat4 view_transform, ArrayList<LightSource> lights)
     {
         glUseProgram(program);
@@ -93,12 +98,14 @@ public class OpenGLShaderProgram3D
             this.lights[i].apply(lights[i].position, lights[i].color, lights[i].intensity);
     }
 
-    public void apply_object(Mat4 model_transform, float alpha, float light_multiplier, Vec3 diffuse_color)
+    public void render_object(int triangle_count, Mat4 model_transform, float alpha, float light_multiplier, Vec3 diffuse_color)
     {
         glUniformMatrix4fv(model_transform_attrib, 1, false, model_transform.get_data());
         glUniform1f(alpha_attrib, alpha);
         glUniform1f(light_multi_attrib, light_multiplier);
         glUniform3f(diffuse_color_attrib, diffuse_color.x, diffuse_color.y, diffuse_color.z);
+
+        glDrawArrays(GL_TRIANGLES, 0, triangle_count);
     }
 }
 

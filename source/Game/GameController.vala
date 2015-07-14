@@ -3,6 +3,8 @@ public class GameController
     private GameStartState state;
     private GameState? game;
     private IGameRenderer renderer;
+    private GameMenuView menu;
+
     private IGameConnection connection;
 
     public GameController(View parent_view, GameStartState game_start)
@@ -12,6 +14,10 @@ public class GameController
         GameRenderView renderer = new GameRenderView(game_start);
         parent_view.add_child(renderer);
         this.renderer = renderer;
+
+        menu = new GameMenuView();
+        parent_view.add_child(menu);
+
         connection = game_start.connection;
 
         if (game_start.player_ID != -1)

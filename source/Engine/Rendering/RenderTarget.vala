@@ -19,12 +19,15 @@ public abstract class RenderTarget : Object, IRenderTarget
     private ArrayList<IModelResourceHandle> handles_models = new ArrayList<IModelResourceHandle>();
     private ArrayList<ITextureResourceHandle> handles_textures = new ArrayList<ITextureResourceHandle>();
 
+    private bool saved_v_sync = false;
+
     protected IWindowTarget window;
     protected IResourceStore store;
 
     public RenderTarget(IWindowTarget window)
     {
         this.window = window;
+        v_sync = saved_v_sync;
     }
 
     public void set_state(RenderState state)
@@ -100,6 +103,10 @@ public abstract class RenderTarget : Object, IRenderTarget
         return ret;
     }
 
+    int counter = 0;
+    double last_time = 0;
+    int frms = 100;
+    Timer timer = new Timer();
     private void render_thread()
     {
         init_status = init(window.width, window.height);
@@ -115,21 +122,34 @@ public abstract class RenderTarget : Object, IRenderTarget
         while (running)
         {
             state_mutex.lock();
+            if (current_state == buffer_state)
+            {
+                state_mutex.unlock();
+                Thread.usleep(1000);
+                continue;
+            }
+
             current_state = buffer_state;
             state_mutex.unlock();
 
             load_resources();
 
-            if (current_state == null)
-            {
-                Thread.usleep(1000);
-                continue;
-            }
+            check_settings();
 
             render(current_state);
 
+            if ((counter++ % frms) == 0)
+            {
+                double time = timer.elapsed();
+                double diff = (time - last_time) / frms;
+
+                print("(R) Average frame time over %d frames: %fms (%ffps)\n", frms, diff * 1000, 1 / diff);
+
+                last_time = time;
+            }
+
             // TODO: Fix fullscreen v-sync issues
-            Thread.usleep(5000);
+            //Thread.usleep(5000);
         }
     }
 
@@ -154,6 +174,17 @@ public abstract class RenderTarget : Object, IRenderTarget
         resource_mutex.unlock();
     }
 
+    private void check_settings()
+    {
+        bool new_v_sync = v_sync;
+
+        if (new_v_sync != saved_v_sync)
+        {
+            saved_v_sync = new_v_sync;
+            change_v_sync(saved_v_sync);
+        }
+    }
+
     public Mat4 get_projection_matrix(float view_angle, float aspect_ratio)
     {
         view_angle  *= 0.6f;
@@ -174,6 +205,8 @@ public abstract class RenderTarget : Object, IRenderTarget
     protected abstract bool init(int width, int height);
     protected abstract IModelResourceHandle do_load_model(ResourceModel model);
     protected abstract ITextureResourceHandle do_load_texture(ResourceTexture texture);
+    protected abstract void change_v_sync(bool v_sync);
 
     public IResourceStore resource_store { get { return store; } }
+    public bool v_sync { get; set; }
 }

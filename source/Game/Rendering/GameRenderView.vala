@@ -309,6 +309,10 @@ public class GameRenderView : View, IGameRenderer
             print("Z: %f\n", camera.roll);
             camera.roll -= 0.1f;
             break;
+        case 118:
+            parent_window.renderer.v_sync = !parent_window.renderer.v_sync;
+            print("V-Sync is now %s\n", parent_window.renderer.v_sync ? "enabled" : "disabled");
+            break;
         default:
             print("%i\n", (int)key.key);
             break;

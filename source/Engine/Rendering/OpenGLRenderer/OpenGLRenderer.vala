@@ -10,9 +10,9 @@ public class OpenGLRenderer : RenderTarget
     private const int TEXTURE_ATTRIBUTE = 1;
     private const int NORMAL_ATTRIBUTE = 2;
 
-    private const bool V_SYNC = true;
-
     private OpenGLShaderProgram3D program_3D;
+    private OpenGLShaderProgram2D program_2D;
+
 	//private OpenGLShaderProgram2D post_processing_shader_program;
 
 	//private OpenGLRenderBuffer render_buffer;
@@ -55,7 +55,6 @@ public class OpenGLRenderer : RenderTarget
         SDL.GL.set_attribute(GLattr.CONTEXT_MAJOR_VERSION, 4);
         SDL.GL.set_attribute(GLattr.CONTEXT_MINOR_VERSION, 0);
         SDL.GL.set_attribute(GLattr.CONTEXT_PROFILE_MASK, 1); // Core Profile
-        SDL.GL.set_swapinterval(V_SYNC ? 1 : 0);
         GLEW.init();
 
         glEnable(GL_CULL_FACE);
@@ -68,6 +67,8 @@ public class OpenGLRenderer : RenderTarget
         glEnable(GL_FRAMEBUFFER_SRGB);
         glEnable(GL_MULTISAMPLE);
 
+        change_v_sync(v_sync);
+
         // TODO: Put this somewhere
         sdl_window.set_icon(SDLImage.load("./Data/Icon.png"));
         sdl_window.set_size(width, height);
@@ -78,6 +79,10 @@ public class OpenGLRenderer : RenderTarget
 
         program_3D = new OpenGLShaderProgram3D("./Data/Shaders/open_gl_shader_3D", MAX_LIGHTS, POSITION_ATTRIBUTE, TEXTURE_ATTRIBUTE, NORMAL_ATTRIBUTE);
         if (!program_3D.init())
+            return false;
+
+        program_2D = new OpenGLShaderProgram2D("./Data/Shaders/open_gl_shader_2D");
+        if (!program_2D.init())
             return false;
 
         return true;
@@ -106,7 +111,12 @@ public class OpenGLRenderer : RenderTarget
             //glBindFramebuffer(GL_FRAMEBUFFER, 0);
             //glClear(GL_DEPTH_BUFFER_BIT);
 
-            render_scene_3D((RenderScene3D)scene);
+            Type type = scene.get_type();
+            if (type == typeof(RenderScene2D))
+                render_scene_2D((RenderScene2D)scene);
+            else if (type == typeof(RenderScene3D))
+                render_scene_3D((RenderScene3D)scene);
+
             //post_process_draw(scene);
         }
 
@@ -122,30 +132,52 @@ public class OpenGLRenderer : RenderTarget
 
         program.apply_scene(projection_transform, view_transform, scene.lights);
 
+        int last_texture_handle = -1;
+        int last_array_handle = -1;
         foreach (RenderObject3D obj in scene.objects)
-            render_object_3D(obj, program);
+            render_object_3D(obj, program, ref last_texture_handle, ref last_array_handle);
     }
 
-    public void render_object_3D(RenderObject3D obj, OpenGLShaderProgram3D program)
+    private void render_object_3D(RenderObject3D obj, OpenGLShaderProgram3D program, ref int last_texture_handle, ref int last_array_handle)
     {
         OpenGLTextureResourceHandle texture_handle = (OpenGLTextureResourceHandle)get_texture(obj.texture.handle);
-        glBindTexture(GL_TEXTURE_2D, (GLuint)texture_handle.handle);
         OpenGLModelResourceHandle model_handle = (OpenGLModelResourceHandle)get_model(obj.model.handle);
-        glBindBuffer(GL_ARRAY_BUFFER, (GLuint)model_handle.handle);
 
-        int len = 10 * (int)sizeof(float);
-        glEnableVertexAttribArray(POSITION_ATTRIBUTE);
-        glVertexAttribPointer(POSITION_ATTRIBUTE, 4, GL_FLOAT, false, len, (GLvoid[])0);
-        glEnableVertexAttribArray(TEXTURE_ATTRIBUTE);
-        glVertexAttribPointer(TEXTURE_ATTRIBUTE, 3, GL_FLOAT, false, len, (GLvoid[])(4 * sizeof(float)));
-        glEnableVertexAttribArray(NORMAL_ATTRIBUTE);
-        glVertexAttribPointer(NORMAL_ATTRIBUTE, 3, GL_FLOAT, false, len, (GLvoid[])(7 * sizeof(float)));
+        if (last_texture_handle != texture_handle.handle)
+        {
+            last_texture_handle = (int)texture_handle.handle;
+            glBindTexture(GL_TEXTURE_2D, texture_handle.handle);
+        }
+
+        if (last_array_handle != model_handle.array_handle)
+        {
+            last_array_handle = (int)model_handle.array_handle;
+            glBindVertexArray(model_handle.array_handle);
+        }
 
         Mat4 model_transform = Calculations.get_model_matrix(obj.position, obj.rotation, obj.scale);
 
-        program.apply_object(model_transform, obj.alpha, obj.light_multiplier, obj.diffuse_color);
+        program.render_object(model_handle.triangle_count, model_transform, obj.alpha, obj.light_multiplier, obj.diffuse_color);
+    }
 
-        glDrawArrays(GL_TRIANGLES, 0, model_handle.triangle_count);
+    private void render_scene_2D(RenderScene2D scene)
+    {
+        OpenGLShaderProgram2D program = program_2D;
+
+        program.apply_scene();
+
+        foreach (RenderObject2D obj in scene.objects)
+            render_object_2D(obj, program);
+    }
+
+    private void render_object_2D(RenderObject2D obj, OpenGLShaderProgram2D program)
+    {
+        OpenGLTextureResourceHandle texture_handle = (OpenGLTextureResourceHandle)get_texture(obj.texture.handle);
+        glBindTexture(GL_TEXTURE_2D, (GLuint)texture_handle.handle);
+
+        Mat3 model_transform = Calculations.get_model_matrix_3(obj.position, obj.rotation, obj.scale);
+
+        program.render_object(model_transform, obj.alpha, obj.diffuse_color);
     }
 
     /*private void post_process_draw(RenderState state)
@@ -183,17 +215,20 @@ public class OpenGLRenderer : RenderTarget
 
         glGenBuffers(1, triangles);
         glBindBuffer(GL_ARRAY_BUFFER, triangles[0]);
+        glBufferData(GL_ARRAY_BUFFER, len * model.points.length, (GLvoid[])model.points, GL_STATIC_DRAW);
 
-        /*glEnableVertexAttribArray(POSITION_ATTRIBUTE);
+        uint vao[1];
+        glGenVertexArrays (1, vao);
+        glBindVertexArray(vao[0]);
+
+        glEnableVertexAttribArray(POSITION_ATTRIBUTE);
         glVertexAttribPointer(POSITION_ATTRIBUTE, 4, GL_FLOAT, false, len, (GLvoid[])0);
         glEnableVertexAttribArray(TEXTURE_ATTRIBUTE);
         glVertexAttribPointer(TEXTURE_ATTRIBUTE, 3, GL_FLOAT, false, len, (GLvoid[])(4 * sizeof(float)));
         glEnableVertexAttribArray(NORMAL_ATTRIBUTE);
-        glVertexAttribPointer(NORMAL_ATTRIBUTE, 3, GL_FLOAT, false, len, (GLvoid[])(7 * sizeof(float)));*/
+        glVertexAttribPointer(NORMAL_ATTRIBUTE, 3, GL_FLOAT, false, len, (GLvoid[])(7 * sizeof(float)));
 
-        glBufferData(GL_ARRAY_BUFFER, len * model.points.length, (GLvoid[])model.points, GL_STATIC_DRAW);
-
-        return new OpenGLModelResourceHandle(triangles[0], model.points.length);
+        return new OpenGLModelResourceHandle(triangles[0], model.points.length, vao[0]);
     }
 
     ///////////////////////////
@@ -219,6 +254,11 @@ public class OpenGLRenderer : RenderTarget
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
         return new OpenGLTextureResourceHandle(tex[0]);
+    }
+
+    protected override void change_v_sync(bool v_sync)
+    {
+        SDL.GL.set_swapinterval(v_sync ? 1 : 0);
     }
 
     private void setup_projection(int width, int height)

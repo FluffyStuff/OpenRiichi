@@ -1,6 +1,6 @@
 using Gee;
 
-public abstract class RenderScene {}
+public abstract class RenderScene : Object {}
 
 public class RenderScene3D : RenderScene
 {

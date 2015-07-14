@@ -10,4 +10,5 @@ public interface IRenderTarget : Object
     public abstract uint load_model(ResourceModel object);
     public abstract uint load_texture(ResourceTexture texture);
     public abstract IResourceStore resource_store { get; }
+    public abstract bool v_sync { get; set; }
 }

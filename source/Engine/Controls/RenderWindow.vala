@@ -15,6 +15,10 @@ public abstract class RenderWindow
         main_view = new MainView(this);
     }
 
+    int frms = 100;
+    int counter = 0;
+    double lst_time = 0;
+    GLib.Timer timr = new GLib.Timer();
     public void show()
     {
         running = true;
@@ -28,6 +32,16 @@ public abstract class RenderWindow
             renderer.set_state(render());
             window.pump_events();
             GLib.Thread.usleep(1000);
+
+            if ((counter++ % frms) == 0)
+            {
+                double time = timr.elapsed();
+                double diff = (time - lst_time) / frms;
+
+                //print("(F) Average frame time over %d frames: %fms (%ffps)\n", frms, diff * 1000, 1 / diff);
+
+                lst_time = time;
+            }
         }
     }
 
