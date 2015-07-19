@@ -19,10 +19,6 @@ public class OpenGLRenderer : RenderTarget
 	//private OpenGLFrameBuffer primary_buffer;
 	//private OpenGLFrameBuffer secondary_buffer;
 
-	//private uint frame_buffer_object_vertices;
-
-	//private uint vertex_array_ID;
-
     //private const int samplers[2] = {0, 1};
 
     private GLContext context;
@@ -72,10 +68,6 @@ public class OpenGLRenderer : RenderTarget
         // TODO: Put this somewhere
         sdl_window.set_icon(SDLImage.load("./Data/Icon.png"));
         sdl_window.set_size(width, height);
-
-        // ??
-        //glGenVertexArrays(1, vertex_array_ID);
-        //glBindVertexArray(vertex_array_ID[0]);
 
         program_3D = new OpenGLShaderProgram3D("./Data/Shaders/open_gl_shader_3D", MAX_LIGHTS, POSITION_ATTRIBUTE, TEXTURE_ATTRIBUTE, NORMAL_ATTRIBUTE);
         if (!program_3D.init())

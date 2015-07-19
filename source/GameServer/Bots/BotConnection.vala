@@ -15,16 +15,42 @@ class BotConnection
         parser.connect(tile_discard, typeof(ServerMessageTileDiscard));
         parser.connect(turn_decision, typeof(ServerMessageTurnDecision));
         parser.connect(call_decision, typeof(ServerMessageCallDecision));
+        parser.connect(late_kan, typeof(ServerMessageLateKan));
+        parser.connect(closed_kan, typeof(ServerMessageClosedKan));
         parser.connect(open_kan, typeof(ServerMessageOpenKan));
         parser.connect(pon, typeof(ServerMessagePon));
         parser.connect(chi, typeof(ServerMessageChi));
         bot.poll.connect(poll);
         bot.discard_tile.connect(bot_discard_tile);
+        bot.do_late_kan.connect(bot_late_kan);
+        bot.do_closed_kan.connect(bot_closed_kan);
         bot.no_call.connect(bot_no_call);
         bot.call_ron.connect(bot_ron);
-        bot.call_open_kan.connect(bot_ron);
+        bot.call_open_kan.connect(bot_open_kan);
         bot.call_pon.connect(bot_pon);
         bot.call_chi.connect(bot_chi);
+    }
+
+    ~BotConnection()
+    {
+        connection.received_message.disconnect(message_received);
+        parser.disconnect();
+        bot.poll.disconnect(poll);
+        bot.discard_tile.disconnect(bot_discard_tile);
+        bot.do_late_kan.disconnect(bot_late_kan);
+        bot.do_closed_kan.disconnect(bot_closed_kan);
+        bot.no_call.disconnect(bot_no_call);
+        bot.call_ron.disconnect(bot_ron);
+        bot.call_open_kan.disconnect(bot_open_kan);
+        bot.call_pon.disconnect(bot_pon);
+        bot.call_chi.disconnect(bot_chi);
+
+        stop();
+    }
+
+    public void stop()
+    {
+        bot.stop();
     }
 
     private void message_received()
@@ -79,10 +105,22 @@ class BotConnection
         bot.call_decision(call_decision.player_ID, call_decision.tile_ID);
     }
 
+    private void late_kan(ServerMessage message)
+    {
+        ServerMessageLateKan kan = (ServerMessageLateKan)message;
+        bot.late_kan(kan.player_ID, kan.tile_ID);
+    }
+
+    private void closed_kan(ServerMessage message)
+    {
+        ServerMessageClosedKan kan = (ServerMessageClosedKan)message;
+        bot.closed_kan(kan.player_ID, kan.get_type_enum());
+    }
+
     private void open_kan(ServerMessage message)
     {
         ServerMessageOpenKan kan = (ServerMessageOpenKan)message;
-        bot.kan(kan.player_ID, kan.discard_player_ID, kan.tile_ID, kan.tile_1_ID, kan.tile_2_ID, kan.tile_3_ID);
+        bot.open_kan(kan.player_ID, kan.discard_player_ID, kan.tile_ID, kan.tile_1_ID, kan.tile_2_ID, kan.tile_3_ID);
     }
 
     private void pon(ServerMessage message)
@@ -102,6 +140,18 @@ class BotConnection
     private void bot_discard_tile(Tile tile)
     {
         ClientMessageTileDiscard message = new ClientMessageTileDiscard(tile.ID);
+        connection.send_message(message);
+    }
+
+    private void bot_late_kan(Tile tile)
+    {
+        ClientMessageLateKan message = new ClientMessageLateKan(tile.ID);
+        connection.send_message(message);
+    }
+
+    private void bot_closed_kan(TileType type)
+    {
+        ClientMessageClosedKan message = new ClientMessageClosedKan(type);
         connection.send_message(message);
     }
 

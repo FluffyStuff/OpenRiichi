@@ -11,6 +11,13 @@ public class ServerMessageParser
         dispatchers.add(new Dispatcher(method, type));
     }
 
+    public void disconnect()
+    {
+        mutex.lock();
+        dispatchers.clear();
+        mutex.unlock();
+    }
+
     public void add(ServerMessage message)
     {
         mutex.lock();
@@ -93,14 +100,16 @@ public class ServerMessageTileAssignment : ServerMessage
 
 public class ServerMessageTileDraw : ServerMessage
 {
-    public ServerMessageTileDraw(int player_ID, int tile_ID)
+    public ServerMessageTileDraw(int player_ID, int tile_ID, bool dead_wall)
     {
         this.player_ID = player_ID;
         this.tile_ID = tile_ID;
+        this.dead_wall = dead_wall;
     }
 
     public int player_ID { get; protected set; }
     public int tile_ID { get; protected set; }
+    public bool dead_wall { get; protected set; }
 }
 
 public class ServerMessageTileDiscard : ServerMessage
@@ -139,6 +148,16 @@ public class ServerMessageFlipDora : ServerMessage
     public int tile_ID { get; protected set; }
 }
 
+public class ServerMessageDeadTileAdd : ServerMessage
+{
+    public ServerMessageDeadTileAdd(int tile_ID)
+    {
+        this.tile_ID = tile_ID;
+    }
+
+    public int tile_ID { get; protected set; }
+}
+
 public class ServerMessageRon : ServerMessage
 {
     public ServerMessageRon(int player_ID, int discard_player_ID, int tile_ID)
@@ -151,6 +170,35 @@ public class ServerMessageRon : ServerMessage
     public int player_ID { get; protected set; }
     public int discard_player_ID { get; protected set; }
     public int tile_ID { get; protected set; }
+}
+
+public class ServerMessageLateKan : ServerMessage
+{
+    public ServerMessageLateKan(int player_ID, int tile_ID)
+    {
+        this.player_ID = player_ID;
+        this.tile_ID = tile_ID;
+    }
+
+    public int player_ID { get; protected set; }
+    public int tile_ID { get; protected set; }
+}
+
+public class ServerMessageClosedKan : ServerMessage
+{
+    public ServerMessageClosedKan(int player_ID, TileType tile_type)
+    {
+        this.player_ID = player_ID;
+        this.tile_type = (int)tile_type;
+    }
+
+    public TileType get_type_enum()
+    {
+        return (TileType)tile_type;
+    }
+
+    public int player_ID { get; protected set; }
+    public int tile_type { get; protected set; }
 }
 
 public class ServerMessageOpenKan : ServerMessage

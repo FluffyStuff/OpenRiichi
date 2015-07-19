@@ -45,37 +45,31 @@ public abstract class View : Object
 
     public void mouse_event(MouseEventArgs mouse)
     {
-        // TODO: Check handled
+        for (int i = child_views.size - 1; i >= 0; i--)
+            child_views[i].mouse_event(mouse);
         do_mouse_event(mouse);
-
-        foreach (View view in child_views)
-            view.mouse_event(mouse);
     }
 
     public void mouse_move(MouseMoveArgs mouse)
     {
-        // TODO: Check handled
+        for (int i = child_views.size - 1; i >= 0; i--)
+            child_views[i].mouse_move(mouse);
         do_mouse_move(mouse);
-
-        foreach (View view in child_views)
-            view.mouse_move(mouse);
     }
 
     public void key_press(KeyArgs key)
     {
-        // TODO: Check handled
+        for (int i = child_views.size - 1; i >= 0; i--)
+            child_views[i].key_press(key);
         do_key_press(key);
-
-        foreach (View view in child_views)
-            view.key_press(key);
     }
 
     protected virtual void added() {}
     protected virtual void do_render(RenderState state) {}
     protected virtual void do_process(DeltaArgs delta) {}
-    protected virtual void do_mouse_event(MouseEventArgs mouse) {}
-    protected virtual void do_mouse_move(MouseMoveArgs mouse) {}
-    protected virtual void do_key_press(KeyArgs key) {}
+    protected virtual void do_mouse_event(MouseEventArgs mouse) { }
+    protected virtual void do_mouse_move(MouseMoveArgs mouse) { }
+    protected virtual void do_key_press(KeyArgs key) { }
 
     protected IResourceStore store { get { return parent_window.store; } }
 }

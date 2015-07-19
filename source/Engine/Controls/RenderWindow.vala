@@ -98,12 +98,6 @@ public abstract class RenderWindow
             }
             else if (e.type == EventType.MOUSEMOTION)
             {
-                int rx = 0, ry = 0, ax = 0, ay = 0;
-                Cursor.get_relative_state(ref rx, ref ry);
-                Cursor.get_state(ref ax, ref ay);
-
-                MouseMoveArgs mouse = new MouseMoveArgs(ax, ay, rx, ry);
-                main_view.mouse_move(mouse);
             }
             else if (e.type == EventType.MOUSEBUTTONDOWN || e.type == EventType.MOUSEBUTTONUP)
             {
@@ -131,12 +125,28 @@ public abstract class RenderWindow
                 if (unknown)
                     break;
 
-                MouseEventArgs mouse = new MouseEventArgs(button, ev.state == 1);
+                int ax = 0, ay = 0;
+                Cursor.get_state(ref ax, ref ay);
+                MouseEventArgs mouse = new MouseEventArgs(button, ev.state == 1, ax, height - ay);
                 main_view.mouse_event(mouse);
             }
             else if (e.type == EventType.MOUSEWHEEL)
                 ;
         }
+
+        mouse_move_event();
+    }
+
+    private void mouse_move_event()
+    {
+        int rx = 0, ry = 0, ax = 0, ay = 0;
+        Cursor.get_relative_state(ref rx, ref ry);
+        Cursor.get_state(ref ax, ref ay);
+
+        MouseMoveArgs mouse = new MouseMoveArgs(ax, height-ay, rx, -ry);
+        main_view.mouse_move(mouse);
+
+        set_cursor_type(mouse.cursor_type);
     }
 
     public void set_cursor_type(CursorType type)

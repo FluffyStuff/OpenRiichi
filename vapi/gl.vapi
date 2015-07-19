@@ -9471,11 +9471,11 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "glApplyTextureEXT")]
 	public static void glApplyTextureEXT (uint mode);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glAreProgramsResidentNV")]
-	public static bool glAreProgramsResidentNV (int n, [CCode (array_length = false)] GL.GLuint[]? programs, [CCode (array_length = false)] GL.GLboolean[] residences);
+	public static bool glAreProgramsResidentNV (int n, [CCode (array_length = false)] uint[]? programs, [CCode (array_length = false)] GL.GLboolean[] residences);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glAreTexturesResident")]
-	public static bool glAreTexturesResident (int n, [CCode (array_length = false)] GL.GLuint[]? textures, [CCode (array_length = false)] GL.GLboolean[] residences);
+	public static bool glAreTexturesResident (int n, [CCode (array_length = false)] uint[]? textures, [CCode (array_length = false)] GL.GLboolean[] residences);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glAreTexturesResidentEXT")]
-	public static bool glAreTexturesResidentEXT (int n, [CCode (array_length = false)] GL.GLuint[]? textures, [CCode (array_length = false)] GL.GLboolean[] residences);
+	public static bool glAreTexturesResidentEXT (int n, [CCode (array_length = false)] uint[]? textures, [CCode (array_length = false)] GL.GLboolean[] residences);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glArrayElement")]
 	public static void glArrayElement (int i);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glArrayElementEXT")]
@@ -9721,7 +9721,7 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "glClearBufferiv")]
 	public static void glClearBufferiv (uint buffer, int drawbuffer, [CCode (array_length = false)] int[]? value);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glClearBufferuiv")]
-	public static void glClearBufferuiv (uint buffer, int drawbuffer, [CCode (array_length = false)] GL.GLuint[]? value);
+	public static void glClearBufferuiv (uint buffer, int drawbuffer, [CCode (array_length = false)] uint[]? value);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glClearColor")]
 	public static void glClearColor (float red, float green, float blue, float alpha);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glClearColorIiEXT")]
@@ -9799,7 +9799,7 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "glColor3ui")]
 	public static void glColor3ui (uint red, uint green, uint blue);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glColor3uiv")]
-	public static void glColor3uiv ([CCode (array_length = false)] GL.GLuint[]? v);
+	public static void glColor3uiv ([CCode (array_length = false)] uint[]? v);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glColor3us")]
 	public static void glColor3us (GL.GLushort red, GL.GLushort green, GL.GLushort blue);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glColor3usv")]
@@ -9851,7 +9851,7 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "glColor4ui")]
 	public static void glColor4ui (uint red, uint green, uint blue, uint alpha);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glColor4uiv")]
-	public static void glColor4uiv ([CCode (array_length = false)] GL.GLuint[]? v);
+	public static void glColor4uiv ([CCode (array_length = false)] uint[]? v);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glColor4us")]
 	public static void glColor4us (GL.GLushort red, GL.GLushort green, GL.GLushort blue, GL.GLushort alpha);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glColor4usv")]
@@ -9879,11 +9879,11 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "glColorP3ui")]
 	public static void glColorP3ui (uint type, uint color);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glColorP3uiv")]
-	public static void glColorP3uiv (uint type, [CCode (array_length = false)] GL.GLuint[]? color);
+	public static void glColorP3uiv (uint type, [CCode (array_length = false)] uint[]? color);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glColorP4ui")]
 	public static void glColorP4ui (uint type, uint color);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glColorP4uiv")]
-	public static void glColorP4uiv (uint type, [CCode (array_length = false)] GL.GLuint[]? color);
+	public static void glColorP4uiv (uint type, [CCode (array_length = false)] uint[]? color);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glColorPointer")]
 	public static void glColorPointer (int size, uint type, int stride, [CCode (array_length = false)] GL.GLvoid[]? pointer);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glColorPointerEXT")]
@@ -10109,11 +10109,11 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "glDebugMessageCallbackARB")]
 	public static void glDebugMessageCallbackARB (GL.GLDEBUGPROCARB callback, [CCode (array_length = false)] GL.GLvoid[]? userParam);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glDebugMessageControl")]
-	public static void glDebugMessageControl (uint source, uint type, uint severity, int count, [CCode (array_length = false)] GL.GLuint[]? ids, bool enabled);
+	public static void glDebugMessageControl (uint source, uint type, uint severity, int count, [CCode (array_length = false)] uint[]? ids, bool enabled);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glDebugMessageControlARB")]
-	public static void glDebugMessageControlARB (uint source, uint type, uint severity, int count, [CCode (array_length = false)] GL.GLuint[]? ids, bool enabled);
+	public static void glDebugMessageControlARB (uint source, uint type, uint severity, int count, [CCode (array_length = false)] uint[]? ids, bool enabled);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glDebugMessageEnableAMD")]
-	public static void glDebugMessageEnableAMD (uint category, uint severity, int count, [CCode (array_length = false)] GL.GLuint[]? ids, bool enabled);
+	public static void glDebugMessageEnableAMD (uint category, uint severity, int count, [CCode (array_length = false)] uint[]? ids, bool enabled);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glDebugMessageInsert")]
 	public static void glDebugMessageInsert (uint source, uint type, uint id, uint severity, int length, string buf);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glDebugMessageInsertAMD")]
@@ -10129,29 +10129,29 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "glDeleteAsyncMarkersSGIX")]
 	public static void glDeleteAsyncMarkersSGIX (uint marker, int range);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glDeleteBuffers")]
-	public static void glDeleteBuffers (int n, [CCode (array_length = false)] GL.GLuint[]? buffers);
+	public static void glDeleteBuffers (int n, [CCode (array_length = false)] uint[]? buffers);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glDeleteBuffersARB")]
-	public static void glDeleteBuffersARB (int n, [CCode (array_length = false)] GL.GLuint[]? buffers);
+	public static void glDeleteBuffersARB (int n, [CCode (array_length = false)] uint[]? buffers);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glDeleteFencesAPPLE")]
-	public static void glDeleteFencesAPPLE (int n, [CCode (array_length = false)] GL.GLuint[]? fences);
+	public static void glDeleteFencesAPPLE (int n, [CCode (array_length = false)] uint[]? fences);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glDeleteFencesNV")]
-	public static void glDeleteFencesNV (int n, [CCode (array_length = false)] GL.GLuint[]? fences);
+	public static void glDeleteFencesNV (int n, [CCode (array_length = false)] uint[]? fences);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glDeleteFragmentShaderATI")]
 	public static void glDeleteFragmentShaderATI (uint id);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glDeleteFramebuffers")]
-	public static void glDeleteFramebuffers (int n, [CCode (array_length = false)] GL.GLuint[]? framebuffers);
+	public static void glDeleteFramebuffers (int n, [CCode (array_length = false)] uint[]? framebuffers);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glDeleteFramebuffersEXT")]
-	public static void glDeleteFramebuffersEXT (int n, [CCode (array_length = false)] GL.GLuint[]? framebuffers);
+	public static void glDeleteFramebuffersEXT (int n, [CCode (array_length = false)] uint[]? framebuffers);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glDeleteLists")]
 	public static void glDeleteLists (uint list, int range);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glDeleteNamedStringARB")]
 	public static void glDeleteNamedStringARB (int namelen, string name);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glDeleteNamesAMD")]
-	public static void glDeleteNamesAMD (uint identifier, uint num, [CCode (array_length = false)] GL.GLuint[]? names);
+	public static void glDeleteNamesAMD (uint identifier, uint num, [CCode (array_length = false)] uint[]? names);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glDeleteObjectARB")]
 	public static void glDeleteObjectARB (GL.GLhandleARB obj);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glDeleteOcclusionQueriesNV")]
-	public static void glDeleteOcclusionQueriesNV (int n, [CCode (array_length = false)] GL.GLuint[]? ids);
+	public static void glDeleteOcclusionQueriesNV (int n, [CCode (array_length = false)] uint[]? ids);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glDeletePathsNV")]
 	public static void glDeletePathsNV (uint path, int range);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glDeletePerfMonitorsAMD")]
@@ -10159,37 +10159,37 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "glDeleteProgram")]
 	public static void glDeleteProgram (uint program);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glDeleteProgramPipelines")]
-	public static void glDeleteProgramPipelines (int n, [CCode (array_length = false)] GL.GLuint[]? pipelines);
+	public static void glDeleteProgramPipelines (int n, [CCode (array_length = false)] uint[]? pipelines);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glDeleteProgramsARB")]
-	public static void glDeleteProgramsARB (int n, [CCode (array_length = false)] GL.GLuint[]? programs);
+	public static void glDeleteProgramsARB (int n, [CCode (array_length = false)] uint[]? programs);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glDeleteProgramsNV")]
-	public static void glDeleteProgramsNV (int n, [CCode (array_length = false)] GL.GLuint[]? programs);
+	public static void glDeleteProgramsNV (int n, [CCode (array_length = false)] uint[]? programs);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glDeleteQueries")]
-	public static void glDeleteQueries (int n, [CCode (array_length = false)] GL.GLuint[]? ids);
+	public static void glDeleteQueries (int n, [CCode (array_length = false)] uint[]? ids);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glDeleteQueriesARB")]
-	public static void glDeleteQueriesARB (int n, [CCode (array_length = false)] GL.GLuint[]? ids);
+	public static void glDeleteQueriesARB (int n, [CCode (array_length = false)] uint[]? ids);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glDeleteRenderbuffers")]
-	public static void glDeleteRenderbuffers (int n, [CCode (array_length = false)] GL.GLuint[]? renderbuffers);
+	public static void glDeleteRenderbuffers (int n, [CCode (array_length = false)] uint[]? renderbuffers);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glDeleteRenderbuffersEXT")]
-	public static void glDeleteRenderbuffersEXT (int n, [CCode (array_length = false)] GL.GLuint[]? renderbuffers);
+	public static void glDeleteRenderbuffersEXT (int n, [CCode (array_length = false)] uint[]? renderbuffers);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glDeleteSamplers")]
-	public static void glDeleteSamplers (int count, [CCode (array_length = false)] GL.GLuint[]? samplers);
+	public static void glDeleteSamplers (int count, [CCode (array_length = false)] uint[]? samplers);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glDeleteShader")]
 	public static void glDeleteShader (uint shader);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glDeleteSync")]
 	public static void glDeleteSync (GL.GLsync sync);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glDeleteTextures")]
-	public static void glDeleteTextures (int n, [CCode (array_length = false)] GL.GLuint[]? textures);
+	public static void glDeleteTextures (int n, [CCode (array_length = false)] uint[]? textures);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glDeleteTexturesEXT")]
-	public static void glDeleteTexturesEXT (int n, [CCode (array_length = false)] GL.GLuint[]? textures);
+	public static void glDeleteTexturesEXT (int n, [CCode (array_length = false)] uint[]? textures);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glDeleteTransformFeedbacks")]
-	public static void glDeleteTransformFeedbacks (int n, [CCode (array_length = false)] GL.GLuint[]? ids);
+	public static void glDeleteTransformFeedbacks (int n, [CCode (array_length = false)] uint[]? ids);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glDeleteTransformFeedbacksNV")]
-	public static void glDeleteTransformFeedbacksNV (int n, [CCode (array_length = false)] GL.GLuint[]? ids);
+	public static void glDeleteTransformFeedbacksNV (int n, [CCode (array_length = false)] uint[]? ids);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glDeleteVertexArrays")]
-	public static void glDeleteVertexArrays (int n, [CCode (array_length = false)] GL.GLuint[]? arrays);
+	public static void glDeleteVertexArrays (int n, [CCode (array_length = false)] uint[]? arrays);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glDeleteVertexArraysAPPLE")]
-	public static void glDeleteVertexArraysAPPLE (int n, [CCode (array_length = false)] GL.GLuint[]? arrays);
+	public static void glDeleteVertexArraysAPPLE (int n, [CCode (array_length = false)] uint[]? arrays);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glDeleteVertexShaderEXT")]
 	public static void glDeleteVertexShaderEXT (uint id);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glDepthBoundsEXT")]
@@ -10663,7 +10663,7 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "glGetActiveUniformName")]
 	public static void glGetActiveUniformName (uint program, uint uniformIndex, int bufSize, [CCode (array_length = false)] int[] length, [CCode (array_length = false)] uint8[] uniformName);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glGetActiveUniformsiv")]
-	public static void glGetActiveUniformsiv (uint program, int uniformCount, [CCode (array_length = false)] GL.GLuint[]? uniformIndices, uint pname, [CCode (array_length = false)] int[] @params);
+	public static void glGetActiveUniformsiv (uint program, int uniformCount, [CCode (array_length = false)] uint[]? uniformIndices, uint pname, [CCode (array_length = false)] int[] @params);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glGetActiveVaryingNV")]
 	public static void glGetActiveVaryingNV (uint program, uint index, int bufSize, [CCode (array_length = false)] int[] length, [CCode (array_length = false)] int[] size, [CCode (array_length = false)] uint[] type, [CCode (array_length = false)] uint8[] name);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glGetArrayObjectfvATI")]
@@ -11721,7 +11721,7 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "glMatrixIndexubvARB")]
 	public static void glMatrixIndexubvARB (int size, [CCode (array_length = false)] GL.GLubyte[]? indices);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glMatrixIndexuivARB")]
-	public static void glMatrixIndexuivARB (int size, [CCode (array_length = false)] GL.GLuint[]? indices);
+	public static void glMatrixIndexuivARB (int size, [CCode (array_length = false)] uint[]? indices);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glMatrixIndexusvARB")]
 	public static void glMatrixIndexusvARB (int size, [CCode (array_length = false)] GL.GLushort[]? indices);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glMatrixLoadIdentityEXT")]
@@ -11997,19 +11997,19 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "glMultiTexCoordP1ui")]
 	public static void glMultiTexCoordP1ui (uint texture, uint type, uint coords);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glMultiTexCoordP1uiv")]
-	public static void glMultiTexCoordP1uiv (uint texture, uint type, [CCode (array_length = false)] GL.GLuint[]? coords);
+	public static void glMultiTexCoordP1uiv (uint texture, uint type, [CCode (array_length = false)] uint[]? coords);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glMultiTexCoordP2ui")]
 	public static void glMultiTexCoordP2ui (uint texture, uint type, uint coords);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glMultiTexCoordP2uiv")]
-	public static void glMultiTexCoordP2uiv (uint texture, uint type, [CCode (array_length = false)] GL.GLuint[]? coords);
+	public static void glMultiTexCoordP2uiv (uint texture, uint type, [CCode (array_length = false)] uint[]? coords);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glMultiTexCoordP3ui")]
 	public static void glMultiTexCoordP3ui (uint texture, uint type, uint coords);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glMultiTexCoordP3uiv")]
-	public static void glMultiTexCoordP3uiv (uint texture, uint type, [CCode (array_length = false)] GL.GLuint[]? coords);
+	public static void glMultiTexCoordP3uiv (uint texture, uint type, [CCode (array_length = false)] uint[]? coords);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glMultiTexCoordP4ui")]
 	public static void glMultiTexCoordP4ui (uint texture, uint type, uint coords);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glMultiTexCoordP4uiv")]
-	public static void glMultiTexCoordP4uiv (uint texture, uint type, [CCode (array_length = false)] GL.GLuint[]? coords);
+	public static void glMultiTexCoordP4uiv (uint texture, uint type, [CCode (array_length = false)] uint[]? coords);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glMultiTexCoordPointerEXT")]
 	public static void glMultiTexCoordPointerEXT (uint texunit, int size, uint type, int stride, [CCode (array_length = false)] GL.GLvoid[]? pointer);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glMultiTexEnvfEXT")]
@@ -12041,7 +12041,7 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "glMultiTexParameterIivEXT")]
 	public static void glMultiTexParameterIivEXT (uint texunit, uint target, uint pname, [CCode (array_length = false)] int[]? @params);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glMultiTexParameterIuivEXT")]
-	public static void glMultiTexParameterIuivEXT (uint texunit, uint target, uint pname, [CCode (array_length = false)] GL.GLuint[]? @params);
+	public static void glMultiTexParameterIuivEXT (uint texunit, uint target, uint pname, [CCode (array_length = false)] uint[]? @params);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glMultiTexParameterfEXT")]
 	public static void glMultiTexParameterfEXT (uint texunit, uint target, uint pname, float param);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glMultiTexParameterfvEXT")]
@@ -12095,13 +12095,13 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "glNamedProgramLocalParameterI4uiEXT")]
 	public static void glNamedProgramLocalParameterI4uiEXT (uint program, uint target, uint index, uint x, uint y, uint z, uint w);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glNamedProgramLocalParameterI4uivEXT")]
-	public static void glNamedProgramLocalParameterI4uivEXT (uint program, uint target, uint index, [CCode (array_length = false)] GL.GLuint[]? @params);
+	public static void glNamedProgramLocalParameterI4uivEXT (uint program, uint target, uint index, [CCode (array_length = false)] uint[]? @params);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glNamedProgramLocalParameters4fvEXT")]
 	public static void glNamedProgramLocalParameters4fvEXT (uint program, uint target, uint index, int count, [CCode (array_length = false)] float[]? @params);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glNamedProgramLocalParametersI4ivEXT")]
 	public static void glNamedProgramLocalParametersI4ivEXT (uint program, uint target, uint index, int count, [CCode (array_length = false)] int[]? @params);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glNamedProgramLocalParametersI4uivEXT")]
-	public static void glNamedProgramLocalParametersI4uivEXT (uint program, uint target, uint index, int count, [CCode (array_length = false)] GL.GLuint[]? @params);
+	public static void glNamedProgramLocalParametersI4uivEXT (uint program, uint target, uint index, int count, [CCode (array_length = false)] uint[]? @params);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glNamedProgramStringEXT")]
 	public static void glNamedProgramStringEXT (uint program, uint target, uint format, int len, [CCode (array_length = false)] GL.GLvoid[]? string);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glNamedRenderbufferStorageEXT")]
@@ -12153,7 +12153,7 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "glNormalP3ui")]
 	public static void glNormalP3ui (uint type, uint coords);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glNormalP3uiv")]
-	public static void glNormalP3uiv (uint type, [CCode (array_length = false)] GL.GLuint[]? coords);
+	public static void glNormalP3uiv (uint type, [CCode (array_length = false)] uint[]? coords);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glNormalPointer")]
 	public static void glNormalPointer (uint type, int stride, [CCode (array_length = false)] GL.GLvoid[]? pointer);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glNormalPointerEXT")]
@@ -12255,7 +12255,7 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "glPixelMapfv")]
 	public static void glPixelMapfv (uint map, int mapsize, [CCode (array_length = false)] float[]? values);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glPixelMapuiv")]
-	public static void glPixelMapuiv (uint map, int mapsize, [CCode (array_length = false)] GL.GLuint[]? values);
+	public static void glPixelMapuiv (uint map, int mapsize, [CCode (array_length = false)] uint[]? values);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glPixelMapusv")]
 	public static void glPixelMapusv (uint map, int mapsize, [CCode (array_length = false)] GL.GLushort[]? values);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glPixelMapx")]
@@ -12361,17 +12361,17 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "glPrimitiveRestartNV")]
 	public static void glPrimitiveRestartNV ();
 	[CCode (cheader_filename = "GL/glew.h", cname = "glPrioritizeTextures")]
-	public static void glPrioritizeTextures (int n, [CCode (array_length = false)] GL.GLuint[]? textures, [CCode (array_length = false)] float[]? priorities);
+	public static void glPrioritizeTextures (int n, [CCode (array_length = false)] uint[]? textures, [CCode (array_length = false)] float[]? priorities);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glPrioritizeTexturesEXT")]
-	public static void glPrioritizeTexturesEXT (int n, [CCode (array_length = false)] GL.GLuint[]? textures, [CCode (array_length = false)] GL.GLclampf[]? priorities);
+	public static void glPrioritizeTexturesEXT (int n, [CCode (array_length = false)] uint[]? textures, [CCode (array_length = false)] GL.GLclampf[]? priorities);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glPrioritizeTexturesxOES")]
-	public static void glPrioritizeTexturesxOES (int n, [CCode (array_length = false)] GL.GLuint[]? textures, [CCode (array_length = false)] GL.GLfixed[]? priorities);
+	public static void glPrioritizeTexturesxOES (int n, [CCode (array_length = false)] uint[]? textures, [CCode (array_length = false)] GL.GLfixed[]? priorities);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glProgramBinary")]
 	public static void glProgramBinary (uint program, uint binaryFormat, [CCode (array_length = false)] GL.GLvoid[]? binary, int length);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glProgramBufferParametersIivNV")]
 	public static void glProgramBufferParametersIivNV (uint target, uint bindingIndex, uint wordIndex, int count, [CCode (array_length = false)] int[]? @params);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glProgramBufferParametersIuivNV")]
-	public static void glProgramBufferParametersIuivNV (uint target, uint bindingIndex, uint wordIndex, int count, [CCode (array_length = false)] GL.GLuint[]? @params);
+	public static void glProgramBufferParametersIuivNV (uint target, uint bindingIndex, uint wordIndex, int count, [CCode (array_length = false)] uint[]? @params);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glProgramBufferParametersfvNV")]
 	public static void glProgramBufferParametersfvNV (uint target, uint bindingIndex, uint wordIndex, int count, [CCode (array_length = false)] float[]? @params);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glProgramEnvParameter4dARB")]
@@ -12389,13 +12389,13 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "glProgramEnvParameterI4uiNV")]
 	public static void glProgramEnvParameterI4uiNV (uint target, uint index, uint x, uint y, uint z, uint w);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glProgramEnvParameterI4uivNV")]
-	public static void glProgramEnvParameterI4uivNV (uint target, uint index, [CCode (array_length = false)] GL.GLuint[]? @params);
+	public static void glProgramEnvParameterI4uivNV (uint target, uint index, [CCode (array_length = false)] uint[]? @params);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glProgramEnvParameters4fvEXT")]
 	public static void glProgramEnvParameters4fvEXT (uint target, uint index, int count, [CCode (array_length = false)] float[]? @params);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glProgramEnvParametersI4ivNV")]
 	public static void glProgramEnvParametersI4ivNV (uint target, uint index, int count, [CCode (array_length = false)] int[]? @params);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glProgramEnvParametersI4uivNV")]
-	public static void glProgramEnvParametersI4uivNV (uint target, uint index, int count, [CCode (array_length = false)] GL.GLuint[]? @params);
+	public static void glProgramEnvParametersI4uivNV (uint target, uint index, int count, [CCode (array_length = false)] uint[]? @params);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glProgramLocalParameter4dARB")]
 	public static void glProgramLocalParameter4dARB (uint target, uint index, GL.GLdouble x, GL.GLdouble y, GL.GLdouble z, GL.GLdouble w);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glProgramLocalParameter4dvARB")]
@@ -12411,13 +12411,13 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "glProgramLocalParameterI4uiNV")]
 	public static void glProgramLocalParameterI4uiNV (uint target, uint index, uint x, uint y, uint z, uint w);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glProgramLocalParameterI4uivNV")]
-	public static void glProgramLocalParameterI4uivNV (uint target, uint index, [CCode (array_length = false)] GL.GLuint[]? @params);
+	public static void glProgramLocalParameterI4uivNV (uint target, uint index, [CCode (array_length = false)] uint[]? @params);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glProgramLocalParameters4fvEXT")]
 	public static void glProgramLocalParameters4fvEXT (uint target, uint index, int count, [CCode (array_length = false)] float[]? @params);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glProgramLocalParametersI4ivNV")]
 	public static void glProgramLocalParametersI4ivNV (uint target, uint index, int count, [CCode (array_length = false)] int[]? @params);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glProgramLocalParametersI4uivNV")]
-	public static void glProgramLocalParametersI4uivNV (uint target, uint index, int count, [CCode (array_length = false)] GL.GLuint[]? @params);
+	public static void glProgramLocalParametersI4uivNV (uint target, uint index, int count, [CCode (array_length = false)] uint[]? @params);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glProgramNamedParameter4dNV")]
 	public static void glProgramNamedParameter4dNV (uint id, int len, [CCode (array_length = false)] GL.GLubyte[]? name, GL.GLdouble x, GL.GLdouble y, GL.GLdouble z, GL.GLdouble w);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glProgramNamedParameter4dvNV")]
@@ -12447,7 +12447,7 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "glProgramStringARB")]
 	public static void glProgramStringARB (uint target, uint format, int len, [CCode (array_length = false)] GL.GLvoid[]? string);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glProgramSubroutineParametersuivNV")]
-	public static void glProgramSubroutineParametersuivNV (uint target, int count, [CCode (array_length = false)] GL.GLuint[]? @params);
+	public static void glProgramSubroutineParametersuivNV (uint target, int count, [CCode (array_length = false)] uint[]? @params);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glProgramUniform1d")]
 	public static void glProgramUniform1d (uint program, int location, GL.GLdouble v0);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glProgramUniform1dEXT")]
@@ -12485,9 +12485,9 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "glProgramUniform1uiEXT")]
 	public static void glProgramUniform1uiEXT (uint program, int location, uint v0);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glProgramUniform1uiv")]
-	public static void glProgramUniform1uiv (uint program, int location, int count, [CCode (array_length = false)] GL.GLuint[]? value);
+	public static void glProgramUniform1uiv (uint program, int location, int count, [CCode (array_length = false)] uint[]? value);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glProgramUniform1uivEXT")]
-	public static void glProgramUniform1uivEXT (uint program, int location, int count, [CCode (array_length = false)] GL.GLuint[]? value);
+	public static void glProgramUniform1uivEXT (uint program, int location, int count, [CCode (array_length = false)] uint[]? value);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glProgramUniform2d")]
 	public static void glProgramUniform2d (uint program, int location, GL.GLdouble v0, GL.GLdouble v1);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glProgramUniform2dEXT")]
@@ -12525,9 +12525,9 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "glProgramUniform2uiEXT")]
 	public static void glProgramUniform2uiEXT (uint program, int location, uint v0, uint v1);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glProgramUniform2uiv")]
-	public static void glProgramUniform2uiv (uint program, int location, int count, [CCode (array_length = false)] GL.GLuint[]? value);
+	public static void glProgramUniform2uiv (uint program, int location, int count, [CCode (array_length = false)] uint[]? value);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glProgramUniform2uivEXT")]
-	public static void glProgramUniform2uivEXT (uint program, int location, int count, [CCode (array_length = false)] GL.GLuint[]? value);
+	public static void glProgramUniform2uivEXT (uint program, int location, int count, [CCode (array_length = false)] uint[]? value);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glProgramUniform3d")]
 	public static void glProgramUniform3d (uint program, int location, GL.GLdouble v0, GL.GLdouble v1, GL.GLdouble v2);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glProgramUniform3dEXT")]
@@ -12565,9 +12565,9 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "glProgramUniform3uiEXT")]
 	public static void glProgramUniform3uiEXT (uint program, int location, uint v0, uint v1, uint v2);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glProgramUniform3uiv")]
-	public static void glProgramUniform3uiv (uint program, int location, int count, [CCode (array_length = false)] GL.GLuint[]? value);
+	public static void glProgramUniform3uiv (uint program, int location, int count, [CCode (array_length = false)] uint[]? value);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glProgramUniform3uivEXT")]
-	public static void glProgramUniform3uivEXT (uint program, int location, int count, [CCode (array_length = false)] GL.GLuint[]? value);
+	public static void glProgramUniform3uivEXT (uint program, int location, int count, [CCode (array_length = false)] uint[]? value);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glProgramUniform4d")]
 	public static void glProgramUniform4d (uint program, int location, GL.GLdouble v0, GL.GLdouble v1, GL.GLdouble v2, GL.GLdouble v3);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glProgramUniform4dEXT")]
@@ -12605,9 +12605,9 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "glProgramUniform4uiEXT")]
 	public static void glProgramUniform4uiEXT (uint program, int location, uint v0, uint v1, uint v2, uint v3);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glProgramUniform4uiv")]
-	public static void glProgramUniform4uiv (uint program, int location, int count, [CCode (array_length = false)] GL.GLuint[]? value);
+	public static void glProgramUniform4uiv (uint program, int location, int count, [CCode (array_length = false)] uint[]? value);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glProgramUniform4uivEXT")]
-	public static void glProgramUniform4uivEXT (uint program, int location, int count, [CCode (array_length = false)] GL.GLuint[]? value);
+	public static void glProgramUniform4uivEXT (uint program, int location, int count, [CCode (array_length = false)] uint[]? value);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glProgramUniformHandleui64NV")]
 	public static void glProgramUniformHandleui64NV (uint program, int location, GL.GLuint64 value);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glProgramUniformHandleui64vNV")]
@@ -12823,45 +12823,45 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "glReplacementCodeuiColor3fVertex3fSUN")]
 	public static void glReplacementCodeuiColor3fVertex3fSUN (uint rc, float r, float g, float b, float x, float y, float z);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glReplacementCodeuiColor3fVertex3fvSUN")]
-	public static void glReplacementCodeuiColor3fVertex3fvSUN ([CCode (array_length = false)] GL.GLuint[]? rc, [CCode (array_length = false)] float[]? c, [CCode (array_length = false)] float[]? v);
+	public static void glReplacementCodeuiColor3fVertex3fvSUN ([CCode (array_length = false)] uint[]? rc, [CCode (array_length = false)] float[]? c, [CCode (array_length = false)] float[]? v);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glReplacementCodeuiColor4fNormal3fVertex3fSUN")]
 	public static void glReplacementCodeuiColor4fNormal3fVertex3fSUN (uint rc, float r, float g, float b, float a, float nx, float ny, float nz, float x, float y, float z);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glReplacementCodeuiColor4fNormal3fVertex3fvSUN")]
-	public static void glReplacementCodeuiColor4fNormal3fVertex3fvSUN ([CCode (array_length = false)] GL.GLuint[]? rc, [CCode (array_length = false)] float[]? c, [CCode (array_length = false)] float[]? n, [CCode (array_length = false)] float[]? v);
+	public static void glReplacementCodeuiColor4fNormal3fVertex3fvSUN ([CCode (array_length = false)] uint[]? rc, [CCode (array_length = false)] float[]? c, [CCode (array_length = false)] float[]? n, [CCode (array_length = false)] float[]? v);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glReplacementCodeuiColor4ubVertex3fSUN")]
 	public static void glReplacementCodeuiColor4ubVertex3fSUN (uint rc, uint8 r, uint8 g, uint8 b, uint8 a, float x, float y, float z);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glReplacementCodeuiColor4ubVertex3fvSUN")]
-	public static void glReplacementCodeuiColor4ubVertex3fvSUN ([CCode (array_length = false)] GL.GLuint[]? rc, [CCode (array_length = false)] GL.GLubyte[]? c, [CCode (array_length = false)] float[]? v);
+	public static void glReplacementCodeuiColor4ubVertex3fvSUN ([CCode (array_length = false)] uint[]? rc, [CCode (array_length = false)] GL.GLubyte[]? c, [CCode (array_length = false)] float[]? v);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glReplacementCodeuiNormal3fVertex3fSUN")]
 	public static void glReplacementCodeuiNormal3fVertex3fSUN (uint rc, float nx, float ny, float nz, float x, float y, float z);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glReplacementCodeuiNormal3fVertex3fvSUN")]
-	public static void glReplacementCodeuiNormal3fVertex3fvSUN ([CCode (array_length = false)] GL.GLuint[]? rc, [CCode (array_length = false)] float[]? n, [CCode (array_length = false)] float[]? v);
+	public static void glReplacementCodeuiNormal3fVertex3fvSUN ([CCode (array_length = false)] uint[]? rc, [CCode (array_length = false)] float[]? n, [CCode (array_length = false)] float[]? v);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glReplacementCodeuiSUN")]
 	public static void glReplacementCodeuiSUN (uint code);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glReplacementCodeuiTexCoord2fColor4fNormal3fVertex3fSUN")]
 	public static void glReplacementCodeuiTexCoord2fColor4fNormal3fVertex3fSUN (uint rc, float s, float t, float r, float g, float b, float a, float nx, float ny, float nz, float x, float y, float z);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glReplacementCodeuiTexCoord2fColor4fNormal3fVertex3fvSUN")]
-	public static void glReplacementCodeuiTexCoord2fColor4fNormal3fVertex3fvSUN ([CCode (array_length = false)] GL.GLuint[]? rc, [CCode (array_length = false)] float[]? tc, [CCode (array_length = false)] float[]? c, [CCode (array_length = false)] float[]? n, [CCode (array_length = false)] float[]? v);
+	public static void glReplacementCodeuiTexCoord2fColor4fNormal3fVertex3fvSUN ([CCode (array_length = false)] uint[]? rc, [CCode (array_length = false)] float[]? tc, [CCode (array_length = false)] float[]? c, [CCode (array_length = false)] float[]? n, [CCode (array_length = false)] float[]? v);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glReplacementCodeuiTexCoord2fNormal3fVertex3fSUN")]
 	public static void glReplacementCodeuiTexCoord2fNormal3fVertex3fSUN (uint rc, float s, float t, float nx, float ny, float nz, float x, float y, float z);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glReplacementCodeuiTexCoord2fNormal3fVertex3fvSUN")]
-	public static void glReplacementCodeuiTexCoord2fNormal3fVertex3fvSUN ([CCode (array_length = false)] GL.GLuint[]? rc, [CCode (array_length = false)] float[]? tc, [CCode (array_length = false)] float[]? n, [CCode (array_length = false)] float[]? v);
+	public static void glReplacementCodeuiTexCoord2fNormal3fVertex3fvSUN ([CCode (array_length = false)] uint[]? rc, [CCode (array_length = false)] float[]? tc, [CCode (array_length = false)] float[]? n, [CCode (array_length = false)] float[]? v);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glReplacementCodeuiTexCoord2fVertex3fSUN")]
 	public static void glReplacementCodeuiTexCoord2fVertex3fSUN (uint rc, float s, float t, float x, float y, float z);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glReplacementCodeuiTexCoord2fVertex3fvSUN")]
-	public static void glReplacementCodeuiTexCoord2fVertex3fvSUN ([CCode (array_length = false)] GL.GLuint[]? rc, [CCode (array_length = false)] float[]? tc, [CCode (array_length = false)] float[]? v);
+	public static void glReplacementCodeuiTexCoord2fVertex3fvSUN ([CCode (array_length = false)] uint[]? rc, [CCode (array_length = false)] float[]? tc, [CCode (array_length = false)] float[]? v);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glReplacementCodeuiVertex3fSUN")]
 	public static void glReplacementCodeuiVertex3fSUN (uint rc, float x, float y, float z);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glReplacementCodeuiVertex3fvSUN")]
-	public static void glReplacementCodeuiVertex3fvSUN ([CCode (array_length = false)] GL.GLuint[]? rc, [CCode (array_length = false)] float[]? v);
+	public static void glReplacementCodeuiVertex3fvSUN ([CCode (array_length = false)] uint[]? rc, [CCode (array_length = false)] float[]? v);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glReplacementCodeuivSUN")]
-	public static void glReplacementCodeuivSUN ([CCode (array_length = false)] GL.GLuint[]? code);
+	public static void glReplacementCodeuivSUN ([CCode (array_length = false)] uint[]? code);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glReplacementCodeusSUN")]
 	public static void glReplacementCodeusSUN (GL.GLushort code);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glReplacementCodeusvSUN")]
 	public static void glReplacementCodeusvSUN ([CCode (array_length = false)] GL.GLushort[]? code);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glRequestResidentProgramsNV")]
-	public static void glRequestResidentProgramsNV (int n, [CCode (array_length = false)] GL.GLuint[]? programs);
+	public static void glRequestResidentProgramsNV (int n, [CCode (array_length = false)] uint[]? programs);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glResetHistogram")]
 	public static void glResetHistogram (uint target);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glResetHistogramEXT")]
@@ -12905,7 +12905,7 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "glSamplerParameterIiv")]
 	public static void glSamplerParameterIiv (uint sampler, uint pname, [CCode (array_length = false)] int[]? param);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glSamplerParameterIuiv")]
-	public static void glSamplerParameterIuiv (uint sampler, uint pname, [CCode (array_length = false)] GL.GLuint[]? param);
+	public static void glSamplerParameterIuiv (uint sampler, uint pname, [CCode (array_length = false)] uint[]? param);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glSamplerParameterf")]
 	public static void glSamplerParameterf (uint sampler, uint pname, float param);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glSamplerParameterfv")]
@@ -12985,9 +12985,9 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "glSecondaryColor3uiEXT")]
 	public static void glSecondaryColor3uiEXT (uint red, uint green, uint blue);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glSecondaryColor3uiv")]
-	public static void glSecondaryColor3uiv ([CCode (array_length = false)] GL.GLuint[]? v);
+	public static void glSecondaryColor3uiv ([CCode (array_length = false)] uint[]? v);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glSecondaryColor3uivEXT")]
-	public static void glSecondaryColor3uivEXT ([CCode (array_length = false)] GL.GLuint[]? v);
+	public static void glSecondaryColor3uivEXT ([CCode (array_length = false)] uint[]? v);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glSecondaryColor3us")]
 	public static void glSecondaryColor3us (GL.GLushort red, GL.GLushort green, GL.GLushort blue);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glSecondaryColor3usEXT")]
@@ -13001,7 +13001,7 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "glSecondaryColorP3ui")]
 	public static void glSecondaryColorP3ui (uint type, uint color);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glSecondaryColorP3uiv")]
-	public static void glSecondaryColorP3uiv (uint type, [CCode (array_length = false)] GL.GLuint[]? color);
+	public static void glSecondaryColorP3uiv (uint type, [CCode (array_length = false)] uint[]? color);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glSecondaryColorPointer")]
 	public static void glSecondaryColorPointer (int size, uint type, int stride, [CCode (array_length = false)] GL.GLvoid[]? pointer);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glSecondaryColorPointerEXT")]
@@ -13031,7 +13031,7 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "glShadeModel")]
 	public static void glShadeModel (uint mode);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glShaderBinary")]
-	public static void glShaderBinary (int count, [CCode (array_length = false)] GL.GLuint[]? shaders, uint binaryformat, [CCode (array_length = false)] GL.GLvoid[]? binary, int length);
+	public static void glShaderBinary (int count, [CCode (array_length = false)] uint[]? shaders, uint binaryformat, [CCode (array_length = false)] GL.GLvoid[]? binary, int length);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glShaderOp1EXT")]
 	public static void glShaderOp1EXT (uint op, uint res, uint arg1);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glShaderOp2EXT")]
@@ -13285,19 +13285,19 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "glTexCoordP1ui")]
 	public static void glTexCoordP1ui (uint type, uint coords);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glTexCoordP1uiv")]
-	public static void glTexCoordP1uiv (uint type, [CCode (array_length = false)] GL.GLuint[]? coords);
+	public static void glTexCoordP1uiv (uint type, [CCode (array_length = false)] uint[]? coords);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glTexCoordP2ui")]
 	public static void glTexCoordP2ui (uint type, uint coords);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glTexCoordP2uiv")]
-	public static void glTexCoordP2uiv (uint type, [CCode (array_length = false)] GL.GLuint[]? coords);
+	public static void glTexCoordP2uiv (uint type, [CCode (array_length = false)] uint[]? coords);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glTexCoordP3ui")]
 	public static void glTexCoordP3ui (uint type, uint coords);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glTexCoordP3uiv")]
-	public static void glTexCoordP3uiv (uint type, [CCode (array_length = false)] GL.GLuint[]? coords);
+	public static void glTexCoordP3uiv (uint type, [CCode (array_length = false)] uint[]? coords);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glTexCoordP4ui")]
 	public static void glTexCoordP4ui (uint type, uint coords);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glTexCoordP4uiv")]
-	public static void glTexCoordP4uiv (uint type, [CCode (array_length = false)] GL.GLuint[]? coords);
+	public static void glTexCoordP4uiv (uint type, [CCode (array_length = false)] uint[]? coords);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glTexCoordPointer")]
 	public static void glTexCoordPointer (int size, uint type, int stride, [CCode (array_length = false)] GL.GLvoid[]? pointer);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glTexCoordPointerEXT")]
@@ -13359,9 +13359,9 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "glTexParameterIivEXT")]
 	public static void glTexParameterIivEXT (uint target, uint pname, [CCode (array_length = false)] int[]? @params);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glTexParameterIuiv")]
-	public static void glTexParameterIuiv (uint target, uint pname, [CCode (array_length = false)] GL.GLuint[]? @params);
+	public static void glTexParameterIuiv (uint target, uint pname, [CCode (array_length = false)] uint[]? @params);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glTexParameterIuivEXT")]
-	public static void glTexParameterIuivEXT (uint target, uint pname, [CCode (array_length = false)] GL.GLuint[]? @params);
+	public static void glTexParameterIuivEXT (uint target, uint pname, [CCode (array_length = false)] uint[]? @params);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glTexParameterf")]
 	public static void glTexParameterf (uint target, uint pname, float param);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glTexParameterfv")]
@@ -13433,7 +13433,7 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "glTextureParameterIivEXT")]
 	public static void glTextureParameterIivEXT (uint texture, uint target, uint pname, [CCode (array_length = false)] int[]? @params);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glTextureParameterIuivEXT")]
-	public static void glTextureParameterIuivEXT (uint texture, uint target, uint pname, [CCode (array_length = false)] GL.GLuint[]? @params);
+	public static void glTextureParameterIuivEXT (uint texture, uint target, uint pname, [CCode (array_length = false)] uint[]? @params);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glTextureParameterfEXT")]
 	public static void glTextureParameterfEXT (uint texture, uint target, uint pname, float param);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glTextureParameterfvEXT")]
@@ -13519,9 +13519,9 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "glUniform1uiEXT")]
 	public static void glUniform1uiEXT (int location, uint v0);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glUniform1uiv")]
-	public static void glUniform1uiv (int location, int count, [CCode (array_length = false)] GL.GLuint[]? value);
+	public static void glUniform1uiv (int location, int count, [CCode (array_length = false)] uint[]? value);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glUniform1uivEXT")]
-	public static void glUniform1uivEXT (int location, int count, [CCode (array_length = false)] GL.GLuint[]? value);
+	public static void glUniform1uivEXT (int location, int count, [CCode (array_length = false)] uint[]? value);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glUniform2d")]
 	public static void glUniform2d (int location, GL.GLdouble x, GL.GLdouble y);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glUniform2dv")]
@@ -13555,9 +13555,9 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "glUniform2uiEXT")]
 	public static void glUniform2uiEXT (int location, uint v0, uint v1);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glUniform2uiv")]
-	public static void glUniform2uiv (int location, int count, [CCode (array_length = false)] GL.GLuint[]? value);
+	public static void glUniform2uiv (int location, int count, [CCode (array_length = false)] uint[]? value);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glUniform2uivEXT")]
-	public static void glUniform2uivEXT (int location, int count, [CCode (array_length = false)] GL.GLuint[]? value);
+	public static void glUniform2uivEXT (int location, int count, [CCode (array_length = false)] uint[]? value);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glUniform3d")]
 	public static void glUniform3d (int location, GL.GLdouble x, GL.GLdouble y, GL.GLdouble z);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glUniform3dv")]
@@ -13591,9 +13591,9 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "glUniform3uiEXT")]
 	public static void glUniform3uiEXT (int location, uint v0, uint v1, uint v2);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glUniform3uiv")]
-	public static void glUniform3uiv (int location, int count, [CCode (array_length = false)] GL.GLuint[]? value);
+	public static void glUniform3uiv (int location, int count, [CCode (array_length = false)] uint[]? value);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glUniform3uivEXT")]
-	public static void glUniform3uivEXT (int location, int count, [CCode (array_length = false)] GL.GLuint[]? value);
+	public static void glUniform3uivEXT (int location, int count, [CCode (array_length = false)] uint[]? value);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glUniform4d")]
 	public static void glUniform4d (int location, GL.GLdouble x, GL.GLdouble y, GL.GLdouble z, GL.GLdouble w);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glUniform4dv")]
@@ -13627,9 +13627,9 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "glUniform4uiEXT")]
 	public static void glUniform4uiEXT (int location, uint v0, uint v1, uint v2, uint v3);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glUniform4uiv")]
-	public static void glUniform4uiv (int location, int count, [CCode (array_length = false)] GL.GLuint[]? value);
+	public static void glUniform4uiv (int location, int count, [CCode (array_length = false)] uint[]? value);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glUniform4uivEXT")]
-	public static void glUniform4uivEXT (int location, int count, [CCode (array_length = false)] GL.GLuint[]? value);
+	public static void glUniform4uivEXT (int location, int count, [CCode (array_length = false)] uint[]? value);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glUniformBlockBinding")]
 	public static void glUniformBlockBinding (uint program, uint uniformBlockIndex, uint uniformBlockBinding);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glUniformBufferEXT")]
@@ -13681,7 +13681,7 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "glUniformMatrix4x3fv")]
 	public static void glUniformMatrix4x3fv (int location, int count, bool transpose, [CCode (array_length = false)] float[]? value);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glUniformSubroutinesuiv")]
-	public static void glUniformSubroutinesuiv (uint shadertype, int count, [CCode (array_length = false)] GL.GLuint[]? indices);
+	public static void glUniformSubroutinesuiv (uint shadertype, int count, [CCode (array_length = false)] uint[]? indices);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glUniformui64NV")]
 	public static void glUniformui64NV (int location, GL.GLuint64EXT value);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glUniformui64vNV")]
@@ -13719,9 +13719,9 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVDPAUMapSurfacesNV")]
 	public static void glVDPAUMapSurfacesNV (int numSurfaces, [CCode (array_length = false)] GL.GLvdpauSurfaceNV[]? surfaces);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVDPAURegisterOutputSurfaceNV")]
-	public static GL.GLvdpauSurfaceNV glVDPAURegisterOutputSurfaceNV (out GL.GLvoid vdpSurface, uint target, int numTextureNames, [CCode (array_length = false)] GL.GLuint[]? textureNames);
+	public static GL.GLvdpauSurfaceNV glVDPAURegisterOutputSurfaceNV (out GL.GLvoid vdpSurface, uint target, int numTextureNames, [CCode (array_length = false)] uint[]? textureNames);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVDPAURegisterVideoSurfaceNV")]
-	public static GL.GLvdpauSurfaceNV glVDPAURegisterVideoSurfaceNV (GL.GLvoid vdpSurface, uint target, int numTextureNames, [CCode (array_length = false)] GL.GLuint[]? textureNames);
+	public static GL.GLvdpauSurfaceNV glVDPAURegisterVideoSurfaceNV (GL.GLvoid vdpSurface, uint target, int numTextureNames, [CCode (array_length = false)] uint[]? textureNames);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVDPAUSurfaceAccessNV")]
 	public static void glVDPAUSurfaceAccessNV (GL.GLvdpauSurfaceNV surface, uint access);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVDPAUUnmapSurfacesNV")]
@@ -13751,7 +13751,7 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVariantubvEXT")]
 	public static void glVariantubvEXT (uint id, [CCode (array_length = false)] GL.GLubyte[]? addr);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVariantuivEXT")]
-	public static void glVariantuivEXT (uint id, [CCode (array_length = false)] GL.GLuint[]? addr);
+	public static void glVariantuivEXT (uint id, [CCode (array_length = false)] uint[]? addr);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVariantusvEXT")]
 	public static void glVariantusvEXT (uint id, [CCode (array_length = false)] GL.GLushort[]? addr);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVertex2bOES")]
@@ -13999,9 +13999,9 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVertexAttrib4NubvARB")]
 	public static void glVertexAttrib4NubvARB (uint index, [CCode (array_length = false)] GL.GLubyte[]? v);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVertexAttrib4Nuiv")]
-	public static void glVertexAttrib4Nuiv (uint index, [CCode (array_length = false)] GL.GLuint[]? v);
+	public static void glVertexAttrib4Nuiv (uint index, [CCode (array_length = false)] uint[]? v);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVertexAttrib4NuivARB")]
-	public static void glVertexAttrib4NuivARB (uint index, [CCode (array_length = false)] GL.GLuint[]? v);
+	public static void glVertexAttrib4NuivARB (uint index, [CCode (array_length = false)] uint[]? v);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVertexAttrib4Nusv")]
 	public static void glVertexAttrib4Nusv (uint index, [CCode (array_length = false)] GL.GLushort[]? v);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVertexAttrib4NusvARB")]
@@ -14063,9 +14063,9 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVertexAttrib4ubvNV")]
 	public static void glVertexAttrib4ubvNV (uint index, [CCode (array_length = false)] GL.GLubyte[]? v);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVertexAttrib4uiv")]
-	public static void glVertexAttrib4uiv (uint index, [CCode (array_length = false)] GL.GLuint[]? v);
+	public static void glVertexAttrib4uiv (uint index, [CCode (array_length = false)] uint[]? v);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVertexAttrib4uivARB")]
-	public static void glVertexAttrib4uivARB (uint index, [CCode (array_length = false)] GL.GLuint[]? v);
+	public static void glVertexAttrib4uivARB (uint index, [CCode (array_length = false)] uint[]? v);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVertexAttrib4usv")]
 	public static void glVertexAttrib4usv (uint index, [CCode (array_length = false)] GL.GLushort[]? v);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVertexAttrib4usvARB")]
@@ -14095,9 +14095,9 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVertexAttribI1uiEXT")]
 	public static void glVertexAttribI1uiEXT (uint index, uint x);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVertexAttribI1uiv")]
-	public static void glVertexAttribI1uiv (uint index, [CCode (array_length = false)] GL.GLuint[]? v);
+	public static void glVertexAttribI1uiv (uint index, [CCode (array_length = false)] uint[]? v);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVertexAttribI1uivEXT")]
-	public static void glVertexAttribI1uivEXT (uint index, [CCode (array_length = false)] GL.GLuint[]? v);
+	public static void glVertexAttribI1uivEXT (uint index, [CCode (array_length = false)] uint[]? v);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVertexAttribI2i")]
 	public static void glVertexAttribI2i (uint index, int x, int y);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVertexAttribI2iEXT")]
@@ -14111,9 +14111,9 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVertexAttribI2uiEXT")]
 	public static void glVertexAttribI2uiEXT (uint index, uint x, uint y);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVertexAttribI2uiv")]
-	public static void glVertexAttribI2uiv (uint index, [CCode (array_length = false)] GL.GLuint[]? v);
+	public static void glVertexAttribI2uiv (uint index, [CCode (array_length = false)] uint[]? v);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVertexAttribI2uivEXT")]
-	public static void glVertexAttribI2uivEXT (uint index, [CCode (array_length = false)] GL.GLuint[]? v);
+	public static void glVertexAttribI2uivEXT (uint index, [CCode (array_length = false)] uint[]? v);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVertexAttribI3i")]
 	public static void glVertexAttribI3i (uint index, int x, int y, int z);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVertexAttribI3iEXT")]
@@ -14127,9 +14127,9 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVertexAttribI3uiEXT")]
 	public static void glVertexAttribI3uiEXT (uint index, uint x, uint y, uint z);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVertexAttribI3uiv")]
-	public static void glVertexAttribI3uiv (uint index, [CCode (array_length = false)] GL.GLuint[]? v);
+	public static void glVertexAttribI3uiv (uint index, [CCode (array_length = false)] uint[]? v);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVertexAttribI3uivEXT")]
-	public static void glVertexAttribI3uivEXT (uint index, [CCode (array_length = false)] GL.GLuint[]? v);
+	public static void glVertexAttribI3uivEXT (uint index, [CCode (array_length = false)] uint[]? v);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVertexAttribI4bv")]
 	public static void glVertexAttribI4bv (uint index, [CCode (array_length = false)] GL.GLbyte[]? v);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVertexAttribI4bvEXT")]
@@ -14155,9 +14155,9 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVertexAttribI4uiEXT")]
 	public static void glVertexAttribI4uiEXT (uint index, uint x, uint y, uint z, uint w);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVertexAttribI4uiv")]
-	public static void glVertexAttribI4uiv (uint index, [CCode (array_length = false)] GL.GLuint[]? v);
+	public static void glVertexAttribI4uiv (uint index, [CCode (array_length = false)] uint[]? v);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVertexAttribI4uivEXT")]
-	public static void glVertexAttribI4uivEXT (uint index, [CCode (array_length = false)] GL.GLuint[]? v);
+	public static void glVertexAttribI4uivEXT (uint index, [CCode (array_length = false)] uint[]? v);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVertexAttribI4usv")]
 	public static void glVertexAttribI4usv (uint index, [CCode (array_length = false)] GL.GLushort[]? v);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVertexAttribI4usvEXT")]
@@ -14245,19 +14245,19 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVertexAttribP1ui")]
 	public static void glVertexAttribP1ui (uint index, uint type, bool normalized, uint value);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVertexAttribP1uiv")]
-	public static void glVertexAttribP1uiv (uint index, uint type, bool normalized, [CCode (array_length = false)] GL.GLuint[]? value);
+	public static void glVertexAttribP1uiv (uint index, uint type, bool normalized, [CCode (array_length = false)] uint[]? value);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVertexAttribP2ui")]
 	public static void glVertexAttribP2ui (uint index, uint type, bool normalized, uint value);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVertexAttribP2uiv")]
-	public static void glVertexAttribP2uiv (uint index, uint type, bool normalized, [CCode (array_length = false)] GL.GLuint[]? value);
+	public static void glVertexAttribP2uiv (uint index, uint type, bool normalized, [CCode (array_length = false)] uint[]? value);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVertexAttribP3ui")]
 	public static void glVertexAttribP3ui (uint index, uint type, bool normalized, uint value);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVertexAttribP3uiv")]
-	public static void glVertexAttribP3uiv (uint index, uint type, bool normalized, [CCode (array_length = false)] GL.GLuint[]? value);
+	public static void glVertexAttribP3uiv (uint index, uint type, bool normalized, [CCode (array_length = false)] uint[]? value);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVertexAttribP4ui")]
 	public static void glVertexAttribP4ui (uint index, uint type, bool normalized, uint value);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVertexAttribP4uiv")]
-	public static void glVertexAttribP4uiv (uint index, uint type, bool normalized, [CCode (array_length = false)] GL.GLuint[]? value);
+	public static void glVertexAttribP4uiv (uint index, uint type, bool normalized, [CCode (array_length = false)] uint[]? value);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVertexAttribPointer")]
 	public static void glVertexAttribPointer (uint index, int size, uint type, bool normalized, int stride, [CCode (array_length = false)] GL.GLvoid[]? pointer);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVertexAttribPointerARB")]
@@ -14311,15 +14311,15 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVertexP2ui")]
 	public static void glVertexP2ui (uint type, uint value);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVertexP2uiv")]
-	public static void glVertexP2uiv (uint type, [CCode (array_length = false)] GL.GLuint[]? value);
+	public static void glVertexP2uiv (uint type, [CCode (array_length = false)] uint[]? value);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVertexP3ui")]
 	public static void glVertexP3ui (uint type, uint value);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVertexP3uiv")]
-	public static void glVertexP3uiv (uint type, [CCode (array_length = false)] GL.GLuint[]? value);
+	public static void glVertexP3uiv (uint type, [CCode (array_length = false)] uint[]? value);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVertexP4ui")]
 	public static void glVertexP4ui (uint type, uint value);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVertexP4uiv")]
-	public static void glVertexP4uiv (uint type, [CCode (array_length = false)] GL.GLuint[]? value);
+	public static void glVertexP4uiv (uint type, [CCode (array_length = false)] uint[]? value);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVertexPointer")]
 	public static void glVertexPointer (int size, uint type, int stride, [CCode (array_length = false)] GL.GLvoid[]? pointer);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVertexPointerEXT")]
@@ -14421,7 +14421,7 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "glWaitSync")]
 	public static void glWaitSync (GL.GLsync sync, GL.GLbitfield flags, GL.GLuint64 timeout);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glWeightPathsNV")]
-	public static void glWeightPathsNV (uint resultPath, int numPaths, [CCode (array_length = false)] GL.GLuint[]? paths, [CCode (array_length = false)] float[]? weights);
+	public static void glWeightPathsNV (uint resultPath, int numPaths, [CCode (array_length = false)] uint[]? paths, [CCode (array_length = false)] float[]? weights);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glWeightPointerARB")]
 	public static void glWeightPointerARB (int size, uint type, int stride, [CCode (array_length = false)] GL.GLvoid[]? pointer);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glWeightbvARB")]
@@ -14437,7 +14437,7 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "glWeightubvARB")]
 	public static void glWeightubvARB (int size, [CCode (array_length = false)] GL.GLubyte[]? weights);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glWeightuivARB")]
-	public static void glWeightuivARB (int size, [CCode (array_length = false)] GL.GLuint[]? weights);
+	public static void glWeightuivARB (int size, [CCode (array_length = false)] uint[]? weights);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glWeightusvARB")]
 	public static void glWeightusvARB (int size, [CCode (array_length = false)] GL.GLushort[]? weights);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glWindowPos2d")]

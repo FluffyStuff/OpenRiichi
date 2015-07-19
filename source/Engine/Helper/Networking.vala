@@ -1,7 +1,7 @@
 using Gee;
 
 // Asynchronous networking class
-public class Networking
+public class Networking : Object
 {
     public signal void connected(Connection connection);
     public signal void message_received(Connection connection, Message message);
@@ -19,7 +19,12 @@ public class Networking
         mutex = new Mutex();
     }
 
-    public void close_connections()
+    ~Networking()
+    {
+        close();
+    }
+
+    public void close()
     {
         // Need to explicitly cancel all connections, or we will leak memory (have zombie threads)
         mutex.lock();
@@ -30,8 +35,12 @@ public class Networking
             server_cancel.cancel();
         }
 
-        foreach (Connection c in connections)
+        while (connections.size > 0)
+        {
+            Connection c = connections[0];
+            remove_connection(c);
             c.close();
+        }
 
         mutex.unlock();
     }
@@ -41,14 +50,18 @@ public class Networking
         message_received(connection, message);
     }
 
+    private void remove_connection(Connection connection)
+    {
+        connection.message_received.disconnect(message_received_handler);
+        connection.closed.disconnect(connection_closed);
+        connections.remove(connection);
+    }
+
     private void connection_closed(Connection connection)
     {
         mutex.lock();
 
-        connection.message_received.disconnect(message_received_handler);
-        connection.closed.disconnect(connection_closed);
-        connections.remove(connection);
-        //print("Connection closed. (" + connections.size.to_string() + " left)\n");
+        remove_connection(connection);
 
         mutex.unlock();
     }
@@ -59,7 +72,6 @@ public class Networking
 
         Connection c = new Connection(connection);
         connections.add(c);
-        //print("New connection. (" + connections.size.to_string() + " now)\n");
         c.message_received.connect(message_received_handler);
         c.closed.connect(connection_closed);
         c.start();
@@ -82,10 +94,15 @@ public class Networking
         {
             while (true)
             {
-                SocketConnection connection = server.accept(null, server_cancel);
+                SocketConnection? connection = server.accept(null, server_cancel);
 
+                mutex.lock();
                 if (!listening)
+                {
+                    mutex.unlock();
                     break;
+                }
+                mutex.unlock();
 
                 new_connection(connection);
             }
@@ -94,6 +111,7 @@ public class Networking
 
         server.close();
         listening = false;
+        unref();
     }
 
     public bool host(uint16 port)
@@ -115,10 +133,11 @@ public class Networking
             return false;
         }
 
+        ref();
         return true;
     }
 
-    public Connection? join(string addr, uint16 port)
+    public static Connection? join(string addr, uint16 port)
     {
         try
         {
@@ -130,7 +149,10 @@ public class Networking
             var client = new SocketClient();
             var conn = client.connect(socket_address);
 
-            return add_connection(conn);
+            Connection connection = new Connection(conn);
+            connection.start();
+
+            return connection;
         }
         catch
         {
@@ -152,6 +174,7 @@ public class Connection : Object
     private SocketConnection connection;
     private bool run = true;
     private Cancellable cancel = new Cancellable();
+    private Mutex mutex = new Mutex();
 
     public Connection(SocketConnection connection)
     {
@@ -170,46 +193,57 @@ public class Connection : Object
 
     public void start()
     {
-        Threading.start1(reading_worker, this);
+        ref();
+        Threading.start0(reading_worker);
     }
 
     public void close()
     {
+        mutex.lock();
         run = false;
         cancel.cancel();
+        connection.close();
+        mutex.unlock();
     }
 
-    private void reading_worker(Object conn)
+    private void reading_worker()
     {
-        Connection connection = (Connection)conn;
-
-        connection.connection.socket.set_blocking(false);
-        var input = new DataInputStream(connection.connection.input_stream);
+        connection.socket.set_blocking(false);
+        var input = new DataInputStream(connection.input_stream);
 
         try
         {
-            while (connection.run)
+            while (true)
             {
+                mutex.lock();
+                if (!run)
+                {
+                    mutex.unlock();
+                    break;
+                }
+                mutex.unlock();
+
                 uint32 length = input.read_uint32();
                 uint8[] buffer = new uint8[length];
                 size_t read;
 
-                if (!connection.connection.input_stream.read_all(buffer, out read, connection.cancel) || buffer == null)
+                if (!connection.input_stream.read_all(buffer, out read, cancel) || buffer == null)
                     break;
 
-                connection.message_received(connection, new Message(buffer));
+                message_received(this, new Message(buffer));
             }
         }
         catch {}
 
         try
         {
-            if (connection.cancel.is_cancelled())
-                connection.connection.close();
-
-            connection.closed(connection);
+            connection.close();
         }
         catch {}
+
+        closed(this);
+
+        unref();
     }
 }
 
@@ -317,11 +351,7 @@ public abstract class SerializableMessage : Object
         string type_name = data.get_string(type_name_len);
         int param_count = data.get_int();
 
-        print("Class name (%d): %s(%d)\n", type_name_len, type_name, type_name.data.length);
-        //print("Param count: %d\n", param_count);
-
         Type? type = Type.from_name(type_name);
-        print("Type name: %s\n", type.name());
         if (!type.is_a(typeof(SerializableMessage)))
             return null;
 

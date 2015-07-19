@@ -6,12 +6,13 @@ public class RenderWall
     private WallPart[] walls;
     private DeadWall dead_wall;
     private int active_wall;
+    private int last_wall;
 
     public RenderWall(RenderTile[] tiles, Vec3 tile_size, Vec3 center, float offset, int dealer, int split)
     {
         this.tile_size = tile_size;
         int start_wall = (4 - dealer) % 4;
-        active_wall = start_wall;
+        active_wall = last_wall = start_wall;
 
         walls = new WallPart[4];
         for (int i = 0; i < 4; i++)
@@ -28,7 +29,10 @@ public class RenderWall
         ArrayList<RenderTile> left = walls[start_wall].dead_split(split, true);
         ArrayList<RenderTile> right = walls[(start_wall + 3) % 4].dead_split(split, false);
 
-        dead_wall = new DeadWall(left, right);
+        int rot = last_wall;
+        if (left.size < 14)
+            rot = (rot + 3) % 4;
+        dead_wall = new DeadWall(left, right, rot, tile_size);
     }
 
     public RenderTile? draw_wall()
@@ -36,9 +40,23 @@ public class RenderWall
         return walls[active_wall].draw();
     }
 
+    public RenderTile? draw_dead_wall()
+    {
+        return dead_wall.draw();
+    }
+
     public void flip_dora()
     {
         dead_wall.flip_dora();
+    }
+
+    public void dead_tile_add()
+    {
+        if (walls[last_wall].empty)
+            last_wall = (last_wall + 3) % 4;
+
+        RenderTile tile = walls[last_wall].remove_last();
+        dead_wall.dead_tile_add(tile);
     }
 
     private void next_wall()
@@ -53,6 +71,7 @@ public class RenderWall
         private Vec3 tile_size;
         private Vec3 position;
         private int rotation;
+        private int removed_tiles = 0;
 
         public signal void next_wall();
 
@@ -130,9 +149,33 @@ public class RenderWall
 
             ArrayList<RenderTile> tiles = new ArrayList<RenderTile>();
             for (int i = center.size - 1; i >= 0; i--)
-                tiles.add(center[i]);
+            {
+                int a = i;
+                if (i % 2 == 0)
+                    a++;
+                else
+                    a--;
+                tiles.add(center[a]);
+            }
 
             return tiles;
+        }
+
+        public RenderTile remove_last()
+        {
+            ArrayList<RenderTile> list;
+            if (wall_right.size != 0)
+                list = wall_right;
+            else
+                list = wall_left;
+
+            RenderTile tile = list.remove_at(list.size - 1);
+
+            if (removed_tiles % 2 == 0)
+                list[list.size - 1].position = tile.position;
+
+            removed_tiles++;
+            return tile;
         }
 
         public RenderTile? draw()
@@ -182,14 +225,27 @@ public class RenderWall
     private class DeadWall
     {
         private ArrayList<RenderTile> tiles = new ArrayList<RenderTile>();
-        private int dora_index = 5;
+        private int rotation;
+        private Vec3 tile_size;
 
-        public DeadWall(ArrayList<RenderTile> left, ArrayList<RenderTile> right)
+        private int dora_index = 4;
+        private int tiles_added = 0;
+
+        public DeadWall(ArrayList<RenderTile> left, ArrayList<RenderTile> right, int rotation, Vec3 tile_size)
         {
+            this.rotation = rotation;
+            this.tile_size = tile_size;
+
             for (int i = 0; i < left.size; i++)
                 tiles.add(left[i]);
             for (int i = 0; i < right.size; i++)
                 tiles.add(right[i]);
+        }
+
+        public RenderTile draw()
+        {
+            dora_index--;
+            return tiles.remove_at(0);
         }
 
         public void flip_dora()
@@ -201,6 +257,31 @@ public class RenderWall
             t.rotation = rot;
 
             dora_index += 2;
+        }
+
+        public void dead_tile_add(RenderTile tile)
+        {
+            Vec3 pos;
+
+            if (tiles_added % 2 == 0)
+            {
+                float y = tiles_added > 0 ? -tile_size.y : 0;
+                pos = { tile_size.x, y, 0 };
+                pos = Calculations.rotate_y({}, -(float)rotation / 2, pos);
+            }
+            else
+                pos = { 0, tile_size.y, 0 };
+
+            tile.position = tiles[tiles.size - 1].position.plus(pos);
+
+            tile.rotation = Vec3()
+            {
+                x = 1,
+                y = (float)rotation / 2 + 1
+            };
+
+            tiles_added++;
+            tiles.insert(tiles.size, tile);
         }
     }
 }

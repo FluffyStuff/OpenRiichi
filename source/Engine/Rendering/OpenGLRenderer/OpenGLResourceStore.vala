@@ -1,6 +1,6 @@
 using Gee;
 
-public class OpenGLResourceStore : IResourceStore, Object
+public class OpenGLResourceStore : IResourceStore
 {
     private unowned OpenGLRenderer renderer;
     private ArrayList<ResourceCacheObject> cache = new ArrayList<ResourceCacheObject>();
@@ -10,21 +10,20 @@ public class OpenGLResourceStore : IResourceStore, Object
         this.renderer = renderer;
     }
 
-    public RenderObject3D? load_object_3D(string name)
-    {
-        RenderModel? model = load_model(name, false);
-        RenderTexture? texture = load_texture(name);
-        RenderObject3D obj = new RenderObject3D(model, texture);
-        return obj;
-    }
-
-    public RenderModel? load_model(string name, bool centered)
+    public override RenderModel? load_model_dir(string dir, string name, bool centered)
     {
         ResourceCacheObject? cache = get_cache_object(name, CacheObjectType.MODEL);
         if (cache != null)
             return (RenderModel)cache.obj;
 
-        string[] lines = FileLoader.load(MODEL_DIR + name + ".obj");
+        string str = dir + name + ".obj";
+        string[] lines = FileLoader.load(str);
+        if (lines == null)
+        {
+            print(str + " does not exist!\n");
+            return null;
+        }
+
         ModelData data = ObjParser.parse(lines);
 
         if (centered)
@@ -38,18 +37,25 @@ public class OpenGLResourceStore : IResourceStore, Object
         return model;
     }
 
-    public RenderTexture? load_texture(string name)
+    public override RenderTexture? load_texture_dir(string dir, string name)
     {
         ResourceCacheObject? cache = get_cache_object(name, CacheObjectType.TEXTURE);
         if (cache != null)
             return (RenderTexture)cache.obj;
 
-        SoilImage img = SoilWrap.load_image(TEXTURE_DIR + name + ".png");
+        string str = dir + name + ".png";
+        if (!FileLoader.exists(str))
+        {
+            print(str + " does not exist!\n");
+            return null;
+        }
+
+        SoilImage img = SoilWrap.load_image(str);
 
         ResourceTexture tex = new ResourceTexture(img.data, img.width, img.height);
         uint handle = renderer.load_texture(tex);
 
-        RenderTexture texture = new RenderTexture(handle, img.width, img.height);
+        RenderTexture texture = new RenderTexture(handle, Vec2() { x = img.width, y = img.height});
         cache_object(name, CacheObjectType.TEXTURE, texture);
 
         return texture;

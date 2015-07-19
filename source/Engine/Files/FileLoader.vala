@@ -31,4 +31,14 @@ public class FileLoader
 
         return l;
     }
+
+    public static bool exists(string name)
+    {
+        return File.new_for_path(name).query_exists();
+    }
+
+    public static string get_user_dir()
+    {
+        return GLib.Environment.get_user_config_dir() + "/RiichiMahjong/";
+    }
 }

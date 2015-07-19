@@ -66,8 +66,6 @@ class OpenGLShaderProgram2D
         glEnableVertexAttribArray(vert_position_attribute);
         glBindBuffer(GL_ARRAY_BUFFER, vertice_handle);
         glVertexAttribPointer(vert_position_attribute, 2, GL_FLOAT, false, 0, (GLvoid[])0);
-        glBindVertexArray(0);
-        //glVertexAttribPointer(pp_tex_attrib, 2, GL_FLOAT, false, 0, (GLvoid[])0);
 
         model_transform_attrib = glGetUniformLocation(program, "model_transform");
         alpha_attrib = glGetUniformLocation(program, "alpha");

@@ -42,10 +42,10 @@ public enum TileType
     SOU7,
     SOU8,
     SOU9,
-    KITA,
     HIGASHI,
     MINAMI,
     NISHI,
+    KITA,
     HAKU,
     HATSU,
     CHUN

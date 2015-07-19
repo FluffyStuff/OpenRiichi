@@ -5,25 +5,29 @@ public class MainView : View
         parent_window = window;
     }
 
-    public override void do_render(RenderState state){}
+    /*public override void do_render(RenderState state){}
     protected override void do_mouse_event(MouseEventArgs mouse){}
     protected override void do_mouse_move(MouseMoveArgs mouse){}
     protected override void added(){}
     protected override void do_process(DeltaArgs args){}
-    protected override void do_key_press(KeyArgs keys){}
+    protected override void do_key_press(KeyArgs keys){}*/
 }
 
 public class MouseEventArgs
 {
-    public MouseEventArgs(Button button, bool down)
+    public MouseEventArgs(Button button, bool down, int pos_x, int pos_y)
     {
         this.button = button;
         this.down = down;
+        this.pos_x = pos_x;
+        this.pos_y = pos_y;
     }
 
-
+    public bool handled { get; set; }
     public Button button { get; private set; }
     public bool down { get; private set; }
+    public int pos_x { get; private set; }
+    public int pos_y { get; private set; }
 
     public enum Button
     {
@@ -41,8 +45,11 @@ public class MouseMoveArgs
         this.pos_y = pos_y;
         this.delta_x = delta_x;
         this.delta_y = delta_y;
+        cursor_type = CursorType.NORMAL;
     }
 
+    public bool handled { get; set; }
+    public CursorType cursor_type { get; set; }
     public int pos_x { get; private set; }
     public int pos_y { get; private set; }
     public int delta_x { get; private set; }
@@ -56,6 +63,7 @@ public class KeyArgs
         this.key = key;
     }
 
+    public bool handled { get; set; }
     public char key { get; private set; }
 }
 

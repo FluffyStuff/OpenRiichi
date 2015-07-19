@@ -10,16 +10,25 @@ namespace GameServer
 
         private Mutex mutex = new Mutex();
 
+        public signal void server_finished();
+
         public Server()
         {
 
         }
 
+        ~Server()
+        {
+        }
+
         public void create_game(ServerPlayer[] players)
         {
+            // TODO: Disconnect
             parser.connect(client_tile_discard, typeof(ClientMessageTileDiscard));
             parser.connect(client_no_call, typeof(ClientMessageNoCall));
             parser.connect(client_ron, typeof(ClientMessageRon));
+            parser.connect(client_late_kan, typeof(ClientMessageLateKan));
+            parser.connect(client_closed_kan, typeof(ClientMessageClosedKan));
             parser.connect(client_open_kan, typeof(ClientMessageOpenKan));
             parser.connect(client_pon, typeof(ClientMessagePon));
             parser.connect(client_chi, typeof(ClientMessageChi));
@@ -46,9 +55,12 @@ namespace GameServer
             game.game_draw_tile.connect(game_draw_tile);
             game.game_discard_tile.connect(game_discard_tile);
             game.game_flip_dora.connect(game_flip_dora);
+            game.game_dead_tile_add.connect(game_dead_tile_add);
             game.game_get_turn_decision.connect(game_get_turn_decision);
             game.game_get_call_decision.connect(game_get_call_decision);
             game.game_ron.connect(game_ron);
+            game.game_late_kan.connect(game_late_kan);
+            game.game_closed_kan.connect(game_closed_kan);
             game.game_open_kan.connect(game_open_kan);
             game.game_pon.connect(game_pon);
             game.game_chi.connect(game_chi);
@@ -76,7 +88,8 @@ namespace GameServer
 
         private void disconnected(ServerPlayer player)
         {
-            print("Player disconnected...\n");
+            unsubscribe_player(player);
+            server_finished();
         }
 
         private void receive_message(ServerPlayer player, ClientMessage message)
@@ -108,6 +121,22 @@ namespace GameServer
             game.client_ron(p.ID);
         }
 
+        private void client_late_kan(ServerPlayer player, ClientMessage message)
+        {
+            ClientMessageLateKan kan = (ClientMessageLateKan)message;
+
+            GameStateServerPlayer p = get_game_player(players, player);
+            game.client_late_kan(p.ID, kan.tile_ID);
+        }
+
+        private void client_closed_kan(ServerPlayer player, ClientMessage message)
+        {
+            ClientMessageClosedKan kan = (ClientMessageClosedKan)message;
+
+            GameStateServerPlayer p = get_game_player(players, player);
+            game.client_closed_kan(p.ID, kan.get_type_enum());
+        }
+
         private void client_open_kan(ServerPlayer player, ClientMessage message)
         {
             GameStateServerPlayer p = get_game_player(players, player);
@@ -130,11 +159,11 @@ namespace GameServer
 
         ////////////////////////
 
-        private void game_draw_tile(int player_ID, Tile tile)
+        private void game_draw_tile(int player_ID, Tile tile, bool dead_wall)
         {
             GameStateServerPlayer player = get_server_player(players, player_ID);
             ServerMessageTileAssignment assignment = new ServerMessageTileAssignment(tile.ID, (int)tile.tile_type, tile.dora);
-            ServerMessageTileDraw draw = new ServerMessageTileDraw(player.ID, tile.ID);
+            ServerMessageTileDraw draw = new ServerMessageTileDraw(player.ID, tile.ID, dead_wall);
 
             foreach (GameStateServerPlayer p in players)
             {
@@ -171,6 +200,14 @@ namespace GameServer
                 pl.server_player.send_message(message);
         }
 
+        private void game_dead_tile_add(Tile tile)
+        {
+            ServerMessageDeadTileAdd message = new ServerMessageDeadTileAdd(tile.ID);
+
+            foreach (GameStateServerPlayer pl in players)
+                pl.server_player.send_message(message);
+        }
+
         private void game_get_turn_decision(int player_ID)
         {
             ServerMessageTurnDecision message = new ServerMessageTurnDecision();
@@ -188,6 +225,26 @@ namespace GameServer
         private void game_ron(int player_ID, int discard_player_ID, Tile tile)
         {
             ServerMessageRon message = new ServerMessageRon(player_ID, discard_player_ID, tile.ID);
+
+            foreach (GameStateServerPlayer pl in players)
+                pl.server_player.send_message(message);
+        }
+
+        public void game_late_kan(int player_ID, Tile tile)
+        {
+            game_reveal_tile(tile);
+            ServerMessageLateKan message = new ServerMessageLateKan(player_ID, tile.ID);
+
+            foreach (GameStateServerPlayer pl in players)
+                pl.server_player.send_message(message);
+        }
+
+        public void game_closed_kan(int player_ID, ArrayList<Tile> tiles)
+        {
+            foreach (Tile t in tiles)
+                game_reveal_tile(t);
+
+            ServerMessageClosedKan message = new ServerMessageClosedKan(player_ID, tiles[0].tile_type);
 
             foreach (GameStateServerPlayer pl in players)
                 pl.server_player.send_message(message);

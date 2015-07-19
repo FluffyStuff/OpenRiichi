@@ -6,6 +6,7 @@ namespace GameServer
         public signal void receive_message(ServerPlayer player, ClientMessage message);
 
         public virtual void send_message(ServerMessage message) {}
+        public abstract void close();
 
         public State state { get; protected set; }
         public bool ready { get; protected set; }
@@ -29,6 +30,13 @@ namespace GameServer
 
             this.connection = connection;
             connection.receive_message.connect(forward_message);
+            connection.disconnected.connect(forward_disconnected);
+        }
+
+        ~ServerHumanPlayer()
+        {
+            connection.receive_message.disconnect(forward_message);
+            connection.disconnected.disconnect(forward_disconnected);
         }
 
         private void forward_message(ClientMessage message)
@@ -36,9 +44,19 @@ namespace GameServer
             receive_message(this, message);
         }
 
+        private void forward_disconnected()
+        {
+            disconnected(this);
+        }
+
         public override void send_message(ServerMessage message)
         {
             connection.send_message(message);
+        }
+
+        public override void close()
+        {
+            connection.close();
         }
     }
 
@@ -52,7 +70,6 @@ namespace GameServer
             ready = true;
             state = State.PLAYER;
 
-            connection = new ServerPlayerLocalConnection();
             GameLocalConnection local = new GameLocalConnection();
             ServerPlayerLocalConnection server = new ServerPlayerLocalConnection();
 
@@ -65,6 +82,12 @@ namespace GameServer
             connection.receive_message.connect(forward_message);
         }
 
+        ~ServerComputerPlayer()
+        {
+            bot.stop();
+            connection.receive_message.disconnect(forward_message);
+        }
+
         private void forward_message(ClientMessage message)
         {
             receive_message(this, message);
@@ -74,12 +97,19 @@ namespace GameServer
         {
             connection.send_message(message);
         }
+
+        public override void close()
+        {
+            bot.stop();
+        }
     }
 
     public abstract class ServerPlayerConnection
     {
         public signal void receive_message(ClientMessage message);
         public abstract void send_message(ServerMessage message);
+        public signal void disconnected();
+        public abstract void close();
     }
 
     public class ServerPlayerNetworkConnection : ServerPlayerConnection
@@ -90,6 +120,13 @@ namespace GameServer
         {
             this.connection = connection;
             connection.message_received.connect(parse_message);
+            connection.closed.connect(forward_disconnected);
+        }
+
+        ~ServerPlayerNetworkingConnection()
+        {
+            connection.message_received.disconnect(parse_message);
+            connection.closed.disconnect(forward_disconnected);
         }
 
         public override void send_message(ServerMessage message)
@@ -98,16 +135,26 @@ namespace GameServer
             connection.send(msg);
         }
 
+        public override void close()
+        {
+            connection.close();
+        }
+
         private void parse_message(Connection connection, Message message)
         {
             SerializableMessage? msg = SerializableMessage.deserialize(message.data);
 
             if (msg == null || !msg.get_type().is_a(typeof(ClientMessage)))
             {
-                print("Discarding message!\n");
+                print("Server discarding invalid client message!\n");
                 return;
             }
             receive_message((ClientMessage)msg);
+        }
+
+        private void forward_disconnected(Connection connection)
+        {
+            disconnected();
         }
     }
 
@@ -124,6 +171,11 @@ namespace GameServer
         {
             if (connection != null)
                 connection.receive_message(message);
+        }
+
+        public override void close()
+        {
+            connection.close();
         }
     }
 }

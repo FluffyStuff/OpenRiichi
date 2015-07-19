@@ -2,7 +2,7 @@ public class RenderTile
 {
     // TODO: Use multi texturing
 
-    public RenderTile(IResourceStore store, Tile tile)
+    public RenderTile(IResourceStore store, Tile tile, float scale)
     {
         tile_type = tile;
 
@@ -10,6 +10,8 @@ public class RenderTile
         RenderTexture texture = store.load_texture("Tiles/" + get_tile_type_name(tile_type.tile_type));
 
         this.tile = new RenderObject3D(model, texture);
+
+        this.tile.scale = { scale, scale, scale };
     }
 
     public void assign_type(Tile type, IResourceStore store)
@@ -79,7 +81,6 @@ public class RenderTile
         set { tile.rotation = value; }
     }
 
-    public Vec3 object_size { get { return tile.model.size; } }
     public RenderObject3D tile { get; private set; }
     public Tile tile_type { get; private set; }
 }

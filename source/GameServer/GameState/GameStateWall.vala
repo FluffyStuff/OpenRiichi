@@ -9,7 +9,7 @@ namespace GameServer
         private ArrayList<Tile> wall_tiles = new ArrayList<Tile>();
         private ArrayList<Tile> dead_wall_tiles = new ArrayList<Tile>();
         private ArrayList<Tile> doras = new ArrayList<Tile>();
-        private int new_dora_index = 5;
+        private int dora_index = 4;
 
         public GameStateWall(int dealer, int start_index, Rand rnd)
         {
@@ -36,15 +36,20 @@ namespace GameServer
             for (int i = 0; i < 14; i++)
             {
                 int t = (index + i + 122) % 136;
+                if (i % 2 == 0)
+                    t++;
+                else
+                    t--;
+
                 dead_wall_tiles.insert(0, tiles[t]);
             }
         }
 
         public Tile flip_dora()
         {
-            Tile tile = dead_wall_tiles.get(new_dora_index);
+            Tile tile = dead_wall_tiles.get(dora_index);
             doras.add(tile);
-            new_dora_index += 2;
+            dora_index += 2;
 
             return tile;
         }
@@ -57,7 +62,14 @@ namespace GameServer
         public Tile draw_dead_wall()
         {
             Tile tile = dead_wall_tiles.remove_at(0);
-            new_dora_index--;
+            dora_index--;
+            return tile;
+        }
+
+        public Tile dead_tile_add()
+        {
+            Tile tile = wall_tiles.remove_at(wall_tiles.size - 1);
+            dead_wall_tiles.insert(dead_wall_tiles.size, tile);
             return tile;
         }
 

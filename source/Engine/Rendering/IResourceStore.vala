@@ -1,10 +1,28 @@
 using Gee;
 
-public interface IResourceStore : Object
+public abstract class IResourceStore : Object
 {
-    public abstract RenderObject3D? load_object_3D(string name);
-    public abstract RenderModel? load_model(string name, bool center);
-    public abstract RenderTexture? load_texture(string name);
+    public RenderObject3D? load_object_3D(string name)
+    {
+        RenderModel? model = load_model(name, false);
+        RenderTexture? texture = load_texture(name);
+        RenderObject3D obj = new RenderObject3D(model, texture);
+        return obj;
+    }
+
+    public RenderModel? load_model(string name, bool center)
+    {
+        return load_model_dir(MODEL_DIR, name, center);
+
+    }
+
+    public RenderTexture? load_texture(string name)
+    {
+        return load_texture_dir(TEXTURE_DIR, name);
+    }
+
+    public abstract RenderModel? load_model_dir(string dir, string name, bool center);
+    public abstract RenderTexture? load_texture_dir(string dir, string name);
 
     private const string DATA_DIR = "./Data/";
     protected const string MODEL_DIR = DATA_DIR + "Models/";
@@ -56,14 +74,12 @@ public class RenderModel : Object
 
 public class RenderTexture : Object
 {
-    public RenderTexture(uint handle, int width, int height)
+    public RenderTexture(uint handle, Vec2 size)
     {
         this.handle = handle;
-        this.width = width;
-        this.height = height;
+        this.size = size;
     }
 
     public uint handle { get; private set; }
-    public int width { get; private set; }
-    public int height { get; private set; }
+    public Vec2 size { get; private set; }
 }

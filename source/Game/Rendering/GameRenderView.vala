@@ -17,6 +17,7 @@ public class GameRenderView : View, IGameRenderer
 
     private ServerMessageParser parser = new ServerMessageParser();
     private RenderTile? mouse_down_tile;
+    private ArrayList<TileSelectionGroup>? select_groups = null;
 
     public GameRenderView(GameStartState state)
     {
@@ -26,8 +27,11 @@ public class GameRenderView : View, IGameRenderer
         parser.connect(server_tile_draw, typeof(ServerMessageTileDraw));
         parser.connect(server_tile_discard, typeof(ServerMessageTileDiscard));
         parser.connect(server_flip_dora, typeof(ServerMessageFlipDora));
+        parser.connect(server_dead_tile_add, typeof(ServerMessageDeadTileAdd));
 
         parser.connect(server_ron, typeof(ServerMessageRon));
+        parser.connect(server_late_kan, typeof(ServerMessageLateKan));
+        parser.connect(server_closed_kan, typeof(ServerMessageClosedKan));
         parser.connect(server_open_kan, typeof(ServerMessageOpenKan));
         parser.connect(server_pon, typeof(ServerMessagePon));
         parser.connect(server_chi, typeof(ServerMessageChi));
@@ -43,8 +47,11 @@ public class GameRenderView : View, IGameRenderer
     {
         ServerMessageTileDraw tile_draw = (ServerMessageTileDraw)message;
         RenderPlayer player = players[tile_draw.player_ID];
-        player.add_to_hand(wall.draw_wall());
-        player.order_tiles();
+
+        if (tile_draw.dead_wall)
+            player.add_to_hand(wall.draw_dead_wall());
+        else
+            player.add_to_hand(wall.draw_wall());
     }
 
     private void server_tile_discard(ServerMessage message)
@@ -60,9 +67,29 @@ public class GameRenderView : View, IGameRenderer
         wall.flip_dora();
     }
 
+    private void server_dead_tile_add(ServerMessage message)
+    {
+        wall.dead_tile_add();
+    }
+
     private void server_ron(ServerMessage message)
     {
         ServerMessageRon ron = (ServerMessageRon)message;
+    }
+
+    private void server_late_kan(ServerMessage message)
+    {
+        ServerMessageLateKan kan = (ServerMessageLateKan)message;
+        RenderPlayer player = players[kan.player_ID];
+        RenderTile tile = tiles[kan.tile_ID];
+        player.late_kan(tile);
+    }
+
+    private void server_closed_kan(ServerMessage message)
+    {
+        ServerMessageClosedKan kan = (ServerMessageClosedKan)message;
+        RenderPlayer player = players[kan.player_ID];
+        player.closed_kan(kan.get_type_enum());
     }
 
     private void server_open_kan(ServerMessage message)
@@ -117,38 +144,50 @@ public class GameRenderView : View, IGameRenderer
 
     public override void added()
     {
+        float tile_scale = 1.20f;
         //parent_window.set_cursor_hidden(true);
 
         RenderModel tile = store.load_model("tile", true);
-        Vec3 tile_size = tile.size;
+        Vec3 tile_size = tile.size.mul_scalar(tile_scale);
 
-        table = new RenderTable(store);
+        table = new RenderTable(store, tile_size);
+
+        float player_offset = table.player_offset;
+        float wall_offset = (tile_size.x * 19 + tile_size.z) / 2;
 
         for (int i = 0; i < tiles.length; i++)
-            tiles[i] = new RenderTile(store, new Tile(i, TileType.BLANK, false));
+            tiles[i] = new RenderTile(store, new Tile(i, TileType.BLANK, false), tile_scale);
 
-        wall = new RenderWall(tiles, tile_size, table.center, table.wall_offset, start_state.dealer, start_state.wall_index);
+        wall = new RenderWall(tiles, tile_size, table.center, wall_offset, start_state.dealer, start_state.wall_index);
 
         for (int i = 0; i < players.length; i++)
-            players[i] = new RenderPlayer(table.center, i, table.player_offset, table.wall_offset, tile_size);
+            players[i] = new RenderPlayer(table.center, i, player_offset, wall_offset, tile_size);
 
         if (start_state.player_ID != -1)
             observer = players[start_state.player_ID];
         else
             observer = players[0];
 
-        Vec3 pos = Vec3() { y = table.center.y + table.wall_offset };
-        pos = Calculations.vec3_plus(Calculations.rotate_y({}, (float)observer.seat / 2, {0,0,table.player_offset * 1.3f}), pos);
+
+        float camera_height = table.center.y + player_offset;
+        float camera_dist = player_offset * 1.5f;
+        camera.pitch = -0.25f;
+        camera.focal_length = 0.9f;
+
+        Vec3 pos = { 0, camera_height, camera_dist};
+        pos = Calculations.rotate_y({}, (float)observer.seat / 2, pos);
         camera.position = pos;
-        camera.pitch = -0.1f;
         camera.yaw = (float)observer.seat / 2;
 
         light1.color = Vec3() { x = 1, y = 1, z = 1 };
-        light1.intensity = 10;
-        light1.position = Vec3() { x = 0, y = 30, z = 0 };
+        light1.intensity = 20;
+
+        pos = Vec3() { x = 0, y = 45, z = camera_dist / 3 };
+        pos = Calculations.rotate_y({}, (float)observer.seat / 2, pos);
+        light1.position = pos;
 
         light2.color = Vec3() { x = 1, y = 1, z = 1 };
-        light2.intensity = 3;
+        light2.intensity = 4;
     }
 
     private int last_x = 0;
@@ -167,19 +206,10 @@ public class GameRenderView : View, IGameRenderer
 
         //camera.position = pos;
         light2.position = camera.position;
-
-        RenderTile? tile = get_hover_tile();
-        parent_window.set_cursor_type((tile != null) ? CursorType.HOVER : CursorType.NORMAL);
-
-        for (int i = 0; i < tiles.length; i++)
-        {
-            RenderTile t = tiles[i];
-            t.set_hovered(t == tile);
-        }
     }
 
-    private float bloom_intensity = 0.2f;
-    private float perlin_strength = 0;//0.25f;
+    //private float bloom_intensity = 0.2f;
+    //private float perlin_strength = 0;//0.25f;
     public override void do_render(RenderState state)
     {
         RenderScene3D scene = new RenderScene3D(state.screen_width, state.screen_height);
@@ -209,17 +239,80 @@ public class GameRenderView : View, IGameRenderer
         camera.yaw   = -dir.x / slow;
         camera.pitch = -dir.y / slow;
         //*/
+
+        for (int i = 0; i < tiles.length; i++)
+            tiles[i].set_hovered(false);
+
+        RenderTile? tile = null;
+        if (!mouse.handled && active)
+            tile = get_hover_tile();
+
+        bool hovered = false;
+
+        if (tile != null)
+        {
+            if (select_groups == null)
+            {
+                tile.set_hovered(true);
+                hovered = true;
+            }
+            else
+            {
+                TileSelectionGroup? group = get_tile_selection_group(tile);
+
+                if (group != null)
+                {
+                    foreach (Tile t in group.highlight_tiles)
+                        tiles[t.ID].set_hovered(true);
+
+                    hovered = true;
+                }
+            }
+        }
+
+        if (hovered)
+        {
+            mouse.cursor_type = CursorType.HOVER;
+            mouse.handled = true;
+        }
+    }
+
+    private TileSelectionGroup? get_tile_selection_group(RenderTile? tile)
+    {
+        if (tile == null || select_groups == null)
+            return null;
+
+        foreach (TileSelectionGroup group in select_groups)
+            foreach (Tile t in group.selection_tiles)
+                if (t.ID == tile.tile_type.ID)
+                    return group;
+
+        return null;
     }
 
     protected override void do_mouse_event(MouseEventArgs mouse)
     {
+        if (!active)
+        {
+            mouse_down_tile = null;
+            return;
+        }
+
         if (mouse.button == MouseEventArgs.Button.LEFT)
         {
             if (mouse.down)
-                mouse_down_tile = get_hover_tile();
+            {
+                RenderTile? tile = get_hover_tile();
+                if (select_groups != null && get_tile_selection_group(tile) == null)
+                    tile = null;
+
+                mouse_down_tile = tile;
+            }
             else
             {
                 RenderTile? tile = get_hover_tile();
+                if (select_groups != null && get_tile_selection_group(tile) == null)
+                    tile = null;
 
                 if (tile != null && tile == mouse_down_tile)
                     tile_selected(tile.tile_type);
@@ -302,12 +395,10 @@ public class GameRenderView : View, IGameRenderer
             accel_z = 0;
             break;
         case 86:
-            print("Z: %f\n", camera.roll);
-            camera.roll += 0.1f;
+            camera.focal_length -= 0.1f;
             break;
         case 87:
-            print("Z: %f\n", camera.roll);
-            camera.roll -= 0.1f;
+            camera.focal_length += 0.1f;
             break;
         case 118:
             parent_window.renderer.v_sync = !parent_window.renderer.v_sync;
@@ -321,6 +412,13 @@ public class GameRenderView : View, IGameRenderer
 
     public void set_active(bool active)
     {
-
+        this.active = active;
     }
+
+    public void set_tile_select_groups(ArrayList<TileSelectionGroup>? groups)
+    {
+        select_groups = groups;
+    }
+
+    public bool active { get; set; }
 }

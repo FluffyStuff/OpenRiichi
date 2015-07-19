@@ -133,9 +133,7 @@ public abstract class RenderTarget : Object, IRenderTarget
             state_mutex.unlock();
 
             load_resources();
-
             check_settings();
-
             render(current_state);
 
             if ((counter++ % frms) == 0)
@@ -143,7 +141,7 @@ public abstract class RenderTarget : Object, IRenderTarget
                 double time = timer.elapsed();
                 double diff = (time - last_time) / frms;
 
-                print("(R) Average frame time over %d frames: %fms (%ffps)\n", frms, diff * 1000, 1 / diff);
+                //print("(R) Average frame time over %d frames: %fms (%ffps)\n", frms, diff * 1000, 1 / diff);
 
                 last_time = time;
             }
@@ -187,9 +185,10 @@ public abstract class RenderTarget : Object, IRenderTarget
 
     public Mat4 get_projection_matrix(float view_angle, float aspect_ratio)
     {
+        aspect_ratio = Math.fmaxf(aspect_ratio, 1);
         view_angle  *= 0.6f;
-        float z_near = 0.5f * Math.fmaxf(aspect_ratio, 1);
-        float z_far  =   30 * Math.fmaxf(aspect_ratio, 1);
+        float z_near = 0.5f * aspect_ratio;
+        float z_far  =   30 * aspect_ratio;
 
         float vtan = (float)Math.tan(view_angle);
         Vec4 v1 = {1 / vtan, 0,                   0,                                    0};

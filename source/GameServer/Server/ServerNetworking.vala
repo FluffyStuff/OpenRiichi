@@ -4,16 +4,27 @@ namespace GameServer
     {
         public signal void player_connected(ServerPlayer player);
 
-        private Networking net = new Networking();
+        private Networking? net = new Networking();
 
         public ServerNetworking()
         {
-            net.connected.connect(connected);
+        }
+
+        ~ServerNetworking()
+        {
+            close();
         }
 
         public bool listen(uint16 port)
         {
+            net.connected.connect(connected);
             return net.host(port);
+        }
+
+        public void close()
+        {
+            net.connected.disconnect(connected);
+            net.close();
         }
 
         private void connected(Connection connection)

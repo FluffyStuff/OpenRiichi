@@ -66,28 +66,32 @@ public class ClientMessageChi : ClientMessage
 }
 
 public class ClientMessagePon : ClientMessage {}
-/*{
-    public ClientMessagePon(int tile_1_ID, int tile_2_ID)
-    {
-        this.tile_1_ID = tile_1_ID;
-        this.tile_2_ID = tile_2_ID;
-    }
-
-    public int tile_1_ID { get; protected set; }
-    public int tile_2_ID { get; protected set; }
-}*/
 
 public class ClientMessageOpenKan : ClientMessage {}
-/*{
-    public ClientMessageOpenKan(int tile_1_ID, int tile_2_ID, int tile_3_ID)
+
+public class ClientMessageClosedKan : ClientMessage
+{
+    public ClientMessageClosedKan(int tile_type)
     {
-        this.tile_1_ID = tile_1_ID;
-        this.tile_2_ID = tile_2_ID;
-        this.tile_3_ID = tile_3_ID;
+        this.tile_type = tile_type;
     }
 
-    public int tile_1_ID { get; protected set; }
-    public int tile_2_ID { get; protected set; }
-}*/
+    public TileType get_type_enum()
+    {
+        return (TileType)tile_type;
+    }
+
+    public int tile_type { get; protected set; }
+}
+
+public class ClientMessageLateKan : ClientMessage
+{
+    public ClientMessageLateKan(int tile_ID)
+    {
+        this.tile_ID = tile_ID;
+    }
+
+    public int tile_ID { get; protected set; }
+}
 
 public class ClientMessageRon : ClientMessage {}

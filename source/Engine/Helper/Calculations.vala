@@ -130,7 +130,7 @@ public class Calculations
     {
         float aspect = width / height;
         float x = -(1 - point_x / width  * 2) * aspect;
-        float y =  (1 - point_y / height * 2) * aspect;
+        float y = -(1 - point_y / height * 2) * aspect;
 
         // TODO: Why is this the unview matrix?
         Mat4 unview_matrix = view_matrix.mul_mat(projection_matrix.inverse());
@@ -326,6 +326,6 @@ public class Calculations
     public static Mat3 get_model_matrix_3(Vec2 position, float rotation, Vec2 scale)
     {
         Mat3 rot = rotation_matrix_3(rotation * (float)Math.PI);
-        return scale_matrix_3(scale).mul_mat(rot).mul_mat(translation_matrix_3(position));
+        return rot.mul_mat(scale_matrix_3(scale))/*.mul_mat(rot)*/.mul_mat(translation_matrix_3(position));
     }
 }

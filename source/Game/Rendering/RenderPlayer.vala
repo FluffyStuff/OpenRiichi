@@ -4,9 +4,6 @@ public class RenderPlayer
 {
     private Vec3 center;
     private Vec3 tile_size;
-    //private Vec3 hand_position;
-    //private Vec3 pond_position;
-    //private Vec3 discard_position;
     private float player_offset;
     private float wall_offset;
 
@@ -17,8 +14,8 @@ public class RenderPlayer
     public RenderPlayer(Vec3 center, int seat, float player_offset, float wall_offset, Vec3 tile_size)
     {
         this.center = center;
-        this.player_offset = player_offset - 3 * tile_size.z;
-        this.wall_offset = wall_offset + tile_size.z * 3;
+        this.player_offset = player_offset;
+        this.wall_offset = wall_offset;
         this.seat = seat;
         this.tile_size = tile_size;
 
@@ -28,7 +25,7 @@ public class RenderPlayer
 
         hand = new RenderHand(pos, tile_size, seat);
 
-        pos = Vec3() { z = this.wall_offset };
+        pos = Vec3() { z = (this.wall_offset + this.player_offset) / 2 - tile_size.z };
         pos = Calculations.rotate_y({}, (float)seat / 2, pos);
         pos = Calculations.vec3_plus(center, pos);
 
@@ -55,6 +52,31 @@ public class RenderPlayer
     public void rob_tile(RenderTile tile)
     {
         pond.remove(tile);
+    }
+
+    public void late_kan(RenderTile tile)
+    {
+        RenderCalls.RenderCallPon pon = calls.get_pon(tile.tile_type.tile_type);
+
+        ArrayList<RenderTile> tiles = new ArrayList<RenderTile>();
+        tiles.add_all(pon.tiles);
+        tiles.add(tile);
+
+        hand.remove(tile);
+
+        RenderCalls.RenderCallLateKan kan = new RenderCalls.RenderCallLateKan(tiles, tile_size, pon.alignment);
+        calls.late_kan(pon, kan);
+    }
+
+    public void closed_kan(TileType type)
+    {
+        ArrayList<RenderTile> tiles = hand.get_tiles_type(type);
+
+        foreach (RenderTile tile in tiles)
+            hand.remove(tile);
+
+        RenderCalls.RenderCallClosedKan kan = new RenderCalls.RenderCallClosedKan(tiles, tile_size);
+        calls.add(kan);
     }
 
     public void open_kan(RenderPlayer discard_player, RenderTile discard_tile, RenderTile tile_1, RenderTile tile_2, RenderTile tile_3)
@@ -89,16 +111,36 @@ public class RenderPlayer
 
     public void chi(RenderPlayer discard_player, RenderTile discard_tile, RenderTile tile_1, RenderTile tile_2)
     {
+        hand.remove(tile_1);
+        hand.remove(tile_2);
 
-    }
+        ArrayList<RenderTile> tiles = new ArrayList<RenderTile>();
+        tiles.add(tile_1);
+        tiles.add(tile_2);
 
-    public void order_tiles()
-    {
-        hand.order_tiles();
+        RenderCalls.RenderCallChi chi = new RenderCalls.RenderCallChi(discard_tile, tiles, tile_size);
+        calls.add(chi);
     }
 
     public ArrayList<RenderTile> hand_tiles { get { return hand.tiles; } }
     public int seat { get; private set; }
+
+    public static ArrayList<RenderTile> sort_tiles(ArrayList<RenderTile> list)
+    {
+        ArrayList<RenderTile> tiles = new ArrayList<RenderTile>();
+        tiles.add_all(list);
+
+        CompareFunc<RenderTile> cmp = (t1, t2) =>
+        {
+            int a = (int)t1.tile_type.tile_type;
+            int b = (int)t2.tile_type.tile_type;
+            return (int) (a > b) - (int) (a < b);
+        };
+
+        tiles.sort(cmp);
+
+        return tiles;
+    }
 }
 
 private class RenderHand
@@ -118,28 +160,26 @@ private class RenderHand
     public void add_tile(RenderTile tile)
     {
         tiles.add(tile);
-        order_tiles();
+        tiles = RenderPlayer.sort_tiles(tiles);
+        order_hand();
     }
 
     public void remove(RenderTile tile)
     {
         tiles.remove(tile);
-        order_tiles();
+        tiles = RenderPlayer.sort_tiles(tiles);
+        order_hand();
     }
 
-    public void order_tiles()
+    public ArrayList<RenderTile> get_tiles_type(TileType type)
     {
+        ArrayList<RenderTile> tiles = new ArrayList<RenderTile>();
 
-        CompareFunc<RenderTile> cmp = (t1, t2) =>
-        {
-            int a = (int)t1.tile_type.tile_type;
-            int b = (int)t2.tile_type.tile_type;
-            return (int) (a > b) - (int) (a < b);
-        };
+        foreach (RenderTile tile in this.tiles)
+            if (tile.tile_type.tile_type == type)
+                tiles.add(tile);
 
-        tiles.sort(cmp);
-
-        order_hand();
+        return tiles;
     }
 
     private void order_hand()
@@ -254,8 +294,6 @@ public class RenderCalls
         this.tile_size = tile_size;
         this.seat = seat;
 
-        float max = float.max(2 * tile_size.x, tile_size.z);
-
         x_dir = Vec3() { x = 1 };
         z_dir = Vec3() { z = 1 };
         x_dir = Calculations.rotate_y({}, (float)seat / 2, x_dir);
@@ -265,7 +303,30 @@ public class RenderCalls
     public void add(RenderCall call)
     {
         calls.add(call);
+        arrange();
+    }
 
+    public RenderCallPon? get_pon(TileType type)
+    {
+        foreach (RenderCall call in calls)
+            if (call.get_type() == typeof(RenderCallPon) &&
+                ((RenderCallPon)call).tiles[0].tile_type.tile_type == type)
+                    return (RenderCallPon)call;
+
+        return null;
+    }
+
+    public void late_kan(RenderCallPon pon, RenderCallLateKan kan)
+    {
+        int index = calls.index_of(pon);
+        calls.remove_at(index);
+        calls.insert(index, kan);
+
+        arrange();
+    }
+
+    private void arrange()
+    {
         float height = 0;
 
         foreach (RenderCall c in calls)
@@ -292,11 +353,118 @@ public class RenderCalls
         }
     }
 
-    public abstract class RenderCall
+    public abstract class RenderCall : Object
     {
         public abstract void arrange(Vec3 position, Vec3 x_dir, Vec3 z_dir, float y_rotation);
         public abstract float height { get; }
     }
+
+    public class RenderCallLateKan : RenderCall
+    {
+        private ArrayList<RenderTile> tiles;
+        private Vec3 tile_size;
+        private Alignment alignment;
+
+        public RenderCallLateKan(ArrayList<RenderTile> tiles, Vec3 tile_size, Alignment alignment)
+        {
+            this.tiles = tiles;
+            this.tile_size = tile_size;
+            this.alignment = alignment;
+        }
+
+        public override void arrange(Vec3 position, Vec3 x_dir, Vec3 z_dir, float y_rotation)
+        {
+            float width = -tile_size.x / 2;
+            float bottom = -tile_size.z / 2;
+            int n;
+
+            switch (alignment)
+            {
+            case Alignment.RIGHT:
+                n = 0;
+                break;
+            case Alignment.CENTER:
+            default:
+                n = 1;
+                break;
+            case Alignment.LEFT:
+                n = 2;
+                break;
+            }
+
+            for (int i = 0; i < tiles.size; i++)
+            {
+                RenderTile tile = tiles[i];
+
+                float x = width;
+                float z = bottom;
+                float rotation = y_rotation;
+
+                if (i == n)
+                {
+                    x += tile_size.z / 2;
+                    z += tile_size.x / 2;
+
+                    rotation += 0.5f;
+                }
+                else if (i == n+1)
+                {
+                    x += tile_size.z / 2;
+                    z += tile_size.x / 2 * 3;
+
+                    rotation += 0.5f;
+                    width += tile_size.z;
+                }
+                else
+                {
+                    x += tile_size.x / 2;
+                    z += tile_size.z / 2;
+
+                    width += tile_size.x;
+                }
+
+                tile.rotation = {0, rotation, 0};
+                Vec3 pos = x_dir.mul_scalar(-x);
+                pos = pos.plus(z_dir.mul_scalar(-z));
+                pos = pos.plus({0, tile_size.y / 2, 0});
+                tile.position = Calculations.vec3_plus(position, pos);
+            }
+        }
+
+        public override float height { get { return float.max(tile_size.z, 2 * tile_size.x); } }
+    }
+
+    public class RenderCallClosedKan : RenderCall
+    {
+        private ArrayList<RenderTile> tiles;
+        private Vec3 tile_size;
+
+        public RenderCallClosedKan(ArrayList<RenderTile> tiles, Vec3 tile_size)
+        {
+            this.tiles = tiles;
+            this.tile_size = tile_size;
+        }
+
+        public override void arrange(Vec3 position, Vec3 x_dir, Vec3 z_dir, float y_rotation)
+        {
+            for (int i = 0; i < tiles.size; i++)
+            {
+                RenderTile tile = tiles[i];
+
+                float rotation = 1;
+                if (i == 1 || i == 2)
+                    rotation = 1 - rotation;
+
+                tile.rotation = {rotation, y_rotation, 0};
+                Vec3 pos = x_dir.mul_scalar(-tile_size.x * i);
+                pos = pos.plus({0, tile_size.y / 2, 0});
+                tile.position = Calculations.vec3_plus(position, pos);
+            }
+        }
+
+        public override float height { get { return tile_size.z; } }
+    }
+
 
     public class RenderCallOpenKan : RenderCall
     {
@@ -336,7 +504,7 @@ public class RenderCalls
                 RenderTile tile = tiles[i];
 
                 float x = width;
-                float z = height;
+                float z = bottom;
                 float rotation = y_rotation;
 
                 if (i == n)
@@ -344,7 +512,7 @@ public class RenderCalls
                     x += tile_size.z / 2;
                     z += tile_size.x / 2;
 
-                    rotation -= 0.5f;
+                    rotation += 0.5f;
                     width += tile_size.z;
                 }
                 else
@@ -368,9 +536,7 @@ public class RenderCalls
 
     public class RenderCallPon : RenderCall
     {
-        private ArrayList<RenderTile> tiles;
         private Vec3 tile_size;
-        private Alignment alignment;
 
         public RenderCallPon(ArrayList<RenderTile> tiles, Vec3 tile_size, Alignment alignment)
         {
@@ -404,7 +570,7 @@ public class RenderCalls
                 RenderTile tile = tiles[i];
 
                 float x = width;
-                float z = height;
+                float z = bottom;
                 float rotation = y_rotation;
 
                 if (i == n)
@@ -412,7 +578,98 @@ public class RenderCalls
                     x += tile_size.z / 2;
                     z += tile_size.x / 2;
 
-                    rotation -= 0.5f;
+                    rotation += 0.5f;
+                    width += tile_size.z;
+                }
+                else
+                {
+                    x += tile_size.x / 2;
+                    z += tile_size.z / 2;
+
+                    width += tile_size.x;
+                }
+
+                tile.rotation = {0, rotation, 0};
+                Vec3 pos = x_dir.mul_scalar(-x);
+                pos = pos.plus(z_dir.mul_scalar(-z));
+                pos = pos.plus({0, tile_size.y / 2, 0});
+                tile.position = Calculations.vec3_plus(position, pos);
+            }
+        }
+
+        public override float height { get { return tile_size.z; } }
+        public ArrayList<RenderTile> tiles { get; private set; }
+        public Alignment alignment { get; private set; }
+    }
+
+    public class RenderCallChi : RenderCall
+    {
+        private ArrayList<RenderTile> tiles;
+        private Vec3 tile_size;
+        private Alignment alignment;
+
+        public RenderCallChi(RenderTile discard_tile, ArrayList<RenderTile> tiles, Vec3 tile_size)
+        {
+            this.tiles = tiles;
+            this.tile_size = tile_size;
+            tiles.add(discard_tile);
+            ArrayList<RenderTile> sort = RenderPlayer.sort_tiles(tiles);
+            this.tiles = new ArrayList<RenderTile>();
+
+            for (int i = sort.size - 1; i >= 0; i--)
+                this.tiles.add(sort[i]);
+
+            int index = this.tiles.index_of(discard_tile);
+
+            switch (index)
+            {
+            case 0:
+                alignment = Alignment.RIGHT;
+                break;
+            case 1:
+            default:
+                alignment = Alignment.CENTER;
+                break;
+            case 2:
+                alignment = Alignment.LEFT;
+                break;
+            }
+        }
+
+        public override void arrange(Vec3 position, Vec3 x_dir, Vec3 z_dir, float y_rotation)
+        {
+            float width = -tile_size.x / 2;
+            float bottom = -tile_size.z / 2;
+            int n;
+
+            switch (alignment)
+            {
+            case Alignment.RIGHT:
+                n = 0;
+                break;
+            case Alignment.CENTER:
+            default:
+                n = 1;
+                break;
+            case Alignment.LEFT:
+                n = 2;
+                break;
+            }
+
+            for (int i = 0; i < tiles.size; i++)
+            {
+                RenderTile tile = tiles[i];
+
+                float x = width;
+                float z = bottom;
+                float rotation = y_rotation;
+
+                if (i == n)
+                {
+                    x += tile_size.z / 2;
+                    z += tile_size.x / 2;
+
+                    rotation += 0.5f;
                     width += tile_size.z;
                 }
                 else

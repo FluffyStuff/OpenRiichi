@@ -6,6 +6,7 @@ public abstract class IGameConnection
     private Mutex mutex = new Mutex();
 
     public signal void received_message();
+    public signal void disconnected();
 
     public void receive_message(ServerMessage message)
     {
@@ -52,8 +53,16 @@ public class GameNetworkConnection : IGameConnection
     {
         this.connection = connection;
         connection.message_received.connect(parse_message);
+        connection.closed.connect(forward_disconnected);
 
         authoritative = false;
+    }
+
+    ~GameNetworkConnection()
+    {
+        connection.message_received.disconnect(parse_message);
+        connection.closed.disconnect(forward_disconnected);
+        connection.close();
     }
 
     public override void send_message(ClientMessage message)
@@ -68,11 +77,16 @@ public class GameNetworkConnection : IGameConnection
 
         if (msg == null || !msg.get_type().is_a(typeof(ServerMessage)))
         {
-            print("Client discarding message!\n");
+            print("Client discarding invalid server message!\n");
             return;
         }
 
         receive_message((ServerMessage)msg);
+    }
+
+    private void forward_disconnected(Connection connection)
+    {
+        disconnected();
     }
 
     public override bool authoritative { get; private set; }
@@ -96,6 +110,12 @@ public class GameLocalConnection : IGameConnection
     {
         if (connection != null)
             connection.receive_message(message);
+    }
+
+    public void close()
+    {
+        connection = null;
+        disconnected();
     }
 
     public override bool authoritative { get; private set; }
