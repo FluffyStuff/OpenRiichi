@@ -1,20 +1,20 @@
-private static Environment environment;
-
 public static int main(string[] args)
 {
-    environment = new Environment();
+    Environment environment = new Environment();
     if (!environment.init())
         return -1;
 
-    //Threading.start0(start_game);
-    start_game();
+    //Threading.start1(start_game, environment);
+    start_game(environment);
 
     return 0;
 }
 
-private static void start_game()
+private static void start_game(Object env)
 {
-    SDL.Window wnd = environment.createWindow("RiichiMahjong", 1280, 800);
+    Environment environment = (Environment)env;
+
+    SDL.Window wnd = environment.createWindow("RiichiMahjong", 1280, 720);
     SDLWindowTarget sdlWindow = new SDLWindowTarget(wnd);
     OpenGLRenderer renderer = new OpenGLRenderer(sdlWindow);
     MainWindow window = new MainWindow(sdlWindow, renderer);

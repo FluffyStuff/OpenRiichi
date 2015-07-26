@@ -13,19 +13,32 @@ namespace GameServer
             players = new GameStatePlayer[4];
 
             for (int i = 0; i < players.length; i++)
-                players[i] = new GameStatePlayer(i);
+                players[i] = new GameStatePlayer(i, (Wind)i, i == 0);
         }
 
-        public ArrayList<GameStatePlayer> get_call_players(GameStatePlayer caller, Tile tile)
+        public ArrayList<GameStatePlayer> get_call_players(GameStatePlayer caller, GameStateContext context)
+        {
+            ArrayList<GameStatePlayer> players = new ArrayList<GameStatePlayer>();
+
+            Tile tile = context.win_tile;
+
+            foreach (GameStatePlayer player in this.players)
+                if (player != caller &&
+                    (player.can_ron(context) ||
+                     player.can_pon(tile) ||
+                    (((caller.ID + 1) % 4 == player.ID) && player.can_chii(tile))))
+                        players.add(player);
+
+            return players;
+        }
+
+        public ArrayList<GameStatePlayer> get_tenpai_players()
         {
             ArrayList<GameStatePlayer> players = new ArrayList<GameStatePlayer>();
 
             foreach (GameStatePlayer player in this.players)
-                if (player != caller &&
-                    (player.can_ron(tile) ||
-                     player.can_pon(tile) ||
-                    (((caller.ID + 1) % 4 == player.ID) && player.can_chi(tile))))
-                        players.add(player);
+                if (player.in_tenpai())
+                    players.add(player);
 
             return players;
         }

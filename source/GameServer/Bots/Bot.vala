@@ -72,6 +72,21 @@ public abstract class Bot : Object
         state.tile_discard(player_ID, tile_ID);
     }
 
+    public void ron(int player_ID, int discarding_player_ID, int tile_ID)
+    {
+
+    }
+
+    public void tsumo(int player_ID)
+    {
+
+    }
+
+    public void riichi(int player_ID)
+    {
+        state.riichi(player_ID);
+    }
+
     public void turn_decision()
     {
         do_turn_decision();
@@ -102,23 +117,25 @@ public abstract class Bot : Object
         state.pon(player_ID, discarding_player_ID, tile_ID, tile_1_ID, tile_2_ID);
     }
 
-    public void chi(int player_ID, int discarding_player_ID, int tile_ID, int tile_1_ID, int tile_2_ID)
+    public void chii(int player_ID, int discarding_player_ID, int tile_ID, int tile_1_ID, int tile_2_ID)
     {
-        state.chi(player_ID, discarding_player_ID, tile_ID, tile_1_ID, tile_2_ID);
+        state.chii(player_ID, discarding_player_ID, tile_ID, tile_1_ID, tile_2_ID);
     }
 
     ////////////
 
     public signal void poll();
 
-    public signal void discard_tile(Tile tile);
+    public signal void do_discard(Tile tile);
+    public signal void do_tsumo();
+    public signal void do_riichi();
     public signal void do_late_kan(Tile tile);
     public signal void do_closed_kan(TileType type);
-    public signal void no_call();
+    public signal void call_nothing();
     public signal void call_ron();
     public signal void call_open_kan();
     public signal void call_pon();
-    public signal void call_chi(Tile tile_1, Tile tile_2);
+    public signal void call_chii(Tile tile_1, Tile tile_2);
 
     protected abstract void do_turn_decision();
     protected abstract void do_call_decision(ClientGameStatePlayer discarding_player, Tile tile);

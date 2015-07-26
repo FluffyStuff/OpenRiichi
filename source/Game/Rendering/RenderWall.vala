@@ -32,7 +32,7 @@ public class RenderWall
         int rot = last_wall;
         if (left.size < 14)
             rot = (rot + 3) % 4;
-        dead_wall = new DeadWall(left, right, rot, tile_size);
+        dead_wall = new DeadWall(left, right, split, rot, tile_size);
     }
 
     public RenderTile? draw_wall()
@@ -48,6 +48,11 @@ public class RenderWall
     public void flip_dora()
     {
         dead_wall.flip_dora();
+    }
+
+    public void flip_ura_dora()
+    {
+        dead_wall.flip_ura_dora();
     }
 
     public void dead_tile_add()
@@ -129,19 +134,25 @@ public class RenderWall
             {
                 RenderTile t = left[i];
                 Vec3 pos = Calculations.rotate_y({}, r, {left_m * offset});
-                t.position = Calculations.vec3_plus(t.position, pos);
+                pos = Calculations.vec3_plus(t.position, pos);
+
+                t.animate_towards(pos, t.rotation);
             }
             for (int i = 0; i < center.size; i++)
             {
                 RenderTile t = center[i];
                 Vec3 pos = Calculations.rotate_y({}, r, {center_m * offset});
-                t.position = Calculations.vec3_plus(t.position, pos);
+                pos = Calculations.vec3_plus(t.position, pos);
+
+                t.animate_towards(pos, t.rotation);
             }
             for (int i = 0; i < right.size; i++)
             {
                 RenderTile t = right[i];
                 Vec3 pos = Calculations.rotate_y({}, r, {right_m * offset});
-                t.position = Calculations.vec3_plus(t.position, pos);
+                pos = Calculations.vec3_plus(t.position, pos);
+
+                t.animate_towards(pos, t.rotation);
             }
 
             wall_left = left;
@@ -172,7 +183,10 @@ public class RenderWall
             RenderTile tile = list.remove_at(list.size - 1);
 
             if (removed_tiles % 2 == 0)
-                list[list.size - 1].position = tile.position;
+            {
+                RenderTile t = list[list.size - 1];
+                t.animate_towards(tile.position, tile.rotation);
+            }
 
             removed_tiles++;
             return tile;
@@ -209,13 +223,15 @@ public class RenderWall
                     y = ((i + 1) % 2 + 0.5f) * tile_size.y
                 };
 
-                tile.position = Calculations.vec3_plus(Calculations.rotate_y({}, -(float)rotation / 2, pos), position);
+                pos = Calculations.vec3_plus(Calculations.rotate_y({}, -(float)rotation / 2, pos), position);
 
-                tile.rotation = Vec3()
+                Vec3 rot = Vec3()
                 {
                     x = 1,
                     y = (float)rotation / 2 + 1
                 };
+
+                tile.set_absolute_location(pos, rot);
             }
         }
 
@@ -225,15 +241,19 @@ public class RenderWall
     private class DeadWall
     {
         private ArrayList<RenderTile> tiles = new ArrayList<RenderTile>();
+        private ArrayList<RenderTile> doras = new ArrayList<RenderTile>();
+        private ArrayList<RenderTile> ura_doras = new ArrayList<RenderTile>();
         private int rotation;
+        private int split;
         private Vec3 tile_size;
 
         private int dora_index = 4;
         private int tiles_added = 0;
 
-        public DeadWall(ArrayList<RenderTile> left, ArrayList<RenderTile> right, int rotation, Vec3 tile_size)
+        public DeadWall(ArrayList<RenderTile> left, ArrayList<RenderTile> right, int split, int rotation, Vec3 tile_size)
         {
             this.rotation = rotation;
+            this.split = split;
             this.tile_size = tile_size;
 
             for (int i = 0; i < left.size; i++)
@@ -251,12 +271,47 @@ public class RenderWall
         public void flip_dora()
         {
             RenderTile t = tiles[dora_index];
+            doras.add(t);
+            ura_doras.add(tiles[dora_index + 1]);
+
             Vec3 rot = t.rotation;
             rot = { 0, rot.y, rot.z };
 
-            t.rotation = rot;
+            t.animate_towards(t.position, rot);
 
             dora_index += 2;
+        }
+
+        public void flip_ura_dora()
+        {
+            for (int i = 0; i < doras.size; i++)
+            {
+                RenderTile tile = doras[i];
+                Vec3 pos = { 0, -tile_size.y, 0 };
+                pos = pos.plus(tile.position);
+                tile.animate_towards(pos, tile.rotation);
+            }
+
+            for (int i = 0; i < ura_doras.size; i++)
+            {
+                RenderTile tile = ura_doras[i];
+                int rotation = this.rotation;
+                float dir = -0.001f;
+                if (split >= 7)
+                    rotation--;
+                if (3 + i <= split)
+                {
+                    rotation--;
+                    dir = -dir;
+                }
+
+                Vec3 pos = { 0, 0, -tile_size.z };
+                pos = Calculations.rotate_y({}, -(float)rotation / 2, pos).plus(tile.position);
+
+                Vec3 rot = tile.rotation;
+                rot = { dir, rot.y, rot.z }; // Not 0, so it flips in the right direction
+                tile.animate_towards(pos, rot);
+            }
         }
 
         public void dead_tile_add(RenderTile tile)
@@ -272,13 +327,15 @@ public class RenderWall
             else
                 pos = { 0, tile_size.y, 0 };
 
-            tile.position = tiles[tiles.size - 1].position.plus(pos);
+            pos = tiles[tiles.size - 1].position.plus(pos);
 
-            tile.rotation = Vec3()
+            Vec3 rot = Vec3()
             {
                 x = 1,
                 y = (float)rotation / 2 + 1
             };
+
+            tile.animate_towards(pos, rot);
 
             tiles_added++;
             tiles.insert(tiles.size, tile);

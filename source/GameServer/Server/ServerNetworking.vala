@@ -27,6 +27,12 @@ namespace GameServer
             net.close();
         }
 
+        public void stop_listening()
+        {
+            net.connected.disconnect(connected);
+            net.stop_listening();
+        }
+
         private void connected(Connection connection)
         {
             ServerPlayerNetworkConnection con = new ServerPlayerNetworkConnection(connection);

@@ -104,7 +104,7 @@ namespace GameServer
         }
     }
 
-    public abstract class ServerPlayerConnection
+    public abstract class ServerPlayerConnection : Object
     {
         public signal void receive_message(ClientMessage message);
         public abstract void send_message(ServerMessage message);
@@ -160,11 +160,32 @@ namespace GameServer
 
     public class ServerPlayerLocalConnection : ServerPlayerConnection
     {
-        private unowned GameLocalConnection? connection;
+        private GameLocalConnection? connection;
+
+        ~ServerPlayerLocalConnection()
+        {
+            if (connection != null)
+            {
+                connection.disconnected.disconnect(connection_disconnected);
+                connection = null;
+                disconnected();
+            }
+        }
 
         public void set_connection(GameLocalConnection connection)
         {
+            ref();
+
+            if (this.connection != null)
+            {
+                this.connection.disconnected.disconnect(connection_disconnected);
+                this.connection.close();
+            }
+
             this.connection = connection;
+            this.connection.disconnected.connect(connection_disconnected);
+
+            unref();
         }
 
         public override void send_message(ServerMessage message)
@@ -175,7 +196,19 @@ namespace GameServer
 
         public override void close()
         {
-            connection.close();
+            if (connection != null)
+                connection_disconnected();
+        }
+
+        private void connection_disconnected()
+        {
+            ref();
+
+            connection.disconnected.disconnect(connection_disconnected);
+            connection = null;
+            disconnected();
+
+            ref();
         }
     }
 }

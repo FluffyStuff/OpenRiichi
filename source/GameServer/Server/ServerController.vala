@@ -57,7 +57,7 @@ namespace GameServer
             mutex.unlock();
 
             if (players.size == 4)
-                Threading.start0(start);
+                start_game();
         }
 
         public void remove_player(ServerPlayer player)
@@ -68,13 +68,12 @@ namespace GameServer
             mutex.unlock();
         }
 
-        private void start()
+        public void start_game()
         {
-            //Thread.usleep(1 * 1000000);
-            start_game();
+            Threading.start0(start);
         }
 
-        public void start_game()
+        private void start()
         {
             mutex.lock();
             bool ready = true;
@@ -102,6 +101,8 @@ namespace GameServer
                 mutex.unlock();
                 return;
             }
+
+            net.stop_listening();
 
             ref(); // Keep alive until graceful shutdown
 

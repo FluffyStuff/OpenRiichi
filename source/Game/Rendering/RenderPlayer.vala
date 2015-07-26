@@ -6,26 +6,31 @@ public class RenderPlayer
     private Vec3 tile_size;
     private float player_offset;
     private float wall_offset;
+    private bool observed;
+
+    private int draw_count = 0;
 
     private RenderHand hand;
     private RenderPond pond;
     private RenderCalls calls;
+    private RenderRiichi render_riichi;
 
-    public RenderPlayer(Vec3 center, int seat, float player_offset, float wall_offset, Vec3 tile_size)
+    public RenderPlayer(IResourceStore store, Vec3 center, int seat, float player_offset, float wall_offset, Vec3 tile_size, bool observed)
     {
         this.center = center;
         this.player_offset = player_offset;
         this.wall_offset = wall_offset;
         this.seat = seat;
         this.tile_size = tile_size;
+        this.observed = observed;
 
         Vec3 pos = Vec3() { z = this.player_offset };
         pos = Calculations.rotate_y({}, (float)seat / 2, pos);
         pos = Calculations.vec3_plus(center, pos);
 
-        hand = new RenderHand(pos, tile_size, seat);
+        hand = new RenderHand(pos, tile_size, seat, observed ? 0.42f : 0);
 
-        pos = Vec3() { z = (this.wall_offset + this.player_offset) / 2 - tile_size.z };
+        pos = Vec3() { z = 3 * tile_size.x };
         pos = Calculations.rotate_y({}, (float)seat / 2, pos);
         pos = Calculations.vec3_plus(center, pos);
 
@@ -36,11 +41,28 @@ public class RenderPlayer
         pos = Calculations.vec3_plus(center, pos);
 
         calls = new RenderCalls(pos, tile_size, seat);
+
+        render_riichi = new RenderRiichi(store, tile_size, seat, center, player_offset, tile_size.x * 2.4f);
     }
 
-    public void add_to_hand(RenderTile tile)
+    public void process(DeltaArgs args)
     {
-        hand.add_tile(tile);
+        render_riichi.process(args);
+    }
+
+    public void render(RenderScene3D scene)
+    {
+        render_riichi.render(scene);
+    }
+
+    public void draw_tile(RenderTile tile)
+    {
+        if (++draw_count >= 14)
+            hand.draw_tile(tile);
+        else
+            hand.add_tile(tile);
+
+        last_drawn_tile = tile;
     }
 
     public void discard(RenderTile tile)
@@ -52,6 +74,40 @@ public class RenderPlayer
     public void rob_tile(RenderTile tile)
     {
         pond.remove(tile);
+    }
+
+    public void ron(RenderTile tile)
+    {
+        hand.winning_tile = tile;
+        hand.order_hand(true);
+    }
+
+    public void tsumo()
+    {
+        hand.winning_tile = last_drawn_tile;
+        hand.order_hand(true);
+        hand.remove(last_drawn_tile);
+    }
+
+    public void open_hand()
+    {
+        hand.sort_hand();
+        hand.order_hand(false);
+        hand.view_angle = 0.5f;
+        hand.order_hand(true);
+    }
+
+    public void close_hand()
+    {
+        hand.view_angle = -0.5f;
+        hand.order_hand(true);
+    }
+
+    public void riichi()
+    {
+        render_riichi.animate();
+        pond.riichi();
+        in_riichi = true;
     }
 
     public void late_kan(RenderTile tile)
@@ -109,7 +165,7 @@ public class RenderPlayer
         calls.add(pon);
     }
 
-    public void chi(RenderPlayer discard_player, RenderTile discard_tile, RenderTile tile_1, RenderTile tile_2)
+    public void chii(RenderPlayer discard_player, RenderTile discard_tile, RenderTile tile_1, RenderTile tile_2)
     {
         hand.remove(tile_1);
         hand.remove(tile_2);
@@ -118,12 +174,14 @@ public class RenderPlayer
         tiles.add(tile_1);
         tiles.add(tile_2);
 
-        RenderCalls.RenderCallChi chi = new RenderCalls.RenderCallChi(discard_tile, tiles, tile_size);
-        calls.add(chi);
+        RenderCalls.RenderCallChii chii = new RenderCalls.RenderCallChii(discard_tile, tiles, tile_size);
+        calls.add(chii);
     }
 
     public ArrayList<RenderTile> hand_tiles { get { return hand.tiles; } }
+    public RenderTile last_drawn_tile { get; private set; }
     public int seat { get; private set; }
+    public bool in_riichi { get; private set; }
 
     public static ArrayList<RenderTile> sort_tiles(ArrayList<RenderTile> list)
     {
@@ -149,26 +207,45 @@ private class RenderHand
     private Vec3 tile_size;
     private int seat;
 
-    public RenderHand(Vec3 position, Vec3 tile_size, int seat)
+    public RenderHand(Vec3 position, Vec3 tile_size, int seat, float view_angle)
     {
         tiles = new ArrayList<RenderTile>();
         this.position = position;
         this.tile_size = tile_size;
         this.seat = seat;
+        this.view_angle = view_angle;
+        winning_tile = null;
     }
 
     public void add_tile(RenderTile tile)
     {
         tiles.add(tile);
-        tiles = RenderPlayer.sort_tiles(tiles);
-        order_hand();
+        sort_hand();
+        order_hand(true);
+    }
+
+    public void draw_tile(RenderTile tile)
+    {
+        if (tiles.size > 1)
+        {
+            sort_hand();
+            order_hand(true);
+            order_draw_tile(tile);
+            tiles.add(tile);
+        }
+        else
+        {
+            tiles.add(tile);
+            sort_hand();
+            order_hand(true);
+        }
     }
 
     public void remove(RenderTile tile)
     {
         tiles.remove(tile);
-        tiles = RenderPlayer.sort_tiles(tiles);
-        order_hand();
+        sort_hand();
+        order_hand(true);
     }
 
     public ArrayList<RenderTile> get_tiles_type(TileType type)
@@ -182,31 +259,85 @@ private class RenderHand
         return tiles;
     }
 
-    private void order_hand()
+    public void sort_hand()
+    {
+        tiles = RenderPlayer.sort_tiles(tiles);
+    }
+
+    public void order_hand(bool animate)
     {
         for (int i = 0; i < tiles.size; i++)
+            order_tile(tiles[i], i, animate);
+
+        if (winning_tile != null)
+            order_tile(winning_tile, tiles.size + 0.5f, animate);
+    }
+
+    private void order_tile(RenderTile tile, float tile_position, bool animate)
+    {
+        Vec3 pos = Vec3()
         {
-            Vec3 pos = Vec3()
-            {
-                x = (i - ((float)tiles.size - 1) / 2) * tile_size.x,
-                y = tile_size.z / 2
-            };
+            x = (tile_position - ((float)tiles.size - 1) / 2) * tile_size.x,
+            y = tile_size.z / 2
+        };
 
-            pos = Calculations.rotate_y({}, (float)seat / 2, pos);
-            pos = Calculations.vec3_plus(position, pos);
-            tiles[i].position = pos;
+        float anc = -tile_size.y / 2;
+        if (view_angle < 0)
+            anc *= -1;
 
-            Vec3 rot = Vec3()
-            {
-                x = 0.5f,
-                y = 1 - (float)seat / 2
-            };
+        Vec3 anchor = { 0, 0, anc};
+        pos = Calculations.rotate_x(anchor, -view_angle, pos);
 
-            tiles[i].rotation = rot;
+        pos = Calculations.rotate_y({}, (float)seat / 2, pos);
+        pos = Calculations.vec3_plus(position, pos);
+
+        Vec3 rot = Vec3()
+        {
+            x = 0.5f - view_angle,
+            y = 1 - (float)seat / 2
+        };
+
+        if (animate)
+            tile.animate_towards(pos, rot);
+        else
+        {
+            tile.set_absolute_location(pos, rot);
         }
     }
 
+    private void order_draw_tile(RenderTile tile)
+    {
+        Vec3 pos = Vec3()
+        {
+            x = (((float)tiles.size - 2) / 2) * tile_size.x,
+            y = tile_size.z + tile_size.x / 2
+        };
+
+        float anc = -tile_size.y / 2;
+        if (view_angle < 0)
+            anc *= -1;
+
+        Vec3 anchor = { 0, 0, anc};
+        pos = Calculations.rotate_x(anchor, -view_angle, pos);
+
+        pos = Calculations.rotate_y({}, (float)seat / 2, pos);
+        pos = Calculations.vec3_plus(position, pos);
+
+        Vec3 rot = Vec3()
+        {
+            x = 0.5f - view_angle,
+            y = 1 - (float)seat / 2,
+            z = -0.5f
+        };
+
+        //rot = Calculations.rotate_y({}, (float)seat / 2, rot);
+
+        tile.animate_towards(pos, rot);
+    }
+
     public ArrayList<RenderTile> tiles { get; private set; }
+    public float view_angle { get; set; }
+    public RenderTile? winning_tile { get; set; }
 }
 
 private class RenderPond
@@ -216,6 +347,8 @@ private class RenderPond
     private int seat;
 
     private ArrayList<RenderTile> tiles = new ArrayList<RenderTile>();
+    private RenderTile? riichi_tile = null;
+    private bool do_riichi = false;
 
     public RenderPond(Vec3 position, Vec3 tile_size, int seat)
     {
@@ -226,6 +359,12 @@ private class RenderPond
 
     public void add(RenderTile tile)
     {
+        if (do_riichi)
+        {
+            riichi_tile = tile;
+            do_riichi = false;
+        }
+
         tiles.add(tile);
         arrange_pond();
     }
@@ -234,45 +373,73 @@ private class RenderPond
     {
         tiles.remove(tile);
         arrange_pond();
+
+        if (tile == riichi_tile)
+            do_riichi = true;
     }
 
-    public void arrange_pond()
+    public void riichi()
     {
+        do_riichi = true;
+    }
+
+    private void arrange_pond()
+    {
+        // Top left corner
+        float width = -3 * tile_size.x;
+        float height = 0;
+
         for (int i = 0; i < tiles.size; i++)
         {
             RenderTile tile = tiles[i];
 
-            int row = 0;
-            int col = i;
-
-            if (i >= 6)
+            if (i == 6)
             {
-                row++;
-                col -= 6;
+                width = -3 * tile_size.x;
+                height = tile_size.z;
             }
-            if (i >= 12)
+            else if (i == 12)
             {
-                row++;
-                col -= 6;
+                width = -3 * tile_size.x;
+                height = 2 * tile_size.z;
+            }
+
+            float x;
+            float y;
+            float r = 0;
+
+            if (tile == riichi_tile)
+            {
+                x = width + tile_size.z / 2;
+                y = height + tile_size.z - tile_size.x / 2;
+                r = -0.5f;
+
+                width += tile_size.z;
+            }
+            else
+            {
+                x = width + tile_size.x / 2;
+                y = height + tile_size.z / 2;
+
+                width += tile_size.x;
             }
 
             Vec3 pos = Vec3()
             {
-                x = (col - 2.5f) * tile_size.x,
+                x = x,
                 y = tile_size.y / 2,
-                z = row * tile_size.z
+                z = y
             };
 
             pos = Calculations.rotate_y({}, (float)seat / 2, pos);
             pos = Calculations.vec3_plus(position, pos);
-            tile.position = pos;
 
             Vec3 rot = Vec3()
             {
-                y = 1 - (float)seat / 2
+                y = 1 - (float)seat / 2 + r
             };
 
-            tile.rotation = rot;
+            tile.animate_towards(pos, rot);
         }
     }
 }
@@ -423,11 +590,13 @@ public class RenderCalls
                     width += tile_size.x;
                 }
 
-                tile.rotation = {0, rotation, 0};
                 Vec3 pos = x_dir.mul_scalar(-x);
                 pos = pos.plus(z_dir.mul_scalar(-z));
                 pos = pos.plus({0, tile_size.y / 2, 0});
-                tile.position = Calculations.vec3_plus(position, pos);
+                pos = Calculations.vec3_plus(position, pos);
+                Vec3 rot = {0, rotation, 0};
+
+                tile.animate_towards(pos, rot);
             }
         }
 
@@ -449,16 +618,18 @@ public class RenderCalls
         {
             for (int i = 0; i < tiles.size; i++)
             {
-                RenderTile tile = tiles[i];
+                RenderTile tile = tiles[tiles.size - i - 1];
 
                 float rotation = 1;
                 if (i == 1 || i == 2)
                     rotation = 1 - rotation;
 
-                tile.rotation = {rotation, y_rotation, 0};
                 Vec3 pos = x_dir.mul_scalar(-tile_size.x * i);
                 pos = pos.plus({0, tile_size.y / 2, 0});
-                tile.position = Calculations.vec3_plus(position, pos);
+                pos = Calculations.vec3_plus(position, pos);
+                Vec3 rot = {rotation, y_rotation, 0};
+
+                tile.animate_towards(pos, rot);
             }
         }
 
@@ -523,11 +694,13 @@ public class RenderCalls
                     width += tile_size.x;
                 }
 
-                tile.rotation = {0, rotation, 0};
                 Vec3 pos = x_dir.mul_scalar(-x);
                 pos = pos.plus(z_dir.mul_scalar(-z));
                 pos = pos.plus({0, tile_size.y / 2, 0});
-                tile.position = Calculations.vec3_plus(position, pos);
+                pos = Calculations.vec3_plus(position, pos);
+                Vec3 rot = {0, rotation, 0};
+
+                tile.animate_towards(pos, rot);
             }
         }
 
@@ -589,11 +762,14 @@ public class RenderCalls
                     width += tile_size.x;
                 }
 
-                tile.rotation = {0, rotation, 0};
                 Vec3 pos = x_dir.mul_scalar(-x);
                 pos = pos.plus(z_dir.mul_scalar(-z));
                 pos = pos.plus({0, tile_size.y / 2, 0});
-                tile.position = Calculations.vec3_plus(position, pos);
+                pos = Calculations.vec3_plus(position, pos);
+
+                Vec3 rot = {0, rotation, 0};
+
+                tile.animate_towards(pos, rot);
             }
         }
 
@@ -602,13 +778,13 @@ public class RenderCalls
         public Alignment alignment { get; private set; }
     }
 
-    public class RenderCallChi : RenderCall
+    public class RenderCallChii : RenderCall
     {
         private ArrayList<RenderTile> tiles;
         private Vec3 tile_size;
         private Alignment alignment;
 
-        public RenderCallChi(RenderTile discard_tile, ArrayList<RenderTile> tiles, Vec3 tile_size)
+        public RenderCallChii(RenderTile discard_tile, ArrayList<RenderTile> tiles, Vec3 tile_size)
         {
             this.tiles = tiles;
             this.tile_size = tile_size;
@@ -680,11 +856,13 @@ public class RenderCalls
                     width += tile_size.x;
                 }
 
-                tile.rotation = {0, rotation, 0};
                 Vec3 pos = x_dir.mul_scalar(-x);
                 pos = pos.plus(z_dir.mul_scalar(-z));
                 pos = pos.plus({0, tile_size.y / 2, 0});
-                tile.position = Calculations.vec3_plus(position, pos);
+                pos = Calculations.vec3_plus(position, pos);
+                Vec3 rot = {0, rotation, 0};
+
+                tile.animate_towards(pos, rot);
             }
         }
 
@@ -696,5 +874,76 @@ public class RenderCalls
         LEFT,
         CENTER,
         RIGHT
+    }
+}
+
+class RenderRiichi
+{
+    private RenderObject3D stick;
+
+    private bool animation_started = false;
+    private bool animation_set_time = false;
+    private float animation_time = 0.15f;
+    private Vec3 animation_start_position;
+    private Vec3 animation_end_position;
+    private float animation_start_time = 0;
+    private float animation_end_time = 0;
+
+    public RenderRiichi(IResourceStore store, Vec3 tile_size, int seat, Vec3 center, float start_offset, float end_offset)
+    {
+        RenderModel model = store.load_model("stick", true);
+        RenderTexture texture = store.load_texture("Sticks/Stick1000");
+
+        stick = new RenderObject3D(model, texture);
+        stick.rotation = { 0, (float)seat / 2, 0 };
+
+        animation_start_position = center.plus(Calculations.rotate_y({}, (float)seat / 2, { 0, model.size.y / 2, start_offset }));
+        animation_end_position = center.plus(Calculations.rotate_y({}, (float)seat / 2, { 0, model.size.y / 2, end_offset }));
+
+        float scale = tile_size.x * 0.6f;
+        stick.scale = { scale, scale, scale };
+    }
+
+    public void process(DeltaArgs args)
+    {
+        if (!animation_started)
+            return;
+
+        if (animation_set_time)
+        {
+            animation_start_time = args.time;
+            animation_end_time = args.time + animation_time;
+            animation_set_time = false;
+        }
+
+        if (args.time >= animation_end_time)
+        {
+            stick.position = animation_end_position;
+            stick.alpha = 1;
+            return;
+        }
+
+        float duration = animation_end_time - animation_start_time;
+        float current = args.time - animation_start_time;
+        float lerp = current / duration;
+
+        Vec3 pos = Vec3.lerp(animation_start_position, animation_end_position, lerp);
+
+        stick.position = pos;
+        stick.alpha = lerp;
+    }
+
+    public void render(RenderScene3D scene)
+    {
+        scene.add_object(stick);
+    }
+
+    public void animate()
+    {
+        if (animation_started)
+            return;
+
+        animation_set_time = true;
+        animation_started = true;
     }
 }

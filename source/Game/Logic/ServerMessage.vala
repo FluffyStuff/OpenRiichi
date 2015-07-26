@@ -148,6 +148,16 @@ public class ServerMessageFlipDora : ServerMessage
     public int tile_ID { get; protected set; }
 }
 
+public class ServerMessageFlipUraDora : ServerMessage
+{
+    public ServerMessageFlipUraDora(int tile_ID)
+    {
+        this.tile_ID = tile_ID;
+    }
+
+    public int tile_ID { get; protected set; }
+}
+
 public class ServerMessageDeadTileAdd : ServerMessage
 {
     public ServerMessageDeadTileAdd(int tile_ID)
@@ -170,6 +180,26 @@ public class ServerMessageRon : ServerMessage
     public int player_ID { get; protected set; }
     public int discard_player_ID { get; protected set; }
     public int tile_ID { get; protected set; }
+}
+
+public class ServerMessageTsumo : ServerMessage
+{
+    public ServerMessageTsumo(int player_ID)
+    {
+        this.player_ID = player_ID;
+    }
+
+    public int player_ID { get; protected set; }
+}
+
+public class ServerMessageRiichi : ServerMessage
+{
+    public ServerMessageRiichi(int player_ID)
+    {
+        this.player_ID = player_ID;
+    }
+
+    public int player_ID { get; protected set; }
 }
 
 public class ServerMessageLateKan : ServerMessage
@@ -239,9 +269,9 @@ public class ServerMessagePon : ServerMessage
     public int tile_2_ID { get; protected set; }
 }
 
-public class ServerMessageChi : ServerMessage
+public class ServerMessageChii : ServerMessage
 {
-    public ServerMessageChi(int player_ID, int discard_player_ID, int tile_ID, int tile_1_ID, int tile_2_ID)
+    public ServerMessageChii(int player_ID, int discard_player_ID, int tile_ID, int tile_1_ID, int tile_2_ID)
     {
         this.player_ID = player_ID;
         this.discard_player_ID = discard_player_ID;
@@ -256,3 +286,15 @@ public class ServerMessageChi : ServerMessage
     public int tile_1_ID { get; protected set; }
     public int tile_2_ID { get; protected set; }
 }
+
+public class ServerMessageTenpaiPlayer : ServerMessage
+{
+    public ServerMessageTenpaiPlayer(int player_ID)
+    {
+        this.player_ID = player_ID;
+    }
+
+    public int player_ID { get; protected set; }
+}
+
+public class ServerMessageDraw : ServerMessage {}

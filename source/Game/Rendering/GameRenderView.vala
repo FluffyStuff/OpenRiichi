@@ -3,21 +3,15 @@ using Gee;
 
 public class GameRenderView : View, IGameRenderer
 {
+    private RenderTile[] tiles;
+    private RenderPlayer[] players;
     private GameStartState start_state;
 
-    private Camera camera = new Camera();
-    private LightSource light1 = new LightSource();
-    private LightSource light2 = new LightSource();
-
-    private RenderTable table;
-    private RenderWall wall;
-    private RenderPlayer players[4];
-    private RenderPlayer observer;
-    private RenderTile tiles[136];
-
+    private RenderSceneManager scene;
     private ServerMessageParser parser = new ServerMessageParser();
     private RenderTile? mouse_down_tile;
     private ArrayList<TileSelectionGroup>? select_groups = null;
+    private ArrayList<RenderPlayer> tenpai_players = new ArrayList<RenderPlayer>();
 
     public GameRenderView(GameStartState state)
     {
@@ -30,11 +24,46 @@ public class GameRenderView : View, IGameRenderer
         parser.connect(server_dead_tile_add, typeof(ServerMessageDeadTileAdd));
 
         parser.connect(server_ron, typeof(ServerMessageRon));
+        parser.connect(server_tsumo, typeof(ServerMessageTsumo));
+        parser.connect(server_riichi, typeof(ServerMessageRiichi));
         parser.connect(server_late_kan, typeof(ServerMessageLateKan));
         parser.connect(server_closed_kan, typeof(ServerMessageClosedKan));
         parser.connect(server_open_kan, typeof(ServerMessageOpenKan));
         parser.connect(server_pon, typeof(ServerMessagePon));
-        parser.connect(server_chi, typeof(ServerMessageChi));
+        parser.connect(server_chii, typeof(ServerMessageChii));
+        parser.connect(server_tenpai_player, typeof(ServerMessageTenpaiPlayer));
+        parser.connect(server_draw, typeof(ServerMessageDraw));
+
+        scene = new RenderSceneManager(state.player_ID, state.dealer, state.wall_index);
+    }
+
+bool added_done = false;
+    public override void added()
+    {
+        scene.added(store);
+        tiles = scene.tiles;
+        players = scene.players;
+
+        added_done = true;
+    }
+
+    public override void do_process(DeltaArgs delta)
+    {
+        if (!added_done)
+            print("Assertion failure!\n");
+        parser.dequeue();
+
+        scene.process(delta);
+
+        //camera.position = pos;
+        //light2.position = camera.position;
+    }
+
+    public override void do_render(RenderState state)
+    {
+        if (!added_done)
+            print("Assertion failure!\n");
+        scene.render(state);
     }
 
     private void server_tile_assignment(ServerMessage message)
@@ -49,9 +78,9 @@ public class GameRenderView : View, IGameRenderer
         RenderPlayer player = players[tile_draw.player_ID];
 
         if (tile_draw.dead_wall)
-            player.add_to_hand(wall.draw_dead_wall());
+            player.draw_tile(scene.wall.draw_dead_wall());
         else
-            player.add_to_hand(wall.draw_wall());
+            player.draw_tile(scene.wall.draw_wall());
     }
 
     private void server_tile_discard(ServerMessage message)
@@ -64,17 +93,40 @@ public class GameRenderView : View, IGameRenderer
 
     private void server_flip_dora(ServerMessage message)
     {
-        wall.flip_dora();
+        scene.wall.flip_dora();
     }
 
     private void server_dead_tile_add(ServerMessage message)
     {
-        wall.dead_tile_add();
+        scene.wall.dead_tile_add();
     }
 
     private void server_ron(ServerMessage message)
     {
         ServerMessageRon ron = (ServerMessageRon)message;
+        RenderPlayer player = players[ron.player_ID];
+        RenderPlayer discard_player = players[ron.discard_player_ID];
+
+        RenderTile tile = tiles[ron.tile_ID];
+        discard_player.rob_tile(tile);
+
+        scene.ron(player, tile);
+    }
+
+    private void server_tsumo(ServerMessage message)
+    {
+        ServerMessageTsumo tsumo = (ServerMessageTsumo)message;
+        RenderPlayer player = players[tsumo.player_ID];
+
+        scene.tsumo(player);
+    }
+
+    private void server_riichi(ServerMessage message)
+    {
+        ServerMessageRiichi riichi = (ServerMessageRiichi)message;
+        RenderPlayer player = players[riichi.player_ID];
+
+        player.riichi();
     }
 
     private void server_late_kan(ServerMessage message)
@@ -98,7 +150,7 @@ public class GameRenderView : View, IGameRenderer
         RenderPlayer player = players[kan.player_ID];
         RenderPlayer discard_player = players[kan.discard_player_ID];
 
-        RenderTile tile = tiles[kan.tile_ID];
+        RenderTile tile   = tiles[kan.tile_ID];
         RenderTile tile_1 = tiles[kan.tile_1_ID];
         RenderTile tile_2 = tiles[kan.tile_2_ID];
         RenderTile tile_3 = tiles[kan.tile_3_ID];
@@ -121,123 +173,53 @@ public class GameRenderView : View, IGameRenderer
         player.pon(discard_player, tile, tile_1, tile_2);
     }
 
-    private void server_chi(ServerMessage message)
+    private void server_chii(ServerMessage message)
     {
-        ServerMessageChi chi = (ServerMessageChi)message;
-        RenderPlayer player = players[chi.player_ID];
-        RenderPlayer discard_player = players[chi.discard_player_ID];
+        ServerMessageChii chii = (ServerMessageChii)message;
+        RenderPlayer player = players[chii.player_ID];
+        RenderPlayer discard_player = players[chii.discard_player_ID];
 
-        RenderTile tile   = tiles[chi.tile_ID];
-        RenderTile tile_1 = tiles[chi.tile_1_ID];
-        RenderTile tile_2 = tiles[chi.tile_2_ID];
+        RenderTile tile   = tiles[chii.tile_ID];
+        RenderTile tile_1 = tiles[chii.tile_1_ID];
+        RenderTile tile_2 = tiles[chii.tile_2_ID];
 
         discard_player.rob_tile(tile);
-        player.chi(discard_player, tile, tile_1, tile_2);
+        player.chii(discard_player, tile, tile_1, tile_2);
+    }
+
+    private void server_tenpai_player(ServerMessage message)
+    {
+        ServerMessageTenpaiPlayer tenpai = (ServerMessageTenpaiPlayer)message;
+        RenderPlayer player = players[tenpai.player_ID];
+
+        tenpai_players.add(player);
+    }
+
+    private void server_draw(ServerMessage message)
+    {
+        scene.draw(tenpai_players);
     }
 
     /////////////////////
 
     public void receive_message(ServerMessage message)
     {
+        if (!added_done)
+            print("Assertion failure!\n");
         parser.add(message);
-    }
-
-    public override void added()
-    {
-        float tile_scale = 1.20f;
-        //parent_window.set_cursor_hidden(true);
-
-        RenderModel tile = store.load_model("tile", true);
-        Vec3 tile_size = tile.size.mul_scalar(tile_scale);
-
-        table = new RenderTable(store, tile_size);
-
-        float player_offset = table.player_offset;
-        float wall_offset = (tile_size.x * 19 + tile_size.z) / 2;
-
-        for (int i = 0; i < tiles.length; i++)
-            tiles[i] = new RenderTile(store, new Tile(i, TileType.BLANK, false), tile_scale);
-
-        wall = new RenderWall(tiles, tile_size, table.center, wall_offset, start_state.dealer, start_state.wall_index);
-
-        for (int i = 0; i < players.length; i++)
-            players[i] = new RenderPlayer(table.center, i, player_offset, wall_offset, tile_size);
-
-        if (start_state.player_ID != -1)
-            observer = players[start_state.player_ID];
-        else
-            observer = players[0];
-
-
-        float camera_height = table.center.y + player_offset;
-        float camera_dist = player_offset * 1.5f;
-        camera.pitch = -0.25f;
-        camera.focal_length = 0.9f;
-
-        Vec3 pos = { 0, camera_height, camera_dist};
-        pos = Calculations.rotate_y({}, (float)observer.seat / 2, pos);
-        camera.position = pos;
-        camera.yaw = (float)observer.seat / 2;
-
-        light1.color = Vec3() { x = 1, y = 1, z = 1 };
-        light1.intensity = 20;
-
-        pos = Vec3() { x = 0, y = 45, z = camera_dist / 3 };
-        pos = Calculations.rotate_y({}, (float)observer.seat / 2, pos);
-        light1.position = pos;
-
-        light2.color = Vec3() { x = 1, y = 1, z = 1 };
-        light2.intensity = 4;
-    }
-
-    private int last_x = 0;
-    private int last_y = 0;
-
-    private float accel_x = 0;
-    private float accel_y = 0;
-    private float accel_z = 0;
-
-    public override void do_process(DeltaArgs delta)
-    {
-        parser.dequeue();
-
-        Vec3 pos = camera.position;
-        pos = pos.plus({accel_x, accel_y, accel_z});
-
-        //camera.position = pos;
-        light2.position = camera.position;
-    }
-
-    //private float bloom_intensity = 0.2f;
-    //private float perlin_strength = 0;//0.25f;
-    public override void do_render(RenderState state)
-    {
-        RenderScene3D scene = new RenderScene3D(state.screen_width, state.screen_height);
-
-        scene.set_camera(camera);
-        scene.add_light_source(light1);
-        scene.add_light_source(light2);
-
-        table.render(scene);
-        for (int i = 0; i < tiles.length; i++)
-            tiles[i].render(scene);
-
-        state.add_scene(scene);
-
-        //scene.bloom = bloom_intensity;
-        //scene.perlin_strength = perlin_strength;
     }
 
     protected override void do_mouse_move(MouseMoveArgs mouse)
     {
-        last_x = mouse.pos_x;
+        if (!added_done)
+            print("Assertion failure!\n");
+        /*last_x = mouse.pos_x;
         last_y = mouse.pos_y;
 
-        /*
         Vec3 dir = Calculations.rotate_z({}, -camera.roll, {last_x, last_y, 0});
         int slow = 300;
         camera.yaw   = -dir.x / slow;
-        camera.pitch = -dir.y / slow;
+        camera.pitch =  dir.y / slow;
         //*/
 
         for (int i = 0; i < tiles.length; i++)
@@ -245,7 +227,7 @@ public class GameRenderView : View, IGameRenderer
 
         RenderTile? tile = null;
         if (!mouse.handled && active)
-            tile = get_hover_tile();
+            tile = get_hover_tile(scene.camera, scene.observer.hand_tiles, mouse.pos_x, mouse.pos_y);
 
         bool hovered = false;
 
@@ -292,6 +274,8 @@ public class GameRenderView : View, IGameRenderer
 
     protected override void do_mouse_event(MouseEventArgs mouse)
     {
+        if (!added_done)
+            print("Assertion failure!\n");
         if (!active)
         {
             mouse_down_tile = null;
@@ -300,9 +284,10 @@ public class GameRenderView : View, IGameRenderer
 
         if (mouse.button == MouseEventArgs.Button.LEFT)
         {
+            RenderTile? tile = get_hover_tile(scene.camera, scene.observer.hand_tiles, mouse.pos_x, mouse.pos_y);
+
             if (mouse.down)
             {
-                RenderTile? tile = get_hover_tile();
                 if (select_groups != null && get_tile_selection_group(tile) == null)
                     tile = null;
 
@@ -310,7 +295,6 @@ public class GameRenderView : View, IGameRenderer
             }
             else
             {
-                RenderTile? tile = get_hover_tile();
                 if (select_groups != null && get_tile_selection_group(tile) == null)
                     tile = null;
 
@@ -322,7 +306,7 @@ public class GameRenderView : View, IGameRenderer
         }
     }
 
-    private RenderTile get_hover_tile()
+    private RenderTile? get_hover_tile(Camera camera, ArrayList<RenderTile> tiles, int x, int y)
     {
         float width = parent_window.width;
         float height = parent_window.height;
@@ -330,10 +314,7 @@ public class GameRenderView : View, IGameRenderer
         float focal_length = camera.focal_length;
         Mat4 projection_matrix = parent_window.renderer.get_projection_matrix(focal_length, aspect_ratio);
         Mat4 view_matrix = camera.get_view_transform(false);
-        Vec3 ray = Calculations.get_ray(projection_matrix, view_matrix, last_x, last_y, width, height);
-
-        // TODO: Change
-        ArrayList<RenderTile> tiles = observer.hand_tiles;
+        Vec3 ray = Calculations.get_ray(projection_matrix, view_matrix, x, y, width, height);
 
         float shortest = 0;
         RenderTile? shortest_tile = null;
@@ -354,12 +335,17 @@ public class GameRenderView : View, IGameRenderer
         return shortest_tile;
     }
 
+    private float accel_x = 0;
+    private float accel_y = 0;
+    private float accel_z = 0;
     protected override void do_key_press(KeyArgs key)
     {
+        if (!added_done)
+            print("Assertion failure!\n");
         float speed = 0.001f;
 
-        float yaw   = camera.yaw   * (float)Math.PI;
-        float pitch = camera.pitch * (float)Math.PI;
+        float yaw   = 0;//camera.yaw   * (float)Math.PI;
+        float pitch = 0;//camera.pitch * (float)Math.PI;
 
         switch (key.key)
         {
@@ -395,10 +381,10 @@ public class GameRenderView : View, IGameRenderer
             accel_z = 0;
             break;
         case 86:
-            camera.focal_length -= 0.1f;
+            //camera.focal_length -= 0.1f;
             break;
         case 87:
-            camera.focal_length += 0.1f;
+            //camera.focal_length += 0.1f;
             break;
         case 118:
             parent_window.renderer.v_sync = !parent_window.renderer.v_sync;

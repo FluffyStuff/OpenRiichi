@@ -54,10 +54,10 @@ void main()
 		{
 			float s = max(dot(cm, reflect(-ln, normal)), 0);
 			float spec = 0;
-			spec += pow(s, 50) * 0.01;
-			spec += pow(s, 100) * 0.05;
-			spec += pow(s, 1000) * 1;
-			spec += pow(s, 10000) * 2;
+			spec += pow(s, 50)    * 0.02;
+			spec += pow(s, 100)   * 0.02;
+			spec += pow(s, 1000)  * 0.1;
+			spec += pow(s, 10000) * 0.1;
 			
 			vec3 col = vec3(0);
 			

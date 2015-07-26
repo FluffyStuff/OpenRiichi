@@ -18,4 +18,26 @@ public struct Vec3
     {
         return x * other.x + y * other.y + z * other.z;
     }
+
+    public float dist_sq(Vec3 other)
+    {
+        float x = this.x - other.x;
+        float y = this.y - other.y;
+        float z = this.z - other.z;
+        return x*x + y*y + z*z;
+    }
+
+    public float dist(Vec3 other)
+    {
+        return (float)Math.sqrt(dist_sq(other));
+    }
+
+    public static Vec3 lerp(Vec3 start, Vec3 end, float lerp)
+    {
+        float x = start.x + (end.x - start.x) * lerp;
+        float y = start.y + (end.y - start.y) * lerp;
+        float z = start.z + (end.z - start.z) * lerp;
+
+        return Vec3() { x = x, y = y, z = z };
+    }
 }

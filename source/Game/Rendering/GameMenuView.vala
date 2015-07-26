@@ -6,7 +6,7 @@ public class GameMenuView : View
 
     private GameMenuButton? mouse_down_button;
 
-    private GameMenuButton chi;
+    private GameMenuButton chii;
     private GameMenuButton pon;
     private GameMenuButton kan;
     private GameMenuButton riichi;
@@ -14,15 +14,16 @@ public class GameMenuView : View
     private GameMenuButton ron;
     private GameMenuButton conti;
 
-    public signal void chi_pressed();
+    public signal void chii_pressed();
     public signal void pon_pressed();
     public signal void kan_pressed();
     public signal void riichi_pressed();
     public signal void tsumo_pressed();
     public signal void ron_pressed();
     public signal void continue_pressed();
+    public signal void quit();
 
-    private void press_chi() { chi_pressed(); }
+    private void press_chii() { chii_pressed(); }
     private void press_pon() { pon_pressed(); }
     private void press_kan() { kan_pressed(); }
     private void press_riichi() { riichi_pressed(); }
@@ -39,7 +40,7 @@ public class GameMenuView : View
     {
         float scale = 0.8f;
 
-        chi = new GameMenuButton(store, "Chi");
+        chii = new GameMenuButton(store, "Chii");
         pon = new GameMenuButton(store, "Pon");
         kan = new GameMenuButton(store, "Kan");
         riichi = new GameMenuButton(store, "Riichi");
@@ -47,7 +48,7 @@ public class GameMenuView : View
         ron = new GameMenuButton(store, "Ron");
         conti = new GameMenuButton(store, "Continue");
 
-        chi.clicked.connect(press_chi);
+        chii.clicked.connect(press_chii);
         pon.clicked.connect(press_pon);
         kan.clicked.connect(press_kan);
         riichi.clicked.connect(press_riichi);
@@ -55,7 +56,7 @@ public class GameMenuView : View
         ron.clicked.connect(press_ron);
         conti.clicked.connect(press_continue);
 
-        buttons.add(chi);
+        buttons.add(chii);
         buttons.add(pon);
         buttons.add(kan);
         buttons.add(riichi);
@@ -144,9 +145,27 @@ public class GameMenuView : View
         }
     }
 
-    public void set_chi(bool enabled)
+    protected override void do_key_press(KeyArgs key)
     {
-        chi.enabled = enabled;
+        if (key.handled)
+            return;
+
+        key.handled = true;
+
+        switch (key.key)
+        {
+        case 'r':
+            quit();
+            break;
+        default:
+            key.handled = false;
+            break;
+        }
+    }
+
+    public void set_chii(bool enabled)
+    {
+        chii.enabled = enabled;
     }
 
     public void set_pon(bool enabled)

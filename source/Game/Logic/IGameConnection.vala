@@ -1,6 +1,6 @@
 using Gee;
 
-public abstract class IGameConnection
+public abstract class IGameConnection : Object
 {
     private ArrayList<ServerMessage> queue = new ArrayList<ServerMessage>();
     private Mutex mutex = new Mutex();
@@ -42,6 +42,7 @@ public abstract class IGameConnection
     }
 
     public abstract void send_message(ClientMessage message);
+    public abstract void close();
     public abstract bool authoritative { get; protected set; }
 }
 
@@ -71,12 +72,21 @@ public class GameNetworkConnection : IGameConnection
         connection.send(msg);
     }
 
+    public override void close()
+    {
+        connection.close();
+    }
+
     private void parse_message(Connection connection, Message message)
     {
         SerializableMessage? msg = SerializableMessage.deserialize(message.data);
 
         if (msg == null || !msg.get_type().is_a(typeof(ServerMessage)))
         {
+            if (msg == null)
+                print("Null message!\n");
+            else
+                print("Type name: %s\n", msg.get_type().name());
             print("Client discarding invalid server message!\n");
             return;
         }
@@ -94,16 +104,37 @@ public class GameNetworkConnection : IGameConnection
 
 public class GameLocalConnection : IGameConnection
 {
-    private GameServer.ServerPlayerLocalConnection? connection;
+    private unowned GameServer.ServerPlayerLocalConnection? connection;
 
     public GameLocalConnection()
     {
         authoritative = true;
     }
 
+    ~GameLocalConnection()
+    {
+        if (connection != null)
+        {
+            connection.disconnected.disconnect(connection_disconnected);
+            connection = null;
+            disconnected();
+        }
+    }
+
     public void set_connection(GameServer.ServerPlayerLocalConnection connection)
     {
+        ref();
+
+        if (this.connection != null)
+        {
+            this.connection.disconnected.disconnect(connection_disconnected);
+            this.connection.close();
+        }
+
         this.connection = connection;
+        this.connection.disconnected.connect(connection_disconnected);
+
+        unref();
     }
 
     public override void send_message(ClientMessage message)
@@ -112,10 +143,21 @@ public class GameLocalConnection : IGameConnection
             connection.receive_message(message);
     }
 
-    public void close()
+    public override void close()
     {
+        if (connection != null)
+            connection_disconnected();
+    }
+
+    private void connection_disconnected()
+    {
+        ref();
+
+        connection.disconnected.disconnect(connection_disconnected);
         connection = null;
         disconnected();
+
+        unref();
     }
 
     public override bool authoritative { get; private set; }

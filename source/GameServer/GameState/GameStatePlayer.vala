@@ -4,31 +4,112 @@ namespace GameServer
 {
     class GameStatePlayer
     {
-        private ArrayList<Tile> hand = new ArrayList<Tile>();
         private ArrayList<Tile> pond = new ArrayList<Tile>();
 
-        public GameStatePlayer(int ID)
+        private Wind wind;
+        private bool dealer;
+        private bool double_riichi = false;
+        private bool can_double_riichi = true;
+        private bool ippatsu = false;
+        private bool tiles_called_on = false;
+
+        public GameStatePlayer(int ID, Wind wind, bool dealer)
         {
             this.ID = ID;
             call_decision = null;
             state = PlayerState.DONE;
+            hand = new ArrayList<Tile>();
             calls = new ArrayList<GameStateCall>();
+            in_riichi = false;
+            this.wind = wind;
+            this.dealer = dealer;
+            last_drawn_tile = null;
         }
 
         public void draw(Tile tile)
         {
             hand.add(tile);
+            last_drawn_tile = tile;
         }
 
-        public void discard(Tile tile)
+        public bool discard(Tile tile)
         {
+            bool do_ippatsu = false;
+
+            if (state == PlayerState.WAITING_RIICHI_DISCARD)
+            {
+                bool found = false;
+                ArrayList<Tile> tiles = TileRules.tenpai_tiles(hand);
+                foreach (Tile t in tiles)
+                    if (t == tile)
+                    {
+                        found = true;
+                        break;
+                    }
+                if (!found)
+                    return false;
+
+                state = PlayerState.DONE;
+                do_ippatsu = true;
+            }
+            else if (in_riichi && tile != last_drawn_tile)
+                return false;
+
             hand.remove(tile);
             pond.add(tile);
+
+            ippatsu = do_ippatsu;
+            can_double_riichi = false;
+
+            return true;
         }
 
-        public bool can_ron(Tile tile)
+        public void rob_tile(Tile tile)
         {
-            return TileRules.can_ron(hand, tile);
+            tiles_called_on = true;
+        }
+
+        public bool can_ron(GameStateContext context)
+        {
+            return !TileRules.in_furiten(hand, pond) && TileRules.can_ron(create_context(false), context);
+        }
+
+        public bool can_tsumo(GameStateContext context)
+        {
+            return TileRules.can_tsumo(create_context(true), context);
+        }
+
+        private PlayerStateContext create_context(bool tsumo)
+        {
+            ArrayList<Tile> hand = new ArrayList<Tile>();
+            hand.add_all(this.hand);
+            if (tsumo)
+                hand.remove(last_drawn_tile);
+
+            return new PlayerStateContext
+            (
+                hand,
+                pond,
+                calls,
+                wind,
+                dealer,
+                in_riichi,
+                double_riichi,
+                ippatsu,
+                tiles_called_on
+            );
+        }
+
+        public bool can_riichi()
+        {
+            if (in_riichi)
+                return false;
+
+            foreach (GameStateCall call in calls)
+                if (call.call_type != GameStateCall.CallType.CLOSED_KAN)
+                    return false;
+
+            return TileRules.tenpai_tiles(hand).size > 0;
         }
 
         /*public bool can_open_kan(Tile tile)
@@ -38,16 +119,31 @@ namespace GameServer
 
         public bool can_pon(Tile tile)
         {
-            return TileRules.can_pon(hand, tile);
+            return !in_riichi && TileRules.can_pon(hand, tile);
         }
 
-        public bool can_chi(Tile tile)
+        public bool can_chii(Tile tile)
         {
-            return TileRules.can_chi(hand, tile);
+            return !in_riichi && TileRules.can_chii(hand, tile);
+        }
+
+        public bool do_riichi()
+        {
+            if (!can_riichi())
+                return false;
+
+            in_riichi = true;
+            if (can_double_riichi)
+                double_riichi = true;
+
+            return true;
         }
 
         public bool do_late_kan(Tile tile)
         {
+            if (in_riichi)
+                return false;
+
             for (int i = 0; i < calls.size; i++)
             {
                 GameStateCall call = calls[i];
@@ -57,9 +153,13 @@ namespace GameServer
                     if (call.tiles[0].tile_type == tile.tile_type)
                     {
                         calls.remove_at(i);
-                        calls.insert(i, new GameStateCall(GameStateCall.CallType.LATE_KAN, call.tiles));
+                        ArrayList<Tile> kan = new ArrayList<Tile>();
+                        kan.add_all(call.tiles);
+                        kan.add(tile);
+                        calls.insert(i, new GameStateCall(GameStateCall.CallType.LATE_KAN, kan));
                         hand.remove(tile);
 
+                        can_double_riichi = false;
                         return true;
                     }
                 }
@@ -70,6 +170,10 @@ namespace GameServer
 
         public ArrayList<Tile>? do_closed_kan(TileType type)
         {
+            // TODO: Fix
+            if (in_riichi)
+                return null;
+
             ArrayList<Tile> kan = new ArrayList<Tile>();
 
             foreach (Tile t in hand)
@@ -80,6 +184,8 @@ namespace GameServer
                     {
                         calls.add(new GameStateCall(GameStateCall.CallType.CLOSED_KAN, kan));
                         remove_hand_tiles(kan);
+
+                        can_double_riichi = false;
                         return kan;
                     }
                 }
@@ -91,27 +197,33 @@ namespace GameServer
         {
             ArrayList<Tile> kan = new ArrayList<Tile>();
             kan.add_all(tiles);
+            kan.add(discard_tile);
             remove_hand_tiles(tiles);
 
             calls.add(new GameStateCall(GameStateCall.CallType.OPEN_KAN, kan));
+            can_double_riichi = false;
         }
 
         public void do_pon(Tile discard_tile, ArrayList<Tile> tiles)
         {
             ArrayList<Tile> pon = new ArrayList<Tile>();
             pon.add_all(tiles);
+            pon.add(discard_tile);
             remove_hand_tiles(tiles);
 
             calls.add(new GameStateCall(GameStateCall.CallType.PON, pon));
+            can_double_riichi = false;
         }
 
-        public void do_chi(Tile discard_tile, ArrayList<Tile> tiles)
+        public void do_chii(Tile discard_tile, ArrayList<Tile> tiles)
         {
-            ArrayList<Tile> chi = new ArrayList<Tile>();
-            chi.add_all(tiles);
+            ArrayList<Tile> chii = new ArrayList<Tile>();
+            chii.add_all(tiles);
+            chii.add(discard_tile);
             remove_hand_tiles(tiles);
 
-            calls.add(new GameStateCall(GameStateCall.CallType.CHI, chi));
+            calls.add(new GameStateCall(GameStateCall.CallType.CHII, chii));
+            can_double_riichi = false;
         }
 
         public ArrayList<Tile>? get_open_kan_tiles(Tile tile)
@@ -158,35 +270,44 @@ namespace GameServer
                 hand.remove(tile);
         }
 
+        public bool in_tenpai()
+        {
+            return TileRules.in_tenpai(hand);
+        }
+
         public int ID { get; private set; }
         public GameStateCallDecision? call_decision { get; set; }
         public PlayerState state { get; set; }
+        public ArrayList<Tile> hand { get; private set; }
         public ArrayList<GameStateCall> calls { get; private set; }
+        public bool in_riichi { get; private set; }
+        public Tile? last_drawn_tile { get; private set; }
 
         public enum PlayerState
         {
             DONE,
-            WAITING_CALL
+            WAITING_CALL,
+            WAITING_RIICHI_DISCARD
         }
     }
 
     class GameStateCallDecision
     {
-        public GameStateCallDecision(CallDecisionType type, ArrayList<Tile> tiles)
+        public GameStateCallDecision(CallDecisionType type, ArrayList<Tile>? tiles)
         {
             call_type = type;
             this.tiles = tiles;
         }
 
         public CallDecisionType call_type { get; private set; }
-        public ArrayList<Tile> tiles { get; private set; }
+        public ArrayList<Tile>? tiles { get; private set; }
 
         public enum CallDecisionType
         {
             RON,
             KAN,
             PON,
-            CHI
+            CHII
         }
     }
 }

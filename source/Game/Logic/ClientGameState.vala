@@ -5,6 +5,9 @@ public class ClientGameState
     private Tile[] tiles = new Tile[136];
     private int player_ID;
     private ClientGameStatePlayer[] players = new ClientGameStatePlayer[4];
+    private ClientGameStateWall wall = new ClientGameStateWall();
+
+    private bool flow_interrupted = false;
 
     public ClientGameState(int player_ID)
     {
@@ -27,7 +30,9 @@ public class ClientGameState
 
     public void tile_draw(int player_ID, int tile_ID)
     {
-        players[player_ID].draw(tiles[tile_ID]);
+        Tile tile = tiles[tile_ID];
+        wall.draw_tile(tile);
+        players[player_ID].draw(tile);
     }
 
     public void tile_discard(int player_ID, int tile_ID)
@@ -40,6 +45,24 @@ public class ClientGameState
         discard_player = player;
     }
 
+    public void flip_dora(int tile_ID)
+    {
+        Tile tile = tiles[tile_ID];
+        wall.flip_dora(tile);
+    }
+
+    public void flip_ura_dora(int tile_ID)
+    {
+        Tile tile = tiles[tile_ID];
+        wall.flip_ura_dora(tile);
+    }
+
+    public void riichi(int player_ID)
+    {
+        ClientGameStatePlayer player = get_player(player_ID);
+        player.do_riichi();
+    }
+
     public void late_kan(int player_ID, int tile_ID)
     {
         ClientGameStatePlayer player = get_player(player_ID);
@@ -50,6 +73,8 @@ public class ClientGameState
     {
         ClientGameStatePlayer player = get_player(player_ID);
         player.do_closed_kan(tile_type);
+
+        flow_interrupted = true;
     }
 
     public void open_kan(int player_ID, int discarding_player_ID, int tile_ID, int tile_1_ID, int tile_2_ID, int tile_3_ID)
@@ -64,6 +89,8 @@ public class ClientGameState
         discarder.rob_tile(tile);
 
         player.do_open_kan(tile, tile_1, tile_2, tile_3);
+
+        flow_interrupted = true;
     }
 
     public void pon(int player_ID, int discarding_player_ID, int tile_ID, int tile_1_ID, int tile_2_ID)
@@ -77,9 +104,11 @@ public class ClientGameState
         discarder.rob_tile(tile);
 
         player.do_pon(tile, tile_1, tile_2);
+
+        flow_interrupted = true;
     }
 
-    public void chi(int player_ID, int discarding_player_ID, int tile_ID, int tile_1_ID, int tile_2_ID)
+    public void chii(int player_ID, int discarding_player_ID, int tile_ID, int tile_1_ID, int tile_2_ID)
     {
         ClientGameStatePlayer player = get_player(player_ID);
         ClientGameStatePlayer discarder = get_player(discarding_player_ID);
@@ -89,12 +118,39 @@ public class ClientGameState
         Tile tile_2 = get_tile(tile_2_ID);
         discarder.rob_tile(tile);
 
-        player.do_chi(tile, tile_1, tile_2);
+        player.do_chii(tile, tile_1, tile_2);
+
+        flow_interrupted = true;
     }
 
-    public bool can_chi(Tile tile, ClientGameStatePlayer player, ClientGameStatePlayer discard_player)
+    public ArrayList<Yaku> get_ron_score(ClientGameStatePlayer player, Tile tile)
     {
-        return ((discard_player.seat + 1) % 4 == player.seat) && TileRules.can_chi(player.hand, tile);
+        return player.get_ron_score(create_context(true, tile));
+    }
+
+    public ArrayList<Yaku> get_tsumo_score(ClientGameStatePlayer player)
+    {
+        return player.get_tsumo_score(create_context(false, player.last_drawn_tile));
+    }
+
+    public bool can_ron(ClientGameStatePlayer player, Tile tile)
+    {
+        return player.can_ron(create_context(true, tile));
+    }
+
+    public bool can_tsumo(ClientGameStatePlayer player)
+    {
+        return player.can_tsumo(create_context(false, player.last_drawn_tile));
+    }
+
+    public bool can_chii(Tile tile, ClientGameStatePlayer player, ClientGameStatePlayer discard_player)
+    {
+        return ((discard_player.seat + 1) % 4 == player.seat) && TileRules.can_chii(player.hand, tile);
+    }
+
+    public ArrayList<Tile> get_tenpai_tiles(ClientGameStatePlayer player)
+    {
+        return TileRules.tenpai_tiles(player.hand);
     }
 
     public ClientGameStatePlayer get_player(int player_ID)
@@ -105,6 +161,23 @@ public class ClientGameState
     public Tile get_tile(int tile_ID)
     {
         return tiles[tile_ID];
+    }
+
+    private GameStateContext create_context(bool ron, Tile win_tile)
+    {
+        bool last_tile = wall.empty;
+        bool rinshan = false;
+        bool chankan = false;
+
+        return new GameStateContext
+        (
+            ron,
+            win_tile,
+            last_tile,
+            rinshan,
+            chankan,
+            flow_interrupted
+        );
     }
 
     public ClientGameStatePlayer self { get { return players[player_ID]; } }
@@ -121,6 +194,7 @@ public class ClientGameStatePlayer
         hand = new ArrayList<Tile>();
         pond = new ArrayList<Tile>();
         calls = new ArrayList<GameStateCall>();
+        in_riichi = false;
     }
 
     public bool has_tile(Tile tile)
@@ -134,6 +208,7 @@ public class ClientGameStatePlayer
     public void draw(Tile tile)
     {
         hand.add(tile);
+        last_drawn_tile = tile;
     }
 
     public void discard(Tile tile)
@@ -145,6 +220,11 @@ public class ClientGameStatePlayer
     public void rob_tile(Tile tile)
     {
         pond.remove(tile);
+    }
+
+    public void do_riichi()
+    {
+        in_riichi = true;
     }
 
     public void do_late_kan(Tile tile)
@@ -206,7 +286,7 @@ public class ClientGameStatePlayer
         calls.add(new GameStateCall(GameStateCall.CallType.PON, tiles));
     }
 
-    public void do_chi(Tile discard_tile, Tile tile_1, Tile tile_2)
+    public void do_chii(Tile discard_tile, Tile tile_1, Tile tile_2)
     {
         hand.remove(tile_1);
         hand.remove(tile_2);
@@ -216,7 +296,7 @@ public class ClientGameStatePlayer
         tiles.add(tile_1);
         tiles.add(tile_2);
 
-        calls.add(new GameStateCall(GameStateCall.CallType.CHI, tiles));
+        calls.add(new GameStateCall(GameStateCall.CallType.CHII, tiles));
     }
 
     public ArrayList<Tile> get_late_kan_tiles(Tile tile)
@@ -240,8 +320,116 @@ public class ClientGameStatePlayer
         return tiles;
     }
 
+    public ArrayList<Yaku> get_ron_score(GameStateContext context)
+    {
+        return TileRules.get_yaku(create_context(false), context);
+    }
+
+    public ArrayList<Yaku> get_tsumo_score(GameStateContext context)
+    {
+        return TileRules.get_yaku(create_context(true), context);
+    }
+
+    public bool can_ron(GameStateContext context)
+    {
+        return !TileRules.in_furiten(hand, pond) && TileRules.can_ron(create_context(false), context);
+    }
+
+    public bool can_tsumo(GameStateContext context)
+    {
+        return TileRules.can_tsumo(create_context(true), context);
+    }
+
+    public bool can_riichi()
+    {
+        if (in_riichi)
+            return false;
+
+        foreach (GameStateCall call in calls)
+            if (call.call_type != GameStateCall.CallType.CLOSED_KAN)
+                return false;
+
+        return TileRules.tenpai_tiles(hand).size > 0;
+    }
+
+    public bool can_late_kan()
+    {
+        if (in_riichi)
+            return false;
+
+        return TileRules.can_late_kan(hand, calls);
+    }
+
+    public bool can_closed_kan()
+    {
+        // TODO: Fix
+        if (in_riichi)
+            return false;
+
+        return TileRules.can_closed_kan(hand);
+    }
+
+    private PlayerStateContext create_context(bool tsumo)
+    {
+        Wind wind = Wind.EAST;
+        bool dealer = false;
+        bool double_riichi = false;
+        bool ippatsu = false;
+        bool tiles_called_on = true;
+
+        ArrayList<Tile> hand = new ArrayList<Tile>();
+        hand.add_all(this.hand);
+        if (tsumo)
+            hand.remove(last_drawn_tile);
+
+        return new PlayerStateContext
+        (
+            hand,
+            pond,
+            calls,
+            wind,
+            dealer,
+            in_riichi,
+            double_riichi,
+            ippatsu,
+            tiles_called_on
+        );
+    }
+
     public int seat { get; private set; }
     public ArrayList<Tile> hand { get; private set; }
     public ArrayList<Tile> pond { get; private set; }
     public ArrayList<GameStateCall> calls { get; private set; }
+    public bool in_riichi { get; private set; }
+    public Tile? last_drawn_tile { get; private set; }
+}
+
+public class ClientGameStateWall
+{
+    private int tile_count = 136;
+
+    public ClientGameStateWall()
+    {
+        dora = new ArrayList<Tile>();
+        ura_dora = new ArrayList<Tile>();
+    }
+
+    public void draw_tile(Tile tile)
+    {
+        tile_count--;
+    }
+
+    public void flip_dora(Tile tile)
+    {
+        dora.add(tile);
+    }
+
+    public void flip_ura_dora(Tile tile)
+    {
+        ura_dora.add(tile);
+    }
+
+    public ArrayList<Tile> dora { get; private set; }
+    public ArrayList<Tile> ura_dora { get; private set; }
+    public bool empty { get { return tile_count <= 14; } }
 }

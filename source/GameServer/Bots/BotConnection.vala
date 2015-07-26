@@ -13,22 +13,28 @@ class BotConnection
         parser.connect(tile_assignment, typeof(ServerMessageTileAssignment));
         parser.connect(tile_draw, typeof(ServerMessageTileDraw));
         parser.connect(tile_discard, typeof(ServerMessageTileDiscard));
+        parser.connect(ron, typeof(ServerMessageRon));
+        parser.connect(tsumo, typeof(ServerMessageTsumo));
+        parser.connect(riichi, typeof(ServerMessageRiichi));
         parser.connect(turn_decision, typeof(ServerMessageTurnDecision));
         parser.connect(call_decision, typeof(ServerMessageCallDecision));
         parser.connect(late_kan, typeof(ServerMessageLateKan));
         parser.connect(closed_kan, typeof(ServerMessageClosedKan));
         parser.connect(open_kan, typeof(ServerMessageOpenKan));
         parser.connect(pon, typeof(ServerMessagePon));
-        parser.connect(chi, typeof(ServerMessageChi));
+        parser.connect(chii, typeof(ServerMessageChii));
+
         bot.poll.connect(poll);
-        bot.discard_tile.connect(bot_discard_tile);
+        bot.do_discard.connect(bot_do_discard);
+        bot.do_tsumo.connect(bot_do_tsumo);
+        bot.do_riichi.connect(bot_do_riichi);
         bot.do_late_kan.connect(bot_late_kan);
         bot.do_closed_kan.connect(bot_closed_kan);
-        bot.no_call.connect(bot_no_call);
+        bot.call_nothing.connect(bot_call_nothing);
         bot.call_ron.connect(bot_ron);
         bot.call_open_kan.connect(bot_open_kan);
         bot.call_pon.connect(bot_pon);
-        bot.call_chi.connect(bot_chi);
+        bot.call_chii.connect(bot_chii);
     }
 
     ~BotConnection()
@@ -36,14 +42,16 @@ class BotConnection
         connection.received_message.disconnect(message_received);
         parser.disconnect();
         bot.poll.disconnect(poll);
-        bot.discard_tile.disconnect(bot_discard_tile);
+        bot.do_discard.disconnect(bot_do_discard);
+        bot.do_tsumo.disconnect(bot_do_tsumo);
+        bot.do_riichi.disconnect(bot_do_riichi);
         bot.do_late_kan.disconnect(bot_late_kan);
         bot.do_closed_kan.disconnect(bot_closed_kan);
-        bot.no_call.disconnect(bot_no_call);
+        bot.call_nothing.disconnect(bot_call_nothing);
         bot.call_ron.disconnect(bot_ron);
         bot.call_open_kan.disconnect(bot_open_kan);
         bot.call_pon.disconnect(bot_pon);
-        bot.call_chi.disconnect(bot_chi);
+        bot.call_chii.disconnect(bot_chii);
 
         stop();
     }
@@ -94,6 +102,24 @@ class BotConnection
         bot.tile_discard(tile_discard.player_ID, tile_discard.tile_ID);
     }
 
+    private void ron(ServerMessage message)
+    {
+        ServerMessageRon ron = (ServerMessageRon)message;
+        bot.ron(ron.player_ID, ron.discard_player_ID, ron.tile_ID);
+    }
+
+    private void tsumo(ServerMessage message)
+    {
+        ServerMessageTsumo tsumo = (ServerMessageTsumo)message;
+        bot.tsumo(tsumo.player_ID);
+    }
+
+    private void riichi(ServerMessage message)
+    {
+        ServerMessageRiichi riichi = (ServerMessageRiichi)message;
+        bot.riichi(riichi.player_ID);
+    }
+
     private void turn_decision(ServerMessage message)
     {
         bot.turn_decision();
@@ -129,17 +155,29 @@ class BotConnection
         bot.pon(pon.player_ID, pon.discard_player_ID, pon.tile_ID, pon.tile_1_ID, pon.tile_2_ID);
     }
 
-    private void chi(ServerMessage message)
+    private void chii(ServerMessage message)
     {
-        ServerMessageChi chi = (ServerMessageChi)message;
-        bot.chi(chi.player_ID, chi.discard_player_ID, chi.tile_ID, chi.tile_1_ID, chi.tile_2_ID);
+        ServerMessageChii chii = (ServerMessageChii)message;
+        bot.chii(chii.player_ID, chii.discard_player_ID, chii.tile_ID, chii.tile_1_ID, chii.tile_2_ID);
     }
 
     /////////////////
 
-    private void bot_discard_tile(Tile tile)
+    private void bot_do_discard(Tile tile)
     {
         ClientMessageTileDiscard message = new ClientMessageTileDiscard(tile.ID);
+        connection.send_message(message);
+    }
+
+    private void bot_do_tsumo()
+    {
+        ClientMessageTsumo message = new ClientMessageTsumo();
+        connection.send_message(message);
+    }
+
+    private void bot_do_riichi()
+    {
+        ClientMessageRiichi message = new ClientMessageRiichi();
         connection.send_message(message);
     }
 
@@ -155,7 +193,7 @@ class BotConnection
         connection.send_message(message);
     }
 
-    private void bot_no_call()
+    private void bot_call_nothing()
     {
         ClientMessageNoCall message = new ClientMessageNoCall();
         connection.send_message(message);
@@ -179,9 +217,9 @@ class BotConnection
         connection.send_message(message);
     }
 
-    private void bot_chi(Tile tile_1, Tile tile_2)
+    private void bot_chii(Tile tile_1, Tile tile_2)
     {
-        ClientMessageChi message = new ClientMessageChi(tile_1.ID, tile_2.ID);
+        ClientMessageChii message = new ClientMessageChii(tile_1.ID, tile_2.ID);
         connection.send_message(message);
     }
 }

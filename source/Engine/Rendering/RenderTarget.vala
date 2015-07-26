@@ -2,6 +2,8 @@ using Gee;
 
 public abstract class RenderTarget : Object, IRenderTarget
 {
+    private const bool SINGLE_THREADED = true;
+
     private RenderState? current_state = null;
     private RenderState? buffer_state = null;
     private bool running = false;
@@ -35,10 +37,16 @@ public abstract class RenderTarget : Object, IRenderTarget
         state_mutex.lock();
         buffer_state = state;
         state_mutex.unlock();
+
+        if (SINGLE_THREADED)
+            render_cycle(buffer_state);
     }
 
     public bool start()
     {
+        if (SINGLE_THREADED)
+            return init(window.width, window.height);
+
         Threading.start0(render_thread);
 
         while (true)
@@ -132,9 +140,7 @@ public abstract class RenderTarget : Object, IRenderTarget
             current_state = buffer_state;
             state_mutex.unlock();
 
-            load_resources();
-            check_settings();
-            render(current_state);
+            render_cycle(current_state);
 
             if ((counter++ % frms) == 0)
             {
@@ -149,6 +155,13 @@ public abstract class RenderTarget : Object, IRenderTarget
             // TODO: Fix fullscreen v-sync issues
             //Thread.usleep(5000);
         }
+    }
+
+    private void render_cycle(RenderState state)
+    {
+        load_resources();
+        check_settings();
+        render(state);
     }
 
     private void load_resources()

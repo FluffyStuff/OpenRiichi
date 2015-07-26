@@ -116,11 +116,6 @@ public class Calculations
         return Vec3() { x = vec.x * s, y = vec.y * s, z = vec.z * s };
     }
 
-    public static float vec3_dist_sq(Vec3 a, Vec3 b)
-    {
-        return (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y) + (a.z - b.z) * (a.z - b.z);
-    }
-
     public static Vec3 vec3_neg(Vec3 vec)
     {
         return Vec3() { x = -vec.x, y = -vec.y, z = -vec.z };
@@ -187,15 +182,15 @@ public class Calculations
             return -1;
 
         Vec3 width_col = proj(point, ortho1, plane_offset);
-        float width_dist = vec3_dist_sq(plane_offset, width_col);
+        float width_dist = plane_offset.dist_sq(width_col);
         if (width * width < width_dist)
             return -1;
 
-        float height_dist = vec3_dist_sq(point, width_col);
+        float height_dist = point.dist_sq(width_col);
         if (height * height < height_dist)
             return -1;
 
-        return vec3_dist_sq(point, line_offset);
+        return point.dist_sq(line_offset);
     }
 
     public static Vec3 collision(Vec3 line_offset, Vec3 line_direction, Vec3 plane_offset, Vec3 plane_direction)
@@ -276,7 +271,12 @@ public class Calculations
         float pi = (float)Math.PI;
         Mat4 x = rotation_matrix({1, 0, 0}, pi * rotation.x);
         Mat4 y = rotation_matrix({0, 1, 0}, pi * rotation.y);
-        Mat4 z = rotation_matrix({0, 0, 1}, pi * rotation.z);
+
+        Vec3 rot = {0, 1, 0};
+        rot = rotate_x({}, -rotation.x, rot);
+        rot = rotate_y({}, -rotation.y, rot);
+
+        Mat4 z = rotation_matrix(rot, pi * rotation.z);
         Mat4 rotate = x.mul_mat(y).mul_mat(z);
 
         return scale_matrix(scale).mul_mat(rotate).mul_mat(translation_matrix(position));
@@ -327,5 +327,52 @@ public class Calculations
     {
         Mat3 rot = rotation_matrix_3(rotation * (float)Math.PI);
         return rot.mul_mat(scale_matrix_3(scale))/*.mul_mat(rot)*/.mul_mat(translation_matrix_3(position));
+    }
+
+    public static Vec3 rotation_mod(Vec3 rotation)
+    {
+        float x = rotation.x % 2;
+        float y = rotation.y % 2;
+        float z = rotation.z % 2;
+
+        if (x < 0)
+            x += 2;
+        if (y < 0)
+            y += 2;
+        if (z < 0)
+            z += 2;
+
+        return Vec3() { x = x, y = y, z = z };
+    }
+
+    public static Vec3 rotation_ease(Vec3 rotation, Vec3 target)
+    {
+        rotation = rotation_mod(rotation);
+        target = rotation_mod(target);
+
+        float x = rotation.x;
+        float y = rotation.y;
+        float z = rotation.z;
+
+        float dist_x = rotation.x - target.x;
+        float dist_y = rotation.y - target.y;
+        float dist_z = rotation.z - target.z;
+
+        if (dist_x > 1)
+            x -= 2;
+        else if (dist_x < -1)
+            x += 2;
+
+        if (dist_y > 1)
+            y -= 2;
+        else if (dist_y < -1)
+            y += 2;
+
+        if (dist_z > 1)
+            z -= 2;
+        else if (dist_z < -1)
+            z += 2;
+
+        return Vec3() { x = x, y = y, z = z };
     }
 }

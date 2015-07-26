@@ -14,11 +14,11 @@ public class GameController
         this.parent_view = parent_view;
 
         GameRenderView renderer = new GameRenderView(game_start);
-        parent_view.add_child(renderer);
+        parent_view.add_chiild(renderer);
         this.renderer = renderer;
 
         menu = new GameMenuView();
-        parent_view.add_child(menu);
+        parent_view.add_chiild(menu);
 
         connection = game_start.connection;
         connection.disconnected.connect(disconnected);
@@ -29,16 +29,17 @@ public class GameController
 
             renderer.tile_selected.connect(game.client_tile_selected);
 
-            menu.chi_pressed.connect(game.client_chi);
+            menu.chii_pressed.connect(game.client_chii);
             menu.pon_pressed.connect(game.client_pon);
             menu.kan_pressed.connect(game.client_kan);
             menu.riichi_pressed.connect(game.client_riichi);
             menu.tsumo_pressed.connect(game.client_tsumo);
             menu.ron_pressed.connect(game.client_ron);
             menu.continue_pressed.connect(game.client_continue);
+            menu.quit.connect(finish_game);
 
             game.send_message.connect(connection.send_message);
-            game.set_chi_state.connect(menu.set_chi);
+            game.set_chii_state.connect(menu.set_chii);
             game.set_pon_state.connect(menu.set_pon);
             game.set_kan_state.connect(menu.set_kan);
             game.set_riichi_state.connect(menu.set_riichi);
@@ -53,10 +54,11 @@ public class GameController
     ~GameController()
     {
         connection.disconnected.disconnect(disconnected);
+        connection.close();
 
         renderer.tile_selected.disconnect(game.client_tile_selected);
 
-        menu.chi_pressed.disconnect(game.client_chi);
+        menu.chii_pressed.disconnect(game.client_chii);
         menu.pon_pressed.disconnect(game.client_pon);
         menu.kan_pressed.disconnect(game.client_kan);
         menu.riichi_pressed.disconnect(game.client_riichi);
@@ -65,7 +67,7 @@ public class GameController
         menu.continue_pressed.disconnect(game.client_continue);
 
         game.send_message.disconnect(connection.send_message);
-        game.set_chi_state.disconnect(menu.set_chi);
+        game.set_chii_state.disconnect(menu.set_chii);
         game.set_pon_state.disconnect(menu.set_pon);
         game.set_kan_state.disconnect(menu.set_kan);
         game.set_riichi_state.disconnect(menu.set_riichi);
@@ -75,8 +77,8 @@ public class GameController
         game.set_tile_select_state.disconnect(renderer.set_active);
         game.set_tile_select_groups.disconnect(renderer.set_tile_select_groups);
 
-        parent_view.remove_child(renderer);
-        parent_view.remove_child(menu);
+        parent_view.remove_chiild(renderer);
+        parent_view.remove_chiild(menu);
     }
 
     public void process()

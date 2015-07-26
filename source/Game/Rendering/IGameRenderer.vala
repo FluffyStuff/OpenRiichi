@@ -6,7 +6,7 @@ public interface IGameRenderer : Object
     public signal void riichi();
     public signal void kan();
     public signal void pon();
-    public signal void chi();*/
+    public signal void chii();*/
 
     public abstract void set_active(bool active);
     //public void set_selectable_tiles(int[] tiles);

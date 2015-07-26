@@ -19,10 +19,7 @@ public class OpenGLResourceStore : IResourceStore
         string str = dir + name + ".obj";
         string[] lines = FileLoader.load(str);
         if (lines == null)
-        {
-            print(str + " does not exist!\n");
             return null;
-        }
 
         ModelData data = ObjParser.parse(lines);
 
@@ -45,10 +42,7 @@ public class OpenGLResourceStore : IResourceStore
 
         string str = dir + name + ".png";
         if (!FileLoader.exists(str))
-        {
-            print(str + " does not exist!\n");
             return null;
-        }
 
         SoilImage img = SoilWrap.load_image(str);
 

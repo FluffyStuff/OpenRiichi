@@ -21,13 +21,13 @@ public class MainWindow : RenderWindow
         menu = new MainMenuView();
         menu.game_start.connect(game_start);
         menu.quit.connect(quit);
-        main_view.add_child(menu);
+        main_view.add_chiild(menu);
     }
 
     private void game_start(GameStartState state)
     {
         menu.quit.disconnect(quit);
-        main_view.remove_child(menu);
+        main_view.remove_chiild(menu);
         menu = null;
         game_controller = new GameController(main_view, state);
         game_controller.finished.connect(game_finished);

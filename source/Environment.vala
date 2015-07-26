@@ -1,7 +1,7 @@
 using SDL;
 using GL;
 
-public class Environment
+public class Environment : Object
 {
     private bool initialized = false;
 

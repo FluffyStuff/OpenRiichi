@@ -53,9 +53,9 @@ public class ClientMessageTileDiscard : ClientMessage
 
 public class ClientMessageNoCall : ClientMessage {}
 
-public class ClientMessageChi : ClientMessage
+public class ClientMessageChii : ClientMessage
 {
-    public ClientMessageChi(int tile_1_ID, int tile_2_ID)
+    public ClientMessageChii(int tile_1_ID, int tile_2_ID)
     {
         this.tile_1_ID = tile_1_ID;
         this.tile_2_ID = tile_2_ID;
@@ -93,5 +93,9 @@ public class ClientMessageLateKan : ClientMessage
 
     public int tile_ID { get; protected set; }
 }
+
+public class ClientMessageRiichi : ClientMessage {}
+
+public class ClientMessageTsumo : ClientMessage {}
 
 public class ClientMessageRon : ClientMessage {}

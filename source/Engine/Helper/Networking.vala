@@ -26,7 +26,6 @@ public class Networking : Object
 
     public void close()
     {
-        // Need to explicitly cancel all connections, or we will leak memory (have zombie threads)
         mutex.lock();
 
         if (listening)
@@ -35,11 +34,25 @@ public class Networking : Object
             server_cancel.cancel();
         }
 
+        // Need to explicitly cancel all connections, or we will leak memory (have zombie threads)
         while (connections.size > 0)
         {
             Connection c = connections[0];
             remove_connection(c);
             c.close();
+        }
+
+        mutex.unlock();
+    }
+
+    public void stop_listening()
+    {
+        mutex.lock();
+
+        if (listening)
+        {
+            listening = false;
+            server_cancel.cancel();
         }
 
         mutex.unlock();
@@ -200,9 +213,13 @@ public class Connection : Object
     public void close()
     {
         mutex.lock();
-        run = false;
-        cancel.cancel();
-        connection.close();
+        try
+        {
+            run = false;
+            cancel.cancel();
+            connection.close();
+        }
+        catch {}
         mutex.unlock();
     }
 
@@ -353,7 +370,13 @@ public abstract class SerializableMessage : Object
 
         Type? type = Type.from_name(type_name);
         if (!type.is_a(typeof(SerializableMessage)))
+        {
+            print("Type name len: %d\n", type_name_len);
+            print("Type name: %s\n", type_name);
+            print("Param count: %d\n", param_count);
+            print("%s is not SerializableMessage\n", type.name());
             return null;
+        }
 
         Parameter[] params = new Parameter[param_count];
         string[] names = new string[param_count];

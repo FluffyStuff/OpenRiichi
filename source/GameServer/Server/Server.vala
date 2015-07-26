@@ -27,11 +27,13 @@ namespace GameServer
             parser.connect(client_tile_discard, typeof(ClientMessageTileDiscard));
             parser.connect(client_no_call, typeof(ClientMessageNoCall));
             parser.connect(client_ron, typeof(ClientMessageRon));
+            parser.connect(client_tsumo, typeof(ClientMessageTsumo));
+            parser.connect(client_riichi, typeof(ClientMessageRiichi));
             parser.connect(client_late_kan, typeof(ClientMessageLateKan));
             parser.connect(client_closed_kan, typeof(ClientMessageClosedKan));
             parser.connect(client_open_kan, typeof(ClientMessageOpenKan));
             parser.connect(client_pon, typeof(ClientMessagePon));
-            parser.connect(client_chi, typeof(ClientMessageChi));
+            parser.connect(client_chii, typeof(ClientMessageChii));
 
             Rand rnd = new Rand();
 
@@ -49,21 +51,25 @@ namespace GameServer
             }
 
             int dealer = rnd.int_range(0, 4);
-            int wall_index = rnd.int_range(2, 13);
+            int wall_index = rnd.int_range(1, 7) + rnd.int_range(1, 7);
 
             game = new GameStateGame(dealer, wall_index, rnd);
             game.game_draw_tile.connect(game_draw_tile);
             game.game_discard_tile.connect(game_discard_tile);
             game.game_flip_dora.connect(game_flip_dora);
+            game.game_flip_ura_dora.connect(game_flip_ura_dora);
             game.game_dead_tile_add.connect(game_dead_tile_add);
             game.game_get_turn_decision.connect(game_get_turn_decision);
             game.game_get_call_decision.connect(game_get_call_decision);
             game.game_ron.connect(game_ron);
+            game.game_tsumo.connect(game_tsumo);
+            game.game_riichi.connect(game_riichi);
             game.game_late_kan.connect(game_late_kan);
             game.game_closed_kan.connect(game_closed_kan);
             game.game_open_kan.connect(game_open_kan);
             game.game_pon.connect(game_pon);
-            game.game_chi.connect(game_chi);
+            game.game_chii.connect(game_chii);
+            game.game_draw.connect(game_draw);
 
             for (int i = 0; i < this.players.length; i++)
             {
@@ -121,6 +127,18 @@ namespace GameServer
             game.client_ron(p.ID);
         }
 
+        private void client_tsumo(ServerPlayer player, ClientMessage message)
+        {
+            GameStateServerPlayer p = get_game_player(players, player);
+            game.client_tsumo(p.ID);
+        }
+
+        private void client_riichi(ServerPlayer player, ClientMessage message)
+        {
+            GameStateServerPlayer p = get_game_player(players, player);
+            game.client_riichi(p.ID);
+        }
+
         private void client_late_kan(ServerPlayer player, ClientMessage message)
         {
             ClientMessageLateKan kan = (ClientMessageLateKan)message;
@@ -149,12 +167,12 @@ namespace GameServer
             game.client_pon(p.ID);
         }
 
-        private void client_chi(ServerPlayer player, ClientMessage message)
+        private void client_chii(ServerPlayer player, ClientMessage message)
         {
-            ClientMessageChi chi = (ClientMessageChi)message;
+            ClientMessageChii chii = (ClientMessageChii)message;
 
             GameStateServerPlayer p = get_game_player(players, player);
-            game.client_chi(p.ID, chi.tile_1_ID, chi.tile_2_ID);
+            game.client_chii(p.ID, chii.tile_1_ID, chii.tile_2_ID);
         }
 
         ////////////////////////
@@ -200,6 +218,18 @@ namespace GameServer
                 pl.server_player.send_message(message);
         }
 
+        private void game_flip_ura_dora(ArrayList<Tile> tiles)
+        {
+            foreach (Tile tile in tiles)
+            {
+                game_reveal_tile(tile);
+                ServerMessageFlipUraDora message = new ServerMessageFlipUraDora(tile.ID);
+
+                foreach (GameStateServerPlayer pl in players)
+                    pl.server_player.send_message(message);
+            }
+        }
+
         private void game_dead_tile_add(Tile tile)
         {
             ServerMessageDeadTileAdd message = new ServerMessageDeadTileAdd(tile.ID);
@@ -222,9 +252,31 @@ namespace GameServer
                 get_server_player(players, ID).server_player.send_message(message);
         }
 
-        private void game_ron(int player_ID, int discard_player_ID, Tile tile)
+        private void game_ron(int player_ID, ArrayList<Tile> hand, int discard_player_ID, Tile tile)
         {
+            foreach (Tile t in hand)
+                game_reveal_tile(t);
+
             ServerMessageRon message = new ServerMessageRon(player_ID, discard_player_ID, tile.ID);
+
+            foreach (GameStateServerPlayer pl in players)
+                pl.server_player.send_message(message);
+        }
+
+        private void game_tsumo(int player_ID, ArrayList<Tile> hand)
+        {
+            foreach (Tile t in hand)
+                game_reveal_tile(t);
+
+            ServerMessageTsumo message = new ServerMessageTsumo(player_ID);
+
+            foreach (GameStateServerPlayer pl in players)
+                pl.server_player.send_message(message);
+        }
+
+        private void game_riichi(int player_ID)
+        {
+            ServerMessageRiichi message = new ServerMessageRiichi(player_ID);
 
             foreach (GameStateServerPlayer pl in players)
                 pl.server_player.send_message(message);
@@ -272,12 +324,31 @@ namespace GameServer
                 pl.server_player.send_message(message);
         }
 
-        public void game_chi(int player_ID, int discard_player_ID, Tile tile, ArrayList<Tile> tiles)
+        public void game_chii(int player_ID, int discard_player_ID, Tile tile, ArrayList<Tile> tiles)
         {
             foreach (Tile t in tiles)
                 game_reveal_tile(t);
 
-            ServerMessageChi message = new ServerMessageChi(player_ID, discard_player_ID, tile.ID, tiles[0].ID, tiles[1].ID);
+            ServerMessageChii message = new ServerMessageChii(player_ID, discard_player_ID, tile.ID, tiles[0].ID, tiles[1].ID);
+
+            foreach (GameStateServerPlayer pl in players)
+                pl.server_player.send_message(message);
+        }
+
+        public void game_draw(ArrayList<GameStatePlayer> tenpai_players)
+        {
+            foreach (GameStatePlayer player in tenpai_players)
+            {
+                foreach (Tile t in player.hand)
+                    game_reveal_tile(t);
+
+                ServerMessageTenpaiPlayer m = new ServerMessageTenpaiPlayer(player.ID);
+
+                foreach (GameStateServerPlayer pl in players)
+                    pl.server_player.send_message(m);
+            }
+
+            ServerMessageDraw message = new ServerMessageDraw();
 
             foreach (GameStateServerPlayer pl in players)
                 pl.server_player.send_message(message);

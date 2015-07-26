@@ -13,6 +13,8 @@ namespace GameServer
 
         public GameStateWall(int dealer, int start_index, Rand rnd)
         {
+            ura_doras = new ArrayList<Tile>();
+
             for (int i = 0; i < tiles.length; i++)
             {
                 int type = (i / 4) + 1;
@@ -47,8 +49,10 @@ namespace GameServer
 
         public Tile flip_dora()
         {
-            Tile tile = dead_wall_tiles.get(dora_index);
+            Tile tile = dead_wall_tiles[dora_index];
             doras.add(tile);
+            ura_doras.add(dead_wall_tiles[dora_index + 1]);
+
             dora_index += 2;
 
             return tile;
@@ -85,5 +89,6 @@ namespace GameServer
         }
 
         public bool empty { get { return wall_tiles.size == 0; } }
+        public ArrayList<Tile> ura_doras { get; private set; }
     }
 }
