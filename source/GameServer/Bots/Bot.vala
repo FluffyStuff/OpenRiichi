@@ -11,18 +11,28 @@ public abstract class Bot : Object
     {
     }
 
-    public void start(int player_ID)
+    public void start(int player_ID, int dealer)
     {
         active = true;
-        state = new ClientGameState(player_ID);
+        reset(player_ID, dealer);
         Threading.start0(logic);
     }
 
-    public void stop()
+    public void reset(int player_ID, int dealer)
     {
-        mutex.lock();
+        state = new ClientGameState(player_ID, dealer);
+    }
+
+    public void stop(bool use_lock)
+    {
+        if (use_lock)
+            mutex.lock();
+
         active = false;
-        mutex.unlock();
+        state = null;
+
+        if (use_lock)
+            mutex.unlock();
     }
 
     private void logic()
@@ -120,6 +130,11 @@ public abstract class Bot : Object
     public void chii(int player_ID, int discarding_player_ID, int tile_ID, int tile_1_ID, int tile_2_ID)
     {
         state.chii(player_ID, discarding_player_ID, tile_ID, tile_1_ID, tile_2_ID);
+    }
+
+    public void draw()
+    {
+
     }
 
     ////////////

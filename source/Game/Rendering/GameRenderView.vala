@@ -34,35 +34,24 @@ public class GameRenderView : View, IGameRenderer
         parser.connect(server_tenpai_player, typeof(ServerMessageTenpaiPlayer));
         parser.connect(server_draw, typeof(ServerMessageDraw));
 
-        scene = new RenderSceneManager(state.player_ID, state.dealer, state.wall_index);
+        scene = new RenderSceneManager(state.player_ID, state.round_wind, state.dealer, state.wall_index);
     }
 
-bool added_done = false;
     public override void added()
     {
         scene.added(store);
         tiles = scene.tiles;
         players = scene.players;
-
-        added_done = true;
     }
 
     public override void do_process(DeltaArgs delta)
     {
-        if (!added_done)
-            print("Assertion failure!\n");
         parser.dequeue();
-
         scene.process(delta);
-
-        //camera.position = pos;
-        //light2.position = camera.position;
     }
 
     public override void do_render(RenderState state)
     {
-        if (!added_done)
-            print("Assertion failure!\n");
         scene.render(state);
     }
 
@@ -204,24 +193,11 @@ bool added_done = false;
 
     public void receive_message(ServerMessage message)
     {
-        if (!added_done)
-            print("Assertion failure!\n");
         parser.add(message);
     }
 
     protected override void do_mouse_move(MouseMoveArgs mouse)
     {
-        if (!added_done)
-            print("Assertion failure!\n");
-        /*last_x = mouse.pos_x;
-        last_y = mouse.pos_y;
-
-        Vec3 dir = Calculations.rotate_z({}, -camera.roll, {last_x, last_y, 0});
-        int slow = 300;
-        camera.yaw   = -dir.x / slow;
-        camera.pitch =  dir.y / slow;
-        //*/
-
         for (int i = 0; i < tiles.length; i++)
             tiles[i].set_hovered(false);
 
@@ -274,8 +250,6 @@ bool added_done = false;
 
     protected override void do_mouse_event(MouseEventArgs mouse)
     {
-        if (!added_done)
-            print("Assertion failure!\n");
         if (!active)
         {
             mouse_down_tile = null;
@@ -335,63 +309,16 @@ bool added_done = false;
         return shortest_tile;
     }
 
-    private float accel_x = 0;
-    private float accel_y = 0;
-    private float accel_z = 0;
     protected override void do_key_press(KeyArgs key)
     {
-        if (!added_done)
-            print("Assertion failure!\n");
-        float speed = 0.001f;
-
-        float yaw   = 0;//camera.yaw   * (float)Math.PI;
-        float pitch = 0;//camera.pitch * (float)Math.PI;
-
         switch (key.key)
         {
-            //case 27 :
-            //case 'q':
-        case ' ':
-            accel_y += speed;
-            break;
-        case 'c':
-            accel_y -= speed;
-            break;
-        case 'w':
-            accel_z -= (float)Math.cos(yaw) * (float)Math.cos(pitch) * speed;
-            accel_x -= (float)Math.sin(yaw) * (float)Math.cos(pitch) * speed;
-            accel_y += (float)Math.sin(pitch) * speed;
-            break;
-        case 's':
-            accel_z += (float)Math.cos(yaw) * (float)Math.cos(pitch) * speed;
-            accel_x += (float)Math.sin(yaw) * (float)Math.cos(pitch) * speed;
-            accel_y -= (float)Math.sin(pitch) * speed;
-            break;
-        case 'a':
-            accel_z += (float)Math.sin(yaw) * speed;
-            accel_x -= (float)Math.cos(yaw) * speed;
-            break;
-        case 'd':
-            accel_z -= (float)Math.sin(yaw) * speed;
-            accel_x += (float)Math.cos(yaw) * speed;
-            break;
-        case 'x':
-            accel_x = 0;
-            accel_y = 0;
-            accel_z = 0;
-            break;
-        case 86:
-            //camera.focal_length -= 0.1f;
-            break;
-        case 87:
-            //camera.focal_length += 0.1f;
-            break;
         case 118:
             parent_window.renderer.v_sync = !parent_window.renderer.v_sync;
             print("V-Sync is now %s\n", parent_window.renderer.v_sync ? "enabled" : "disabled");
             break;
         default:
-            print("%i\n", (int)key.key);
+            //print("%i\n", (int)key.key);
             break;
         }
     }

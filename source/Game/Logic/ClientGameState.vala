@@ -4,14 +4,16 @@ public class ClientGameState
 {
     private Tile[] tiles = new Tile[136];
     private int player_ID;
+    private int dealer;
     private ClientGameStatePlayer[] players = new ClientGameStatePlayer[4];
     private ClientGameStateWall wall = new ClientGameStateWall();
 
     private bool flow_interrupted = false;
 
-    public ClientGameState(int player_ID)
+    public ClientGameState(int player_ID, int dealer)
     {
         this.player_ID = player_ID;
+        this.dealer = dealer;
         discard_tile = null;
 
         for (int i = 0; i < players.length; i++)

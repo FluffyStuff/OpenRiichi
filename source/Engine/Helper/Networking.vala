@@ -370,13 +370,7 @@ public abstract class SerializableMessage : Object
 
         Type? type = Type.from_name(type_name);
         if (!type.is_a(typeof(SerializableMessage)))
-        {
-            print("Type name len: %d\n", type_name_len);
-            print("Type name: %s\n", type_name);
-            print("Param count: %d\n", param_count);
-            print("%s is not SerializableMessage\n", type.name());
             return null;
-        }
 
         Parameter[] params = new Parameter[param_count];
         string[] names = new string[param_count];

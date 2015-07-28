@@ -143,6 +143,22 @@ public enum Wind
     NORTH
 }
 
+public static Wind NEXT_WIND(Wind wind)
+{
+    switch (wind)
+    {
+    case Wind.EAST:
+        return Wind.SOUTH;
+    case Wind.SOUTH:
+        return Wind.WEST;
+    case Wind.WEST:
+        return Wind.NORTH;
+    case Wind.NORTH:
+    default:
+        return Wind.EAST;
+    }
+}
+
 public enum TileType
 {
     BLANK,

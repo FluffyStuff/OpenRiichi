@@ -1,6 +1,8 @@
 using Gee;
 
-public class RenderWall
+// This particular signal receiver must be an object (otherwise the application will crash randomly...)
+// I'm guessing it has something to do with being subscribed to a signal in a list of objects, but I'm not sure. Either way it's a bug in Vala
+public class RenderWall : Object
 {
     private Vec3 tile_size;
     private WallPart[] walls;
@@ -69,7 +71,7 @@ public class RenderWall
         active_wall = (active_wall + 1) % 4;
     }
 
-    private class WallPart
+    public class WallPart
     {
         private ArrayList<RenderTile> wall_left = new ArrayList<RenderTile>();
         private ArrayList<RenderTile> wall_right = new ArrayList<RenderTile>();
@@ -202,6 +204,7 @@ public class RenderWall
                 RenderTile t = wall_left.remove_at(0);
                 if (wall_left.size == 0)
                     next_wall();
+
                 return t;
             }
 

@@ -3,10 +3,49 @@ using Gee;
 public class ClientMessageParser
 {
     private ArrayList<Dispatcher> dispatchers = new ArrayList<Dispatcher>();
+    private ArrayList<ClientMessageTuple> queue = new ArrayList<ClientMessageTuple>();
+    private Mutex mutex = new Mutex();
 
     public void connect(ClientMessageDelegate method, Type type)
     {
         dispatchers.add(new Dispatcher(method, type));
+    }
+
+    public void disconnect()
+    {
+        mutex.lock();
+        dispatchers.clear();
+        mutex.unlock();
+    }
+
+    public void add(GameServer.ServerPlayer player, ClientMessage message)
+    {
+        mutex.lock();
+        queue.add(new ClientMessageTuple(player, message));
+        mutex.unlock();
+    }
+
+    public void execute_all()
+    {
+        mutex.lock();
+        while (queue.size > 0)
+        {
+            ClientMessageTuple tuple = queue.remove_at(0);
+            execute(tuple.player, tuple.message);
+        }
+        mutex.unlock();
+    }
+
+    public ClientMessageTuple? dequeue()
+    {
+        ClientMessageTuple? message = null;
+
+        mutex.lock();
+        if (queue.size > 0)
+            message = queue.remove_at(0);
+        mutex.unlock();
+
+        return message;
     }
 
     public void execute(GameServer.ServerPlayer player, ClientMessage message)
@@ -20,6 +59,18 @@ public class ClientMessageParser
                 method(player, message);
             }
         }
+    }
+
+    public class ClientMessageTuple : Object
+    {
+        public ClientMessageTuple(GameServer.ServerPlayer player, ClientMessage message)
+        {
+            this.player = player;
+            this.message = message;
+        }
+
+        public GameServer.ServerPlayer player { get; private set; }
+        public ClientMessage message { get; private set; }
     }
 
     public delegate void ClientMessageDelegate(GameServer.ServerPlayer player, ClientMessage message);

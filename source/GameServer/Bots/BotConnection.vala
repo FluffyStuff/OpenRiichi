@@ -10,6 +10,7 @@ class BotConnection
         this.connection = connection;
 
         connection.received_message.connect(message_received);
+        parser.connect(round_start, typeof(ServerMessageRoundStart));
         parser.connect(tile_assignment, typeof(ServerMessageTileAssignment));
         parser.connect(tile_draw, typeof(ServerMessageTileDraw));
         parser.connect(tile_discard, typeof(ServerMessageTileDiscard));
@@ -23,6 +24,7 @@ class BotConnection
         parser.connect(open_kan, typeof(ServerMessageOpenKan));
         parser.connect(pon, typeof(ServerMessagePon));
         parser.connect(chii, typeof(ServerMessageChii));
+        parser.connect(draw, typeof(ServerMessageDraw));
 
         bot.poll.connect(poll);
         bot.do_discard.connect(bot_do_discard);
@@ -40,25 +42,14 @@ class BotConnection
     ~BotConnection()
     {
         connection.received_message.disconnect(message_received);
-        parser.disconnect();
         bot.poll.disconnect(poll);
-        bot.do_discard.disconnect(bot_do_discard);
-        bot.do_tsumo.disconnect(bot_do_tsumo);
-        bot.do_riichi.disconnect(bot_do_riichi);
-        bot.do_late_kan.disconnect(bot_late_kan);
-        bot.do_closed_kan.disconnect(bot_closed_kan);
-        bot.call_nothing.disconnect(bot_call_nothing);
-        bot.call_ron.disconnect(bot_ron);
-        bot.call_open_kan.disconnect(bot_open_kan);
-        bot.call_pon.disconnect(bot_pon);
-        bot.call_chii.disconnect(bot_chii);
 
         stop();
     }
 
     public void stop()
     {
-        bot.stop();
+        bot.stop(true);
     }
 
     private void message_received()
@@ -67,12 +58,12 @@ class BotConnection
 
         while ((message = connection.dequeue_message()) != null)
         {
-            if (message.get_type() != typeof(ServerMessageGameStart))
+            if (message.get_type() != typeof(ServerMessageRoundStart))
                 continue;
 
-            ServerMessageGameStart start = (ServerMessageGameStart)message;
+            ServerMessageRoundStart start = (ServerMessageRoundStart)message;
             connection.received_message.disconnect(message_received);
-            bot.start(start.player_ID);
+            bot.start(start.player_ID, start.dealer);
             break;
         }
     }
@@ -82,6 +73,13 @@ class BotConnection
         ServerMessage? message;
         while ((message = connection.dequeue_message()) != null)
             parser.execute(message);
+    }
+
+    private void round_start(ServerMessage message)
+    {
+        ServerMessageRoundStart start = (ServerMessageRoundStart)message;
+        connection.received_message.disconnect(message_received);
+        bot.reset(start.player_ID, start.dealer);
     }
 
     private void tile_assignment(ServerMessage message)
@@ -159,6 +157,11 @@ class BotConnection
     {
         ServerMessageChii chii = (ServerMessageChii)message;
         bot.chii(chii.player_ID, chii.discard_player_ID, chii.tile_ID, chii.tile_1_ID, chii.tile_2_ID);
+    }
+
+    private void draw(ServerMessage message)
+    {
+        bot.draw();
     }
 
     /////////////////

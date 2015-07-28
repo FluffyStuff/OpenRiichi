@@ -2,7 +2,7 @@ using Gee;
 
 public abstract class RenderTarget : Object, IRenderTarget
 {
-    private const bool SINGLE_THREADED = true;
+    private const bool SINGLE_THREADED = false;
 
     private RenderState? current_state = null;
     private RenderState? buffer_state = null;

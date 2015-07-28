@@ -3,6 +3,7 @@ using Gee;
 class RenderSceneManager
 {
     private int player_ID;
+    private Wind round_wind;
     private int dealer;
     private int wall_index;
 
@@ -22,9 +23,10 @@ class RenderSceneManager
     private ArrayList<RenderPlayer> closed_hands = new ArrayList<RenderPlayer>();
     private bool flip_dora = false;
 
-    public RenderSceneManager(int player_ID, int dealer, int wall_index)
+    public RenderSceneManager(int player_ID, Wind round_wind, int dealer, int wall_index)
     {
         this.player_ID = player_ID;
+        this.round_wind = round_wind;
         this.dealer = dealer;
         this.wall_index = wall_index;
 
@@ -165,7 +167,7 @@ class RenderSceneManager
         Vec3 pos;
 
         pos = Vec3() { x = 0, y = 45, z = table_length / 2 };
-        pos = Calculations.rotate_y({}, rotation / 2, pos);
+        pos = Calculations.rotate_y({}, rotation, pos);
         light1.position = pos;
 
         pos = Vec3() { x = 0, y = 45, z = table_length };

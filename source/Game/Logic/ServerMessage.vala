@@ -65,16 +65,23 @@ public abstract class ServerMessage : SerializableMessage
 
 }
 
-public class ServerMessageGameStart : ServerMessage
+public class ServerMessageRoundStart : ServerMessage
 {
-    public ServerMessageGameStart(int player_ID, int dealer, int wall_index)
+    public ServerMessageRoundStart(int player_ID, Wind round_wind, int dealer, int wall_index)
     {
         this.player_ID = player_ID;
+        this.round_wind = (int)round_wind;
         this.dealer = dealer;
         this.wall_index = wall_index;
     }
 
+    public Wind get_wind()
+    {
+        return (Wind)round_wind;
+    }
+
     public int player_ID { get; protected set; }
+    public int round_wind { get; protected set; }
     public int dealer { get; protected set; }
     public int wall_index { get; protected set; }
 }

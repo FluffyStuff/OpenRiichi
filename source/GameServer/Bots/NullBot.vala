@@ -84,7 +84,7 @@ namespace GameServer
 
         private void action_delay()
         {
-            Thread.usleep(1 * 1000000 * 0);
+            Thread.usleep(1 * 1000000);
         }
     }
 }

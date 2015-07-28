@@ -6,21 +6,93 @@ namespace GameServer
     {
         private Server server;
         private ServerNetworking? net;
+        private ClientMessageParser parser = new ClientMessageParser();
         private ArrayList<ServerPlayer> players = new ArrayList<ServerPlayer>();
 
         private Mutex mutex = new Mutex();
+        private Rand rnd = new Rand();
+        private Timer timer = new Timer();
+        private bool game_starting = false;
+        private bool game_started = false;
         private bool finished = false;
 
         public ServerController()
         {
+
         }
 
         ~ServerController()
         {
-            stop_listen();
+            stop_listening();
         }
 
-        public bool listen(uint16 port)
+        public void start_local()
+        {
+            Threading.start0(server_worker);
+        }
+
+        public void start_network(uint16 port)
+        {
+            start_listening(port);
+            start_local();
+        }
+
+        private void server_worker()
+        {
+            ref(); // Keep alive until graceful shutdown
+
+            bool alive = true;
+
+            while (alive)
+            {
+                mutex.lock();
+                alive = !finished;
+                bool starting = game_starting;
+                bool started = game_started;
+                mutex.unlock();
+
+                sleep();
+
+                process_messages();
+
+                if (!starting && !started)
+                    continue;
+
+                if (!started)
+                {
+                    start_controller();
+                    game_started = true;
+                }
+
+                server.process((float)timer.elapsed());
+            }
+
+            die();
+
+            unref(); // Allow graceful deallocation
+        }
+
+        private void process_messages()
+        {
+            ClientMessageParser.ClientMessageTuple? message;
+
+            while ((message = parser.dequeue()) != null)
+            {
+                parser.execute(message.player, message.message);
+
+                if (!game_started)
+                    continue;
+
+                server.message_received(message.player, message.message);
+            }
+        }
+
+        private void sleep()
+        {
+            Thread.usleep(10000); // Server is not cpu intensive at all (can save cycles)
+        }
+
+        private bool start_listening(uint16 port)
         {
             net = new ServerNetworking();
             net.player_connected.connect(player_connected);
@@ -31,32 +103,54 @@ namespace GameServer
             return true;
         }
 
-        public void stop_listen()
+        private void stop_listening()
         {
             if (net != null)
                 net.close();
         }
 
+        private void message_received(ServerPlayer player, ClientMessage message)
+        {
+            ref();
+            parser.add(player, message);
+            unref();
+        }
+
         private void player_connected(ServerPlayer player)
         {
-            print("Player joined (%d players now).\n", players.size + 1);
-            player.disconnected.connect(player_disconnected);
+            print("Player connected (%d players now).\n", players.size + 1);
+
+            ref();
             add_player(player);
+            unref();
         }
 
         private void player_disconnected(ServerPlayer player)
         {
-            print("Player left (%d players now).\n", players.size - 1);
+            ref();
+
+            print("Player disconnected (%d players now).\n", players.size - 1);
             remove_player(player);
+
+            mutex.lock();
+            if (game_started)
+                finished = true;
+            mutex.unlock();
+
+            unref();
         }
 
         public void add_player(ServerPlayer player)
         {
+            player.receive_message.connect(message_received);
+            player.disconnected.connect(player_disconnected);
+
             mutex.lock();
             players.add(player);
+            int size = players.size;
             mutex.unlock();
 
-            if (players.size == 4)
+            if (size == 4)
                 start_game();
         }
 
@@ -64,24 +158,25 @@ namespace GameServer
         {
             mutex.lock();
             player.disconnected.disconnect(remove_player);
+            player.receive_message.disconnect(message_received);
             players.remove(player);
             mutex.unlock();
         }
 
         public void start_game()
         {
-            Threading.start0(start);
+            mutex.lock();
+            game_starting = true;
+            mutex.unlock();
         }
 
-        private void start()
+        private void start_controller()
         {
-            mutex.lock();
             bool ready = true;
             int playing = 0;
-            ServerPlayer[] players = new ServerPlayer[4];
 
             int a = 0;
-            foreach (ServerPlayer player in this.players)
+            foreach (ServerPlayer player in players)
             {
                 if (player.state == ServerPlayer.State.PLAYER)
                 {
@@ -91,29 +186,20 @@ namespace GameServer
                         break;
                     }
 
-                    players[a++] = player;
                     playing++;
                 }
             }
 
             if (!ready || playing != 4)
-            {
-                mutex.unlock();
                 return;
-            }
 
             net.stop_listening();
 
-            ref(); // Keep alive until graceful shutdown
-
-            foreach (ServerPlayer player in this.players)
+            foreach (ServerPlayer player in players)
                 player.disconnected.disconnect(remove_player);
 
             net.player_connected.disconnect(player_connected);
-            server = new Server();
-            server.server_finished.connect(die);
-            server.create_game(players);
-            mutex.unlock();
+            server = new Server(players, rnd);
         }
 
         public int get_player_count()
@@ -121,29 +207,27 @@ namespace GameServer
             return players.size;
         }
 
-        //private ServerController? dealloc = null;
         private void die()
         {
-            mutex.lock();
-            if (finished)
+            while (true)
             {
-                mutex.unlock();
-                return;
-            }
-            finished = true;
-            mutex.unlock();
+                ServerPlayer player;
+                mutex.lock();
 
-            while (players.size > 0)
-            {
-                ServerPlayer player = players[0];
+                if (players.size == 0)
+                {
+                    mutex.unlock();
+                    break;
+                }
+
+                player = players[0];
                 player.close();
+                mutex.unlock();
+
                 remove_player(player);
             }
 
-            players.clear();
-            stop_listen();
-
-            unref(); // Allow graceful deallocation
+            stop_listening();
         }
     }
 }

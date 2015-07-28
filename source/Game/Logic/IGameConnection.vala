@@ -83,10 +83,6 @@ public class GameNetworkConnection : IGameConnection
 
         if (msg == null || !msg.get_type().is_a(typeof(ServerMessage)))
         {
-            if (msg == null)
-                print("Null message!\n");
-            else
-                print("Type name: %s\n", msg.get_type().name());
             print("Client discarding invalid server message!\n");
             return;
         }

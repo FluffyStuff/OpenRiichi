@@ -23,7 +23,7 @@ class MainMenuView : View
         // TODO: Fix class reflection bug...
         typeof(SerializableMessage).class_ref();
         typeof(ServerMessage).class_ref();
-        typeof(ServerMessageGameStart).class_ref();
+        typeof(ServerMessageRoundStart).class_ref();
     }
 
     ~MainMenuView()
@@ -241,21 +241,21 @@ class MainMenuView : View
     {
         ServerMessage? message = connection.dequeue_message();
 
-        if (message.get_type() != typeof(ServerMessageGameStart))
+        if (message.get_type() != typeof(ServerMessageRoundStart))
             return;
 
         connection.received_message.disconnect(received_message);
 
-        ServerMessageGameStart start = (ServerMessageGameStart)message;
+        ServerMessageRoundStart start = (ServerMessageRoundStart)message;
         GamePlayer[] players = null;
-        GameStartState state = new GameStartState(connection, players, start.player_ID, start.dealer, start.wall_index);
+        GameStartState state = new GameStartState(connection, players, start.player_ID, start.get_wind(), start.dealer, start.wall_index);
 
         game_start(state);
     }
 
     private void join_server()
     {
-        Connection? connection = Networking.join("server.fluffy.is", 1337);
+        Connection? connection = Networking.join("riichi.mahjong", 1337);
 
         if (connection == null)
             connection_failed();
@@ -266,7 +266,7 @@ class MainMenuView : View
     private void create_server()
     {
         server = new ServerController();
-        server.listen(1337);
+        server.start_network(1337);
 
         ServerPlayerLocalConnection server_connection = new ServerPlayerLocalConnection();
         GameLocalConnection game_connection = new GameLocalConnection();

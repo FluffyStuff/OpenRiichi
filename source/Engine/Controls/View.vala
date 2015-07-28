@@ -1,20 +1,27 @@
 public abstract class View : Object
 {
-    private Gee.ArrayList<View> chiild_views = new Gee.ArrayList<View>();
+    private Gee.ArrayList<View> child_views = new Gee.ArrayList<View>();
     protected RenderWindow parent_window;
     private View parent;
 
-    public void add_chiild(View chiild)
+    public void add_child(View child)
     {
-        chiild.set_parent(this);
-        chiild.added();
-        chiild_views.add(chiild);
+        child.set_parent(this);
+        child.added();
+        child_views.add(child);
     }
 
-    public void remove_chiild(View chiild)
+    public void add_child_back(View child)
     {
-        chiild_views.remove(chiild);
-        chiild.set_parent(null);
+        child.set_parent(this);
+        child.added();
+        child_views.insert(0, child);
+    }
+
+    public void remove_child(View child)
+    {
+        child_views.remove(child);
+        child.set_parent(null);
     }
 
     private void set_parent(View? parent)
@@ -31,7 +38,7 @@ public abstract class View : Object
     {
         do_process(delta);
 
-        foreach (View view in chiild_views)
+        foreach (View view in child_views)
             view.process(delta);
     }
 
@@ -39,28 +46,28 @@ public abstract class View : Object
     {
         do_render(state);
 
-        foreach (View view in chiild_views)
+        foreach (View view in child_views)
             view.render(state);
     }
 
     public void mouse_event(MouseEventArgs mouse)
     {
-        for (int i = chiild_views.size - 1; i >= 0; i--)
-            chiild_views[i].mouse_event(mouse);
+        for (int i = child_views.size - 1; i >= 0; i--)
+            child_views[i].mouse_event(mouse);
         do_mouse_event(mouse);
     }
 
     public void mouse_move(MouseMoveArgs mouse)
     {
-        for (int i = chiild_views.size - 1; i >= 0; i--)
-            chiild_views[i].mouse_move(mouse);
+        for (int i = child_views.size - 1; i >= 0; i--)
+            child_views[i].mouse_move(mouse);
         do_mouse_move(mouse);
     }
 
     public void key_press(KeyArgs key)
     {
-        for (int i = chiild_views.size - 1; i >= 0; i--)
-            chiild_views[i].key_press(key);
+        for (int i = child_views.size - 1; i >= 0; i--)
+            child_views[i].key_press(key);
         do_key_press(key);
     }
 

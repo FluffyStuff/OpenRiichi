@@ -22,8 +22,6 @@ public abstract class RenderWindow
     public void show()
     {
         running = true;
-
-        load_resources();
         timer = new GLib.Timer();
 
         while (running)
@@ -66,10 +64,6 @@ public abstract class RenderWindow
         last_time = time;
 
         return new DeltaArgs(time, dt);
-    }
-
-    private void load_resources()
-    {
     }
 
     private void process(DeltaArgs delta)

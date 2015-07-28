@@ -23,7 +23,7 @@ public class GameState
 
     public GameState(GameStartState state)
     {
-        this.state = new ClientGameState(state.player_ID);
+        this.state = new ClientGameState(state.player_ID, state.dealer);
         game_state = State.DONE;
 
         parser.connect(server_turn_decision, typeof(ServerMessageTurnDecision));
