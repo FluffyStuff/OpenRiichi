@@ -29,7 +29,7 @@ public abstract class RenderWindow
             process(get_delta());
             renderer.set_state(render());
             window.pump_events();
-            GLib.Thread.usleep(1000);
+            //GLib.Thread.usleep(1000);
 
             if ((counter++ % frms) == 0)
             {

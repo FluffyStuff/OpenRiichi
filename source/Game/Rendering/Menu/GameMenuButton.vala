@@ -1,6 +1,6 @@
 class GameMenuButton
 {
-    private RenderObject2D button;
+    private RenderImage2D button;
     private Vec2 screen_size;
 
     public signal void clicked();
@@ -8,7 +8,7 @@ class GameMenuButton
     public GameMenuButton(IResourceStore store, string name)
     {
         RenderTexture texture = store.load_texture("Buttons/" + name);
-        button = new RenderObject2D(texture);
+        button = new RenderImage2D(texture);
 
         scale = 1;
         visible = true;

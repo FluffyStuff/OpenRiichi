@@ -593,6 +593,8 @@ public class HandReading
             add_meld(meld);
 
         pairs.add(pair);
+        tiles.add(pair[0]);
+        tiles.add(pair[1]);
 
         kokushi = false;
     }
@@ -901,8 +903,8 @@ public class Yaku
                 {
                     if (meld[0].is_wind(player.wind))
                         count++;
-                    /*if (meld[0].is_wind(game.round_wind)) // TODO: Implement round wind
-                        count++;*/
+                    //if (meld[0].is_wind(game.round_wind)) // TODO: Implement round wind
+                    //    count++;
                 }
             }
 

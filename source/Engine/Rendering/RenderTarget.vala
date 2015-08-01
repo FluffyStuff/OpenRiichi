@@ -16,10 +16,12 @@ public abstract class RenderTarget : Object, IRenderTarget
     private Mutex resource_mutex = new Mutex();
     private uint handle_model_ID = 1;
     private uint handle_texture_ID = 1;
+    private uint handle_label_ID = 1;
     private ArrayList<ResourceModel> to_load_models = new ArrayList<ResourceModel>();
     private ArrayList<ResourceTexture> to_load_textures = new ArrayList<ResourceTexture>();
     private ArrayList<IModelResourceHandle> handles_models = new ArrayList<IModelResourceHandle>();
     private ArrayList<ITextureResourceHandle> handles_textures = new ArrayList<ITextureResourceHandle>();
+    private ArrayList<ILabelResourceHandle> handles_labels = new ArrayList<ILabelResourceHandle>();
 
     private bool saved_v_sync = false;
 
@@ -73,10 +75,9 @@ public abstract class RenderTarget : Object, IRenderTarget
 
     public uint load_model(ResourceModel obj)
     {
-        uint ret = 0;
         resource_mutex.lock();
         to_load_models.add(obj);
-        ret = handle_model_ID++;
+        uint ret = handle_model_ID++;
         resource_mutex.unlock();
 
         return ret;
@@ -84,10 +85,19 @@ public abstract class RenderTarget : Object, IRenderTarget
 
     public uint load_texture(ResourceTexture texture)
     {
-        uint ret = 0;
         resource_mutex.lock();
         to_load_textures.add(texture);
-        ret = handle_texture_ID++;
+        uint ret = handle_texture_ID++;
+        resource_mutex.unlock();
+
+        return ret;
+    }
+
+    public uint load_label(ResourceLabel label)
+    {
+        resource_mutex.lock();
+        handles_labels.add(create_label(label));
+        uint ret = handle_label_ID++;
         resource_mutex.unlock();
 
         return ret;
@@ -111,10 +121,15 @@ public abstract class RenderTarget : Object, IRenderTarget
         return ret;
     }
 
-    int counter = 0;
-    double last_time = 0;
-    int frms = 100;
-    Timer timer = new Timer();
+    protected ILabelResourceHandle? get_label(uint handle)
+    {
+        resource_mutex.lock();
+        ILabelResourceHandle? ret = (handle > handles_labels.size) ? null : handles_labels[(int)handle - 1];
+        resource_mutex.unlock();
+
+        return ret;
+    }
+
     private void render_thread()
     {
         init_status = init(window.width, window.height);
@@ -142,26 +157,31 @@ public abstract class RenderTarget : Object, IRenderTarget
 
             render_cycle(current_state);
 
-            if ((counter++ % frms) == 0)
-            {
-                double time = timer.elapsed();
-                double diff = (time - last_time) / frms;
-
-                //print("(R) Average frame time over %d frames: %fms (%ffps)\n", frms, diff * 1000, 1 / diff);
-
-                last_time = time;
-            }
-
             // TODO: Fix fullscreen v-sync issues
             //Thread.usleep(5000);
         }
     }
 
+    int counter = 0;
+    double last_time = 0;
+    int frms = 100;
+    Timer timer = new Timer();
     private void render_cycle(RenderState state)
     {
         load_resources();
         check_settings();
+        prepare_state_internal(state);
         render(state);
+
+        if ((counter++ % frms) == 0)
+        {
+            double time = timer.elapsed();
+            double diff = (time - last_time) / frms;
+
+            //print("(R) Average frame time over %d frames: %fms (%ffps)\n", frms, diff * 1000, 1 / diff);
+
+            last_time = time;
+        }
     }
 
     private void load_resources()
@@ -196,6 +216,45 @@ public abstract class RenderTarget : Object, IRenderTarget
         }
     }
 
+    private void prepare_state_internal(RenderState state)
+    {
+        foreach (RenderScene scene in state.scenes)
+        {
+            Type scene_type = scene.get_type();
+            if (scene_type == typeof(RenderScene2D))
+            {
+                RenderScene2D s = (RenderScene2D)scene;
+                foreach (RenderObject2D obj in s.objects)
+                {
+                    Type obj_type = obj.get_type();
+                    if (obj_type == typeof(RenderLabel2D))
+                    {
+                        RenderLabel2D label = (RenderLabel2D)obj;
+                        ILabelResourceHandle handle = get_label(label.handle);
+
+                        bool invalid = false;
+                        if (!handle.created ||
+                            label.font_type != handle.font_type ||
+                            label.font_size != handle.font_size ||
+                            label.text != handle.text)
+                            invalid = true;
+
+                        if (!invalid)
+                            continue;
+
+                        LabelBitmap bitmap = store.generate_label_bitmap(label);
+                        do_load_label(handle, bitmap);
+
+                        handle.created = true;
+                        handle.font_type = label.font_type;
+                        handle.font_size = label.font_size;
+                        handle.text = label.text;
+                    }
+                }
+            }
+        }
+    }
+
     public Mat4 get_projection_matrix(float view_angle, float aspect_ratio)
     {
         aspect_ratio = Math.fmaxf(aspect_ratio, 1);
@@ -217,6 +276,8 @@ public abstract class RenderTarget : Object, IRenderTarget
     protected abstract bool init(int width, int height);
     protected abstract IModelResourceHandle do_load_model(ResourceModel model);
     protected abstract ITextureResourceHandle do_load_texture(ResourceTexture texture);
+    protected abstract void do_load_label(ILabelResourceHandle handle, LabelBitmap bitmap);
+    protected abstract ILabelResourceHandle create_label(ResourceLabel label);
     protected abstract void change_v_sync(bool v_sync);
 
     public IResourceStore resource_store { get { return store; } }

@@ -20,6 +20,7 @@ public class GameState
 
     public signal void set_tile_select_state(bool enabled);
     public signal void set_tile_select_groups(ArrayList<TileSelectionGroup>? selection_groups);
+    public signal void display_score(ArrayList<Yaku> score);
 
     public GameState(GameStartState state)
     {
@@ -452,7 +453,7 @@ public class GameState
         Tile tile = state.get_tile(ron.tile_ID);
 
         ArrayList<Yaku> score = state.get_ron_score(player, tile);
-        print_score(score);
+        display_score(score);
 
         decision_finished();
     }
@@ -463,35 +464,7 @@ public class GameState
         ClientGameStatePlayer player = state.get_player(tsumo.player_ID);
 
         ArrayList<Yaku> score = state.get_tsumo_score(player);
-        print_score(score);
-    }
-
-    private void print_score(ArrayList<Yaku> score)
-    {
-        print("---- SCORE ----\n");
-
-        foreach (Yaku yaku in score)
-        {
-            string[] parts = yaku.yaku_type.to_string().substring(10).down().split("_");
-
-            for (int i = 0; i < parts.length; i++)
-            {
-                string part = parts[i];
-
-                if (i != 0)
-                    print(" ");
-                print("%c%s", part[0].toupper(), part.substring(1));
-            }
-
-            print(": ");
-
-            if (yaku.yakuman > 0)
-                print("%d yakuman.\n", yaku.yakuman);
-            else
-                print("%d han.\n", yaku.han);
-        }
-
-        print("---------------\n");
+        display_score(score);
     }
 
     private void server_riichi(ServerMessage message)

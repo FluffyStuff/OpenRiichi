@@ -17,7 +17,7 @@ public class ClientGameState
         discard_tile = null;
 
         for (int i = 0; i < players.length; i++)
-            players[i] = new ClientGameStatePlayer(i);
+            players[i] = new ClientGameStatePlayer(i, i == dealer, (Wind)((i - dealer + 4) % 4));
 
         for (int i = 0; i < tiles.length; i++)
             tiles[i] = new Tile(i, TileType.BLANK, false);
@@ -76,7 +76,7 @@ public class ClientGameState
         ClientGameStatePlayer player = get_player(player_ID);
         player.do_closed_kan(tile_type);
 
-        flow_interrupted = true;
+        interrupt_flow(); // TODO: Find out whether this is correct
     }
 
     public void open_kan(int player_ID, int discarding_player_ID, int tile_ID, int tile_1_ID, int tile_2_ID, int tile_3_ID)
@@ -92,7 +92,7 @@ public class ClientGameState
 
         player.do_open_kan(tile, tile_1, tile_2, tile_3);
 
-        flow_interrupted = true;
+        interrupt_flow();
     }
 
     public void pon(int player_ID, int discarding_player_ID, int tile_ID, int tile_1_ID, int tile_2_ID)
@@ -107,7 +107,7 @@ public class ClientGameState
 
         player.do_pon(tile, tile_1, tile_2);
 
-        flow_interrupted = true;
+        interrupt_flow();
     }
 
     public void chii(int player_ID, int discarding_player_ID, int tile_ID, int tile_1_ID, int tile_2_ID)
@@ -122,7 +122,7 @@ public class ClientGameState
 
         player.do_chii(tile, tile_1, tile_2);
 
-        flow_interrupted = true;
+        interrupt_flow();
     }
 
     public ArrayList<Yaku> get_ron_score(ClientGameStatePlayer player, Tile tile)
@@ -165,6 +165,13 @@ public class ClientGameState
         return tiles[tile_ID];
     }
 
+    private void interrupt_flow()
+    {
+        foreach (ClientGameStatePlayer player in players)
+            player.flow_interrupted();
+        flow_interrupted = true;
+    }
+
     private GameStateContext create_context(bool ron, Tile win_tile)
     {
         bool last_tile = wall.empty;
@@ -190,9 +197,17 @@ public class ClientGameState
 
 public class ClientGameStatePlayer
 {
-    public ClientGameStatePlayer(int seat)
+    private bool double_riichi = true;
+    private bool ippatsu = false;
+    private bool dealer;
+    private Wind wind;
+    private bool tiles_called_on = false;
+
+    public ClientGameStatePlayer(int seat, bool dealer, Wind wind)
     {
         this.seat = seat;
+        this.dealer = dealer;
+        this.wind = wind;
         hand = new ArrayList<Tile>();
         pond = new ArrayList<Tile>();
         calls = new ArrayList<GameStateCall>();
@@ -217,16 +232,29 @@ public class ClientGameStatePlayer
     {
         hand.remove(tile);
         pond.add(tile);
+
+        if (!in_riichi)
+            double_riichi = false;
+        ippatsu = false;
     }
 
     public void rob_tile(Tile tile)
     {
-        pond.remove(tile);
+        //pond.remove(tile); // Don't need to do this
+        tiles_called_on = true;
+    }
+
+    public void flow_interrupted()
+    {
+        if (!in_riichi)
+            double_riichi = false;
+        ippatsu = false;
     }
 
     public void do_riichi()
     {
         in_riichi = true;
+        ippatsu = true;
     }
 
     public void do_late_kan(Tile tile)
@@ -373,12 +401,6 @@ public class ClientGameStatePlayer
 
     private PlayerStateContext create_context(bool tsumo)
     {
-        Wind wind = Wind.EAST;
-        bool dealer = false;
-        bool double_riichi = false;
-        bool ippatsu = false;
-        bool tiles_called_on = true;
-
         ArrayList<Tile> hand = new ArrayList<Tile>();
         hand.add_all(this.hand);
         if (tsumo)

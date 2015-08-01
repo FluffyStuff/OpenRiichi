@@ -2,7 +2,7 @@ public class GameController
 {
     private GameState? game;
     private GameRenderView? renderer = null;
-    private GameMenuView menu;
+    private GameMenuView? menu = null;
 
     private IGameConnection connection;
     private unowned View parent_view;
@@ -13,10 +13,6 @@ public class GameController
     public GameController(View parent_view, GameStartState game_start)
     {
         this.parent_view = parent_view;
-
-        menu = new GameMenuView();
-        menu.quit.connect(finish_game);
-        parent_view.add_child(menu);
 
         connection = game_start.connection;
         connection.disconnected.connect(disconnected);
@@ -70,6 +66,7 @@ public class GameController
         game.set_tsumo_state.connect(menu.set_tsumo);
         game.set_ron_state.connect(menu.set_ron);
         game.set_continue_state.connect(menu.set_continue);
+        game.display_score.connect(menu.display_score);
         game.set_tile_select_state.connect(renderer.set_active);
         game.set_tile_select_groups.connect(renderer.set_tile_select_groups);
 
@@ -88,6 +85,11 @@ public class GameController
     {
         if (renderer != null)
             parent_view.remove_child(renderer);
+        if (menu != null)
+            parent_view.remove_child(menu);
+
+        menu = new GameMenuView();
+        menu.quit.connect(finish_game);
 
         if (game != null)
         {
@@ -101,7 +103,8 @@ public class GameController
         }
 
         renderer = new GameRenderView(game_start);
-        parent_view.add_child_back(renderer); // Want to have the scene behind the menu
+        parent_view.add_child(renderer);
+        parent_view.add_child(menu);
 
         if (game_start.player_ID != -1)
             create_game_state(game_start);

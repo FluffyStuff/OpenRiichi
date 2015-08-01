@@ -255,7 +255,7 @@ class MainMenuView : View
 
     private void join_server()
     {
-        Connection? connection = Networking.join("riichi.mahjong", 1337);
+        Connection? connection = Networking.join("server.fluffy.is", 1337);
 
         if (connection == null)
             connection_failed();

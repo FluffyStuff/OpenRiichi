@@ -12,6 +12,7 @@ class OpenGLShaderProgram2D
     private int vert_position_attribute;
     private int model_transform_attrib = -1;
     private int alpha_attrib = -1;
+    private int use_texture_attrib = -1;
     private int diffuse_color_attrib = -1;
 
     public OpenGLShaderProgram2D(string name)
@@ -69,6 +70,7 @@ class OpenGLShaderProgram2D
 
         model_transform_attrib = glGetUniformLocation(program, "model_transform");
         alpha_attrib = glGetUniformLocation(program, "alpha");
+        use_texture_attrib = glGetUniformLocation(program, "use_texture");
         diffuse_color_attrib = glGetUniformLocation(program, "diffuse_color");
 
         if (glGetError() != 0)
@@ -86,10 +88,11 @@ class OpenGLShaderProgram2D
         glBindVertexArray(array_handle);
     }
 
-    public void render_object(Mat3 model_transform, float alpha, Vec3 diffuse_color)
+    public void render_object(Mat3 model_transform, float alpha, Vec3 diffuse_color, bool use_texture)
     {
         glUniformMatrix3fv(model_transform_attrib, 1, false, model_transform.get_data());
         glUniform1f(alpha_attrib, alpha);
+        glUniform1i(use_texture_attrib, use_texture ? 1 : 0);
         glUniform3f(diffuse_color_attrib, diffuse_color.x, diffuse_color.y, diffuse_color.z);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     }

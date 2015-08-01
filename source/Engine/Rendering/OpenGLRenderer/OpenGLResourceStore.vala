@@ -55,6 +55,15 @@ public class OpenGLResourceStore : IResourceStore
         return texture;
     }
 
+    public override RenderLabel2D? create_label()
+    {
+        ResourceLabel resource = new ResourceLabel();
+        uint handle = renderer.load_label(resource);
+        RenderLabel2D label = new RenderLabel2D(handle);
+
+        return label;
+    }
+
     private void cache_object(string name, CacheObjectType type, Object obj)
     {
         cache.add(new ResourceCacheObject(name, type, obj));
@@ -87,4 +96,38 @@ public class OpenGLResourceStore : IResourceStore
         public CacheObjectType obj_type { get; private set; }
         public Object obj { get; private set; }
     }
+}
+
+public class OpenGLModelResourceHandle : IModelResourceHandle, Object
+{
+    public OpenGLModelResourceHandle(uint handle, int triangle_count, uint array_handle)
+    {
+        this.handle = handle;
+        this.triangle_count = triangle_count;
+        this.array_handle = array_handle;
+    }
+
+    public uint handle { get; private set; }
+    public int triangle_count { get; private set; }
+    public uint array_handle { get; private set; }
+}
+
+public class OpenGLTextureResourceHandle : ITextureResourceHandle, Object
+{
+    public OpenGLTextureResourceHandle(uint handle)
+    {
+        this.handle = handle;
+    }
+
+    public uint handle { get; private set; }
+}
+
+public class OpenGLLabelResourceHandle : ILabelResourceHandle
+{
+    public OpenGLLabelResourceHandle()
+    {
+        created = false;
+    }
+
+    public uint handle { get; set; }
 }

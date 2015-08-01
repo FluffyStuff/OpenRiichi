@@ -2,6 +2,8 @@ using Gee;
 
 public class GameMenuView : View
 {
+    private ScoringView score_view;
+
     private ArrayList<GameMenuButton> buttons = new ArrayList<GameMenuButton>();
 
     private GameMenuButton? mouse_down_button;
@@ -196,5 +198,11 @@ public class GameMenuView : View
     public void set_continue(bool enabled)
     {
         conti.enabled = enabled;
+    }
+
+    public void display_score(ArrayList<Yaku> score)
+    {
+        score_view = new ScoringView(score);
+        add_child(score_view);
     }
 }

@@ -159,17 +159,41 @@ public class OpenGLRenderer : RenderTarget
         program.apply_scene();
 
         foreach (RenderObject2D obj in scene.objects)
-            render_object_2D(obj, program);
+        {
+            Type type = obj.get_type();
+            if (type == typeof(RenderImage2D))
+                render_image_2D((RenderImage2D)obj, program);
+            else if (type == typeof(RenderLabel2D))
+                render_label_2D((RenderLabel2D)obj, program);
+            else if (type == typeof(RenderRectangle2D))
+                render_rectangle_2D((RenderRectangle2D)obj, program);
+        }
     }
 
-    private void render_object_2D(RenderObject2D obj, OpenGLShaderProgram2D program)
+    private void render_image_2D(RenderImage2D obj, OpenGLShaderProgram2D program)
     {
         OpenGLTextureResourceHandle texture_handle = (OpenGLTextureResourceHandle)get_texture(obj.texture.handle);
         glBindTexture(GL_TEXTURE_2D, (GLuint)texture_handle.handle);
 
         Mat3 model_transform = Calculations.get_model_matrix_3(obj.position, obj.rotation, obj.scale);
 
-        program.render_object(model_transform, obj.alpha, obj.diffuse_color);
+        program.render_object(model_transform, obj.alpha, obj.diffuse_color, true);
+    }
+
+    private void render_label_2D(RenderLabel2D label, OpenGLShaderProgram2D program)
+    {
+        OpenGLLabelResourceHandle label_handle = (OpenGLLabelResourceHandle)get_label(label.handle);
+        glBindTexture(GL_TEXTURE_2D, label_handle.handle);
+
+        Mat3 model_transform = Calculations.get_model_matrix_3(label.position, label.rotation, label.scale);
+
+        program.render_object(model_transform, label.alpha, label.diffuse_color, true);
+    }
+
+    private void render_rectangle_2D(RenderRectangle2D rectangle, OpenGLShaderProgram2D program)
+    {
+        Mat3 model_transform = Calculations.get_model_matrix_3(rectangle.position, rectangle.rotation, rectangle.scale);
+        program.render_object(model_transform, rectangle.alpha, rectangle.diffuse_color, false);
     }
 
     /*private void post_process_draw(RenderState state)
@@ -200,6 +224,8 @@ public class OpenGLRenderer : RenderTarget
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     }*/
 
+    ///////////////////////////
+
     protected override IModelResourceHandle do_load_model(ResourceModel model)
     {
         int len = 10 * (int)sizeof(float);
@@ -223,8 +249,6 @@ public class OpenGLRenderer : RenderTarget
         return new OpenGLModelResourceHandle(triangles[0], model.points.length, vao[0]);
     }
 
-    ///////////////////////////
-
     protected override ITextureResourceHandle do_load_texture(ResourceTexture texture)
     {
         int width = texture.width;
@@ -246,6 +270,40 @@ public class OpenGLRenderer : RenderTarget
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
         return new OpenGLTextureResourceHandle(tex[0]);
+    }
+
+    protected override void do_load_label(ILabelResourceHandle label_handle, LabelBitmap label)
+    {
+        OpenGLLabelResourceHandle handle = (OpenGLLabelResourceHandle)label_handle;
+
+        uint del[1] = { handle.handle };
+        if (handle.created)
+            glDeleteTextures(1, del);
+
+        int width = label.width;
+        int height = label.height;
+
+        uint tex[1];
+        glGenTextures(1, tex);
+
+        float aniso[1];
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, tex[0]);
+        glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, aniso);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso[0]);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_BGRA, GL_UNSIGNED_BYTE, (GLvoid[])label.data);
+
+        handle.handle = tex[0];
+    }
+
+    protected override ILabelResourceHandle create_label(ResourceLabel label)
+    {
+        return new OpenGLLabelResourceHandle();
     }
 
     protected override void change_v_sync(bool v_sync)
