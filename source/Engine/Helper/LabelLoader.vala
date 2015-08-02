@@ -35,7 +35,7 @@ public class LabelLoader
         layout.set_font_description(desc);
 
         // Get text dimensions and create a context to render to
-        int text_width, text_height, channels = 4;
+        int text_width, text_height;
         layout.get_size(out text_width, out text_height);
         text_width /= PANGO_SCALE;
         text_height /= PANGO_SCALE;

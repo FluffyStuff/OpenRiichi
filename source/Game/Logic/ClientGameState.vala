@@ -4,15 +4,17 @@ public class ClientGameState
 {
     private Tile[] tiles = new Tile[136];
     private int player_ID;
+    private Wind round_wind;
     private int dealer;
     private ClientGameStatePlayer[] players = new ClientGameStatePlayer[4];
     private ClientGameStateWall wall = new ClientGameStateWall();
 
     private bool flow_interrupted = false;
 
-    public ClientGameState(int player_ID, int dealer)
+    public ClientGameState(int player_ID, Wind round_wind, int dealer)
     {
         this.player_ID = player_ID;
+        this.round_wind = round_wind;
         this.dealer = dealer;
         discard_tile = null;
 
@@ -125,12 +127,12 @@ public class ClientGameState
         interrupt_flow();
     }
 
-    public ArrayList<Yaku> get_ron_score(ClientGameStatePlayer player, Tile tile)
+    public Scoring get_ron_score(ClientGameStatePlayer player, Tile tile)
     {
         return player.get_ron_score(create_context(true, tile));
     }
 
-    public ArrayList<Yaku> get_tsumo_score(ClientGameStatePlayer player)
+    public Scoring get_tsumo_score(ClientGameStatePlayer player)
     {
         return player.get_tsumo_score(create_context(false, player.last_drawn_tile));
     }
@@ -180,6 +182,9 @@ public class ClientGameState
 
         return new GameStateContext
         (
+            round_wind,
+            wall.dora,
+            wall.ura_dora,
             ron,
             win_tile,
             last_tile,
@@ -350,14 +355,14 @@ public class ClientGameStatePlayer
         return tiles;
     }
 
-    public ArrayList<Yaku> get_ron_score(GameStateContext context)
+    public Scoring get_ron_score(GameStateContext context)
     {
-        return TileRules.get_yaku(create_context(false), context);
+        return TileRules.get_score(create_context(false), context);
     }
 
-    public ArrayList<Yaku> get_tsumo_score(GameStateContext context)
+    public Scoring get_tsumo_score(GameStateContext context)
     {
-        return TileRules.get_yaku(create_context(true), context);
+        return TileRules.get_score(create_context(true), context);
     }
 
     public bool can_ron(GameStateContext context)

@@ -200,7 +200,7 @@ public class GameMenuView : View
         conti.enabled = enabled;
     }
 
-    public void display_score(ArrayList<Yaku> score)
+    public void display_score(Scoring score)
     {
         score_view = new ScoringView(score);
         add_child(score_view);

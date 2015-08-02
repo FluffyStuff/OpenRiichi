@@ -39,7 +39,7 @@ namespace GameServer
 
             int wall_index = rnd.int_range(1, 7) + rnd.int_range(1, 7);
 
-            game = new GameStateGame(dealer, wall_index, rnd);
+            game = new GameStateGame(round_wind, dealer, wall_index, rnd);
             game.game_draw_tile.connect(game_draw_tile);
             game.game_discard_tile.connect(game_discard_tile);
             game.game_flip_dora.connect(game_flip_dora);

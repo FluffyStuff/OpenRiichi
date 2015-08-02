@@ -4,22 +4,22 @@ public class TileRules
 {
     private TileRules(){} // Static class
 
-    public static ArrayList<Yaku> get_yaku(PlayerStateContext player, GameStateContext game)
+    public static Scoring get_score(PlayerStateContext player, GameStateContext game)
     {
         return calculate_yaku(player, game, false);
     }
 
     public static bool can_ron(PlayerStateContext player, GameStateContext game)
     {
-        return calculate_yaku(player, game, true).size > 0;
+        return calculate_yaku(player, game, true).valid;
     }
 
     public static bool can_tsumo(PlayerStateContext player, GameStateContext game)
     {
-        return calculate_yaku(player, game, true).size > 0;
+        return calculate_yaku(player, game, true).valid;
     }
 
-    private static ArrayList<Yaku> calculate_yaku(PlayerStateContext player, GameStateContext game, bool early_return)
+    private static Scoring calculate_yaku(PlayerStateContext player, GameStateContext game, bool early_return)
     {
         ArrayList<Tile> hand = new ArrayList<Tile>();
         hand.add_all(player.hand);
@@ -27,7 +27,7 @@ public class TileRules
 
         ArrayList<HandReading> readings = hand_readings(hand, false, false);
         if (readings.size == 0)
-            return new ArrayList<Yaku>();
+            return new Scoring.invalid();
 
         ArrayList<TileMeld> call_melds = new ArrayList<TileMeld>();
 
@@ -41,8 +41,7 @@ public class TileRules
                 call_melds.add(new TileMeld.kan(call.tiles[0], call.tiles[1], call.tiles[2], call.tiles[3], true));
         }
 
-        int top_count = -1;
-        ArrayList<Yaku>? top = new ArrayList<Yaku>();
+        Scoring? top = null;
 
         foreach (HandReading reading in readings)
         {
@@ -50,16 +49,10 @@ public class TileRules
                 reading.add_meld(meld);
 
             ArrayList<Yaku> yaku = Yaku.get_yaku(player, game, reading);
+            Scoring score = new Scoring(game, player, reading, yaku);
 
-            int count = 0;
-            foreach (Yaku y in yaku)
-                count += y.han;
-
-            if (count > top_count)
-            {
-                top = yaku;
-                top_count = count;
-            }
+            if (top == null || score.total_points > top.total_points)
+                top = score;
         }
 
         return top;
@@ -515,6 +508,9 @@ public class GameStateContext
 {
     public GameStateContext
     (
+        Wind round_wind,
+        ArrayList<Tile> dora,
+        ArrayList<Tile> ura_dora,
         bool ron,
         Tile win_tile,
         bool last_tile,
@@ -523,6 +519,9 @@ public class GameStateContext
         bool flow_interrupted
     )
     {
+        this.round_wind = round_wind;
+        this.dora = dora;
+        this.ura_dora = ura_dora;
         this.ron = ron;
         this.win_tile = win_tile;
         this.last_tile = last_tile;
@@ -531,6 +530,9 @@ public class GameStateContext
         this.flow_interrupted = flow_interrupted;
     }
 
+    public Wind round_wind { get; private set; }
+    public ArrayList<Tile> dora { get; private set; }
+    public ArrayList<Tile> ura_dora { get; private set; }
     public bool ron { get; private set; }
     public Tile win_tile { get; private set; }
     public bool last_tile { get; private set; }
@@ -710,16 +712,299 @@ public class TilePair
 
 public class Scoring
 {
-    public Scoring(HandReading hand)
+    public Scoring(GameStateContext game, PlayerStateContext player, HandReading hand, ArrayList<Yaku> yaku)
     {
+        valid = true;
+        this.hand = hand;
+        this.game = game;
+        this.player = player;
+        this.yaku = yaku;
+        ron = game.ron;
+        dealer = player.dealer;
+        calculate_fu();
+        tsumo_points_lower = 0;
+        tsumo_points_higher = 0;
+        ron_points = 0;
+        score_type = ScoreType.NORMAL;
 
+        bool riichi = false;
+
+        foreach (Yaku y in yaku)
+        {
+            yakuman += y.yakuman;
+            han += y.han;
+
+            if (y.yaku_type == YakuType.RIICHI)
+                riichi = true;
+        }
+
+        int dora = 0;
+        int ura_dora = 0;
+
+        foreach (Tile tile in hand.tiles)
+            if (tile.dora)
+                dora++;
+
+        foreach (TileMeld meld in hand.melds)
+        {
+            foreach (Tile d in game.dora)
+                if (meld.is_kan && meld[0].tile_type == d.dora_indicator())
+                    dora++;
+            if (riichi)
+            {
+                foreach (Tile d in game.ura_dora)
+                    if (meld.is_kan && meld[0].tile_type == d.dora_indicator())
+                        ura_dora++;
+            }
+        }
+
+        foreach (Tile tile in hand.tiles)
+        {
+            foreach (Tile d in game.dora)
+                if (tile.tile_type == d.dora_indicator())
+                    dora++;
+            if (riichi)
+            {
+                foreach (Tile d in game.ura_dora)
+                    if (tile.tile_type == d.dora_indicator())
+                        ura_dora++;
+            }
+        }
+
+        han += dora + ura_dora;
+        if (dora > 0)
+            yaku.add(new Yaku(YakuType.DORA, dora, 0));
+        if (ura_dora > 0)
+            yaku.add(new Yaku(YakuType.URA_DORA, ura_dora, 0));
+
+        int basic_points;
+        if (yakuman > 0)
+        {
+            basic_points = 8000 * yakuman;
+            han = 0;
+            score_type = ScoreType.YAKUMAN;
+        }
+        else
+        {
+            basic_points = fu * (4 << han);
+            basic_points = int.min(basic_points, 2000);
+
+            if (han >= 13)
+            {
+                basic_points = 8000;
+                score_type = ScoreType.KAZOE_YAKUMAN;
+            }
+            else if (han >= 11)
+            {
+                basic_points = 6000;
+                score_type = ScoreType.SANBAIMAN;
+            }
+            else if (han >= 8)
+            {
+                basic_points = 4000;
+                score_type = ScoreType.BAIMAN;
+            }
+            else if (han >= 6)
+            {
+                basic_points = 3000;
+                score_type = ScoreType.HANEMAN;
+            }
+            else if (han >= 5)
+            {
+                basic_points = 2000;
+                score_type = ScoreType.MANGAN;
+            }
+        }
+
+        if (dealer)
+        {
+            if (ron)
+                ron_points = basic_points * 6;
+            else
+                tsumo_points_lower = tsumo_points_higher = basic_points * 2;
+        }
+        else
+        {
+            if (ron)
+                ron_points = basic_points * 4;
+            else
+            {
+                tsumo_points_lower  = basic_points * 1;
+                tsumo_points_higher = basic_points * 2;
+            }
+        }
+
+        // Round up to next 100
+        tsumo_points_lower  = (tsumo_points_lower  + 99) / 100 * 100;
+        tsumo_points_higher = (tsumo_points_higher + 99) / 100 * 100;
+        ron_points = (ron_points + 99) / 100 * 100;
+
+        total_points = tsumo_points_lower * 2 + tsumo_points_higher + ron_points;
     }
 
+    public Scoring.invalid()
+    {
+        valid = false;
+        hand = null;
+        game = null;
+        player = null;
+        yaku = null;
+        ron = false;
+        dealer = false;
+        tsumo_points_lower = 0;
+        tsumo_points_higher = 0;
+        ron_points = 0;
+        total_points = 0;
+        han = 0;
+        fu = 0;
+        yakuman = 0;
+        score_type = ScoreType.NONE;
+    }
+
+    public Scoring.nagashi(bool dealer)
+    {
+        valid = true;
+        hand = null;
+        yaku = null;
+        ron = false;
+        this.dealer = dealer;
+        han = 5;
+        fu = 0;
+        yakuman = 0;
+        ron_points = 0;
+        score_type = ScoreType.NAGASHI_MANGAN;
+
+        if (dealer)
+            tsumo_points_lower = tsumo_points_higher = 4000;
+        else
+        {
+            tsumo_points_lower  = 2000;
+            tsumo_points_higher = 4000;
+        }
+
+        total_points = 2 * tsumo_points_lower + tsumo_points_higher;
+    }
+
+    private void calculate_fu()
+    {
+        // Chiitoi
+        if (hand.pairs.size == 7)
+        {
+            fu = 25;
+            return;
+        }
+
+        fu = 0;
+
+        WaitType wait = WaitType.NONE;
+        Tile win_tile = game.win_tile;
+
+        foreach (TileMeld meld in hand.melds)
+        {
+            if (meld.is_triplet)
+            {
+                int f = 2;
+                if (meld.is_closed)
+                    f *= 2;
+                if (meld.is_kan)
+                    f *= 4;
+                if (meld[0].is_dragon_tile() || meld[0].is_wind(game.round_wind) || meld[0].is_wind(player.wind))
+                    f *= 2;
+
+                fu += f;
+            }
+
+            if (wait != WaitType.AMBIGUOUS && (meld[0].tile_type == win_tile.tile_type || meld[1].tile_type == win_tile.tile_type || meld[2].tile_type == win_tile.tile_type))
+            {
+                WaitType w;
+                if (meld.is_triplet)
+                    w = WaitType.CLOSED;
+                else if (meld[1].tile_type == win_tile.tile_type)
+                    w = WaitType.CLOSED;
+                else if (meld[0].tile_type == win_tile.tile_type && meld[2].is_terminal_tile())
+                    w = WaitType.CLOSED;
+                else if (meld[2].tile_type == win_tile.tile_type && meld[0].is_terminal_tile())
+                    w = WaitType.CLOSED;
+                else
+                    w = WaitType.OPEN;
+
+                if ((w == WaitType.OPEN && wait == WaitType.CLOSED) ||
+                    (w == WaitType.CLOSED && wait == WaitType.OPEN))
+                    wait = WaitType.AMBIGUOUS;
+                else
+                    wait = w;
+            }
+        }
+
+        if (wait == WaitType.CLOSED || wait == WaitType.NONE) // None would mean a pair wait
+            fu += 2;
+
+        Tile pair_tile = hand.pairs[0][0];
+        if (pair_tile.is_dragon_tile() || pair_tile.is_wind(game.round_wind) || pair_tile.is_wind(player.wind))
+            fu += 2;
+
+        bool closed = player.calls.size == 0;
+
+        if (fu == 0)
+        {
+            // Pinfu
+            if (closed)
+                yaku.add(new Yaku(YakuType.PINFU, 1, 0));
+            else
+                fu += 2; // Open pinfu is awarded 2 fu
+        }
+        else
+        {
+            if (!game.ron)
+                fu += 2; // Tsumo is awarded 2 fu
+            if (wait == WaitType.AMBIGUOUS)
+                fu += 2;
+        }
+
+        fu += 20;
+
+        if (closed && game.ron)
+            fu += 10;
+
+        fu = (fu + 9) / 10 * 10;
+    }
+
+    public bool valid { get; private set; }
     public HandReading hand { get; private set; }
-    public int final_score { get; private set; }
+    public GameStateContext game { get; private set; }
+    public PlayerStateContext player { get; private set; }
+    public ArrayList<Yaku> yaku { get; private set; }
+    public bool ron { get; private set; }
+    public bool dealer { get; private set; }
+    public int tsumo_points_lower { get; private set; }
+    public int tsumo_points_higher { get; private set; }
+    public int ron_points { get; private set; }
+    public int total_points { get; private set; }
     public int han { get; private set; }
     public int fu { get; private set; }
     public int yakuman { get; private set; }
+    public ScoreType score_type { get; private set; }
+
+    public enum ScoreType
+    {
+        NONE,
+        NORMAL,
+        MANGAN,
+        HANEMAN,
+        BAIMAN,
+        SANBAIMAN,
+        KAZOE_YAKUMAN,
+        YAKUMAN,
+        NAGASHI_MANGAN
+    }
+
+    private enum WaitType
+    {
+        NONE,
+        AMBIGUOUS,
+        CLOSED,
+        OPEN
+    }
 }
 
 public class Yaku
@@ -903,8 +1188,8 @@ public class Yaku
                 {
                     if (meld[0].is_wind(player.wind))
                         count++;
-                    //if (meld[0].is_wind(game.round_wind)) // TODO: Implement round wind
-                    //    count++;
+                    if (meld[0].is_wind(game.round_wind))
+                        count++;
                 }
             }
 
@@ -1257,7 +1542,7 @@ public class Yaku
     public int yakuman { get; private set; }
 }
 
-public enum YakuType
+public enum YakuType // Han
 {
     // Yaku situations
     MENZEN_TSUMO, // Closed tsumo
@@ -1305,5 +1590,9 @@ public enum YakuType
     RYUUIISOU, // All green
     SUU_KANTSU, // Four kans
     TSUU_IISOU, // All honours
-    CHINROUTOU // All terminals
+    CHINROUTOU, // All terminals
+
+    // Dora
+    DORA,
+    URA_DORA
 }

@@ -63,7 +63,7 @@ class BotConnection
 
             ServerMessageRoundStart start = (ServerMessageRoundStart)message;
             connection.received_message.disconnect(message_received);
-            bot.start(start.player_ID, start.dealer);
+            bot.start(start.player_ID, start.get_wind(), start.dealer);
             break;
         }
     }
@@ -79,7 +79,7 @@ class BotConnection
     {
         ServerMessageRoundStart start = (ServerMessageRoundStart)message;
         connection.received_message.disconnect(message_received);
-        bot.reset(start.player_ID, start.dealer);
+        bot.reset(start.player_ID, start.get_wind(), start.dealer);
     }
 
     private void tile_assignment(ServerMessage message)

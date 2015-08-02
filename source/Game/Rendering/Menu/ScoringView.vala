@@ -2,35 +2,81 @@ using Gee;
 
 public class ScoringView : View
 {
-    private ArrayList<Yaku> score;
+    private Scoring score;
     private ArrayList<RenderLabel2D> labels = new ArrayList<RenderLabel2D>();
     private RenderRectangle2D rectangle;
 
-    public ScoringView(ArrayList<Yaku> score)
+    public ScoringView(Scoring score)
     {
         this.score = score;
     }
 
     public override void added()
     {
-        labels.add(create_label("Score"));
+        string score_text;
+        if (score.ron)
+            score_text = "Ron";
+        else
+            score_text = "Tsumo";
+
+        labels.add(create_label(score_text));
 
         int han = 0;
         int yakuman = 0;
-        foreach (Yaku yaku in score)
+        foreach (Yaku yaku in score.yaku)
         {
             labels.add(create_label(yaku_to_string(yaku)));
             han += yaku.han;
             yakuman += yaku.yakuman;
         }
 
-        string str;
-        if (yakuman > 0)
-            str = yakuman.to_string() + " yakuman";
-        else
-            str = han.to_string() + " han";
+        string points;
 
-        labels.add(create_label("\n\nTotal: " + str));
+        if (score.ron)
+            points = score.ron_points.to_string();
+        else
+        {
+            if (score.dealer)
+                points = score.tsumo_points_higher.to_string();
+            else
+                points = score.tsumo_points_lower.to_string() + "/" + score.tsumo_points_higher.to_string();
+        }
+
+        string name = "";
+
+        switch (score.score_type)
+        {
+        case Scoring.ScoreType.MANGAN:
+            name = "Mangan";
+            break;
+        case Scoring.ScoreType.HANEMAN:
+            name = "Haneman";
+            break;
+        case Scoring.ScoreType.BAIMAN:
+            name = "Baiman";
+            break;
+        case Scoring.ScoreType.SANBAIMAN:
+            name = "Sanbaiman";
+            break;
+        case Scoring.ScoreType.KAZOE_YAKUMAN:
+            name = "Kazoe Yakuman";
+            break;
+        case Scoring.ScoreType.YAKUMAN:
+            name = "Yakuman";
+            break;
+        case Scoring.ScoreType.NAGASHI_MANGAN:
+            name = "Nagashi Mangan";
+            break;
+        case Scoring.ScoreType.NORMAL:
+        default:
+            name = "";
+            break;
+        }
+
+        if (name != "")
+            name += " ";
+
+        labels.add(create_label("\n\n" + name + points + " points"));
 
         rectangle = new RenderRectangle2D();
         rectangle.alpha = 0.7f;

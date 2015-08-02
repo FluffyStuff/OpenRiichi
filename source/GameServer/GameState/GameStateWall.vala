@@ -8,11 +8,11 @@ namespace GameServer
 
         private ArrayList<Tile> wall_tiles = new ArrayList<Tile>();
         private ArrayList<Tile> dead_wall_tiles = new ArrayList<Tile>();
-        private ArrayList<Tile> doras = new ArrayList<Tile>();
         private int dora_index = 4;
 
         public GameStateWall(int dealer, int start_index, Rand rnd)
         {
+            doras = new ArrayList<Tile>();
             ura_doras = new ArrayList<Tile>();
 
             for (int i = 0; i < tiles.length; i++)
@@ -89,6 +89,7 @@ namespace GameServer
         }
 
         public bool empty { get { return wall_tiles.size == 0; } }
+        public ArrayList<Tile> doras { get; private set; }
         public ArrayList<Tile> ura_doras { get; private set; }
     }
 }

@@ -20,11 +20,11 @@ public class GameState
 
     public signal void set_tile_select_state(bool enabled);
     public signal void set_tile_select_groups(ArrayList<TileSelectionGroup>? selection_groups);
-    public signal void display_score(ArrayList<Yaku> score);
+    public signal void display_score(Scoring score);
 
     public GameState(GameStartState state)
     {
-        this.state = new ClientGameState(state.player_ID, state.dealer);
+        this.state = new ClientGameState(state.player_ID, state.round_wind, state.dealer);
         game_state = State.DONE;
 
         parser.connect(server_turn_decision, typeof(ServerMessageTurnDecision));
@@ -452,7 +452,7 @@ public class GameState
         ClientGameStatePlayer player = state.get_player(ron.player_ID);
         Tile tile = state.get_tile(ron.tile_ID);
 
-        ArrayList<Yaku> score = state.get_ron_score(player, tile);
+        Scoring score = state.get_ron_score(player, tile);
         display_score(score);
 
         decision_finished();
@@ -463,7 +463,7 @@ public class GameState
         ServerMessageTsumo tsumo = (ServerMessageTsumo)message;
         ClientGameStatePlayer player = state.get_player(tsumo.player_ID);
 
-        ArrayList<Yaku> score = state.get_tsumo_score(player);
+        Scoring score = state.get_tsumo_score(player);
         display_score(score);
     }
 

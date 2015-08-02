@@ -27,12 +27,14 @@ namespace GameServer
         private GameState current_state = GameState.STARTING;
         private GameStateWall tiles;
         private GameStatePlayers players;
+        private Wind round_wind;
 
         // Whether the standard game flow has been interrupted
         private bool flow_interrupted = false;
 
-        public GameStateGame(int dealer, int wall_index, Rand rnd)
+        public GameStateGame(Wind round_wind, int dealer, int wall_index, Rand rnd)
         {
+            this.round_wind = round_wind;
             tiles = new GameStateWall(dealer, wall_index, rnd);
             players = new GameStatePlayers(dealer);
         }
@@ -528,6 +530,9 @@ namespace GameServer
 
             return new GameStateContext
             (
+                round_wind,
+                tiles.doras,
+                tiles.ura_doras,
                 ron,
                 win_tile,
                 last_tile,

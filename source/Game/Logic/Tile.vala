@@ -102,6 +102,42 @@ public class Tile
         return 0;
     }
 
+    public TileType dora_indicator()
+    {
+        int type = (int)tile_type;
+
+        if (type >= TileType.MAN1 && type <= TileType.MAN8)
+            return (TileType)(type + 1);
+        if (tile_type == TileType.MAN9)
+            return TileType.MAN1;
+        if (type >= TileType.PIN1 && type <= TileType.PIN8)
+            return (TileType)(type + 1);
+        if (tile_type == TileType.PIN9)
+            return TileType.PIN1;
+        if (type >= TileType.SOU1 && type <= TileType.SOU8)
+            return (TileType)(type + 1);
+        if (tile_type == TileType.SOU9)
+            return TileType.SOU1;
+
+        if (tile_type == TileType.TON)
+            return TileType.NAN;
+        if (tile_type == TileType.NAN)
+            return TileType.SHAA;
+        if (tile_type == TileType.SHAA)
+            return TileType.PEI;
+        if (tile_type == TileType.PEI)
+            return TileType.TON;
+
+        if (tile_type == TileType.HAKU)
+            return TileType.HATSU;
+        if (tile_type == TileType.HATSU)
+            return TileType.CHUN;
+        if (tile_type == TileType.CHUN)
+            return TileType.HAKU;
+
+        return TileType.BLANK;
+    }
+
     public int ID { get; set; }
     public TileType tile_type { get; set; }
     public bool dora { get; set; }

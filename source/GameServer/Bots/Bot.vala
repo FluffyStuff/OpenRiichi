@@ -11,16 +11,16 @@ public abstract class Bot : Object
     {
     }
 
-    public void start(int player_ID, int dealer)
+    public void start(int player_ID, Wind round_wind, int dealer)
     {
         active = true;
-        reset(player_ID, dealer);
+        reset(player_ID, round_wind, dealer);
         Threading.start0(logic);
     }
 
-    public void reset(int player_ID, int dealer)
+    public void reset(int player_ID, Wind round_wind, int dealer)
     {
-        state = new ClientGameState(player_ID, dealer);
+        state = new ClientGameState(player_ID, round_wind, dealer);
     }
 
     public void stop(bool use_lock)
