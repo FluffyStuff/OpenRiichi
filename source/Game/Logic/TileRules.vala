@@ -483,7 +483,7 @@ public class TileRules
     }
 }
 
-class GameStateCall
+public class GameStateCall
 {
     public GameStateCall(CallType type, ArrayList<Tile> tiles)
     {

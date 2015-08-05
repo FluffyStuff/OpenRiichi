@@ -1,7 +1,9 @@
 // libSOIL is not thread safe, so let's use this thread safe wrapper
-public static class SoilWrap : Object
+public class SoilWrap : Object
 {
     private static Mutex mutex = new Mutex();
+
+    private SoilWrap() {}
 
     // Need this for static fields
     public static void static_init()
