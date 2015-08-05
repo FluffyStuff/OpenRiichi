@@ -203,6 +203,7 @@ public class ClientGameState
 public class ClientGameStatePlayer
 {
     private bool double_riichi = true;
+    private bool do_riichi_discard = false;
     private bool ippatsu = false;
     private bool dealer;
     private Wind wind;
@@ -240,7 +241,11 @@ public class ClientGameStatePlayer
 
         if (!in_riichi)
             double_riichi = false;
-        ippatsu = false;
+
+        if (do_riichi_discard)
+            do_riichi_discard = false;
+        else
+            ippatsu = false;
     }
 
     public void rob_tile(Tile tile)
@@ -260,6 +265,7 @@ public class ClientGameStatePlayer
     {
         in_riichi = true;
         ippatsu = true;
+        do_riichi_discard = true;
     }
 
     public void do_late_kan(Tile tile)

@@ -79,7 +79,7 @@ public class ScoringView : View
         labels.add(create_label("\n\n" + name + points + " points"));
 
         rectangle = new RenderRectangle2D();
-        rectangle.alpha = 0.7f;
+        rectangle.alpha = 0.8f;
         rectangle.scale = { 0.3f, 0.4f };
         rectangle.diffuse_color = { 0, 0, 0 };
     }

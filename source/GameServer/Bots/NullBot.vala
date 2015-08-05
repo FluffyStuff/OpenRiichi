@@ -15,7 +15,7 @@ namespace GameServer
         {
             action_delay();
 
-            if (state.can_tsumo(state.self) && state.self.in_riichi && false)
+            if (state.can_tsumo(state.self) && state.self.in_riichi)
             {
                 do_tsumo();
             }
@@ -52,7 +52,7 @@ namespace GameServer
 
         protected override void do_call_decision(ClientGameStatePlayer discarding_player, Tile tile)
         {
-            if (state.can_ron(state.self, tile) && state.self.in_riichi && false)
+            if (state.can_ron(state.self, tile) && state.self.in_riichi)
             {
                 action_delay();
                 call_ron();
