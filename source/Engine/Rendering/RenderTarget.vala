@@ -2,7 +2,7 @@ using Gee;
 
 public abstract class RenderTarget : Object, IRenderTarget
 {
-    private const bool SINGLE_THREADED = false;
+    private const bool SINGLE_THREADED = true;
 
     private RenderState? current_state = null;
     private RenderState? buffer_state = null;
@@ -178,7 +178,7 @@ public abstract class RenderTarget : Object, IRenderTarget
             double time = timer.elapsed();
             double diff = (time - last_time) / frms;
 
-            //print("(R) Average frame time over %d frames: %fms (%ffps)\n", frms, diff * 1000, 1 / diff);
+            print("(R) Average frame time over %d frames: %fms (%ffps)\n", frms, diff * 1000, 1 / diff);
 
             last_time = time;
         }

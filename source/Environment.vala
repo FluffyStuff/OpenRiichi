@@ -12,8 +12,8 @@ public class Environment : Object
 
         if (SDL.init(SDL.InitFlag.EVERYTHING) < 0)
         	return false;
-        SDL.GL.set_attribute(SDL.GLattr.MULTISAMPLEBUFFERS, 1);
-        SDL.GL.set_attribute(SDL.GLattr.MULTISAMPLESAMPLES, 16);
+        //SDL.GL.set_attribute(SDL.GLattr.MULTISAMPLEBUFFERS, 1);
+        //SDL.GL.set_attribute(SDL.GLattr.MULTISAMPLESAMPLES, 16);
 
         initialized = true;
         return true;
