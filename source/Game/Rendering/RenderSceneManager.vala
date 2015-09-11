@@ -39,7 +39,7 @@ class RenderSceneManager
     {
         float tile_scale = 1.6f;
 
-        RenderModel tile = store.load_model("tile", true);
+        RenderModel tile = store.load_model("tile_low", true);
         tile_size = tile.size.mul_scalar(tile_scale);
 
         table = new RenderTable(store, tile_size);

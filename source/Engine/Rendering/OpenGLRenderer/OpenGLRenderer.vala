@@ -69,7 +69,7 @@ public class OpenGLRenderer : RenderTarget
         sdl_window.set_icon(SDLImage.load("./Data/Icon.png"));
         sdl_window.set_size(width, height);
 
-        program_3D = new OpenGLShaderProgram3D("./Data/Shaders/open_gl_shader_3D", MAX_LIGHTS, POSITION_ATTRIBUTE, TEXTURE_ATTRIBUTE, NORMAL_ATTRIBUTE);
+        program_3D = new OpenGLShaderProgram3D("./Data/Shaders/open_gl_shader_3D_low", MAX_LIGHTS, POSITION_ATTRIBUTE, TEXTURE_ATTRIBUTE, NORMAL_ATTRIBUTE);
         if (!program_3D.init())
             return false;
 

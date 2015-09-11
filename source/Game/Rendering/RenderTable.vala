@@ -5,7 +5,7 @@ public class RenderTable
 
     public RenderTable(IResourceStore store, Vec3 tile_size)
     {
-        table = store.load_object_3D("table");
+        table = store.load_object_3D("table_low");
 
         string dir = FileLoader.get_user_dir() + "Custom/";
 
@@ -15,9 +15,9 @@ public class RenderTable
         model = store.load_model_dir(dir, "field", false);
         if (model == null)
             model = store.load_model("field", false);
-        texture = store.load_texture_dir(dir, "field");
+        texture = store.load_texture_dir(dir, "field_low");
         if (texture == null)
-            texture = store.load_texture("field");
+            texture = store.load_texture("field_low");
 
         field = new RenderObject3D(model, texture);
 
