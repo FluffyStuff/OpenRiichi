@@ -10,8 +10,8 @@ namespace GameServer
         public signal void game_flip_ura_dora(ArrayList<Tile> tiles);
         public signal void game_dead_tile_add(Tile tile);
 
-        public signal void game_ron(int player_ID, ArrayList<Tile> hand, int discard_player_ID, Tile tile);
-        public signal void game_tsumo(int player_ID, ArrayList<Tile> hand);
+        public signal void game_ron(int player_ID, ArrayList<Tile> hand, int discard_player_ID, Tile tile, Scoring score);
+        public signal void game_tsumo(int player_ID, ArrayList<Tile> hand, Scoring score);
         public signal void game_riichi(int player_ID);
         public signal void game_late_kan(int player_ID, Tile tile);
         public signal void game_closed_kan(int player_ID, ArrayList<Tile> tiles);
@@ -143,7 +143,8 @@ namespace GameServer
                 return;
             }
 
-            if (!player.can_tsumo(create_context(false, player.last_drawn_tile)))
+            GameStateContext context = create_context(false, player.last_drawn_tile);
+            if (!player.can_tsumo(context))
             {
                 print("client_tsumo: Player trying to do invalid tsumo\n");
                 return;
@@ -153,7 +154,7 @@ namespace GameServer
 
             if (player.in_riichi)
                 game_flip_ura_dora(tiles.ura_doras);
-            game_tsumo(player.ID, player.hand);
+            game_tsumo(player.ID, player.hand, player.get_tsumo_score(context));
         }
 
         public void client_riichi(int player_ID)
@@ -431,7 +432,7 @@ namespace GameServer
                 current_state = GameState.FINISHED;
                 if (player.in_riichi)
                     game_flip_ura_dora(tiles.ura_doras);
-                game_ron(player.ID, player.hand, discarder.ID, discard_tile);
+                game_ron(player.ID, player.hand, discarder.ID, discard_tile, player.get_ron_score(context));
                 return;
             }
 

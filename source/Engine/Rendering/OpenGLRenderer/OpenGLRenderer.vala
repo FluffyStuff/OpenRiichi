@@ -24,8 +24,7 @@ public class OpenGLRenderer : RenderTarget
     private GLContext context;
     private unowned Window sdl_window;
 
-    private int view_width = 0;
-    private int view_height = 0;
+    private Size2i view_size;
 
     public OpenGLRenderer(SDLWindowTarget window)
     {
@@ -43,7 +42,7 @@ public class OpenGLRenderer : RenderTarget
         }
     }
 
-    protected override bool init(int width, int height)
+    protected override bool init(Size2i size)
     {
         if ((context = SDL.GL.create_context(sdl_window)) == null)
             return false;
@@ -67,7 +66,7 @@ public class OpenGLRenderer : RenderTarget
 
         // TODO: Put this somewhere
         sdl_window.set_icon(SDLImage.load("./Data/Icon.png"));
-        sdl_window.set_size(width, height);
+        sdl_window.set_size(size.width, size.height);
 
         program_3D = new OpenGLShaderProgram3D("./Data/Shaders/open_gl_shader_3D_low", MAX_LIGHTS, POSITION_ATTRIBUTE, TEXTURE_ATTRIBUTE, NORMAL_ATTRIBUTE);
         if (!program_3D.init())
@@ -94,7 +93,7 @@ public class OpenGLRenderer : RenderTarget
 
     public override void render(RenderState state)
     {
-        setup_projection(state.screen_width, state.screen_height);
+        setup_projection(state.screen_size);
         glClearColor(state.back_color.r, state.back_color.g, state.back_color.b, state.back_color.a);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -119,7 +118,7 @@ public class OpenGLRenderer : RenderTarget
     {
         OpenGLShaderProgram3D program = program_3D;
 
-        Mat4 projection_transform = get_projection_matrix(scene.focal_length, (float)scene.width / scene.height);
+        Mat4 projection_transform = get_projection_matrix(scene.focal_length, (float)scene.size.width / scene.size.height);
         Mat4 view_transform = scene.view_transform;
 
         program.apply_scene(projection_transform, view_transform, scene.lights);
@@ -149,7 +148,7 @@ public class OpenGLRenderer : RenderTarget
 
         Mat4 model_transform = Calculations.get_model_matrix(obj.position, obj.rotation, obj.scale);
 
-        program.render_object(model_handle.triangle_count, model_transform, obj.alpha, obj.light_multiplier, obj.diffuse_color);
+        program.render_object(model_handle.triangle_count, model_transform, obj.light_multiplier, obj.diffuse_color);
     }
 
     private void render_scene_2D(RenderScene2D scene)
@@ -177,7 +176,7 @@ public class OpenGLRenderer : RenderTarget
 
         Mat3 model_transform = Calculations.get_model_matrix_3(obj.position, obj.rotation, obj.scale);
 
-        program.render_object(model_transform, obj.alpha, obj.diffuse_color, true);
+        program.render_object(model_transform, obj.diffuse_color, true);
     }
 
     private void render_label_2D(RenderLabel2D label, OpenGLShaderProgram2D program)
@@ -187,13 +186,13 @@ public class OpenGLRenderer : RenderTarget
 
         Mat3 model_transform = Calculations.get_model_matrix_3(label.position, label.rotation, label.scale);
 
-        program.render_object(model_transform, label.alpha, label.diffuse_color, true);
+        program.render_object(model_transform, label.diffuse_color, true);
     }
 
     private void render_rectangle_2D(RenderRectangle2D rectangle, OpenGLShaderProgram2D program)
     {
         Mat3 model_transform = Calculations.get_model_matrix_3(rectangle.position, rectangle.rotation, rectangle.scale);
-        program.render_object(model_transform, rectangle.alpha, rectangle.diffuse_color, false);
+        program.render_object(model_transform, rectangle.diffuse_color, false);
     }
 
     /*private void post_process_draw(RenderState state)
@@ -251,8 +250,8 @@ public class OpenGLRenderer : RenderTarget
 
     protected override ITextureResourceHandle do_load_texture(ResourceTexture texture)
     {
-        int width = texture.width;
-        int height = texture.height;
+        int width = texture.size.width;
+        int height = texture.size.height;
 
         uint tex[1];
         glGenTextures(1, tex);
@@ -262,7 +261,7 @@ public class OpenGLRenderer : RenderTarget
         glBindTexture(GL_TEXTURE_2D, tex[0]);
         glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, aniso);
         //glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso[0]);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB_ALPHA, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, (GLvoid[])texture.data);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB_ALPHA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid[])texture.data);
 
         //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -280,8 +279,8 @@ public class OpenGLRenderer : RenderTarget
         if (handle.created)
             glDeleteTextures(1, del);
 
-        int width = label.width;
-        int height = label.height;
+        int width = label.size.width;
+        int height = label.size.height;
 
         uint tex[1];
         glGenTextures(1, tex);
@@ -311,14 +310,13 @@ public class OpenGLRenderer : RenderTarget
         SDL.GL.set_swapinterval(v_sync ? 1 : 0);
     }
 
-    private void setup_projection(int width, int height)
+    private void setup_projection(Size2i size)
     {
-        if (view_width == width && view_height == height)
+        if (view_size.width == size.width && view_size.height == size.height)
             return;
-        view_width = width;
-        view_height = height;
+        view_size = size;
 
-        glViewport(0, 0, view_width, view_height);
+        glViewport(0, 0, view_size.width, view_size.height);
         reshape();
     }
 

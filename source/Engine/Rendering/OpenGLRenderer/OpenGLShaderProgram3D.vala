@@ -18,7 +18,6 @@ public class OpenGLShaderProgram3D
     private int view_transform_attrib = -1;
     private int model_transform_attrib = -1;
     private int light_count_attrib = -1;
-    private int alpha_attrib = -1;
     private int light_multi_attrib = -1;
     private int diffuse_color_attrib = -1;
 
@@ -65,7 +64,6 @@ public class OpenGLShaderProgram3D
         view_transform_attrib = glGetUniformLocation(program, "view_transform");
         model_transform_attrib = glGetUniformLocation(program, "model_transform");
         light_count_attrib = glGetUniformLocation(program, "light_count");
-        alpha_attrib = glGetUniformLocation(program, "alpha");
         light_multi_attrib = glGetUniformLocation(program, "light_multiplier");
         diffuse_color_attrib = glGetUniformLocation(program, "diffuse_color");
 
@@ -98,12 +96,11 @@ public class OpenGLShaderProgram3D
             this.lights[i].apply(lights[i].position, lights[i].color, lights[i].intensity);
     }
 
-    public void render_object(int triangle_count, Mat4 model_transform, float alpha, float light_multiplier, Vec3 diffuse_color)
+    public void render_object(int triangle_count, Mat4 model_transform, float light_multiplier, Color diffuse_color)
     {
         glUniformMatrix4fv(model_transform_attrib, 1, false, model_transform.get_data());
-        glUniform1f(alpha_attrib, alpha);
         glUniform1f(light_multi_attrib, light_multiplier);
-        glUniform3f(diffuse_color_attrib, diffuse_color.x, diffuse_color.y, diffuse_color.z);
+        glUniform4f(diffuse_color_attrib, diffuse_color.r, diffuse_color.g, diffuse_color.b, diffuse_color.a);
 
         glDrawArrays(GL_TRIANGLES, 0, triangle_count);
     }
@@ -127,10 +124,10 @@ private class OpenGLLightSource
         intensity_attrib = glGetUniformLocation(program, "light_source[" + index.to_string() + "].intensity");
     }
 
-    public void apply(Vec3 position, Vec3 color, float intensity)
+    public void apply(Vec3 position, Color color, float intensity)
     {
         glUniform3f(position_attrib, position.x, position.y, position.z);
-        glUniform3f(color_attrib, color.x, color.y, color.z);
+        glUniform3f(color_attrib, color.r, color.g, color.b);
         glUniform1f(intensity_attrib, intensity);
     }
 

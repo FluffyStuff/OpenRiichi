@@ -1,8 +1,7 @@
 public interface IWindowTarget : Object
 {
     public abstract bool fullscreen { get; set; }
-    public abstract int width { get; }
-    public abstract int height { get; }
+    public abstract Size2i size { get; }
     public abstract void swap();
     public abstract void pump_events();
     public abstract void set_cursor_type(CursorType type);
@@ -12,6 +11,7 @@ public interface IWindowTarget : Object
 
 public enum CursorType
 {
+    UNDEFINED,
     NORMAL,
     HOVER
 }

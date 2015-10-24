@@ -5,7 +5,7 @@ public abstract class Bot : Object
     private bool active = false;
     protected ClientGameState state;
 
-    private Mutex mutex = new Mutex();
+    private Mutex mutex = Mutex();
 
     public Bot()
     {

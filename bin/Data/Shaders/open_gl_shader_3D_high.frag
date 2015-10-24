@@ -4,9 +4,8 @@
 
 uniform sampler2D tex;
 uniform int light_count;
-uniform float alpha;
 uniform float light_multiplier;
-uniform vec3 diffuse_color;
+uniform vec4 diffuse_color;
 
 in vec2 frag_texture_coord;
 in vec3 frag_normal;
@@ -23,7 +22,7 @@ void main()
 	vec3 normal = normalize(frag_normal);
 	
 	out_color = texture(tex, frag_texture_coord);
-	out_color.xyz += diffuse_color;
+	out_color.xyz += diffuse_color.xyz;
 	
 	vec3 diffuse = out_color.xyz * 0.02;
 	vec3 specular = vec3(0);
@@ -77,5 +76,5 @@ void main()
 	
 	
 	out_color.xyz /= max(pow(length(frag_camera_normal) / 5, 1.0) / 10, 1);
-	out_color.a = alpha;
+	out_color.a = diffuse_color.a;
 }

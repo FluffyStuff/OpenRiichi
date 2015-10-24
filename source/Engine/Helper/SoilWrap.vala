@@ -1,7 +1,7 @@
 // libSOIL is not thread safe, so let's use this thread safe wrapper
 public class SoilWrap : Object
 {
-    private static Mutex mutex = new Mutex();
+    private static Mutex mutex = Mutex();
 
     private SoilWrap() {}
 
@@ -19,7 +19,7 @@ public class SoilWrap : Object
         int width, height;
 
         mutex.lock();
-        uchar *image = SOIL.load_image(name, out width, out height, null, SOIL.LoadFlags.RGB);
+        uchar *image = SOIL.load_image(name, out width, out height, null, SOIL.LoadFlags.RGBA);
         mutex.unlock();
 
         return new SoilImage((char*)image, width, height);

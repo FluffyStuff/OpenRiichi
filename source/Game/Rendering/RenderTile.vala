@@ -124,18 +124,19 @@ public class RenderTile
     {
         float strength = 0.4f;
         if (hovered)
-            tile.diffuse_color = Vec3()
-            {
-                x = strength * 1.5f,
-                y = strength * 1.5f,
-                z = strength
-            };
+            tile.diffuse_color = Color
+            (
+                strength * 1.5f,
+                strength * 1.5f,
+                strength,
+                1
+            );
         else
         {
             if (tile_type.dora)
-                tile.diffuse_color = {0.2f, 0.2f, -0.4f};
+                tile.diffuse_color = Color(0.2f, 0.2f, -0.4f, 1);
             else
-                tile.diffuse_color = {};
+                tile.diffuse_color = Color.with_alpha(1);
         }
     }
 

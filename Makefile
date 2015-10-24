@@ -2,11 +2,13 @@ VALAC = valac
 NAME  = RiichiMahjong
 DIRS  = source/*.vala source/Engine/Controls/*.vala source/Engine/Files/*.vala source/Engine/Helper/*.vala source/Engine/Properties/*.vala source/Engine/Rendering/*.vala source/Engine/Rendering/OpenGLRenderer/*.vala source/Game/*.vala source/Game/Logic/*.vala source/Game/Rendering/*.vala source/Game/Rendering/Menu/*.vala source/GameServer/Bots/*.vala source/GameServer/GameState/*.vala source/GameServer/Server/*.vala source/MainMenu/*.vala
 #PKGS  = --thread --target-glib 2.32 --pkg gio-2.0 --pkg glew --pkg gee-1.0 --pkg gl --pkg SDL2-mixer --pkg SDL2-image --pkg SDL2 --pkg soil
-PKGS  = --thread --target-glib 2.32 --pkg gio-2.0 --pkg glew --pkg gee-1.0 --pkg gl --pkg sdl2-mixer --pkg sdl2-image --pkg sdl2 --pkg SOIL --pkg aubio --pkg pango --pkg cairo --pkg pangocairo
+PKGS  = --thread --target-glib 2.32 --pkg gio-2.0 --pkg glew --pkg gee-0.8 --pkg gl --pkg sdl2-mixer --pkg sdl2-image --pkg sdl2 --pkg SOIL --pkg aubio --pkg pango --pkg cairo --pkg pangocairo
 LIBS  = -X lib/SOIL/libSOIL.a -X lib/SDL/SDL2_net.lib -X lib/SDL/SDL2_image.lib -X lib/SDL/SDL2_mixer.lib -X lib/SDL/SDL2.lib -X lib/GLEW/glew32s.lib -X lib/GL/libopengl32.a -X lib/GEE/libgee.dll.a
 VAPI  = --vapidir=vapi
+OTHER = -X -w
+#-w = Supress C warnings
 O     = -o bin/$(NAME)
-DEBUG = --save-temps -g -D DEBUG
+DEBUG = --save-temps --enable-checking -g -D DEBUG
 
 all: Debug
 
@@ -20,12 +22,12 @@ cleanLinux:
 
 Debug:
 	$(eval SHELL = C:/Windows/System32/cmd.exe)
-	$(VALAC) $(DEBUG) $(O) $(DIRS) $(PKGS) $(LIBS) $(VAPI)
+	$(VALAC) $(DEBUG) $(O) $(DIRS) $(PKGS) $(LIBS) $(VAPI) $(OTHER)
 	-RCEDIT /I bin\$(NAME).exe Icon.ico
 
 Release:
 	$(eval SHELL = C:/Windows/System32/cmd.exe)
-	$(VALAC) -X -mwindows $(O) $(DIRS) $(PKGS) $(LIBS) $(VAPI)
+	$(VALAC) -X -mwindows $(O) $(DIRS) $(PKGS) $(LIBS) $(VAPI) $(OTHER)
 #	$(VALAC) $(DEBUG) $(O) $(DIRS) $(PKGS) $(LIBS) $(VAPI)
 	-RCEDIT /I bin\$(NAME).exe Icon.ico
 

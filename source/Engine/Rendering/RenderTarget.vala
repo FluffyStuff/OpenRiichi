@@ -7,13 +7,13 @@ public abstract class RenderTarget : Object, IRenderTarget
     private RenderState? current_state = null;
     private RenderState? buffer_state = null;
     private bool running = false;
-    private Mutex state_mutex = new Mutex();
+    private Mutex state_mutex = Mutex();
 
     private bool initialized = false;
     private bool init_status;
-    private Mutex init_mutex = new Mutex();
+    private Mutex init_mutex = Mutex();
 
-    private Mutex resource_mutex = new Mutex();
+    private Mutex resource_mutex = Mutex();
     private uint handle_model_ID = 1;
     private uint handle_texture_ID = 1;
     private uint handle_label_ID = 1;
@@ -47,7 +47,7 @@ public abstract class RenderTarget : Object, IRenderTarget
     public bool start()
     {
         if (SINGLE_THREADED)
-            return init(window.width, window.height);
+            return init(window.size);
 
         Threading.start0(render_thread);
 
@@ -132,7 +132,7 @@ public abstract class RenderTarget : Object, IRenderTarget
 
     private void render_thread()
     {
-        init_status = init(window.width, window.height);
+        init_status = init(window.size);
         init_mutex.lock();
         initialized = true;
         init_mutex.unlock();
@@ -178,7 +178,7 @@ public abstract class RenderTarget : Object, IRenderTarget
             double time = timer.elapsed();
             double diff = (time - last_time) / frms;
 
-            print("(R) Average frame time over %d frames: %fms (%ffps)\n", frms, diff * 1000, 1 / diff);
+            //print("(R) Average frame time over %d frames: %fms (%ffps)\n", frms, diff * 1000, 1 / diff);
 
             last_time = time;
         }
@@ -273,7 +273,7 @@ public abstract class RenderTarget : Object, IRenderTarget
 
     public abstract void render(RenderState state);
 
-    protected abstract bool init(int width, int height);
+    protected abstract bool init(Size2i size);
     protected abstract IModelResourceHandle do_load_model(ResourceModel model);
     protected abstract ITextureResourceHandle do_load_texture(ResourceTexture texture);
     protected abstract void do_load_label(ILabelResourceHandle handle, LabelBitmap bitmap);

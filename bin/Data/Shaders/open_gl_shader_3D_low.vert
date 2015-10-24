@@ -13,7 +13,7 @@ uniform mat4 view_transform;
 uniform mat4 model_transform;
 
 uniform float light_multiplier;
-uniform vec3 diffuse_color;
+uniform vec4 diffuse_color;
 
 uniform int light_count;
 uniform lightSourceParameters light_source[MAX_LIGHTS];
@@ -34,7 +34,7 @@ void main()
 	
 	vec3 original = vec3(0.02);
 	vec3 additive = vec3(0);
-	vec3 c = vec3(1) + diffuse_color;
+	vec3 c = vec3(1) + diffuse_color.xyz;
 	
 	for (int i = 0; i < light_count; i++)
 	{

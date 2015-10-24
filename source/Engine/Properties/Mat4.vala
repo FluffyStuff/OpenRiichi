@@ -9,19 +9,19 @@ public class Mat4
     {
         with_vecs
         (
-            { 1, 0, 0, 0 },
-            { 0, 1, 0, 0 },
-            { 0, 0, 1, 0 },
-            { 0, 0, 0, 1 }
+            Vec4(1, 0, 0, 0),
+            Vec4(0, 1, 0, 0),
+            Vec4(0, 0, 1, 0),
+            Vec4(0, 0, 0, 1)
         );
     }
 
     public Mat4.with_array(float *a)
     {
-        v1 = { a[ 0], a[ 1], a[ 2], a[ 3] };
-        v2 = { a[ 4], a[ 5], a[ 6], a[ 7] };
-        v3 = { a[ 8], a[ 9], a[10], a[11] };
-        v4 = { a[12], a[13], a[14], a[15] };
+        v1 = Vec4(a[ 0], a[ 1], a[ 2], a[ 3]);
+        v2 = Vec4(a[ 4], a[ 5], a[ 6], a[ 7]);
+        v3 = Vec4(a[ 8], a[ 9], a[10], a[11]);
+        v4 = Vec4(a[12], a[13], a[14], a[15]);
     }
 
     public Mat4.with_vecs(Vec4 v1, Vec4 v2, Vec4 v3, Vec4 v4)
@@ -70,34 +70,34 @@ public class Mat4
     {
         Vec4 vec1 =
         {
-            Calculations.vec4_dot(v1, mat.col(0)),
-            Calculations.vec4_dot(v1, mat.col(1)),
-            Calculations.vec4_dot(v1, mat.col(2)),
-            Calculations.vec4_dot(v1, mat.col(3))
+            v1.dot(mat.col(0)),
+            v1.dot(mat.col(1)),
+            v1.dot(mat.col(2)),
+            v1.dot(mat.col(3))
         };
 
         Vec4 vec2 =
         {
-            Calculations.vec4_dot(v2, mat.col(0)),
-            Calculations.vec4_dot(v2, mat.col(1)),
-            Calculations.vec4_dot(v2, mat.col(2)),
-            Calculations.vec4_dot(v2, mat.col(3))
+            v2.dot(mat.col(0)),
+            v2.dot(mat.col(1)),
+            v2.dot(mat.col(2)),
+            v2.dot(mat.col(3))
         };
 
         Vec4 vec3 =
         {
-            Calculations.vec4_dot(v3, mat.col(0)),
-            Calculations.vec4_dot(v3, mat.col(1)),
-            Calculations.vec4_dot(v3, mat.col(2)),
-            Calculations.vec4_dot(v3, mat.col(3))
+            v3.dot(mat.col(0)),
+            v3.dot(mat.col(1)),
+            v3.dot(mat.col(2)),
+            v3.dot(mat.col(3))
         };
 
         Vec4 vec4 =
         {
-            Calculations.vec4_dot(v4, mat.col(0)),
-            Calculations.vec4_dot(v4, mat.col(1)),
-            Calculations.vec4_dot(v4, mat.col(2)),
-            Calculations.vec4_dot(v4, mat.col(3))
+            v4.dot(mat.col(0)),
+            v4.dot(mat.col(1)),
+            v4.dot(mat.col(2)),
+            v4.dot(mat.col(3))
         };
 
         return new Mat4.with_vecs(vec1, vec2, vec3, vec4);
@@ -107,10 +107,10 @@ public class Mat4
     {
         return
         {
-            Calculations.vec4_dot(v1, vec),
-            Calculations.vec4_dot(v2, vec),
-            Calculations.vec4_dot(v3, vec),
-            Calculations.vec4_dot(v4, vec)
+            v1.dot(vec),
+            v2.dot(vec),
+            v3.dot(vec),
+            v4.dot(vec)
         };
     }
 

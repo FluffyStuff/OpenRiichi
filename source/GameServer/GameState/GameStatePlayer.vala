@@ -275,6 +275,16 @@ namespace GameServer
             return TileRules.in_tenpai(hand);
         }
 
+        public Scoring get_ron_score(GameStateContext context)
+        {
+            return TileRules.get_score(create_context(false), context);
+        }
+
+        public Scoring get_tsumo_score(GameStateContext context)
+        {
+            return TileRules.get_score(create_context(true), context);
+        }
+
         public int ID { get; private set; }
         public GameStateCallDecision? call_decision { get; set; }
         public PlayerState state { get; set; }

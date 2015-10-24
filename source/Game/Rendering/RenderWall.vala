@@ -23,7 +23,7 @@ public class RenderWall : Object
             for (int j = 0; j < 34; j++)
                 wt[j] = tiles[i * 34 + j];
 
-            Vec3 pos = Calculations.vec3_plus(Calculations.rotate_y({}, -(float)i / 2, Vec3() { z = offset }), center);
+            Vec3 pos = Calculations.rotate_y(Vec3.empty(), -(float)i / 2, Vec3(0, 0, offset)).plus(center);
             walls[i] = new WallPart(wt, tile_size, pos, i);
             walls[i].next_wall.connect(next_wall);
         }
@@ -135,24 +135,24 @@ public class RenderWall : Object
             for (int i = 0; i < left.size; i++)
             {
                 RenderTile t = left[i];
-                Vec3 pos = Calculations.rotate_y({}, r, {left_m * offset});
-                pos = Calculations.vec3_plus(t.position, pos);
+                Vec3 pos = Calculations.rotate_y(Vec3.empty(), r, {left_m * offset});
+                pos = t.position.plus(pos);
 
                 t.animate_towards(pos, t.rotation);
             }
             for (int i = 0; i < center.size; i++)
             {
                 RenderTile t = center[i];
-                Vec3 pos = Calculations.rotate_y({}, r, {center_m * offset});
-                pos = Calculations.vec3_plus(t.position, pos);
+                Vec3 pos = Calculations.rotate_y(Vec3.empty(), r, {center_m * offset});
+                pos = t.position.plus(pos);
 
                 t.animate_towards(pos, t.rotation);
             }
             for (int i = 0; i < right.size; i++)
             {
                 RenderTile t = right[i];
-                Vec3 pos = Calculations.rotate_y({}, r, {right_m * offset});
-                pos = Calculations.vec3_plus(t.position, pos);
+                Vec3 pos = Calculations.rotate_y(Vec3.empty(), r, {right_m * offset});
+                pos = t.position.plus(pos);
 
                 t.animate_towards(pos, t.rotation);
             }
@@ -220,19 +220,21 @@ public class RenderWall : Object
             {
                 RenderTile tile = wall_left[i];
 
-                Vec3 pos = Vec3()
-                {
-                    x = (8 - i / 2) * tile_size.x,
-                    y = ((i + 1) % 2 + 0.5f) * tile_size.y
-                };
+                Vec3 pos = Vec3
+                (
+                    (8 - i / 2) * tile_size.x,
+                    ((i + 1) % 2 + 0.5f) * tile_size.y,
+                    0
+                );
 
-                pos = Calculations.vec3_plus(Calculations.rotate_y({}, -(float)rotation / 2, pos), position);
+                pos = Calculations.rotate_y(Vec3.empty(), -(float)rotation / 2, pos).plus(position);
 
-                Vec3 rot = Vec3()
-                {
-                    x = 1,
-                    y = (float)rotation / 2 + 1
-                };
+                Vec3 rot = Vec3
+                (
+                    1,
+                    (float)rotation / 2 + 1,
+                    0
+                );
 
                 tile.set_absolute_location(pos, rot);
             }
@@ -308,11 +310,11 @@ public class RenderWall : Object
                     dir = -dir;
                 }
 
-                Vec3 pos = { 0, 0, -tile_size.z };
-                pos = Calculations.rotate_y({}, -(float)rotation / 2, pos).plus(tile.position);
+                Vec3 pos = Vec3(0, 0, -tile_size.z);
+                pos = Calculations.rotate_y(Vec3.empty(), -(float)rotation / 2, pos).plus(tile.position);
 
                 Vec3 rot = tile.rotation;
-                rot = { dir, rot.y, rot.z }; // Not 0, so it flips in the right direction
+                rot = Vec3(dir, rot.y, rot.z); // Not 0, so it flips in the right direction
                 tile.animate_towards(pos, rot);
             }
         }
@@ -324,19 +326,20 @@ public class RenderWall : Object
             if (tiles_added % 2 == 0)
             {
                 float y = tiles_added > 0 ? -tile_size.y : 0;
-                pos = { tile_size.x, y, 0 };
-                pos = Calculations.rotate_y({}, -(float)rotation / 2, pos);
+                pos = Vec3(tile_size.x, y, 0);
+                pos = Calculations.rotate_y(Vec3.empty(), -(float)rotation / 2, pos);
             }
             else
-                pos = { 0, tile_size.y, 0 };
+                pos = Vec3(0, tile_size.y, 0);
 
             pos = tiles[tiles.size - 1].position.plus(pos);
 
-            Vec3 rot = Vec3()
-            {
-                x = 1,
-                y = (float)rotation / 2 + 1
-            };
+            Vec3 rot = Vec3
+            (
+                1,
+                (float)rotation / 2 + 1,
+                0
+            );
 
             tile.animate_towards(pos, rot);
 

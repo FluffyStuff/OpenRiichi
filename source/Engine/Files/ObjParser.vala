@@ -343,10 +343,10 @@ public class ModelData
     private static void calc(ModelPoint[] points, out Vec3 size, out Vec3 center)
     {
         size = center = {};
-        Vec3 min = {}, max = {};
+        Vec3 min = Vec3.empty(), max = Vec3.empty();
 
         if (points.length > 0)
-            min = max = Vec3() { x = points[0].vertex.x, y = points[0].vertex.y, z = points[0].vertex.z };
+            min = max = Vec3(points[0].vertex.x, points[0].vertex.y, points[0].vertex.z);
 
         for (int i = 1; i < points.length; i++)
         {
@@ -359,8 +359,8 @@ public class ModelData
             max.z = Math.fmaxf(max.z, p.z);
         }
 
-        size = Vec3() { x = max.x - min.x, y = max.y - min.y, z = max.z - min.z };
-        center = Vec3() { x = (max.x + min.x) / 2, y = (max.y + min.y) / 2, z = (max.z + min.z) / 2 };
+        size = Vec3(max.x - min.x, max.y - min.y, max.z - min.z);
+        center = Vec3((max.x + min.x) / 2, (max.y + min.y) / 2, (max.z + min.z) / 2);
     }
 
     public ModelPoint[] points { get; private set; }

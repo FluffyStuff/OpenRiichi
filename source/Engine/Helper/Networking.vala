@@ -16,7 +16,7 @@ public class Networking : Object
     public Networking()
     {
         connections = new ArrayList<Connection>();
-        mutex = new Mutex();
+        mutex = Mutex();
     }
 
     ~Networking()
@@ -187,7 +187,7 @@ public class Connection : Object
     private SocketConnection connection;
     private bool run = true;
     private Cancellable cancel = new Cancellable();
-    private Mutex mutex = new Mutex();
+    private Mutex mutex = Mutex();
 
     public Connection(SocketConnection connection)
     {

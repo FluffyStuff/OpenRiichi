@@ -11,7 +11,7 @@ public class MainWindow : RenderWindow
     public MainWindow(IWindowTarget window, IRenderTarget renderer)
     {
         base(window, renderer);
-        back_color = Color() { r = 0, g = 0.01f, b = 0.02f };
+        back_color = Color(0, 0.01f, 0.02f, 1);
 
         create_main_menu();
     }

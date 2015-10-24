@@ -1,10 +1,14 @@
 using Gee;
 
-public class ScoringView : View
+public class ScoringView : View2D
 {
     private Scoring score;
-    private ArrayList<RenderLabel2D> labels = new ArrayList<RenderLabel2D>();
-    private RenderRectangle2D rectangle;
+    private ArrayList<LabelControl> labels = new ArrayList<LabelControl>();
+    private LabelControl time_label;
+    private RectangleControl rectangle;
+    private GameMenuButton next_button;
+    private float time = 15;
+    private float start_time = 0;
 
     public ScoringView(Scoring score)
     {
@@ -13,21 +17,56 @@ public class ScoringView : View
 
     public override void added()
     {
+        rectangle = new RectangleControl();
+        rectangle.resize_style = ResizeStyle.RELATIVE;
+        rectangle.relative_scale = Size2(0.9f, 0.9f);
+        rectangle.diffuse_color = Color.with_alpha(0.8f);
+        add_control(rectangle);
+
         string score_text;
         if (score.ron)
             score_text = "Ron";
         else
             score_text = "Tsumo";
 
-        labels.add(create_label(score_text));
+        LabelControl score_label = new LabelControl(store);
+        score_label.text = score_text;
+        score_label.inner_anchor = Size2(0.5f, 1);
+        score_label.outer_anchor = Size2(0.5f, rectangle.relative_scale.height);
+        score_label.position = Vec2(0, 0);
+        labels.add(score_label);
 
         int han = 0;
         int yakuman = 0;
+
+        int h = 2;
+
         foreach (Yaku yaku in score.yaku)
         {
-            labels.add(create_label(yaku_to_string(yaku)));
+            LabelControl name = new LabelControl(store);
+            name.text = yaku_to_string(yaku);
+            name.inner_anchor = Size2(0, 1);
+            name.outer_anchor = Size2(1 - rectangle.relative_scale.width, rectangle.relative_scale.height);
+            name.position = Vec2(0, -h * name.size.height);
+            labels.add(name);
+
+            string str;
+
+            if (yaku.yakuman > 0)
+                str = yaku.yakuman.to_string() + " yakuman";
+            else
+                str = yaku.han.to_string() + " han";
+
+            LabelControl num = new LabelControl(store);
+            num.text = str;
+            num.inner_anchor = Size2(1, 1);
+            num.outer_anchor = Size2(rectangle.relative_scale.width, rectangle.relative_scale.height);
+            num.position = Vec2(0, -h * num.size.height);
+            labels.add(num);
+
             han += yaku.han;
             yakuman += yaku.yakuman;
+            h++;
         }
 
         string points;
@@ -74,26 +113,32 @@ public class ScoringView : View
         }
 
         if (name != "")
-            name += " ";
+            name += " - ";
 
-        labels.add(create_label("\n\n" + name + points + " points"));
 
-        rectangle = new RenderRectangle2D();
-        rectangle.alpha = 0.8f;
-        rectangle.scale = { 0.3f, 0.4f };
-        rectangle.diffuse_color = { 0, 0, 0 };
-    }
+        LabelControl points_label = new LabelControl(store);
+        points_label.text = name + points + " points";
+        points_label.inner_anchor = Size2(0.5f, 1);
+        points_label.outer_anchor = Size2(0.5f, rectangle.relative_scale.height);
+        points_label.position = Vec2(0, -(h + 3) * points_label.size.height);
+        labels.add(points_label);
 
-    private RenderLabel2D create_label(string text)
-    {
-        RenderLabel2D label = store.create_label();
-        label.text = text;
-        label.font_size = 30 / 1.6f;
-        label.font_type = "Sans Bold";
-        store.update_label_info(label);
-        //label.diffuse_color = { -1.0f, -1.0f, -1.0f };
+        foreach (LabelControl label in labels)
+            add_control(label);
 
-        return label;
+        time_label = new LabelControl(store);
+        time_label.text = "";
+        time_label.font_size = 30 / 1.6f;
+        time_label.font_type = "Sans Bold";
+        time_label.inner_anchor = Size2(0, 0);
+        time_label.outer_anchor = Size2(1 - rectangle.relative_scale.width, 1 - rectangle.relative_scale.height);
+        add_control(time_label);
+
+        next_button = new GameMenuButton(store, "Next");
+        next_button.selectable = true;
+        next_button.inner_anchor = Size2(1, 0);
+        next_button.outer_anchor = Size2(rectangle.relative_scale.width, 1 - rectangle.relative_scale.height);
+        //add_control(next_button);
     }
 
     private string yaku_to_string(Yaku yaku)
@@ -111,44 +156,18 @@ public class ScoringView : View
             str += part[0].toupper().to_string() + part.substring(1);
         }
 
-        str += ": ";
-
-        if (yaku.yakuman > 0)
-            str += yaku.yakuman.to_string() + " yakuman";
-        else
-            str += yaku.han.to_string() + " han";
-
         return str;
     }
 
-    public override void do_render(RenderState state)
+    public override void do_process(DeltaArgs delta)
     {
-        position_labels(state);
+        if (start_time == 0)
+            start_time = delta.time;
 
-        RenderScene2D scene = new RenderScene2D(state.screen_width, state.screen_height);
+        int t = (int)(start_time + time - delta.time);
+        string str = t.to_string();
 
-        scene.add_object(rectangle);
-        foreach (RenderLabel2D label in labels)
-            scene.add_object(label);
-
-        state.add_scene(scene);
-    }
-
-    private void position_labels(RenderState state)
-    {
-        float y = rectangle.scale.y;
-
-        foreach (RenderLabel2D label in labels)
-        {
-            float scale = 1;
-            float width = (float)label.info.width / state.screen_width;
-            float height = (float)label.info.height / state.screen_height;
-
-            label.scale = { width * scale, height * scale };
-
-            label.position = { 0, y - label.scale.y };
-
-            y -= label.scale.y * 2;
-        }
+        if (str != time_label.text)
+            time_label.text = str;
     }
 }

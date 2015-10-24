@@ -50,7 +50,7 @@ public abstract class RenderWindow
 
     private RenderState render()
     {
-        RenderState state = new RenderState(window.width, window.height);
+        RenderState state = new RenderState(window.size);
         state.back_color = back_color;
         main_view.render(state);
         return state;
@@ -121,11 +121,19 @@ public abstract class RenderWindow
 
                 int ax = 0, ay = 0;
                 Cursor.get_state(ref ax, ref ay);
-                MouseEventArgs mouse = new MouseEventArgs(button, ev.state == 1, ax, height - ay);
+                MouseEventArgs mouse = new MouseEventArgs(button, null, ev.state == 1, Vec2i(ax, size.y - ay), size);
                 main_view.mouse_event(mouse);
             }
             else if (e.type == EventType.MOUSEWHEEL)
-                ;
+            {
+
+            }
+            else if (e.type == EventType.WINDOWEVENT)
+            {
+                WindowEvent win = e.window;
+                if (win.event == WindowEventID.RESIZED)
+                    main_view.resize();
+            }
         }
 
         mouse_move_event();
@@ -137,10 +145,11 @@ public abstract class RenderWindow
         Cursor.get_relative_state(ref rx, ref ry);
         Cursor.get_state(ref ax, ref ay);
 
-        MouseMoveArgs mouse = new MouseMoveArgs(ax, height-ay, rx, -ry);
+        MouseMoveArgs mouse = new MouseMoveArgs(Vec2i(ax, size.y - ay), Vec2i(rx, -ry), size);
         main_view.mouse_move(mouse);
 
-        set_cursor_type(mouse.cursor_type);
+        if (mouse.cursor_type != CursorType.UNDEFINED)
+            set_cursor_type(mouse.cursor_type);
     }
 
     public void set_cursor_type(CursorType type)
@@ -170,6 +179,5 @@ public abstract class RenderWindow
     public View main_view { get; private set; }
     public bool fullscreen { get { return window.fullscreen; } set { window.fullscreen = value; } }
     public Color back_color { get; set; }
-    public int width { get { return window.width; } }
-    public int height { get { return window.height; } }
+    public Size2i size { get { return window.size; } }
 }

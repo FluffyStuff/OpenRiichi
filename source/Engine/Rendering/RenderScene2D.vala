@@ -4,10 +4,9 @@ public class RenderScene2D : RenderScene
 {
     ArrayList<RenderObject2D> objs = new ArrayList<RenderObject2D>();
 
-    public RenderScene2D(int width, int height)
+    public RenderScene2D(Size2i size)
     {
-        this.width = width;
-        this.height = height;
+        this.size = size;
     }
 
     public void add_object(RenderObject2D object)
@@ -16,6 +15,5 @@ public class RenderScene2D : RenderScene
     }
 
     public ArrayList<RenderObject2D> objects { get { return objs; } }
-    public int width { get; private set; }
-    public int height { get; private set; }
+    public Size2i size { get; private set; }
 }

@@ -21,12 +21,12 @@ public class RenderTable
 
         field = new RenderObject3D(model, texture);
 
-        table.position = Vec3() { y = -0.163f };
-        table.scale = Vec3() { x = 10, y = 10, z = 10 };
-        field.position = Vec3() { y = 12.4f };
-        field.scale = Vec3() { x = 9.6f, y = 1, z = 9.6f };
+        table.position = Vec3(0, -0.163f, 0);
+        table.scale = Vec3(10, 10, 10);
+        field.position = Vec3(0, 12.4f, 0);
+        field.scale = Vec3(9.6f, 1, 9.6f);
 
-        center = Vec3() { y = field.position.y };
+        center = Vec3(0, field.position.y, 0);
         player_offset = field.scale.z - 1.0f - (tile_size.x + tile_size.z) / 2;
     }
 

@@ -1,7 +1,7 @@
 using Gee;
 using GameServer;
 
-class MainMenuView : View
+class MainMenuView : View2D
 {
     private ServerController? server = null;
     private IGameConnection connection;
@@ -146,17 +146,7 @@ class MainMenuView : View
         back_button = new GameMenuButton(store, "Back");
         quit_button = new GameMenuButton(store, "Quit");
 
-        host_game_button.position = { 0, join_game_button.size.y / 2 + host_game_button.size.y };
-        join_game_button.position = { 0, 0 };
-        start_game_button.position = { 0, start_game_button.size.y / 4 * 3 };
-        back_button.position = { 0, -back_button.size.y / 4 * 3 };
-        quit_button.position = { 0, -join_game_button.size.y / 2 - quit_button.size.y };
-
-        host_game_button.clicked.connect(press_host);
-        join_game_button.clicked.connect(press_join);
-        start_game_button.clicked.connect(press_start);
-        back_button.clicked.connect(press_back);
-        quit_button.clicked.connect(press_quit);
+        ArrayList<GameMenuButton> buttons = new ArrayList<GameMenuButton>();
 
         buttons.add(host_game_button);
         buttons.add(join_game_button);
@@ -165,76 +155,29 @@ class MainMenuView : View
         buttons.add(quit_button);
 
         foreach (GameMenuButton button in buttons)
-            button.enabled = true;
+        {
+            add_control(button);
+            button.selectable = true;
+        }
+
+        host_game_button.position = Vec2(0, join_game_button.size.y / 2 + host_game_button.size.y);
+        join_game_button.position = Vec2(0, 0);
+        start_game_button.position = Vec2(0, start_game_button.size.y / 4 * 3);
+        back_button.position = Vec2(0, -back_button.size.y / 4 * 3);
+        quit_button.position = Vec2(0, -join_game_button.size.y / 2 - quit_button.size.y);
+
+        host_game_button.clicked.connect(press_host);
+        join_game_button.clicked.connect(press_join);
+        start_game_button.clicked.connect(press_start);
+        back_button.clicked.connect(press_back);
+        quit_button.clicked.connect(press_quit);
 
         show_main_menu();
     }
 
-    public override void do_process(DeltaArgs delta)
+    public override void do_render_2D(RenderState state, RenderScene2D scene)
     {
-
-    }
-
-    public override void do_render(RenderState state)
-    {
-        state.back_color = { 0, 0, 0 };
-        RenderScene2D scene = new RenderScene2D(state.screen_width, state.screen_height);
-
-        foreach (GameMenuButton button in buttons)
-            button.render(scene, { state.screen_width, state.screen_height });
-
-        state.add_scene(scene);
-    }
-
-    protected override void do_mouse_move(MouseMoveArgs mouse)
-    {
-        Vec2 pos = Vec2() { x = mouse.pos_x, y = mouse.pos_y };
-
-        GameMenuButton? button = null;
-        if (!mouse.handled)
-            button = get_hover_button(pos);
-
-        foreach (GameMenuButton b in buttons)
-        {
-            if ((b.hovering = (b == button)))
-            {
-                mouse.cursor_type = CursorType.HOVER;
-                mouse.handled = true;
-            }
-        }
-    }
-
-    protected override void do_mouse_event(MouseEventArgs mouse)
-    {
-        if (mouse.button == MouseEventArgs.Button.LEFT)
-        {
-            if (mouse.handled)
-            {
-                mouse_down_button = null;
-                return;
-            }
-
-            GameMenuButton? button = get_hover_button({mouse.pos_x, mouse.pos_y});
-
-            if (mouse.down)
-                mouse_down_button = button;
-            else
-            {
-                if (button != null && button == mouse_down_button)
-                    button.click();
-
-                mouse_down_button = null;
-            }
-        }
-    }
-
-    private GameMenuButton? get_hover_button(Vec2 position)
-    {
-        foreach (GameMenuButton button in buttons)
-            if (button.hover_check(position))
-                return button;
-
-        return null;
+        state.back_color = Color.black();
     }
 
     private void received_message()

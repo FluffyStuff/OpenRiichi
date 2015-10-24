@@ -203,7 +203,7 @@ public class GameRenderView : View, IGameRenderer
 
         RenderTile? tile = null;
         if (!mouse.handled && active)
-            tile = get_hover_tile(scene.camera, scene.observer.hand_tiles, mouse.pos_x, mouse.pos_y);
+            tile = get_hover_tile(scene.camera, scene.observer.hand_tiles, mouse.position);
 
         bool hovered = false;
 
@@ -258,7 +258,7 @@ public class GameRenderView : View, IGameRenderer
 
         if (mouse.button == MouseEventArgs.Button.LEFT)
         {
-            RenderTile? tile = get_hover_tile(scene.camera, scene.observer.hand_tiles, mouse.pos_x, mouse.pos_y);
+            RenderTile? tile = get_hover_tile(scene.camera, scene.observer.hand_tiles, mouse.position);
 
             if (mouse.down)
             {
@@ -280,15 +280,15 @@ public class GameRenderView : View, IGameRenderer
         }
     }
 
-    private RenderTile? get_hover_tile(Camera camera, ArrayList<RenderTile> tiles, int x, int y)
+    private RenderTile? get_hover_tile(Camera camera, ArrayList<RenderTile> tiles, Vec2i position)
     {
-        float width = parent_window.width;
-        float height = parent_window.height;
-        float aspect_ratio = width / height;
+        Size2 size = Size2(parent_window.size.width, parent_window.size.height);
+        float aspect_ratio = size.width / size.height;
         float focal_length = camera.focal_length;
+
         Mat4 projection_matrix = parent_window.renderer.get_projection_matrix(focal_length, aspect_ratio);
         Mat4 view_matrix = camera.get_view_transform(false);
-        Vec3 ray = Calculations.get_ray(projection_matrix, view_matrix, x, y, width, height);
+        Vec3 ray = Calculations.get_ray(projection_matrix, view_matrix, position, Size2i((int)size.width, (int)size.height));
 
         float shortest = 0;
         RenderTile? shortest_tile = null;

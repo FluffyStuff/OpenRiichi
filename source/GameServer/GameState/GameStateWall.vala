@@ -79,7 +79,7 @@ namespace GameServer
 
         private static void shuffle(Tile[] tiles, Rand rnd)
         {
-            for (int i = 0; i < tiles.length; i++)
+            for (int i = 0; i < tiles.length; i += 20)
             {
                 int tmp = rnd.int_range(0, tiles.length);
                 Tile t = tiles[i];

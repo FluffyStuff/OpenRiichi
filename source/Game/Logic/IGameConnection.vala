@@ -3,7 +3,7 @@ using Gee;
 public abstract class IGameConnection : Object
 {
     private ArrayList<ServerMessage> queue = new ArrayList<ServerMessage>();
-    private Mutex mutex = new Mutex();
+    private Mutex mutex = Mutex();
 
     public signal void received_message();
     public signal void disconnected();

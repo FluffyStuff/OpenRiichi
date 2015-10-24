@@ -4,7 +4,7 @@ public class ServerMessageParser
 {
     private ArrayList<Dispatcher> dispatchers = new ArrayList<Dispatcher>();
     private ArrayList<ServerMessage> queue = new ArrayList<ServerMessage>();
-    private Mutex mutex = new Mutex();
+    private Mutex mutex = Mutex();
 
     public void connect(ServerMessageDelegate method, Type type)
     {

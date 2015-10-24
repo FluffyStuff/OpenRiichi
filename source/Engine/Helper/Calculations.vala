@@ -5,14 +5,14 @@ public class Calculations
     public static uint8[] int_to_data(uint32 n)
     {
         // Don't do this, so we maintain consistency over network
-        //int bytes = (int)sizeof(int) / 8;
-
+        //int bytes = (int)sizeof(int);
         int bytes = 4;
+
         uint8[] buffer = new uint8[bytes];
         for (int i = 0; i < bytes; i++)
             buffer[i] = (uint8)(n >> ((bytes - i - 1) * 8));
         return buffer;
-}
+    }
 
 
     public static Vec3 rotate(Vec3 origin, Vec3 rotation, Vec3 offset)
@@ -32,16 +32,16 @@ public class Calculations
         float c = (float)Math.cos(rotation * Math.PI);
         float s = (float)Math.sin(rotation * Math.PI);
 
-        Vec3 p = vec3_minus(offset, origin);
+        Vec3 p = offset.minus(origin);
 
-        p = Vec3()
-        {
-            x = p.x,
-            y = p.y * c - p.z * s,
-            z = p.y * s + p.z * c
-        };
+        p = Vec3
+        (
+            p.x,
+            p.y * c - p.z * s,
+            p.y * s + p.z * c
+        );
 
-        return vec3_plus(p, origin);
+        return p.plus(origin);
     }
 
     public static Vec3 rotate_y(Vec3 origin, float rotation, Vec3 offset)
@@ -52,16 +52,16 @@ public class Calculations
         float c = (float)Math.cos(rotation * Math.PI);
         float s = (float)Math.sin(rotation * Math.PI);
 
-        Vec3 p = vec3_minus(offset, origin);
+        Vec3 p = offset.minus(origin);
 
-        p = Vec3()
-        {
-            x = p.z * s + p.x * c,
-            y = p.y,
-            z = p.z * c - p.x * s
-        };
+        p = Vec3
+        (
+            p.z * s + p.x * c,
+            p.y,
+            p.z * c - p.x * s
+        );
 
-        return vec3_plus(p, origin);
+        return p.plus(origin);
     }
 
     public static Vec3 rotate_z(Vec3 origin, float rotation, Vec3 offset)
@@ -72,67 +72,30 @@ public class Calculations
         float c = (float)Math.cos(rotation * Math.PI);
         float s = (float)Math.sin(rotation * Math.PI);
 
-        Vec3 p = vec3_minus(offset, origin);
+        Vec3 p = offset.minus(origin);
 
-        p = Vec3()
-        {
-            x = p.x * c - p.y * s,
-            y = p.x * s + p.y * c,
-            z = p.z
-        };
+        p = Vec3
+        (
+            p.x * c - p.y * s,
+            p.x * s + p.y * c,
+            p.z
+        );
 
-        return vec3_plus(p, origin);
+        return p.plus(origin);
     }
 
-    public static Vec3 vec3_plus(Vec3 a, Vec3 b)
+    public static Vec3 get_ray(Mat4 projection_matrix, Mat4 view_matrix, Vec2i point, Size2i size)
     {
-        return Vec3() { x = a.x + b.x, y = a.y + b.y, z = a.z + b.z };
-    }
-
-    public static Vec3 vec3_minus(Vec3 a, Vec3 b)
-    {
-        return Vec3() { x = a.x - b.x, y = a.y - b.y, z = a.z - b.z };
-    }
-
-    public static float vec4_dot(Vec4 a, Vec4 b)
-    {
-        return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
-    }
-
-    // a - b
-    public static Vec4 vec4_minus(Vec4 a, Vec4 b)
-    {
-        return Vec4() { x = a.x - b.x, y = a.y - b.y, z = a.z - b.z, w = a.w - b.w };
-    }
-
-    public static Vec3 vec3_norm(Vec3 vec)
-    {
-        float len = (float)Math.sqrt(vec.x * vec.x + vec.y * vec.y + vec.z * vec.z);
-        return Vec3() { x = vec.x / len, y = vec.y / len, z = vec.z / len };
-    }
-
-    public static Vec3 vec3_mul_scalar(Vec3 vec, float s)
-    {
-        return Vec3() { x = vec.x * s, y = vec.y * s, z = vec.z * s };
-    }
-
-    public static Vec3 vec3_neg(Vec3 vec)
-    {
-        return Vec3() { x = -vec.x, y = -vec.y, z = -vec.z };
-    }
-
-    public static Vec3 get_ray(Mat4 projection_matrix, Mat4 view_matrix, float point_x, float point_y, float width, float height)
-    {
-        float aspect = width / height;
-        float x = -(1 - point_x / width  * 2) * aspect;
-        float y = -(1 - point_y / height * 2) * aspect;
+        float aspect = (float)size.width / size.height;
+        float x = -(1 - (float)point.x / size.width  * 2) * aspect;
+        float y = -(1 - (float)point.y / size.height * 2) * aspect;
 
         // TODO: Why is this the unview matrix?
         Mat4 unview_matrix = view_matrix.mul_mat(projection_matrix.inverse());
         Vec4 vec = {x, y, 0, 1};
         Vec4 ray_dir = unview_matrix.mul_vec(vec);
 
-        return vec3_norm({ ray_dir.x, ray_dir.y, ray_dir.z });
+        return Vec3(ray_dir.x, ray_dir.y, ray_dir.z).normalize();
     }
 
     public static float get_collision_distance(RenderObject3D obj, Vec3 origin, Vec3 ray)
@@ -141,21 +104,21 @@ public class Calculations
         float y_size = obj.model.size.y / 2 * obj.scale.y;
         float z_size = obj.model.size.z / 2 * obj.scale.z;
 
-        Vec3 rot = vec3_neg(obj.rotation);
-        Vec3 xy_dir = rotate({}, rot, {0, 0, 1});
-        Vec3 xz_dir = rotate({}, rot, {0, 1, 0});
-        Vec3 yz_dir = rotate({}, rot, {1, 0, 0});
+        Vec3 rot = obj.rotation.negate();
+        Vec3 xy_dir = rotate(Vec3.empty(), rot, Vec3(0, 0, 1));
+        Vec3 xz_dir = rotate(Vec3.empty(), rot, Vec3(0, 1, 0));
+        Vec3 yz_dir = rotate(Vec3.empty(), rot, Vec3(1, 0, 0));
 
-        Vec3 xy = vec3_mul_scalar(xy_dir, z_size);
-        Vec3 xz = vec3_mul_scalar(xz_dir, y_size);
-        Vec3 yz = vec3_mul_scalar(yz_dir, x_size);
+        Vec3 xy = xy_dir.mul_scalar(z_size);
+        Vec3 xz = xz_dir.mul_scalar(y_size);
+        Vec3 yz = yz_dir.mul_scalar(x_size);
 
-        Vec3 xy_pos = vec3_plus (obj.position, xy);
-        Vec3 xy_neg = vec3_minus(obj.position, xy);
-        Vec3 xz_pos = vec3_plus (obj.position, xz);
-        Vec3 xz_neg = vec3_minus(obj.position, xz);
-        Vec3 yz_pos = vec3_plus (obj.position, yz);
-        Vec3 yz_neg = vec3_minus(obj.position, yz);
+        Vec3 xy_pos = obj.position.plus (xy);
+        Vec3 xy_neg = obj.position.minus(xy);
+        Vec3 xz_pos = obj.position.plus (xz);
+        Vec3 xz_neg = obj.position.minus(xz);
+        Vec3 yz_pos = obj.position.plus (yz);
+        Vec3 yz_neg = obj.position.minus(yz);
 
         float dist = -1;
 
@@ -165,6 +128,7 @@ public class Calculations
         dist = calc_dist(dist, collision_surface_distance(origin, ray, xz_neg, xz_dir, yz_dir, xy_dir, x_size, z_size));
         dist = calc_dist(dist, collision_surface_distance(origin, ray, yz_pos, yz_dir, xy_dir, xz_dir, z_size, y_size));
         dist = calc_dist(dist, collision_surface_distance(origin, ray, yz_neg, yz_dir, xy_dir, xz_dir, z_size, y_size));
+
         return dist;
     }
 
@@ -196,35 +160,35 @@ public class Calculations
     public static Vec3 collision(Vec3 line_offset, Vec3 line_direction, Vec3 plane_offset, Vec3 plane_direction)
     {
         Vec3 n1 = line_offset;
-        Vec3 n2 = vec3_plus(line_offset, line_direction);
+        Vec3 n2 = line_offset.plus(line_direction);
 
-        Vec3 nv = vec3_minus(plane_offset, n1);
-        Vec3 dv = vec3_minus(          n2, n1);
+        Vec3 nv = plane_offset.minus(n1);
+        Vec3 dv = n2.minus(n1);
 
         float n = plane_direction.dot(nv);
         float d = plane_direction.dot(dv);
 
         if (d == 0)
-            return Vec3() { x = float.NAN, y = float.NAN, z = float.NAN };
+            return Vec3(float.NAN, float.NAN, float.NAN);
 
         float u = n / d;
 
-        Vec3 p = vec3_plus(n1, vec3_mul_scalar(dv, u));
+        Vec3 p = n1.plus(dv.mul_scalar(u));
         return p;
     }
 
     private static Vec3 proj(Vec3 plane_position, Vec3 normal, Vec3 point)
     {
         Vec3 p = plane_position;
-        Vec3 n = vec3_norm(normal);
+        Vec3 n = normal.normalize();
         Vec3 q = point;
 
-        return vec3_minus(q, vec3_mul_scalar(n, vec3_minus(q, p).dot(n)));
+        return q.minus(n.mul_scalar(q.minus(p).dot(n)));
     }
 
     public static Mat4 rotation_matrix(Vec3 axis, float angle)
     {
-        axis = Calculations.vec3_norm(axis);
+        axis = axis.normalize();
         float s = (float)Math.sin(angle);
         float c = (float)Math.cos(angle);
         float oc = 1 - c;
@@ -269,12 +233,12 @@ public class Calculations
     public static Mat4 get_model_matrix(Vec3 position, Vec3 rotation, Vec3 scale)
     {
         float pi = (float)Math.PI;
-        Mat4 x = rotation_matrix({1, 0, 0}, pi * rotation.x);
-        Mat4 y = rotation_matrix({0, 1, 0}, pi * rotation.y);
+        Mat4 x = rotation_matrix(Vec3(1, 0, 0), pi * rotation.x);
+        Mat4 y = rotation_matrix(Vec3(0, 1, 0), pi * rotation.y);
 
         Vec3 rot = {0, 1, 0};
-        rot = rotate_x({}, -rotation.x, rot);
-        rot = rotate_y({}, -rotation.y, rot);
+        rot = rotate_x(Vec3.empty(), -rotation.x, rot);
+        rot = rotate_y(Vec3.empty(), -rotation.y, rot);
 
         Mat4 z = rotation_matrix(rot, pi * rotation.z);
         Mat4 rotate = x.mul_mat(y).mul_mat(z);
@@ -342,7 +306,7 @@ public class Calculations
         if (z < 0)
             z += 2;
 
-        return Vec3() { x = x, y = y, z = z };
+        return Vec3(x, y, z);
     }
 
     public static Vec3 rotation_ease(Vec3 rotation, Vec3 target)
@@ -373,6 +337,6 @@ public class Calculations
         else if (dist_z < -1)
             z += 2;
 
-        return Vec3() { x = x, y = y, z = z };
+        return Vec3(x, y, z);
     }
 }

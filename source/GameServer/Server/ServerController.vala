@@ -9,7 +9,7 @@ namespace GameServer
         private ClientMessageParser parser = new ClientMessageParser();
         private ArrayList<ServerPlayer> players = new ArrayList<ServerPlayer>();
 
-        private Mutex mutex = new Mutex();
+        private Mutex mutex = Mutex();
         private Rand rnd = new Rand();
         private Timer timer = new Timer();
         private bool game_starting = false;

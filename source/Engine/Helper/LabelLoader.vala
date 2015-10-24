@@ -40,7 +40,7 @@ public class LabelLoader
         text_width /= PANGO_SCALE;
         text_height /= PANGO_SCALE;
 
-        return new LabelInfo(text_width, text_height);
+        return new LabelInfo(Size2i(text_width, text_height));
     }
 
     private LabelBitmap render_text(string text, string font)
@@ -70,33 +70,29 @@ public class LabelLoader
         render_context.set_source_rgba(1, 1, 1, 1);
         cairo_show_layout(render_context, layout);
 
-        LabelBitmap bitmap = new LabelBitmap(surface_data, text_width, text_height);
+        LabelBitmap bitmap = new LabelBitmap(surface_data, Size2i(text_width, text_height));
         return bitmap;
     }
 }
 
 public class LabelInfo
 {
-    public LabelInfo(int width, int height)
+    public LabelInfo(Size2i size)
     {
-        this.width = width;
-        this.height = height;
+        this.size = size;
     }
 
-    public int width { get; private set; }
-    public int height { get; private set; }
+    public Size2i size { get; private set; }
 }
 
 public class LabelBitmap
 {
-    public LabelBitmap(uchar[] data, int width, int height)
+    public LabelBitmap(uchar[] data, Size2i size)
     {
         this.data = data;
-        this.width = width;
-        this.height = height;
+        this.size = size;
     }
 
     public uchar[] data { get; private set; }
-    public int width { get; private set; }
-    public int height { get; private set; }
+    public Size2i size { get; private set; }
 }

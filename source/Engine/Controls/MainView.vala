@@ -3,31 +3,26 @@ public class MainView : View
     public MainView(RenderWindow window)
     {
         parent_window = window;
+        resize();
     }
-
-    /*public override void do_render(RenderState state){}
-    protected override void do_mouse_event(MouseEventArgs mouse){}
-    protected override void do_mouse_move(MouseMoveArgs mouse){}
-    protected override void added(){}
-    protected override void do_process(DeltaArgs args){}
-    protected override void do_key_press(KeyArgs keys){}*/
 }
 
 public class MouseEventArgs
 {
-    public MouseEventArgs(Button button, bool down, int pos_x, int pos_y)
+    public MouseEventArgs(Button button, MouseReference? reference, bool down, Vec2i position, Vec2i size)
     {
         this.button = button;
         this.down = down;
-        this.pos_x = pos_x;
-        this.pos_y = pos_y;
+        this.position = position;
+        this.size = size;
     }
 
     public bool handled { get; set; }
+    public MouseReference? reference { get; set; }
     public Button button { get; private set; }
     public bool down { get; private set; }
-    public int pos_x { get; private set; }
-    public int pos_y { get; private set; }
+    public Vec2i position { get; private set; }
+    public Vec2i size { get; private set; }
 
     public enum Button
     {
@@ -39,22 +34,22 @@ public class MouseEventArgs
 
 public class MouseMoveArgs
 {
-    public MouseMoveArgs(int pos_x, int pos_y, int delta_x, int delta_y)
+    public MouseMoveArgs(Vec2i position, Vec2i delta, Vec2i size)
     {
-        this.pos_x = pos_x;
-        this.pos_y = pos_y;
-        this.delta_x = delta_x;
-        this.delta_y = delta_y;
+        this.position = position;
+        this.delta = delta;
+        this.size = size;
         cursor_type = CursorType.NORMAL;
     }
 
     public bool handled { get; set; }
     public CursorType cursor_type { get; set; }
-    public int pos_x { get; private set; }
-    public int pos_y { get; private set; }
-    public int delta_x { get; private set; }
-    public int delta_y { get; private set; }
+    public Vec2i position { get; private set; }
+    public Vec2i delta { get; private set; }
+    public Vec2i size { get; private set; }
 }
+
+public class MouseReference {}
 
 public class KeyArgs
 {

@@ -7,10 +7,9 @@ public class RenderScene3D : RenderScene
     ArrayList<RenderObject3D> objs = new ArrayList<RenderObject3D>();
     ArrayList<LightSource> _lights = new ArrayList<LightSource>();
 
-    public RenderScene3D(int width, int height)
+    public RenderScene3D(Size2i size)
     {
-        this.width = width;
-        this.height = height;
+        this.size = size;
 
         focal_length = 1;
 
@@ -39,6 +38,5 @@ public class RenderScene3D : RenderScene
     public Mat4 view_transform { get; set; }
     public Vec3 camera_position { get; set; }
     public float focal_length { get; set; }
-    public int width { get; private set; }
-    public int height { get; private set; }
+    public Size2i size { get; private set; }
 }

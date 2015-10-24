@@ -4,11 +4,11 @@ public class RenderObject3D
     {
         this.model = model;
         this.texture = texture;
-        rotation = { };
-        position = { };
-        scale = Vec3() { x = 1, y = 1, z = 1 };
-        alpha = 1;
+        rotation = Vec3.empty();
+        position = Vec3.empty();
+        scale = Vec3(1, 1, 1);
         light_multiplier = 1;
+        diffuse_color = Color.black();
     }
 
     public RenderObject3D copy()
@@ -17,7 +17,6 @@ public class RenderObject3D
         obj.rotation = rotation;
         obj.position = position;
         obj.scale = scale;
-        obj.alpha = alpha;
         obj.light_multiplier = light_multiplier;
         obj.diffuse_color = diffuse_color;
 
@@ -29,7 +28,6 @@ public class RenderObject3D
     public Vec3 rotation { get; set; }
     public Vec3 position { get; set; }
     public Vec3 scale { get; set; }
-    public float alpha { get; set; }
     public float light_multiplier { get; set; }
-    public Vec3 diffuse_color { get; set; }
+    public Color diffuse_color { get; set; }
 }

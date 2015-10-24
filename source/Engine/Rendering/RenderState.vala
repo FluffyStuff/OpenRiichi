@@ -2,10 +2,9 @@ using Gee;
 
 public class RenderState
 {
-    public RenderState(int screen_width, int screen_height)
+    public RenderState(Size2i screen_size)
     {
-        this.screen_width = screen_width;
-        this.screen_height = screen_height;
+        this.screen_size = screen_size;
 
         scenes = new ArrayList<RenderScene>();
     }
@@ -16,8 +15,7 @@ public class RenderState
     }
 
     public Color back_color { get; set; }
-    public int screen_width { get; private set; }
-    public int screen_height { get; private set; }
+    public Size2i screen_size { get; private set; }
 
     public ArrayList<RenderScene> scenes { get; private set; }
 }

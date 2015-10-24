@@ -72,9 +72,9 @@ class RenderSceneManager
         camera.position = pos;
         camera.yaw = (float)observer.seat / 2;
 
-        light1.color = Vec3() { x = 1, y = 1, z = 1 };
+        light1.color = Color.white();
         light1.intensity = 20;
-        light2.color = Vec3() { x = 1, y = 1, z = 1 };
+        light2.color = Color.white();
         light2.intensity = 4;
 
         position_lights((float)observer.seat / 2);
@@ -94,7 +94,7 @@ class RenderSceneManager
 
     public void render(RenderState state)
     {
-        RenderScene3D scene = new RenderScene3D(state.screen_width, state.screen_height);
+        RenderScene3D scene = new RenderScene3D(state.screen_size);
 
         scene.set_camera(camera);
         scene.add_light_source(light1);
@@ -166,12 +166,12 @@ class RenderSceneManager
     {
         Vec3 pos;
 
-        pos = Vec3() { x = 0, y = 45, z = table_length / 2 };
-        pos = Calculations.rotate_y({}, rotation, pos);
+        pos = Vec3(0, 45, table_length / 2);
+        pos = Calculations.rotate_y(Vec3.empty(), rotation, pos);
         light1.position = pos;
 
-        pos = Vec3() { x = 0, y = 45, z = table_length };
-        pos = Calculations.rotate_y({}, rotation, pos);
+        pos = Vec3(0, 45, table_length);
+        pos = Calculations.rotate_y(Vec3.empty(), rotation, pos);
         light2.position = pos;
     }
 

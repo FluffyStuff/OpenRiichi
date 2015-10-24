@@ -1,91 +1,37 @@
-class GameMenuButton
+class GameMenuButton : Control
 {
     private RenderImage2D button;
-    private Vec2 screen_size;
-
-    public signal void clicked();
 
     public GameMenuButton(IResourceStore store, string name)
     {
+        base();
+
         RenderTexture texture = store.load_texture("Buttons/" + name);
         button = new RenderImage2D(texture);
-
-        scale = 1;
-        visible = true;
-        enabled = false;
     }
 
-    public void render(RenderScene2D scene, Vec2 screen_size)
+    public override void do_resize(Vec2 new_position, Size2 new_scale)
     {
-        this.screen_size = screen_size;
+        button.position = new_position;
+        button.scale = new_scale;
+    }
 
-        if (!visible)
-            return;
-
-        resize();
-
+    public override void do_render(RenderScene2D scene)
+    {
         if (!enabled)
         {
-            button.alpha = 0.05f;
-            button.diffuse_color = {};
+            button.diffuse_color = Color.with_alpha(0.05f);
         }
         else
         {
-            button.alpha = 1;
             if (hovering)
-                button.diffuse_color = { 0.5f, 0.5f, 0.3f };
+                button.diffuse_color = Color(0.5f, 0.5f, 0.3f, 1);
             else
-                button.diffuse_color = {};
+                button.diffuse_color = Color.with_alpha(1);
         }
 
         scene.add_object(button);
     }
 
-    public void resize()
-    {
-        float width = button.texture.size.x / screen_size.x;
-        float height = button.texture.size.y / screen_size.y;
-
-        button.scale = { width * scale, height * scale };
-
-        //float x = position.x + button.scale.x * -anchor.x;
-        //float y = position.y + button.scale.y * -anchor.y;
-        float x = anchor.x + position.x / screen_size.x * 2;
-        float y = anchor.y + position.y / screen_size.y * 2;
-
-        button.position = { x, y };
-    }
-
-    public bool hover_check(Vec2 point)
-    {
-        if (!enabled || !visible)
-            return false;
-
-        float x = screen_size.x / 2 * (1 + anchor.x) + position.x;
-        float y = screen_size.y / 2 * (1 + anchor.y) + position.y;
-
-        Vec2 top_left = Vec2() { x = x - button.texture.size.x / 2 * scale, y = y - button.texture.size.y / 2 * scale };
-        Vec2 bottom_right = Vec2() { x = x + button.texture.size.x / 2 * scale, y = y + button.texture.size.y / 2 * scale };
-
-        return
-            point.x >= top_left.x &&
-            point.x <= bottom_right.x &&
-            point.y >= top_left.y &&
-            point.y <= bottom_right.y;
-    }
-
-    public void click()
-    {
-        if (enabled)
-            clicked();
-    }
-
-    public Vec2 position { get; set; }
-    public Vec2 anchor { get; set; }
-    public float scale { get; set; }
-    public bool visible { get; set; }
-    public bool enabled { get; set; }
-    public bool hovering { get; set; }
-
-    public Vec2 size { get { return button.texture.size; } }
+    public override Size2 size { get { return Size2(button.texture.size.width, button.texture.size.height); } }
 }

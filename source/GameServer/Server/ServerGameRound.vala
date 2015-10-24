@@ -9,6 +9,10 @@ namespace GameServer
         private ClientMessageParser parser = new ClientMessageParser();
 
         public bool finished { get; private set; }
+        public ServerPlayer winner { get; private set; }
+        public ServerPlayer loser { get; private set; }
+        public Scoring score { get; private set; }
+        public bool[] in_tenpai { get; private set; }
 
         public ServerGameRound(ArrayList<ServerPlayer> players, ArrayList<ServerPlayer> spectators, int[] player_seats, Wind round_wind, int dealer)
         {
@@ -228,7 +232,7 @@ namespace GameServer
                 get_server_player(players, ID).server_player.send_message(message);
         }
 
-        private void game_ron(int player_ID, ArrayList<Tile> hand, int discard_player_ID, Tile tile)
+        private void game_ron(int player_ID, ArrayList<Tile> hand, int discard_player_ID, Tile tile, Scoring score)
         {
             foreach (Tile t in hand)
                 game_reveal_tile(t);
@@ -238,10 +242,14 @@ namespace GameServer
             foreach (GameStateServerPlayer pl in players)
                 pl.server_player.send_message(message);
 
+            winner = players[player_ID].server_player;
+            loser = players[discard_player_ID].server_player;
+            this.score = score;
+
             finish_round();
         }
 
-        private void game_tsumo(int player_ID, ArrayList<Tile> hand)
+        private void game_tsumo(int player_ID, ArrayList<Tile> hand, Scoring score)
         {
             foreach (Tile t in hand)
                 game_reveal_tile(t);
@@ -250,6 +258,10 @@ namespace GameServer
 
             foreach (GameStateServerPlayer pl in players)
                 pl.server_player.send_message(message);
+
+            winner = players[player_ID].server_player;
+            loser = null;
+            this.score = score;
 
             finish_round();
         }
@@ -317,6 +329,8 @@ namespace GameServer
 
         public void game_draw(ArrayList<GameStatePlayer> tenpai_players)
         {
+            in_tenpai = new bool[players.size];
+
             foreach (GameStatePlayer player in tenpai_players)
             {
                 foreach (Tile t in player.hand)
@@ -326,6 +340,8 @@ namespace GameServer
 
                 foreach (GameStateServerPlayer pl in players)
                     pl.server_player.send_message(m);
+
+                in_tenpai[player.ID] = true;
             }
 
             ServerMessageDraw message = new ServerMessageDraw();

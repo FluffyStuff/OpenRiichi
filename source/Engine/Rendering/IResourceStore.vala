@@ -23,10 +23,9 @@ public abstract class IResourceStore : Object
         return load_texture_dir(TEXTURE_DIR, name);
     }
 
-    public void update_label_info(RenderLabel2D label)
+    public LabelInfo update_label(string font_type, float font_size, string text)
     {
-        LabelInfo info = label_loader.get_label_info(label.font_type, label.font_size, label.text);
-        label.info = info;
+        return label_loader.get_label_info(font_type, font_size, text);
     }
 
     public LabelBitmap generate_label_bitmap(RenderLabel2D label)
@@ -37,6 +36,7 @@ public abstract class IResourceStore : Object
     public abstract RenderModel? load_model_dir(string dir, string name, bool center);
     public abstract RenderTexture? load_texture_dir(string dir, string name);
     public abstract RenderLabel2D? create_label();
+    public abstract void delete_label(LabelResourceReference reference);
 
     private const string DATA_DIR = "./Data/";
     protected const string MODEL_DIR = DATA_DIR + "Models/";
@@ -55,11 +55,10 @@ public class ResourceModel
 
 public class ResourceTexture
 {
-    public ResourceTexture(char *data, int width, int height)
+    public ResourceTexture(char *data, Size2i size)
     {
         this.data = data;
-        this.width = width;
-        this.height = height;
+        this.size = size;
     }
 
     ~ResourceTexture()
@@ -68,11 +67,37 @@ public class ResourceTexture
     }
 
     public char *data { get; private set; }
-    public int width { get; private set; }
-    public int height { get; private set; }
+    public Size2i size { get; private set; }
 }
 
 public class ResourceLabel {}
+
+public class LabelResourceReference
+{
+    weak IResourceStore store;
+
+    public LabelResourceReference(uint handle, IResourceStore store)
+    {
+        this.handle = handle;
+        this.store = store;
+    }
+
+    public LabelInfo update(string font_type, float font_size, string text)
+    {
+        return store.update_label(font_type, font_size, text);
+    }
+
+    public void delete()
+    {
+        handle = 0;
+        deleted = true;
+
+        store.delete_label(this);
+    }
+
+    public bool deleted { get; private set; }
+    public uint handle { get; private set; }
+}
 
 public class RenderModel : Object
 {
@@ -90,12 +115,12 @@ public class RenderModel : Object
 
 public class RenderTexture : Object
 {
-    public RenderTexture(uint handle, Vec2 size)
+    public RenderTexture(uint handle, Size2i size)
     {
         this.handle = handle;
         this.size = size;
     }
 
     public uint handle { get; private set; }
-    public Vec2 size { get; private set; }
+    public Size2i size { get; private set; }
 }

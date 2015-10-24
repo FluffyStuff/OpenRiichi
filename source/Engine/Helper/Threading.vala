@@ -7,19 +7,19 @@ public /*static*/ class Threading
 
     private static void start_thread(Thread thread)
     {
+#if LINUX
         try
         {
-#if LINUX
-            //new GLib.Thread<int>.try(null, thread.start);
-            GLib.Thread.create<int>(thread.start, false);
-#else
-            GLib.Thread.create<void>(thread.start, false);
-#endif
+            new GLib.Thread<int>.try(null, thread.start);
+            //GLib.Thread.create<int>(thread.start, false);
         }
         catch (ThreadError e)
         {
             // TODO: Error handling?
         }
+#else
+        new GLib.Thread<Object?>(null, thread.start);
+#endif
     }
 
     public static void start0(Del0Arg function)
@@ -47,7 +47,7 @@ public /*static*/ class Threading
 #if LINUX
         public abstract int start();
 #else
-        public abstract void start();
+        public abstract Object? start();
 #endif
     }
 
@@ -70,10 +70,11 @@ public /*static*/ class Threading
             return 0;
         }
 #else
-        public override void start()
+        public override Object? start()
         {
             func();
             self = null;
+            return null;
         }
 #endif
     }
@@ -99,10 +100,11 @@ public /*static*/ class Threading
             return 0;
         }
 #else
-        public override void start()
+        public override Object? start()
         {
             func(arg1);
             self = null;
+            return null;
         }
 #endif
     }
@@ -130,10 +132,11 @@ public /*static*/ class Threading
             return 0;
         }
 #else
-        public override void start()
+        public override Object? start()
         {
             func(arg1, arg2);
             self = null;
+            return null;
         }
 #endif
     }
@@ -163,10 +166,11 @@ public /*static*/ class Threading
             return 0;
         }
 #else
-        public override void start()
+        public override Object? start()
         {
             func(arg1, arg2, arg3);
             self = null;
+            return null;
         }
 #endif
     }

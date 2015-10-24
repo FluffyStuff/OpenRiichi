@@ -46,10 +46,10 @@ public class OpenGLResourceStore : IResourceStore
 
         SoilImage img = SoilWrap.load_image(str);
 
-        ResourceTexture tex = new ResourceTexture(img.data, img.width, img.height);
+        ResourceTexture tex = new ResourceTexture(img.data, Size2i(img.width, img.height));
         uint handle = renderer.load_texture(tex);
 
-        RenderTexture texture = new RenderTexture(handle, Vec2() { x = img.width, y = img.height});
+        RenderTexture texture = new RenderTexture(handle, Size2i(img.width, img.height));
         cache_object(name, CacheObjectType.TEXTURE, texture);
 
         return texture;
@@ -59,9 +59,15 @@ public class OpenGLResourceStore : IResourceStore
     {
         ResourceLabel resource = new ResourceLabel();
         uint handle = renderer.load_label(resource);
-        RenderLabel2D label = new RenderLabel2D(handle);
+        LabelResourceReference reference = new LabelResourceReference(handle, this);
+        RenderLabel2D label = new RenderLabel2D(handle, reference);
 
         return label;
+    }
+
+    public override void delete_label(LabelResourceReference reference)
+    {
+        // TODO: Implement label deletion
     }
 
     private void cache_object(string name, CacheObjectType type, Object obj)

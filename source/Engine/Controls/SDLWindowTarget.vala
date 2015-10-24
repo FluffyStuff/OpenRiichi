@@ -28,23 +28,13 @@ public class SDLWindowTarget : Object, IWindowTarget
         set { window.set_fullscreen((is_fullscreen = value) ? WindowFlags.FULLSCREEN_DESKTOP : 0); }
     }
 
-    public int width
+    public Size2i size
     {
         get
         {
             int width, height;
             window.get_size(out width, out height);
-            return width;
-        }
-    }
-
-    public int height
-    {
-        get
-        {
-            int width, height;
-            window.get_size(out width, out height);
-            return height;
+            return Size2i(width, height);
         }
     }
 

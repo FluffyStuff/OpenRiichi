@@ -4,9 +4,8 @@ public abstract class RenderObject2D : Object
 
     public float rotation { get; set; }
     public Vec2 position { get; set; }
-    public Vec2 scale { get; set; }
-    public float alpha { get; set; }
-    public Vec3 diffuse_color { get; set; }
+    public Size2 scale { get; set; }
+    public Color diffuse_color { get; set; }
 }
 
 public class RenderImage2D : RenderObject2D
@@ -15,9 +14,8 @@ public class RenderImage2D : RenderObject2D
     {
         this.texture = texture;
         rotation = 0;
-        position = { };
-        scale = Vec2() { x = 1, y = 1 };
-        alpha = 1;
+        position = Vec2.empty();
+        scale = Size2(1, 1);
     }
 
     public override RenderObject2D copy()
@@ -26,7 +24,6 @@ public class RenderImage2D : RenderObject2D
         img.rotation = rotation;
         img.position = position;
         img.scale = scale;
-        img.alpha = alpha;
         img.diffuse_color = diffuse_color;
 
         return img;
@@ -37,22 +34,35 @@ public class RenderImage2D : RenderObject2D
 
 public class RenderLabel2D : RenderObject2D
 {
-    public RenderLabel2D(uint handle)
+    private LabelResourceReference reference;
+    private string _font_type;
+    private float _font_size;
+    private string _text;
+
+    ~RenderLabel2D()
+    {
+        reference.delete();
+    }
+
+    public RenderLabel2D(uint handle, LabelResourceReference reference)
     {
         this.handle = handle;
-        rotation = 0;
-        position = { };
-        scale = Vec2() { x = 1, y = 1 };
-        alpha = 1;
+        this.reference = reference;
 
-        font_type = "Sans Bold";
-        font_size = 40;
-        text = "";
+        rotation = 0;
+        position = Vec2.empty();
+        scale = Size2(1, 1);
+
+        _font_type = "Sans Bold";
+        _font_size = 40;
+        _text = "";
+
+        diffuse_color = Color.white();
     }
 
     public override RenderObject2D copy()
     {
-        RenderLabel2D img = new RenderLabel2D(handle);
+        RenderLabel2D img = new RenderLabel2D(handle, reference);
         img.info = info;
         img.font_type = font_type;
         img.font_size = font_size;
@@ -60,17 +70,57 @@ public class RenderLabel2D : RenderObject2D
         img.rotation = rotation;
         img.position = position;
         img.scale = scale;
-        img.alpha = alpha;
         img.diffuse_color = diffuse_color;
 
         return img;
     }
 
+    private void update()
+    {
+        info = reference.update(font_type, font_size, text);
+    }
+
     public uint handle { get; private set; }
-    public LabelInfo? info { get; set; }
-    public string font_type { get; set; }
-    public float font_size { get; set; }
-    public string text { get; set; }
+    public LabelInfo? info { get; private set; }
+
+    public string font_type
+    {
+        get { return _font_type; }
+        set
+        {
+            if (_font_type == value)
+                return;
+
+            _font_type = value;
+            update();
+        }
+    }
+
+    public float font_size
+    {
+        get { return _font_size; }
+        set
+        {
+            if (_font_size == value)
+                return;
+
+            _font_size = value;
+            update();
+        }
+    }
+
+    public string text
+    {
+        get { return _text; }
+        set
+        {
+            if (_text == value)
+                return;
+
+            _text = value;
+            update();
+        }
+    }
 }
 
 public class RenderRectangle2D : RenderObject2D
@@ -78,9 +128,9 @@ public class RenderRectangle2D : RenderObject2D
     public RenderRectangle2D()
     {
         rotation = 0;
-        position = { };
-        scale = Vec2() { x = 1, y = 1 };
-        alpha = 1;
+        position = Vec2.empty();
+        scale = Size2(1, 1);
+        diffuse_color = Color.black();
     }
 
     public override RenderObject2D copy()
@@ -89,7 +139,6 @@ public class RenderRectangle2D : RenderObject2D
         rect.rotation = rotation;
         rect.position = position;
         rect.scale = scale;
-        rect.alpha = alpha;
         rect.diffuse_color = diffuse_color;
 
         return rect;

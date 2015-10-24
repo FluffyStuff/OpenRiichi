@@ -4,7 +4,7 @@ public class ClientMessageParser
 {
     private ArrayList<Dispatcher> dispatchers = new ArrayList<Dispatcher>();
     private ArrayList<ClientMessageTuple> queue = new ArrayList<ClientMessageTuple>();
-    private Mutex mutex = new Mutex();
+    private Mutex mutex = Mutex();
 
     public void connect(ClientMessageDelegate method, Type type)
     {

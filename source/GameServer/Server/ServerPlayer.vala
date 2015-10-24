@@ -123,7 +123,7 @@ namespace GameServer
             connection.closed.connect(forward_disconnected);
         }
 
-        ~ServerPlayerNetworkingConnection()
+        ~ServerPlayerNetworkConnection()
         {
             connection.message_received.disconnect(parse_message);
             connection.closed.disconnect(forward_disconnected);
