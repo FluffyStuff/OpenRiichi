@@ -2,6 +2,8 @@ public class RenderTile
 {
     // TODO: Use multi texturing
 
+    private string extension;
+
     private bool animation_set_time = false;
     private float animation_time = 0;
     private Vec3 animation_start_position;
@@ -11,12 +13,13 @@ public class RenderTile
     private float animation_start_time = 0;
     private float animation_end_time = 0;
 
-    public RenderTile(IResourceStore store, Tile tile, float scale)
+    public RenderTile(IResourceStore store, string extension, Tile tile, float scale)
     {
+        this.extension = extension;
         tile_type = tile;
 
-        RenderModel model = store.load_model("tile_low", true);
-        RenderTexture texture = store.load_texture("Tiles_low/" + get_tile_type_name(tile_type.tile_type));
+        RenderModel model = store.load_model("tile_" + extension, true);
+        RenderTexture texture = store.load_texture("Tiles_" + extension + "/" + get_tile_type_name(tile_type.tile_type));
 
         this.tile = new RenderObject3D(model, texture);
 
@@ -27,7 +30,7 @@ public class RenderTile
     {
         tile_type.tile_type = type.tile_type;
         tile_type.dora = type.dora;
-        tile.texture = store.load_texture("Tiles_low/" + get_tile_type_name(tile_type.tile_type));
+        tile.texture = store.load_texture("Tiles_" + extension + "/" + get_tile_type_name(tile_type.tile_type));
     }
 
     private static string get_tile_type_name(TileType type)

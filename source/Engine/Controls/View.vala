@@ -2,13 +2,15 @@ public abstract class View : Object
 {
     private Vec2 _position = Vec2(0, 0);
     private Size2 _size = Size2(1, 1);
+    private Vec2 _inner_anchor = Vec2(0.5f, 0.5f);
+    private Vec2 _outer_anchor = Vec2(0.5f, 0.5f);
     private Size2 _relative_size = Size2(1, 1);
     private Rectangle _rect;
     private ResizeStyle _resize_style = ResizeStyle.RELATIVE;
 
     private Gee.ArrayList<View> child_views = new Gee.ArrayList<View>();
-    protected RenderWindow parent_window;
-    private View parent;
+    protected weak RenderWindow parent_window;
+    private weak View parent;
 
     public void add_child(View child)
     {
@@ -87,7 +89,13 @@ public abstract class View : Object
         if (resize_style == ResizeStyle.RELATIVE)
             _size = Size2(prect.width * relative_size.width, prect.height * relative_size.height);
 
-        _rect = Rectangle(prect.x + position.x, prect.y + position.y, size.width, size.height);
+        Vec2 pos = Vec2
+        (
+            position.x - size.width  * inner_anchor.x + prect.x + prect.width  * outer_anchor.x,
+            position.y - size.height * inner_anchor.y + prect.y + prect.height * outer_anchor.y
+        );
+
+        _rect = Rectangle(pos.x, pos.y, size.width, size.height);
 
         foreach (View child in child_views)
             child.resize();
@@ -95,6 +103,7 @@ public abstract class View : Object
         resized();
     }
 
+    public RenderWindow window { get { return parent_window; } }
     protected virtual void added() {}
     protected virtual void resized() {}
     protected virtual void do_render(RenderState state) {}
@@ -153,6 +162,26 @@ public abstract class View : Object
         set
         {
             _relative_size = value;
+            resize();
+        }
+    }
+
+    public Vec2 outer_anchor
+    {
+        get { return _outer_anchor; }
+        set
+        {
+            _outer_anchor = value;
+            resize();
+        }
+    }
+
+    public Vec2 inner_anchor
+    {
+        get { return _inner_anchor; }
+        set
+        {
+            _inner_anchor = value;
             resize();
         }
     }

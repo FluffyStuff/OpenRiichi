@@ -3,21 +3,23 @@ public class RenderTable
     private RenderObject3D table;
     private RenderObject3D field;
 
-    public RenderTable(IResourceStore store, Vec3 tile_size)
+    public RenderTable(IResourceStore store, string extension, Vec3 tile_size)
     {
-        table = store.load_object_3D("table_low");
+        table = store.load_object_3D("table_" + extension);
 
         string dir = FileLoader.get_user_dir() + "Custom/";
 
-        RenderModel? model;
-        RenderTexture? texture;
+        RenderModel? model = null;
+        RenderTexture? texture = null;
 
-        model = store.load_model_dir(dir, "field", false);
+        texture = store.load_texture_dir(dir, "field");
+        if (texture != null)
+            model = store.load_model_dir(dir, "field", false);
+        else
+            texture = store.load_texture("field_" + extension);
+
         if (model == null)
             model = store.load_model("field", false);
-        texture = store.load_texture_dir(dir, "field_low");
-        if (texture == null)
-            texture = store.load_texture("field_low");
 
         field = new RenderObject3D(model, texture);
 

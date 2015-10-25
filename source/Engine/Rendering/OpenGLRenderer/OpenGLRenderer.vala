@@ -62,17 +62,19 @@ public class OpenGLRenderer : RenderTarget
         glEnable(GL_FRAMEBUFFER_SRGB);
         glEnable(GL_MULTISAMPLE);
 
+        shader_3D = "open_gl_shader_3D_low";
+        shader_2D = "open_gl_shader_2D";
         change_v_sync(v_sync);
 
         // TODO: Put this somewhere
         sdl_window.set_icon(SDLImage.load("./Data/Icon.png"));
         sdl_window.set_size(size.width, size.height);
 
-        program_3D = new OpenGLShaderProgram3D("./Data/Shaders/open_gl_shader_3D_low", MAX_LIGHTS, POSITION_ATTRIBUTE, TEXTURE_ATTRIBUTE, NORMAL_ATTRIBUTE);
+        program_3D = new OpenGLShaderProgram3D("./Data/Shaders/" + shader_3D, MAX_LIGHTS, POSITION_ATTRIBUTE, TEXTURE_ATTRIBUTE, NORMAL_ATTRIBUTE);
         if (!program_3D.init())
             return false;
 
-        program_2D = new OpenGLShaderProgram2D("./Data/Shaders/open_gl_shader_2D");
+        program_2D = new OpenGLShaderProgram2D("./Data/Shaders/" + shader_2D);
         if (!program_2D.init())
             return false;
 
@@ -308,6 +310,26 @@ public class OpenGLRenderer : RenderTarget
     protected override void change_v_sync(bool v_sync)
     {
         SDL.GL.set_swapinterval(v_sync ? 1 : 0);
+    }
+
+    protected override bool change_shader_3D(string name)
+    {
+        OpenGLShaderProgram3D program = new OpenGLShaderProgram3D("./Data/Shaders/" + name, MAX_LIGHTS, POSITION_ATTRIBUTE, TEXTURE_ATTRIBUTE, NORMAL_ATTRIBUTE);
+        if (!program.init())
+            return false;
+
+        program_3D = program;
+        return true;
+    }
+
+    protected override bool change_shader_2D(string name)
+    {
+        OpenGLShaderProgram2D program = new OpenGLShaderProgram2D("./Data/Shaders/" + name);
+        if (!program.init())
+            return false;
+
+        program_2D = program;
+        return true;
     }
 
     private void setup_projection(Size2i size)

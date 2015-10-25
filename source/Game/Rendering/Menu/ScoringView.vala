@@ -115,7 +115,6 @@ public class ScoringView : View2D
         if (name != "")
             name += " - ";
 
-
         LabelControl points_label = new LabelControl(store);
         points_label.text = name + points + " points";
         points_label.inner_anchor = Size2(0.5f, 1);

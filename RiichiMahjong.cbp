@@ -42,11 +42,13 @@
 			<Add directory="C:/vala-0.12.0/lib/gtk-2.0/include" />
 		</Compiler>
 		<Unit filename="Makefile" />
+		<Unit filename="source/Engine/Controls/Control.vala" />
 		<Unit filename="source/Engine/Controls/IWindowTarget.vala" />
 		<Unit filename="source/Engine/Controls/MainView.vala" />
 		<Unit filename="source/Engine/Controls/RenderWindow.vala" />
 		<Unit filename="source/Engine/Controls/SDLWindowTarget.vala" />
 		<Unit filename="source/Engine/Controls/View.vala" />
+		<Unit filename="source/Engine/Controls/View2D.vala" />
 		<Unit filename="source/Engine/Files/FileLoader.vala" />
 		<Unit filename="source/Engine/Files/ObjParser.vala" />
 		<Unit filename="source/Engine/Helper/Calculations.vala" />
@@ -57,7 +59,11 @@
 		<Unit filename="source/Engine/Properties/Color.vala" />
 		<Unit filename="source/Engine/Properties/Mat3.vala" />
 		<Unit filename="source/Engine/Properties/Mat4.vala" />
+		<Unit filename="source/Engine/Properties/Rectangle.vala" />
+		<Unit filename="source/Engine/Properties/Size2.vala" />
+		<Unit filename="source/Engine/Properties/Size2i.vala" />
 		<Unit filename="source/Engine/Properties/Vec2.vala" />
+		<Unit filename="source/Engine/Properties/Vec2i.vala" />
 		<Unit filename="source/Engine/Properties/Vec3.vala" />
 		<Unit filename="source/Engine/Properties/Vec4.vala" />
 		<Unit filename="source/Engine/Rendering/Camera.vala" />
@@ -102,11 +108,15 @@
 		<Unit filename="source/Game/Logic/ServerMessage.vala" />
 		<Unit filename="source/Game/Logic/Tile.vala" />
 		<Unit filename="source/Game/Logic/TileRules.vala" />
+		<Unit filename="source/Game/Options.vala" />
 		<Unit filename="source/Game/Rendering/GameRenderView.vala" />
 		<Unit filename="source/Game/Rendering/IGameRenderer.vala" />
 		<Unit filename="source/Game/Rendering/Menu/GameMenuButton.vala" />
 		<Unit filename="source/Game/Rendering/Menu/GameMenuView.vala" />
 		<Unit filename="source/Game/Rendering/Menu/GameTextBox.vala" />
+		<Unit filename="source/Game/Rendering/Menu/LabelControl.vala" />
+		<Unit filename="source/Game/Rendering/Menu/RectangleControl.vala" />
+		<Unit filename="source/Game/Rendering/Menu/ScoringPlayerElement.vala" />
 		<Unit filename="source/Game/Rendering/Menu/ScoringView.vala" />
 		<Unit filename="source/Game/Rendering/RenderPlayer.vala" />
 		<Unit filename="source/Game/Rendering/RenderSceneManager.vala" />
@@ -114,6 +124,8 @@
 		<Unit filename="source/Game/Rendering/RenderTile.vala" />
 		<Unit filename="source/Game/Rendering/RenderWall.vala" />
 		<Unit filename="source/MainMenu/MainMenuView.vala" />
+		<Unit filename="source/MainMenu/OptionItemControl.vala" />
+		<Unit filename="source/MainMenu/OptionsMenuView.vala" />
 		<Unit filename="source/MainWindow.vala" />
 		<Unit filename="source/main.vala" />
 		<Extensions>

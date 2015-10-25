@@ -13,7 +13,7 @@ public class GameRenderView : View, IGameRenderer
     private ArrayList<TileSelectionGroup>? select_groups = null;
     private ArrayList<RenderPlayer> tenpai_players = new ArrayList<RenderPlayer>();
 
-    public GameRenderView(GameStartState state)
+    public GameRenderView(GameStartState state, string extension)
     {
         start_state = state;
 
@@ -34,7 +34,7 @@ public class GameRenderView : View, IGameRenderer
         parser.connect(server_tenpai_player, typeof(ServerMessageTenpaiPlayer));
         parser.connect(server_draw, typeof(ServerMessageDraw));
 
-        scene = new RenderSceneManager(state.player_ID, state.round_wind, state.dealer, state.wall_index);
+        scene = new RenderSceneManager(extension, state.player_ID, state.round_wind, state.dealer, state.wall_index);
     }
 
     public override void added()

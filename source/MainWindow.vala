@@ -28,7 +28,7 @@ public class MainWindow : RenderWindow
     {
         main_view.remove_child(menu);
         menu = null;
-        game_controller = new GameController(main_view, state);
+        game_controller = new GameController(main_view, state, new Options.from_disk());
         game_controller.finished.connect(game_finished);
         game_running = true;
     }

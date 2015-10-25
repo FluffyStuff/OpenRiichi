@@ -24,6 +24,8 @@ public abstract class RenderTarget : Object, IRenderTarget
     private ArrayList<ILabelResourceHandle> handles_labels = new ArrayList<ILabelResourceHandle>();
 
     private bool saved_v_sync = false;
+    private string saved_shader_3D;
+    private string saved_shader_2D;
 
     protected IWindowTarget window;
     protected IResourceStore store;
@@ -214,6 +216,22 @@ public abstract class RenderTarget : Object, IRenderTarget
             saved_v_sync = new_v_sync;
             change_v_sync(saved_v_sync);
         }
+
+        string new_shader_3D = shader_3D;
+
+        if (new_shader_3D != saved_shader_3D)
+        {
+            saved_shader_3D = new_shader_3D;
+            change_shader_3D(saved_shader_3D);
+        }
+
+        string new_shader_2D = shader_2D;
+
+        if (new_shader_2D != saved_shader_2D)
+        {
+            saved_shader_2D = new_shader_2D;
+            change_shader_2D(saved_shader_2D);
+        }
     }
 
     private void prepare_state_internal(RenderState state)
@@ -279,7 +297,11 @@ public abstract class RenderTarget : Object, IRenderTarget
     protected abstract void do_load_label(ILabelResourceHandle handle, LabelBitmap bitmap);
     protected abstract ILabelResourceHandle create_label(ResourceLabel label);
     protected abstract void change_v_sync(bool v_sync);
+    protected abstract bool change_shader_3D(string name);
+    protected abstract bool change_shader_2D(string name);
 
     public IResourceStore resource_store { get { return store; } }
     public bool v_sync { get; set; }
+    public string shader_3D { get; set; }
+    public string shader_2D { get; set; }
 }

@@ -6,8 +6,6 @@ public class GameMenuView : View2D
 
     private ArrayList<GameMenuButton> buttons = new ArrayList<GameMenuButton>();
 
-    private GameMenuButton? mouse_down_button;
-
     private GameMenuButton chii;
     private GameMenuButton pon;
     private GameMenuButton kan;
@@ -71,7 +69,6 @@ public class GameMenuView : View2D
         {
             add_control(button);
             button.enabled = false;
-            button.selectable = true;
             button.inner_anchor = Vec2(0.5f, 0);
             button.outer_anchor = Vec2(0.5f, 0);
             button.scale = Size2(scale, scale);
@@ -87,7 +84,7 @@ public class GameMenuView : View2D
         }
     }
 
-    public override void do_render(RenderState state)
+    /*public override void do_render(RenderState state)
     {
         RenderScene2D scene = new RenderScene2D(state.screen_size);
 
@@ -95,7 +92,7 @@ public class GameMenuView : View2D
             button.render(scene);
 
         state.add_scene(scene);
-    }
+    }*/
 
     protected override void do_key_press(KeyArgs key)
     {

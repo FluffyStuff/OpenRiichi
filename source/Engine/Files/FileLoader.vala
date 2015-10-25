@@ -32,6 +32,32 @@ public class FileLoader
         return l;
     }
 
+    public static bool save(string name, string[] lines)
+    {
+        try
+        {
+            var file = File.new_for_path(name);
+
+            if (file.query_exists())
+                file.delete();
+            else
+                file.get_parent().make_directory_with_parents();
+
+            FileOutputStream stream = file.create (FileCreateFlags.REPLACE_DESTINATION);
+
+            foreach (string line in lines)
+                stream.write((line + "\n").data);
+
+            stream.close();
+        }
+        catch
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     public static bool exists(string name)
     {
         return File.new_for_path(name).query_exists();

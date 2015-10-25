@@ -8,6 +8,7 @@ class GameMenuButton : Control
 
         RenderTexture texture = store.load_texture("Buttons/" + name);
         button = new RenderImage2D(texture);
+        selectable = true;
     }
 
     public override void do_resize(Vec2 new_position, Size2 new_scale)

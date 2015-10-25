@@ -7,7 +7,7 @@ public abstract class Control
     private Size2 _relative_scale = Size2(1, 1);
     private Rectangle _rect;
     private ResizeStyle _resize_style = ResizeStyle.ABSOLUTE;
-    private View? parent;
+    private weak View? parent;
 
     private bool mouse_down = false;
 

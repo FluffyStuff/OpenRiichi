@@ -6,12 +6,12 @@ class MainMenuView : View2D
     private ServerController? server = null;
     private IGameConnection connection;
 
-    private ArrayList<GameMenuButton> buttons = new ArrayList<GameMenuButton>();
-    private GameMenuButton? mouse_down_button;
+    private OptionsMenuView options;
 
     private GameMenuButton host_game_button;
     private GameMenuButton join_game_button;
     private GameMenuButton start_game_button;
+    private GameMenuButton options_button;
     private GameMenuButton back_button;
     private GameMenuButton quit_button;
 
@@ -31,6 +31,7 @@ class MainMenuView : View2D
         host_game_button.clicked.disconnect(press_host);
         join_game_button.clicked.disconnect(press_join);
         start_game_button.clicked.disconnect(press_start);
+        options_button.clicked.disconnect(press_options);
         back_button.clicked.disconnect(press_back);
         quit_button.clicked.disconnect(press_quit);
     }
@@ -49,6 +50,7 @@ class MainMenuView : View2D
         host_game_button.visible = false;
         join_game_button.visible = false;
         start_game_button.visible = false;
+        options_button.visible = false;
         back_button.visible = false;
         quit_button.visible = false;
     }
@@ -58,6 +60,7 @@ class MainMenuView : View2D
         host_game_button.visible = true;
         join_game_button.visible = true;
         start_game_button.visible = false;
+        options_button.visible = true;
         back_button.visible = false;
         quit_button.visible = true;
     }
@@ -67,6 +70,7 @@ class MainMenuView : View2D
         host_game_button.visible = false;
         join_game_button.visible = false;
         start_game_button.visible = true;
+        options_button.visible = false;
         back_button.visible = true;
         quit_button.visible = false;
     }
@@ -76,6 +80,7 @@ class MainMenuView : View2D
         host_game_button.visible = false;
         join_game_button.visible = false;
         start_game_button.visible = false;
+        options_button.visible = false;
         back_button.visible = true;
         quit_button.visible = false;
     }
@@ -125,6 +130,16 @@ class MainMenuView : View2D
         Threading.start0(start_server);
     }
 
+    private void press_options()
+    {
+        clear_all();
+
+        options = new OptionsMenuView();
+        options.apply_clicked.connect(options_apply);
+        options.back_clicked.connect(options_back);
+        add_child(options);
+    }
+
     private void press_back()
     {
         server = null;
@@ -138,11 +153,25 @@ class MainMenuView : View2D
         quit();
     }
 
+    private void options_apply()
+    {
+        remove_child(options);
+
+        show_main_menu();
+    }
+
+    private void options_back()
+    {
+        remove_child(options);
+        show_main_menu();
+    }
+
     public override void added()
     {
         host_game_button = new GameMenuButton(store, "Create");
         join_game_button = new GameMenuButton(store, "Join");
         start_game_button = new GameMenuButton(store, "Start");
+        options_button = new GameMenuButton(store, "Options");
         back_button = new GameMenuButton(store, "Back");
         quit_button = new GameMenuButton(store, "Quit");
 
@@ -151,24 +180,27 @@ class MainMenuView : View2D
         buttons.add(host_game_button);
         buttons.add(join_game_button);
         buttons.add(start_game_button);
+        buttons.add(options_button);
         buttons.add(back_button);
         buttons.add(quit_button);
 
         foreach (GameMenuButton button in buttons)
-        {
             add_control(button);
-            button.selectable = true;
-        }
 
-        host_game_button.position = Vec2(0, join_game_button.size.y / 2 + host_game_button.size.y);
-        join_game_button.position = Vec2(0, 0);
-        start_game_button.position = Vec2(0, start_game_button.size.y / 4 * 3);
-        back_button.position = Vec2(0, -back_button.size.y / 4 * 3);
-        quit_button.position = Vec2(0, -join_game_button.size.y / 2 - quit_button.size.y);
+        int padding = 30;
+        float height = host_game_button.size.y + padding;
+
+        host_game_button.position = Vec2(0, height * 1.5f);
+        join_game_button.position = Vec2(0, height * 0.5f);
+        start_game_button.position = Vec2(0, height * 0.5f);
+        options_button.position = Vec2(0, -height * 0.5f);
+        back_button.position = Vec2(0, -height * 0.5f);
+        quit_button.position = Vec2(0, -height * 1.5f);
 
         host_game_button.clicked.connect(press_host);
         join_game_button.clicked.connect(press_join);
         start_game_button.clicked.connect(press_start);
+        options_button.clicked.connect(press_options);
         back_button.clicked.connect(press_back);
         quit_button.clicked.connect(press_quit);
 

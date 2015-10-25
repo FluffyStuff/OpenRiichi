@@ -2,6 +2,7 @@ using Gee;
 
 class RenderSceneManager
 {
+    private string extension;
     private int player_ID;
     private Wind round_wind;
     private int dealer;
@@ -23,8 +24,9 @@ class RenderSceneManager
     private ArrayList<RenderPlayer> closed_hands = new ArrayList<RenderPlayer>();
     private bool flip_dora = false;
 
-    public RenderSceneManager(int player_ID, Wind round_wind, int dealer, int wall_index)
+    public RenderSceneManager(string extension, int player_ID, Wind round_wind, int dealer, int wall_index)
     {
+        this.extension = extension;
         this.player_ID = player_ID;
         this.round_wind = round_wind;
         this.dealer = dealer;
@@ -39,17 +41,17 @@ class RenderSceneManager
     {
         float tile_scale = 1.6f;
 
-        RenderModel tile = store.load_model("tile_low", true);
+        RenderModel tile = store.load_model("tile_" + extension, true);
         tile_size = tile.size.mul_scalar(tile_scale);
 
-        table = new RenderTable(store, tile_size);
+        table = new RenderTable(store, extension, tile_size);
 
         table_length = table.player_offset;
         center = table.center;
         float wall_offset = (tile_size.x * 19 + tile_size.z) / 2;
 
         for (int i = 0; i < tiles.length; i++)
-            tiles[i] = new RenderTile(store, new Tile(i, TileType.BLANK, false), tile_scale);
+            tiles[i] = new RenderTile(store, extension, new Tile(i, TileType.BLANK, false), tile_scale);
 
         wall = new RenderWall(tiles, tile_size, center, wall_offset, dealer, wall_index);
 

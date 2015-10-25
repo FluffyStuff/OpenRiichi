@@ -28,12 +28,6 @@ public class RectangleControl : Control
 
     public override Size2 size { get { return _size; } }
 
-    public Size2 scale
-    {
-        get { return rectangle.scale; }
-        set { rectangle.scale = value; }
-    }
-
     public Color diffuse_color
     {
         get { return rectangle.diffuse_color; }

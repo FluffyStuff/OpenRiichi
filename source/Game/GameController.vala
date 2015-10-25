@@ -7,16 +7,21 @@ public class GameController
     private IGameConnection connection;
     private unowned View parent_view;
 
+    private string extension;
     private bool game_finished = false;
     public signal void finished();
 
-    public GameController(View parent_view, GameStartState game_start)
+    public GameController(View parent_view, GameStartState game_start, Options options)
     {
         this.parent_view = parent_view;
 
         connection = game_start.connection;
         connection.disconnected.connect(disconnected);
 
+        string quality = Options.quality_enum_to_string(options.shader_quality);
+        extension = Options.quality_enum_to_string(options.model_quality);
+
+        parent_view.window.renderer.shader_3D = "open_gl_shader_3D_" + quality;
         create_game(game_start);
     }
 
@@ -102,7 +107,7 @@ public class GameController
             menu.continue_pressed.disconnect(game.client_continue);
         }
 
-        renderer = new GameRenderView(game_start);
+        renderer = new GameRenderView(game_start, extension);
         parent_view.add_child(renderer);
         parent_view.add_child(menu);
 
