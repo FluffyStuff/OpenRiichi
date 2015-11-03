@@ -1,4 +1,4 @@
-public abstract class View : Object
+public abstract class View : Object, IControl
 {
     private Vec2 _position = Vec2(0, 0);
     private Size2 _size = Size2(1, 1);
@@ -82,6 +82,13 @@ public abstract class View : Object
         do_key_press(key);
     }
 
+    public void text_input(TextInputArgs text)
+    {
+        for (int i = child_views.size - 1; i >= 0; i--)
+            child_views[i].text_input(text);
+        do_text_input(text);
+    }
+
     public void resize()
     {
         Rectangle prect = parent_rect;
@@ -103,6 +110,26 @@ public abstract class View : Object
         resized();
     }
 
+    protected void start_text_input()
+    {
+        window.start_text_input();
+    }
+
+    protected void stop_text_input()
+    {
+        window.stop_text_input();
+    }
+
+    protected string get_clipboard_text()
+    {
+        return window.get_clipboard_text();
+    }
+
+    protected void set_clipboard_text(string text)
+    {
+        window.set_clipboard_text(text);
+    }
+
     public RenderWindow window { get { return parent_window; } }
     protected virtual void added() {}
     protected virtual void resized() {}
@@ -111,6 +138,7 @@ public abstract class View : Object
     protected virtual void do_mouse_event(MouseEventArgs mouse) { }
     protected virtual void do_mouse_move(MouseMoveArgs mouse) { }
     protected virtual void do_key_press(KeyArgs key) { }
+    protected virtual void do_text_input(TextInputArgs text) { }
 
     protected IResourceStore store { get { return parent_window.store; } }
 

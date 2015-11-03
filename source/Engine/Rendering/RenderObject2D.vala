@@ -16,6 +16,7 @@ public class RenderImage2D : RenderObject2D
         rotation = 0;
         position = Vec2.empty();
         scale = Size2(1, 1);
+        diffuse_color = Color.with_alpha(1);
     }
 
     public override RenderObject2D copy()
@@ -53,7 +54,7 @@ public class RenderLabel2D : RenderObject2D
         position = Vec2.empty();
         scale = Size2(1, 1);
 
-        _font_type = "Sans Bold";
+        _font_type = "Sans";
         _font_size = 40;
         _text = "";
 

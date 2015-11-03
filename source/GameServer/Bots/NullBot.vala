@@ -8,7 +8,7 @@ namespace GameServer
 
         public NullBot()
         {
-            base();
+            base("NullBot");
         }
 
         protected override void do_turn_decision()

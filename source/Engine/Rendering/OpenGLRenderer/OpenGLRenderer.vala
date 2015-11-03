@@ -10,6 +10,8 @@ public class OpenGLRenderer : RenderTarget
     private const int TEXTURE_ATTRIBUTE = 1;
     private const int NORMAL_ATTRIBUTE = 2;
 
+    private float anisotropic = 0;
+
     private OpenGLShaderProgram3D program_3D;
     private OpenGLShaderProgram2D program_2D;
 
@@ -78,6 +80,10 @@ public class OpenGLRenderer : RenderTarget
         if (!program_2D.init())
             return false;
 
+        float aniso[1];
+        glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, aniso);
+        anisotropic = aniso[0];
+
         return true;
     }
 
@@ -102,7 +108,7 @@ public class OpenGLRenderer : RenderTarget
         foreach (RenderScene scene in state.scenes)
         {
             //glBindFramebuffer(GL_FRAMEBUFFER, 0);
-            //glClear(GL_DEPTH_BUFFER_BIT);
+            glClear(GL_DEPTH_BUFFER_BIT);
 
             Type type = scene.get_type();
             if (type == typeof(RenderScene2D))
@@ -120,10 +126,11 @@ public class OpenGLRenderer : RenderTarget
     {
         OpenGLShaderProgram3D program = program_3D;
 
-        Mat4 projection_transform = get_projection_matrix(scene.focal_length, (float)scene.size.width / scene.size.height);
+        Mat4 projection_transform = get_projection_matrix(scene.focal_length, (float)scene.screen_size.width / scene.screen_size.height);
         Mat4 view_transform = scene.view_transform;
+        Mat4 scene_transform = scene.scene_transform;
 
-        program.apply_scene(projection_transform, view_transform, scene.lights);
+        program.apply_scene(projection_transform.mul_mat(scene_transform), view_transform, scene.lights);
 
         int last_texture_handle = -1;
         int last_array_handle = -1;
@@ -258,17 +265,20 @@ public class OpenGLRenderer : RenderTarget
         uint tex[1];
         glGenTextures(1, tex);
 
-        float aniso[1];
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, tex[0]);
-        glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, aniso);
-        //glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso[0]);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB_ALPHA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid[])texture.data);
 
-        //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        if (!texture.tile)
+        {
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        }
+
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        if (anisotropic > 0)
+            glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, anisotropic);
 
         return new OpenGLTextureResourceHandle(tex[0]);
     }

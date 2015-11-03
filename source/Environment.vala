@@ -30,7 +30,6 @@ public class Environment : Object
     {
         if (initialized)
         {
-            //TextInput.stop();
             SDL.quit();
             initialized = false;
         }

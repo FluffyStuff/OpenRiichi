@@ -69,7 +69,7 @@ class RenderSceneManager
         camera.pitch = -0.34f;
         camera.focal_length = 0.9f;
 
-        Vec3 pos = { 0, camera_height, camera_dist};
+        Vec3 pos = Vec3(0, camera_height, camera_dist);
         pos = Calculations.rotate_y({}, (float)observer.seat / 2, pos);
         camera.position = pos;
         camera.yaw = (float)observer.seat / 2;
@@ -96,7 +96,7 @@ class RenderSceneManager
 
     public void render(RenderState state)
     {
-        RenderScene3D scene = new RenderScene3D(state.screen_size);
+        RenderScene3D scene = new RenderScene3D(state.screen_size, 1, Rectangle(0, 0, state.screen_size.width, state.screen_size.height));
 
         scene.set_camera(camera);
         scene.add_light_source(light1);

@@ -114,18 +114,25 @@
 		<Unit filename="source/Game/Rendering/Menu/GameMenuButton.vala" />
 		<Unit filename="source/Game/Rendering/Menu/GameMenuView.vala" />
 		<Unit filename="source/Game/Rendering/Menu/GameTextBox.vala" />
+		<Unit filename="source/Game/Rendering/Menu/ImageControl.vala" />
 		<Unit filename="source/Game/Rendering/Menu/LabelControl.vala" />
 		<Unit filename="source/Game/Rendering/Menu/RectangleControl.vala" />
+		<Unit filename="source/Game/Rendering/Menu/ScoringHandView.vala" />
 		<Unit filename="source/Game/Rendering/Menu/ScoringPlayerElement.vala" />
+		<Unit filename="source/Game/Rendering/Menu/ScoringPointsView.vala" />
 		<Unit filename="source/Game/Rendering/Menu/ScoringView.vala" />
+		<Unit filename="source/Game/Rendering/Menu/TextInputView.vala" />
 		<Unit filename="source/Game/Rendering/RenderPlayer.vala" />
 		<Unit filename="source/Game/Rendering/RenderSceneManager.vala" />
 		<Unit filename="source/Game/Rendering/RenderTable.vala" />
 		<Unit filename="source/Game/Rendering/RenderTile.vala" />
 		<Unit filename="source/Game/Rendering/RenderWall.vala" />
+		<Unit filename="source/MainMenu/JoinMenuView.vala" />
 		<Unit filename="source/MainMenu/MainMenuView.vala" />
 		<Unit filename="source/MainMenu/OptionItemControl.vala" />
 		<Unit filename="source/MainMenu/OptionsMenuView.vala" />
+		<Unit filename="source/MainMenu/ServerMenuView.vala" />
+		<Unit filename="source/MainMenu/ServerPlayerFieldView.vala" />
 		<Unit filename="source/MainWindow.vala" />
 		<Unit filename="source/main.vala" />
 		<Extensions>

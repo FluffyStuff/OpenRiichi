@@ -1,4 +1,4 @@
-public abstract class Control
+public abstract class Control : IControl
 {
     private Vec2 _position = Vec2(0, 0);
     private Size2 _scale = Size2(1, 1);
@@ -7,24 +7,43 @@ public abstract class Control
     private Size2 _relative_scale = Size2(1, 1);
     private Rectangle _rect;
     private ResizeStyle _resize_style = ResizeStyle.ABSOLUTE;
-    private weak View? parent;
+    private weak IControl? parent = null;
 
-    private bool mouse_down = false;
+    protected Gee.ArrayList<Control> child_controls = new Gee.ArrayList<Control>();
 
-    public virtual void process(DeltaArgs delta) {}
-    public abstract void do_render(RenderScene2D scene);
+    private bool added_called = false;
+
+    protected virtual void on_added() {}
+    protected virtual void do_process(DeltaArgs delta) {}
+    protected abstract void do_render(RenderScene2D scene);
     public abstract void do_resize(Vec2 new_position, Size2 new_scale);
 
-    protected virtual void click() { clicked(); }
-    public signal void clicked();
+    protected virtual void on_mouse_move(Vec2 position) {}
+    protected virtual void on_click(Vec2 position) {}
+    protected virtual void on_mouse_down(Vec2 position) {}
+    protected virtual void on_mouse_up(Vec2 position) {}
+    protected virtual void on_focus_lost() {}
+    protected virtual void on_key_press(KeyArgs key) {}
+    protected virtual void on_text_input(TextInputArgs text) {}
+    public signal void clicked(Vec2 position);
 
     protected Control()
     {
         enabled = true;
         visible = true;
+        cursor_type = CursorType.HOVER;
     }
 
-    public void set_parent(View? parent)
+    protected void added()
+    {
+        if (added_called)
+            return;
+
+        added_called = true;
+        on_added();
+    }
+
+    public void set_parent(IControl? parent)
     {
         this.parent = parent;
         resize();
@@ -35,7 +54,7 @@ public abstract class Control
         if (parent == null)
             return;
 
-        Size2i window_size = parent.window_size;
+        Size2i window_size = window_size;
         Rectangle prect = parent.rect;
 
         if (resize_style == ResizeStyle.RELATIVE)
@@ -59,6 +78,17 @@ public abstract class Control
         Size2 new_scale = Size2(rect.width / window_size.width, rect.height / window_size.height);
 
         do_resize(new_pos, new_scale);
+
+        foreach (Control control in child_controls)
+            control.resize();
+    }
+
+    public void process(DeltaArgs delta)
+    {
+        do_process(delta);
+
+        foreach (Control control in child_controls)
+            control.process(delta);
     }
 
     public void render(RenderScene2D scene)
@@ -67,17 +97,20 @@ public abstract class Control
             return;
 
         do_render(scene);
+
+        foreach (Control control in child_controls)
+            control.render(scene);
     }
 
     public void mouse_move(MouseMoveArgs mouse)
     {
-        if (mouse.handled || !visible)
+        if (mouse.handled || !visible || !selectable)
         {
             hovering = false;
             return;
         }
 
-        if (!hover_check(mouse.position))
+        if (!hover_check(mouse.position) && !mouse_down)
         {
             hovering = false;
             return;
@@ -88,6 +121,8 @@ public abstract class Control
 
         if (enabled)
             mouse.cursor_type = cursor_type;
+
+        on_mouse_move(Vec2(mouse.position.x - rect.x, mouse.position.y - rect.y));
     }
 
     public void mouse_event(MouseEventArgs mouse)
@@ -95,12 +130,16 @@ public abstract class Control
         if (mouse.handled || !visible || !selectable)
         {
             mouse_down = false;
+            if (focused)
+                focus_lost();
             return;
         }
 
         if (!hover_check(mouse.position))
         {
             mouse_down = false;
+            if (focused)
+                focus_lost();
             return;
         }
 
@@ -115,13 +154,67 @@ public abstract class Control
         if (mouse.down)
         {
             mouse_down = true;
+            do_mouse_down(Vec2(mouse.position.x - rect.x, mouse.position.y - rect.y));
             return;
         }
 
+        on_mouse_up(Vec2(mouse.position.x - rect.x, mouse.position.y - rect.y));
+
         if (mouse_down)
-            click();
+            click(Vec2(mouse.position.x - rect.x, mouse.position.y - rect.y));
 
         mouse_down = false;
+    }
+
+    public void key_press(KeyArgs key)
+    {
+        if (key.handled || !visible || !focused)
+            return;
+
+        key.handled = true;
+
+        on_key_press(key);
+    }
+
+    public void text_input(TextInputArgs text)
+    {
+        if (text.handled || !visible || !focused)
+            return;
+
+        text.handled = true;
+
+        on_text_input(text);
+    }
+
+    private void click(Vec2 position)
+    {
+        on_click(position);
+        clicked(position);
+    }
+
+    private void do_mouse_down(Vec2 position)
+    {
+        focused = true;
+        on_mouse_down(position);
+    }
+
+    private void focus_lost()
+    {
+        focused = false;
+        on_focus_lost();
+    }
+
+    protected void add_control(Control control)
+    {
+        child_controls.add(control);
+        control.set_parent(this);
+        control.added();
+    }
+
+    protected void remove_control(Control control)
+    {
+        control.set_parent(null);
+        child_controls.remove(control);
     }
 
     private bool hover_check(Vec2i point)
@@ -129,14 +222,34 @@ public abstract class Control
         if (!enabled || !visible || !selectable)
             return false;
 
-        Vec2 top_left = Vec2(rect.x, rect.y);
-        Vec2 bottom_right = Vec2(rect.x + rect.width, rect.y + rect.height);
+        Vec2 bottom_left = Vec2(rect.x, rect.y);
+        Vec2 top_right = Vec2(rect.x + rect.width, rect.y + rect.height);
 
         return
-            point.x >= top_left.x &&
-            point.x <= bottom_right.x &&
-            point.y >= top_left.y &&
-            point.y <= bottom_right.y;
+            point.x >= bottom_left.x &&
+            point.x <= top_right.x &&
+            point.y >= bottom_left.y &&
+            point.y <= top_right.y;
+    }
+
+    protected void start_text_input()
+    {
+        parent.start_text_input();
+    }
+
+    protected void stop_text_input()
+    {
+        parent.stop_text_input();
+    }
+
+    protected string get_clipboard_text()
+    {
+        return parent.get_clipboard_text();
+    }
+
+    protected void set_clipboard_text(string text)
+    {
+        parent.set_clipboard_text(text);
     }
 
     public Vec2 outer_anchor
@@ -162,9 +275,11 @@ public abstract class Control
     public bool visible { get; set; }
     public bool enabled { get; set; }
     public bool hovering { get; private set; }
+    public bool focused { get; private set; }
+    public bool mouse_down { get; private set; }
     public bool selectable { get; set; }
     public abstract Size2 size { get; }
-    protected virtual CursorType cursor_type { get { return CursorType.HOVER; } }
+    public CursorType cursor_type { get; protected set; }
 
     public Vec2 position
     {
@@ -206,5 +321,10 @@ public abstract class Control
             _resize_style = value;
             resize();
         }
+    }
+
+    public Size2i window_size
+    {
+        get { return parent.window_size; }
     }
 }

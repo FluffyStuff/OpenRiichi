@@ -71,7 +71,8 @@ class OpenGLShaderProgram2D
         use_texture_attrib = glGetUniformLocation(program, "use_texture");
         diffuse_color_attrib = glGetUniformLocation(program, "diffuse_color");
 
-        if (glGetError() != 0)
+        uint err = glGetError();
+        if (err != 0 && err != 0x500)
         {
             print("GL shader program linkage failure!\n");
             return false;

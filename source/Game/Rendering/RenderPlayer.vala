@@ -897,7 +897,7 @@ class RenderRiichi
     public RenderRiichi(IResourceStore store, Vec3 tile_size, int seat, Vec3 center, float start_offset, float end_offset)
     {
         RenderModel model = store.load_model("stick", true);
-        RenderTexture texture = store.load_texture("Sticks/Stick1000");
+        RenderTexture texture = store.load_texture("Sticks/Stick1000", false);
 
         stick = new RenderObject3D(model, texture);
         stick.rotation = Vec3(0, (float)seat / 2, 0);

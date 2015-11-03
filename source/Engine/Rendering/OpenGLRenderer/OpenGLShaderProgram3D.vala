@@ -70,7 +70,8 @@ public class OpenGLShaderProgram3D
         for (int i = 0; i < lights.length; i++)
             lights[i].init(program);
 
-        if (glGetError() != 0)
+        uint err = glGetError();
+        if (err != 0 && err != 0x500)
         {
             print("GL shader program linkage failure!\n");
             return false;
@@ -86,7 +87,7 @@ public class OpenGLShaderProgram3D
 
     public void apply_scene(Mat4 projection_transform, Mat4 view_transform, ArrayList<LightSource> lights)
     {
-        glUseProgram(program);
+        use_program();
 
         glUniformMatrix4fv(projection_transform_attrib, 1, false, projection_transform.get_data());
         glUniformMatrix4fv(view_transform_attrib, 1, false, view_transform.get_data());

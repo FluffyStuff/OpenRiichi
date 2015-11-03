@@ -256,7 +256,7 @@ namespace GameServer
                 return;
             }
 
-            timer.set_time(15);
+            timer.set_time(150);
         }
 
         public bool finished { get; private set; }

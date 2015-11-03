@@ -53,13 +53,35 @@ public class MouseReference {}
 
 public class KeyArgs
 {
-    public KeyArgs(char key)
+    public KeyArgs(ScanCode scancode, KeyCode keycode, Modifier modifiers, bool repeat, bool down)
     {
-        this.key = key;
+        this.scancode = scancode;
+        this.keycode = keycode;
+        this.modifiers = modifiers;
+        this.repeat = repeat;
+        this.down = down;
+
+        this.key = (char)keycode;
     }
 
     public bool handled { get; set; }
+    public ScanCode scancode { get; private set; }
+    public KeyCode keycode { get; private set; }
+    public Modifier modifiers { get; private set; }
+    public bool repeat { get; private set; }
+    public bool down { get; private set; }
     public char key { get; private set; }
+}
+
+public class TextInputArgs
+{
+    public TextInputArgs(string text)
+    {
+        this.text = text;
+    }
+
+    public bool handled { get; set; }
+    public string text { get; private set; }
 }
 
 public class DeltaArgs

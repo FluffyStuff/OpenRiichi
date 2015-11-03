@@ -34,7 +34,7 @@ public class OpenGLResourceStore : IResourceStore
         return model;
     }
 
-    public override RenderTexture? load_texture_dir(string dir, string name)
+    public override RenderTexture? load_texture_dir(string dir, string name, bool tile)
     {
         ResourceCacheObject? cache = get_cache_object(name, CacheObjectType.TEXTURE);
         if (cache != null)
@@ -46,10 +46,10 @@ public class OpenGLResourceStore : IResourceStore
 
         SoilImage img = SoilWrap.load_image(str);
 
-        ResourceTexture tex = new ResourceTexture(img.data, Size2i(img.width, img.height));
+        ResourceTexture tex = new ResourceTexture(img.data, Size2i(img.width, img.height), tile);
         uint handle = renderer.load_texture(tex);
 
-        RenderTexture texture = new RenderTexture(handle, Size2i(img.width, img.height));
+        RenderTexture texture = new RenderTexture(handle, Size2i(img.width, img.height), tile);
         cache_object(name, CacheObjectType.TEXTURE, texture);
 
         return texture;

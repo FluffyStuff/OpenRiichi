@@ -160,7 +160,6 @@ public abstract class RenderTarget : Object, IRenderTarget
             render_cycle(current_state);
 
             // TODO: Fix fullscreen v-sync issues
-            //Thread.usleep(5000);
         }
     }
 
@@ -275,14 +274,14 @@ public abstract class RenderTarget : Object, IRenderTarget
 
     public Mat4 get_projection_matrix(float view_angle, float aspect_ratio)
     {
-        aspect_ratio = Math.fmaxf(aspect_ratio, 1);
         view_angle  *= 0.6f;
         float z_near = 0.5f * aspect_ratio;
         float z_far  =   30 * aspect_ratio;
 
-        float vtan = (float)Math.tan(view_angle);
-        Vec4 v1 = {1 / vtan, 0,                   0,                                    0};
-        Vec4 v2 = {0,        aspect_ratio / vtan, 0,                                    0};
+        float vtan1 = 1 / (float)Math.tan(view_angle);
+        float vtan2 = vtan1 * aspect_ratio;
+        Vec4 v1 = {vtan1,    0,                   0,                                    0};
+        Vec4 v2 = {0,        vtan2,               0,                                    0};
         Vec4 v3 = {0,        0,                   -(z_far + z_near) / (z_far - z_near), -2 * z_far * z_near / (z_far - z_near)};
         Vec4 v4 = {0,        0,                   -1,                                   0};
 

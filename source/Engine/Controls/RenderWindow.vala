@@ -29,7 +29,7 @@ public abstract class RenderWindow
             process(get_delta());
             renderer.set_state(render());
             window.pump_events();
-            //GLib.Thread.usleep(1000);
+            GLib.Thread.usleep(1000);
 
             if ((counter++ % frms) == 0)
             {
@@ -84,11 +84,27 @@ public abstract class RenderWindow
                 finish();
             else if (e.type == EventType.KEYDOWN)
             {
-                char k = e.key.keysym.sym;
-                KeyArgs key = new KeyArgs(k);
+                KeyArgs key = new KeyArgs
+                (
+                    (ScanCode)e.key.keysym.scancode,
+                    (KeyCode)e.key.keysym.sym,
+                    (Modifier)e.key.keysym.mod,
+                    e.key.repeat != 0,
+                    e.key.state == 0
+                );
 
                 if (!key_press(key))
                     main_view.key_press(key);
+            }
+            else if(e.type == EventType.TEXTINPUT)
+            {
+                main_view.text_input(new TextInputArgs(e.text.text));
+            }
+            else if(e.type == EventType.TEXTEDITING)
+            {
+                /*print("Edit: " + e.edit.text + "\n");
+                print("Start: " + e.edit.start.to_string() + "\n");
+                print("Len: " + e.edit.length.to_string() + "\n");*/
             }
             else if (e.type == EventType.MOUSEMOTION)
             {
@@ -165,6 +181,26 @@ public abstract class RenderWindow
     public void set_cursor_position(int x, int y)
     {
         window.set_cursor_position(x, y);
+    }
+
+    public void start_text_input()
+    {
+        window.start_text_input();
+    }
+
+    public void stop_text_input()
+    {
+        window.stop_text_input();
+    }
+
+    public string get_clipboard_text()
+    {
+        return window.get_clipboard_text();
+    }
+
+    public void set_clipboard_text(string text)
+    {
+        window.set_clipboard_text(text);
     }
 
     protected virtual void do_process(DeltaArgs delta) {}
