@@ -3,159 +3,75 @@ using Gee;
 public class ScoringView : View2D
 {
     private Scoring score;
-    private ArrayList<LabelControl> labels = new ArrayList<LabelControl>();
     private LabelControl time_label;
     private RectangleControl rectangle;
     private GameMenuButton next_button;
+    private ScoringHandView hand;
+    private ScoringPointsView view;
+    private ScoringPlayerElement bottom;
+    private ScoringPlayerElement right;
+    private ScoringPlayerElement top;
+    private ScoringPlayerElement left;
+    private int padding = 10;
     private float time = 15;
     private float start_time = 0;
 
     public ScoringView(Scoring score)
     {
         this.score = score;
+        relative_size = Size2(0.9f, 0.9f);
     }
 
     public override void added()
     {
         rectangle = new RectangleControl();
         rectangle.resize_style = ResizeStyle.RELATIVE;
-        rectangle.relative_scale = Size2(0.9f, 0.9f);
-        rectangle.diffuse_color = Color.with_alpha(0.8f);
+        rectangle.color = Color.with_alpha(0.8f);
         add_control(rectangle);
 
-        string score_text;
-        if (score.ron)
-            score_text = "Ron";
-        else
-            score_text = "Tsumo";
-
-        LabelControl score_label = new LabelControl(store);
-        score_label.text = score_text;
-        score_label.inner_anchor = Size2(0.5f, 1);
-        score_label.outer_anchor = Size2(0.5f, rectangle.relative_scale.height);
-        score_label.position = Vec2(0, 0);
-        labels.add(score_label);
-
-        int han = 0;
-        int yakuman = 0;
-
-        int h = 2;
-
-        foreach (Yaku yaku in score.yaku)
-        {
-            LabelControl name = new LabelControl(store);
-            name.text = yaku_to_string(yaku);
-            name.inner_anchor = Size2(0, 1);
-            name.outer_anchor = Size2(1 - rectangle.relative_scale.width, rectangle.relative_scale.height);
-            name.position = Vec2(0, -h * name.size.height);
-            labels.add(name);
-
-            string str;
-
-            if (yaku.yakuman > 0)
-                str = yaku.yakuman.to_string() + " yakuman";
-            else
-                str = yaku.han.to_string() + " han";
-
-            LabelControl num = new LabelControl(store);
-            num.text = str;
-            num.inner_anchor = Size2(1, 1);
-            num.outer_anchor = Size2(rectangle.relative_scale.width, rectangle.relative_scale.height);
-            num.position = Vec2(0, -h * num.size.height);
-            labels.add(num);
-
-            han += yaku.han;
-            yakuman += yaku.yakuman;
-            h++;
-        }
-
-        string points;
-
-        if (score.ron)
-            points = score.ron_points.to_string();
-        else
-        {
-            if (score.dealer)
-                points = score.tsumo_points_higher.to_string();
-            else
-                points = score.tsumo_points_lower.to_string() + "/" + score.tsumo_points_higher.to_string();
-        }
-
-        string name = "";
-
-        switch (score.score_type)
-        {
-        case Scoring.ScoreType.MANGAN:
-            name = "Mangan";
-            break;
-        case Scoring.ScoreType.HANEMAN:
-            name = "Haneman";
-            break;
-        case Scoring.ScoreType.BAIMAN:
-            name = "Baiman";
-            break;
-        case Scoring.ScoreType.SANBAIMAN:
-            name = "Sanbaiman";
-            break;
-        case Scoring.ScoreType.KAZOE_YAKUMAN:
-            name = "Kazoe Yakuman";
-            break;
-        case Scoring.ScoreType.YAKUMAN:
-            name = "Yakuman";
-            break;
-        case Scoring.ScoreType.NAGASHI_MANGAN:
-            name = "Nagashi Mangan";
-            break;
-        case Scoring.ScoreType.NORMAL:
-        default:
-            name = "";
-            break;
-        }
-
-        if (name != "")
-            name += " - ";
-
-        LabelControl points_label = new LabelControl(store);
-        points_label.text = name + points + " points";
-        points_label.inner_anchor = Size2(0.5f, 1);
-        points_label.outer_anchor = Size2(0.5f, rectangle.relative_scale.height);
-        points_label.position = Vec2(0, -(h + 3) * points_label.size.height);
-        labels.add(points_label);
-
-        foreach (LabelControl label in labels)
-            add_control(label);
-
         time_label = new LabelControl(store);
-        time_label.text = "";
-        time_label.font_size = 30 / 1.6f;
-        time_label.font_type = "Sans Bold";
         time_label.inner_anchor = Size2(0, 0);
-        time_label.outer_anchor = Size2(1 - rectangle.relative_scale.width, 1 - rectangle.relative_scale.height);
+        time_label.outer_anchor = Size2(0, 0);
+        time_label.position = Vec2(padding, padding);
         add_control(time_label);
 
         next_button = new GameMenuButton(store, "Next");
         next_button.selectable = true;
         next_button.inner_anchor = Size2(1, 0);
-        next_button.outer_anchor = Size2(rectangle.relative_scale.width, 1 - rectangle.relative_scale.height);
-        //add_control(next_button);
-    }
+        next_button.outer_anchor = Size2(1, 0);
+        next_button.position = Vec2(-padding, padding);
+        add_control(next_button);
 
-    private string yaku_to_string(Yaku yaku)
-    {
-        string str = "";
+        bottom = new ScoringPlayerElement(Wind.SOUTH, "Fluffy", 180000, 32000);
+        bottom.resize_style = ResizeStyle.ABSOLUTE;
+        bottom.inner_anchor = Vec2(0.5f, 0);
+        bottom.outer_anchor = Vec2(0.5f, 0);
+        bottom.position = Vec2(0, padding);
+        add_child(bottom);
 
-        string[] parts = yaku.yaku_type.to_string().substring(10).down().split("_");
+        right = new ScoringPlayerElement(Wind.WEST, "NullBot1", 100, -300);
+        right.resize_style = ResizeStyle.ABSOLUTE;
+        right.inner_anchor = Vec2(1, 0.5f);
+        right.outer_anchor = Vec2(1, 0.5f);
+        right.position = Vec2(-padding, 0);
+        add_child(right);
 
-        for (int i = 0; i < parts.length; i++)
-        {
-            string part = parts[i];
+        top = new ScoringPlayerElement(Wind.NORTH, "NullBot2", 25000, 0);
+        top.resize_style = ResizeStyle.ABSOLUTE;
+        top.inner_anchor = Vec2(0.5f, 1);
+        top.outer_anchor = Vec2(0.5f, 1);
+        top.position = Vec2(0, -padding);
+        add_child(top);
 
-            if (i != 0)
-                str += " ";
-            str += part[0].toupper().to_string() + part.substring(1);
-        }
+        left = new ScoringPlayerElement(Wind.EAST, "NullBot3", 25000, -32000);
+        left.resize_style = ResizeStyle.ABSOLUTE;
+        left.inner_anchor = Vec2(0, 0.5f);
+        left.outer_anchor = Vec2(0, 0.5f);
+        left.position = Vec2(padding, 0);
+        add_child(left);
 
-        return str;
+        view = new ScoringPointsView(score);
+        add_child(view);
     }
 
     public override void do_process(DeltaArgs delta)
@@ -163,10 +79,12 @@ public class ScoringView : View2D
         if (start_time == 0)
             start_time = delta.time;
 
-        int t = (int)(start_time + time - delta.time);
+        int t = int.max((int)(start_time + time - delta.time), 0);
         string str = t.to_string();
 
         if (str != time_label.text)
             time_label.text = str;
+
+        view.size = Size2(right.rect.x - (left.rect.x + left.size.width) - padding * 2, top.rect.y - (bottom.rect.y + bottom.rect.height) - padding * 2);
     }
 }

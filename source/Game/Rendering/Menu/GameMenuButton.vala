@@ -6,7 +6,7 @@ class GameMenuButton : Control
     {
         base();
 
-        RenderTexture texture = store.load_texture("Buttons/" + name);
+        RenderTexture texture = store.load_texture("Buttons/" + name, false);
         button = new RenderImage2D(texture);
         selectable = true;
     }
@@ -26,7 +26,12 @@ class GameMenuButton : Control
         else
         {
             if (hovering)
-                button.diffuse_color = Color(0.5f, 0.5f, 0.3f, 1);
+            {
+                if (mouse_down)
+                    button.diffuse_color = Color(0.3f, 0.3f, 0.1f, 1);
+                else
+                    button.diffuse_color = Color(0.5f, 0.5f, 0.3f, 1);
+            }
             else
                 button.diffuse_color = Color.with_alpha(1);
         }

@@ -12,11 +12,11 @@ public class RenderTable
         RenderModel? model = null;
         RenderTexture? texture = null;
 
-        texture = store.load_texture_dir(dir, "field");
+        texture = store.load_texture_dir(dir, "field", true);
         if (texture != null)
             model = store.load_model_dir(dir, "field", false);
         else
-            texture = store.load_texture("field_" + extension);
+            texture = store.load_texture("field_" + extension, true);
 
         if (model == null)
             model = store.load_model("field", false);

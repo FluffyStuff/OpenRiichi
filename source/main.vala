@@ -5,6 +5,8 @@ public static int main(string[] args)
         return -1;
 
     //Threading.start1(start_game, environment);
+    SDL.GL.set_attribute(SDL.GLattr.MULTISAMPLEBUFFERS, 1);
+    SDL.GL.set_attribute(SDL.GLattr.MULTISAMPLESAMPLES, 4);
     start_game(environment);
 
     return 0;

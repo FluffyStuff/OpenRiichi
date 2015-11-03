@@ -1,11 +1,12 @@
 public abstract class View2D : View
 {
-    private Gee.ArrayList<Control> child_controls = new Gee.ArrayList<Control>();
+    protected Gee.ArrayList<Control> child_controls = new Gee.ArrayList<Control>();
 
     public void add_control(Control control)
     {
         child_controls.add(control);
         control.set_parent(this);
+        control.added();
     }
 
     public void remove_control(Control control)
@@ -24,7 +25,7 @@ public abstract class View2D : View
 
     protected override void do_render(RenderState state)
     {
-        RenderScene2D scene = new RenderScene2D(state.screen_size);
+        RenderScene2D scene = new RenderScene2D(rect);
 
         foreach (Control control in child_controls)
             control.render(scene);
@@ -51,6 +52,18 @@ public abstract class View2D : View
     {
         foreach (Control control in child_controls)
             control.mouse_event(mouse);
+    }
+
+    protected override void do_key_press(KeyArgs key)
+    {
+        foreach (Control control in child_controls)
+            control.key_press(key);
+    }
+
+    protected override void do_text_input(TextInputArgs text)
+    {
+        foreach (Control control in child_controls)
+            control.text_input(text);
     }
 
     protected virtual void on_resized() {}

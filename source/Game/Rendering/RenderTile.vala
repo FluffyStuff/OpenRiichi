@@ -19,7 +19,7 @@ public class RenderTile
         tile_type = tile;
 
         RenderModel model = store.load_model("tile_" + extension, true);
-        RenderTexture texture = store.load_texture("Tiles_" + extension + "/" + get_tile_type_name(tile_type.tile_type));
+        RenderTexture texture = store.load_texture("Tiles_" + extension + "/" + get_tile_type_name(tile_type.tile_type), false);
 
         this.tile = new RenderObject3D(model, texture);
 
@@ -30,7 +30,7 @@ public class RenderTile
     {
         tile_type.tile_type = type.tile_type;
         tile_type.dora = type.dora;
-        tile.texture = store.load_texture("Tiles_" + extension + "/" + get_tile_type_name(tile_type.tile_type));
+        tile.texture = store.load_texture("Tiles_" + extension + "/" + get_tile_type_name(tile_type.tile_type), false);
     }
 
     private static string get_tile_type_name(TileType type)

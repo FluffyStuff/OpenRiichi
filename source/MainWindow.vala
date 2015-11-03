@@ -53,6 +53,8 @@ public class MainWindow : RenderWindow
 
     protected override bool key_press(KeyArgs key)
     {
+        return false;
+
         switch (key.key)
         {
             case 27 :

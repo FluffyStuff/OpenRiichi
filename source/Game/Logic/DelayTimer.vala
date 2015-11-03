@@ -3,7 +3,7 @@ public class DelayTimer
     private bool time_set;
     private bool is_active = false;
     private float time;
-    private float delay;
+    private float _delay;
 
     public bool active(float time)
     {
@@ -27,8 +27,18 @@ public class DelayTimer
 
     public void set_time(float delay)
     {
-        this.delay = delay;
+        _delay = delay;
         time_set = false;
         is_active = true;
+    }
+
+    public float delay
+    {
+        get { return _delay; }
+        set
+        {
+            _delay = value;
+            set_time(delay);
+        }
     }
 }

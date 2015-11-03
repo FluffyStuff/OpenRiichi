@@ -7,6 +7,7 @@ public class SDLWindowTarget : Object, IWindowTarget
 
     private Cursor normal_cursor;
     private Cursor hover_cursor;
+    private Cursor caret_cursor;
 
     public SDLWindowTarget(Window window)
     {
@@ -14,6 +15,7 @@ public class SDLWindowTarget : Object, IWindowTarget
 
         normal_cursor = new Cursor.from_system(SystemCursor.ARROW);
         hover_cursor = new Cursor.from_system(SystemCursor.HAND);
+        caret_cursor = new Cursor.from_system(SystemCursor.IBEAM);
         current_cursor = CursorType.NORMAL;
     }
 
@@ -45,8 +47,12 @@ public class SDLWindowTarget : Object, IWindowTarget
 
     public void set_cursor_hidden(bool hidden)
     {
-        //SDL.Cursor.show(hidden ? 0 : 1);
-        Cursor.set_relative_mode(hidden);
+        Cursor.show(hidden ? 0 : 1);
+    }
+
+    public void set_cursor_relative_mode(bool relative)
+    {
+        Cursor.set_relative_mode(relative);
     }
 
     public void set_cursor_type(CursorType type)
@@ -62,6 +68,9 @@ public class SDLWindowTarget : Object, IWindowTarget
         case CursorType.HOVER:
             Cursor.set(hover_cursor);
             break;
+        case CursorType.CARET:
+            Cursor.set(caret_cursor);
+            break;
         }
 
         current_cursor = type;
@@ -69,7 +78,27 @@ public class SDLWindowTarget : Object, IWindowTarget
 
     public void set_cursor_position(int x, int y)
     {
-        //window.set_cursor_position(x, y);
+        Cursor.warp_mouse(window, x, y);
+    }
+
+    public void start_text_input()
+    {
+        TextInput.start();
+    }
+
+    public void stop_text_input()
+    {
+        TextInput.stop();
+    }
+
+    public string get_clipboard_text()
+    {
+        return Clipboard.get_text();
+    }
+
+    public void set_clipboard_text(string text)
+    {
+        Clipboard.set_text(text);
     }
 
     public Window sdl_window { get { return window; } }

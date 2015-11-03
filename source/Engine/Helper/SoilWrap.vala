@@ -5,17 +5,8 @@ public class SoilWrap : Object
 
     private SoilWrap() {}
 
-    // Need this for static fields
-    public static void static_init()
-    {
-        if (typeof(SoilWrap).class_peek() == null)
-            typeof(SoilWrap).class_ref();
-    }
-
     public static SoilImage load_image(string name)
     {
-        static_init();
-
         int width, height;
 
         mutex.lock();

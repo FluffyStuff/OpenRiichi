@@ -8,8 +8,9 @@ public class LabelControl : Control
 
         label = store.create_label();
         label.text = "";
-        label.font_size = 30 / 1.6f;
-        label.font_type = "Sans Bold";
+        label.font_size = 30;
+        label.font_type = "Sans";
+        color = Color.white();
     }
 
     public override void do_resize(Vec2 new_position, Size2 new_scale)
@@ -24,6 +25,18 @@ public class LabelControl : Control
     }
 
     public override Size2 size { get { return label.info.size.to_size2(); } }
+    public Color color
+    {
+        get
+        {
+            Color d = label.diffuse_color;
+            return Color(d.r + 1, d.g + 1, d.b + 1, d.a);
+        }
+        set
+        {
+            label.diffuse_color = Color(value.r - 1, value.g - 1, value.b - 1, value.a);
+        }
+    }
 
     public string font_type
     {
@@ -37,10 +50,10 @@ public class LabelControl : Control
 
     public float font_size
     {
-        get { return label.font_size; }
+        get { return label.font_size; } // Pixels
         set
         {
-            label.font_size = value;
+            label.font_size = value; // Pixels
             resize();
         }
     }

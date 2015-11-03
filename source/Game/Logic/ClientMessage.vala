@@ -92,6 +92,18 @@ public abstract class ClientMessage : SerializableMessage
 
 }
 
+public class ClientMessageAuthenticate : ClientMessage
+{
+    public ClientMessageAuthenticate(string name)
+    {
+        this.name = name;
+    }
+
+    public string name { get; protected set; }
+}
+
+public class ClientMessageMenuGameStart : ClientMessage {}
+
 public class ClientMessageTileDiscard : ClientMessage
 {
     public ClientMessageTileDiscard(int tile_ID)

@@ -79,7 +79,7 @@ public class Networking : Object
         mutex.unlock();
     }
 
-    private Connection add_connection(SocketConnection connection)
+    private void add_connection(SocketConnection connection)
     {
         mutex.lock();
 
@@ -87,18 +87,11 @@ public class Networking : Object
         connections.add(c);
         c.message_received.connect(message_received_handler);
         c.closed.connect(connection_closed);
-        c.start();
 
         mutex.unlock();
 
-        return c;
-    }
-
-    private bool new_connection(SocketConnection connection)
-    {
-        Connection c = add_connection(connection);
+        c.start();
         connected(c);
-        return true;
     }
 
     private void host_worker()
@@ -117,7 +110,7 @@ public class Networking : Object
                 }
                 mutex.unlock();
 
-                new_connection(connection);
+                add_connection(connection);
             }
         }
         catch { }

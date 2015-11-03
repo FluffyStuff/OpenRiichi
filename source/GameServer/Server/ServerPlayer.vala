@@ -2,6 +2,11 @@ namespace GameServer
 {
     public abstract class ServerPlayer : Object
     {
+        public ServerPlayer(string name)
+        {
+            this.name = name;
+        }
+
         public signal void disconnected(ServerPlayer player);
         public signal void receive_message(ServerPlayer player, ClientMessage message);
 
@@ -10,6 +15,7 @@ namespace GameServer
 
         public State state { get; protected set; }
         public bool ready { get; protected set; }
+        public string name { get; private set; }
 
         public enum State
         {
@@ -22,8 +28,10 @@ namespace GameServer
     {
         private ServerPlayerConnection connection;
 
-        public ServerHumanPlayer(ServerPlayerConnection connection)
+        public ServerHumanPlayer(ServerPlayerConnection connection, string name)
         {
+            base(name);
+
             // TODO: Remove this
             ready = true;
             state = State.PLAYER;
@@ -67,6 +75,8 @@ namespace GameServer
 
         public ServerComputerPlayer(Bot bot)
         {
+            base(bot.name);
+
             ready = true;
             state = State.PLAYER;
 
@@ -208,7 +218,7 @@ namespace GameServer
             connection = null;
             disconnected();
 
-            ref();
+            unref();
         }
     }
 }

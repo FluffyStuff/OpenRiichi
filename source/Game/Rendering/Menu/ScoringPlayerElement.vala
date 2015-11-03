@@ -1,52 +1,87 @@
-class ScoringPlayerElement
+class ScoringPlayerElement : View2D
 {
-    private Vec2 screen_size;
-    private RenderImage2D background;
-    private RenderLabel2D name_label;
-    private RenderLabel2D score_label;
-    private RenderLabel2D transfer_label;
+    private Wind wind;
+    private string player_name;
+    private int score;
+    private int transfer;
 
-    public ScoringPlayerElement(IResourceStore store, string player_name, int score, int transfer)
+    public ScoringPlayerElement(Wind wind, string player_name, int score, int transfer)
     {
-        RenderTexture texture = store.load_texture("Menu/score_background");
-        background = new RenderImage2D(texture);
+        this.wind = wind;
+        this.player_name = player_name;
+        this.score = score;
+        this.transfer = transfer;
+    }
 
-        name_label = store.create_label();
+    public override void added()
+    {
+        ImageControl background = new ImageControl(store, "Menu/score_background");
+        add_control(background);
+        size = background.size;
+
+        string w;
+        switch (wind)
+        {
+        case Wind.EAST:
+        default:
+            w = "東";
+            break;
+        case Wind.SOUTH:
+            w = "南";
+            break;
+        case Wind.WEST:
+            w = "西";
+            break;
+        case Wind.NORTH:
+            w = "北";
+            break;
+        }
+
+        int padding = 10;
+        LabelControl wind_label = new LabelControl(store);
+        wind_label.text = w;
+        wind_label.inner_anchor = Vec2(0, 0.5f);
+        wind_label.outer_anchor = Vec2(0, 0.5f);
+        wind_label.font_size = 50;
+        wind_label.position = Vec2(padding, 0);
+        wind_label.color = Color(0.0f, 0.0f, 0.4f, 1);
+        add_control(wind_label);
+
+        LabelControl name_label = new LabelControl(store);
         name_label.text = player_name;
-        name_label.font_size = 30 / 1.6f;
-        name_label.font_type = "Sans Bold";
-        name_label.diffuse_color = Color(0, 0.2f, 1, 1);
+        name_label.font_size = 40;
+        name_label.color = Color(0.0f, 0.0f, 0.6f, 1);
+        name_label.inner_anchor = Vec2(0, 0);
+        name_label.outer_anchor = Vec2(0, 0.5f);
+        name_label.position = Vec2(wind_label.size.width + padding * 2, 0);
+        add_control(name_label);
 
-        score_label = store.create_label();
+        LabelControl score_label = new LabelControl(store);
         score_label.text = score.to_string();
-        score_label.font_size = 30 / 1.6f;
-        score_label.font_type = "Sans Bold";
-        score_label.diffuse_color = Color.white();
+        score_label.font_size = 20;
+        score_label.inner_anchor = Vec2(0, 1);
+        score_label.outer_anchor = Vec2(0, 0.5f);
+        score_label.position = Vec2(wind_label.size.width + padding * 2, 0);
+        score_label.color = Color.white();
+        add_control(score_label);
 
-        transfer_label = store.create_label();
-        transfer_label.text = transfer.to_string();
-        transfer_label.font_size = 30 / 1.6f;
-        transfer_label.font_type = "Sans Bold";
+        LabelControl transfer_label = new LabelControl(store);
+        transfer_label.inner_anchor = Vec2(0, 1);
+        transfer_label.outer_anchor = Vec2(0, 0.5f);
+        transfer_label.position = Vec2(wind_label.size.width + padding * 2 + score_label.size.width, 0);
+        transfer_label.font_size = 20;
         if (transfer > 0)
-            transfer_label.diffuse_color = Color.green();
+        {
+            transfer_label.text = " +" + transfer.to_string();
+            transfer_label.color = Color.green();
+        }
+        else if (transfer < 0)
+        {
+            transfer_label.text = " -" + (-transfer).to_string();
+            transfer_label.color = Color.red();
+        }
         else
-            transfer_label.diffuse_color = Color.red();
-    }
-
-    public void render(RenderScene2D scene, Vec2 screen_size)
-    {
-        this.screen_size = screen_size;
-
-        reposition();
-
-        scene.add_object(background);
-        scene.add_object(name_label);
-        scene.add_object(score_label);
-        scene.add_object(transfer_label);
-    }
-
-    private void reposition()
-    {
-
+            transfer_label.visible = false;
+        add_control(transfer_label);
     }
 }

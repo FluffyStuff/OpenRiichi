@@ -1193,7 +1193,7 @@ namespace SDL {
 		RELEASED, PRESSED
 	}// ButtonState
 	
-	[CCode (cname="SDL_Keycode", cprefix="SDLK_", cheader="SDL2/SDL_keyboard.h")]
+	[CCode (cname="SDL_Keycode", cprefix="SDLK_", cheader="SDL2/SDL_keycode.h")]
 	public enum Keycode {
 		UNKNOWN, RETURN, ESCAPE, BACKSPACE, TAB, SPACE, EXCLAIM,
 		QUOTEDBL, HASH, PERCENT, DOLLAR, AMPERSAND, QUOTE,
@@ -1230,7 +1230,7 @@ namespace SDL {
 		KBDILLUMTOGGLE, KBDILLUMDOWN, KBDILLUMUP, EJECT, SLEEP
 	}// Keycode
 	
-	[CCode (cname="SDL_Keymod", cprefix="KMOD_", cheader="SDL2/SDL_keyboard.h")]
+	[CCode (cname="SDL_Keymod", cprefix="KMOD_", cheader="SDL2/SDL_keycode.h")]
 	public enum Keymod {
 		NONE, LSHIFT, RSHIFT, LCTRL, RCTRL, LALT, RALT,
 		LGUI, RGUI, NUM, CAPS, MODE, RESERVED,
@@ -1376,8 +1376,11 @@ namespace SDL {
 		[CCode (cname="SDL_GetRelativeMouseState")]
 		public static uint32 get_relative_state(ref int x, ref int y);
 
-		[CCode (cname="SDL_WarpMouse")]
-		public static void warp_inwindow(SDL.Window window, int x, int y);
+		[CCode (cname="SDL_WarpMouseInWindow")]
+		public static void warp_mouse(SDL.Window window, int x, int y);
+
+		[CCode (cname="SDL_WarpMouseGlobal")]
+		public static void warp_mouse_global(int x, int y);
 
 		[CCode (cname="SDL_SetRelativeMouseMode")]
 		public static int set_relative_mode(bool enabled);
@@ -1952,6 +1955,21 @@ namespace SDL {
         [CCode (cname="SDL_CondWaitTimeout")]
         public int wait_timeout(SDL.Mutex mut, uint32 ms);
     }// Condition
+	
+	[CCode (cprefix="SDL_", cheader_filename="SDL2/SDL.h")]
+	[Compact]
+	public class Clipboard {
+        [CCode (cname="SDL_GetClipboardText")]
+        public static string get_text();
+		
+        [CCode (cname="SDL_SetClipboardText")]
+        public static int set_text(string text);
+		
+        [CCode (cname="SDL_HasClipboardText")]
+        public static bool has_text();
+	}// Clipboard
+	
+	
     
  
 }// SDL

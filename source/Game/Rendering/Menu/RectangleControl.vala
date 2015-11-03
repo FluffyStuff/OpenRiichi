@@ -28,7 +28,7 @@ public class RectangleControl : Control
 
     public override Size2 size { get { return _size; } }
 
-    public Color diffuse_color
+    public Color color
     {
         get { return rectangle.diffuse_color; }
         set { rectangle.diffuse_color = value; }

@@ -305,3 +305,27 @@ public class ServerMessageTenpaiPlayer : ServerMessage
 }
 
 public class ServerMessageDraw : ServerMessage {}
+
+public class ServerMessageAcceptJoin : ServerMessage {}
+
+public class ServerMessageMenuSlotAssign : ServerMessage
+{
+    public ServerMessageMenuSlotAssign(int slot, string name)
+    {
+        this.slot = slot;
+        this.name = name;
+    }
+
+    public int slot { get; protected set; }
+    public string name { get; protected set; }
+}
+
+public class ServerMessageMenuSlotClear : ServerMessage
+{
+    public ServerMessageMenuSlotClear(int slot)
+    {
+        this.slot = slot;
+    }
+
+    public int slot { get; protected set; }
+}

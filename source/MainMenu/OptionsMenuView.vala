@@ -5,6 +5,9 @@ public class OptionsMenuView : View2D
     private Options options = new Options.from_disk();
     private OptionItemControl shader_option;
     private OptionItemControl model_option;
+    private OptionItemControl aniso_option;
+    private OptionItemControl aliasing_option;
+    private OptionItemControl v_sync_option;
 
     public signal void apply_clicked();
     public signal void back_clicked();
@@ -18,19 +21,25 @@ public class OptionsMenuView : View2D
         label.inner_anchor = Vec2(0.5f, 1);
         add_control(label);
 
-        string[] choices = { "Low", "High" };
+        string[] quality_choices = { "Low", "High" };
+        string[] on_off_choices = { "Off", "On" };
 
         ArrayList<OptionItemControl> opts = new ArrayList<OptionItemControl>();
 
-        shader_option = new OptionItemControl("Shader quality", choices, (int)options.shader_quality);
+        shader_option = new OptionItemControl("Shader quality", quality_choices, (int)options.shader_quality);
         opts.add(shader_option);
-
-        model_option = new OptionItemControl("Model quality", choices, (int)options.model_quality);
+        model_option = new OptionItemControl("Model quality", quality_choices, (int)options.model_quality);
         opts.add(model_option);
+        aniso_option = new OptionItemControl("Anisotropic filtering", on_off_choices, (int)options.anisotropic_filtering);
+        opts.add(aniso_option);
+        aliasing_option = new OptionItemControl("Anti aliasing", on_off_choices, (int)options.anti_aliasing);
+        opts.add(aliasing_option);
+        v_sync_option = new OptionItemControl("V-sync", on_off_choices, (int)options.v_sync);
+        opts.add(v_sync_option);
 
         int padding = 50;
 
-        Size2 size = Size2(600, 100);
+        Size2 size = Size2(700, 70);
         float start = label.size.height + padding;
 
         for (int i = 0; i < opts.size; i++)
@@ -68,6 +77,9 @@ public class OptionsMenuView : View2D
     {
         options.shader_quality = (Options.QualityEnum)shader_option.index;
         options.model_quality = (Options.QualityEnum)model_option.index;
+        options.anisotropic_filtering = (Options.OnOffEnum)aniso_option.index;
+        options.anti_aliasing = (Options.OnOffEnum)aliasing_option.index;
+        options.v_sync = (Options.OnOffEnum)v_sync_option.index;
         options.save();
 
         apply_clicked();
