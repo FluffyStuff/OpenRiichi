@@ -867,6 +867,8 @@ namespace SDL {
 		[CCode (cname="SDL_TEXTEDITINGEVENT_TEXT_SIZE")]
 		public static const uint8 TEXT_SIZE;
 		
+		uint32 type;
+		uint32 timestamp;
 		uint32 windowID;
 		string text; //Or it would be better a string?
 		int32 start;

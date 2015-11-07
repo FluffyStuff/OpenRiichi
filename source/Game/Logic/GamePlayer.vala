@@ -1,5 +1,11 @@
-public class GamePlayer
+public class GamePlayer : Serializable
 {
-    public int ID { get; private set; }
-    public string name { get; private set; }
+    public GamePlayer(int ID, string name)
+    {
+        this.ID = ID;
+        this.name = name;
+    }
+
+    public int ID { get; protected set; }
+    public string name { get; protected set; }
 }

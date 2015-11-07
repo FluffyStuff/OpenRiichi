@@ -3,14 +3,9 @@ using Gee;
 public abstract class Bot : Object
 {
     private bool active = false;
-    protected ClientGameState state;
-
     private Mutex mutex = Mutex();
 
-    public Bot(string name)
-    {
-        this.name = name;
-    }
+    protected ClientGameState state;
 
     public void start(int player_ID, Wind round_wind, int dealer)
     {
@@ -156,6 +151,5 @@ public abstract class Bot : Object
     protected abstract void do_turn_decision();
     protected abstract void do_call_decision(ClientGameStatePlayer discarding_player, Tile tile);
     protected virtual void do_logic() {}
-
-    public string name { get; private set; }
+    public abstract string name { get; }
 }

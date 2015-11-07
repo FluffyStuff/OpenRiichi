@@ -89,6 +89,13 @@ public abstract class View : Object, IControl
         do_text_input(text);
     }
 
+    public void text_edit(TextEditArgs text)
+    {
+        for (int i = child_views.size - 1; i >= 0; i--)
+            child_views[i].text_edit(text);
+        do_text_edit(text);
+    }
+
     public void resize()
     {
         Rectangle prect = parent_rect;
@@ -139,6 +146,7 @@ public abstract class View : Object, IControl
     protected virtual void do_mouse_move(MouseMoveArgs mouse) { }
     protected virtual void do_key_press(KeyArgs key) { }
     protected virtual void do_text_input(TextInputArgs text) { }
+    protected virtual void do_text_edit(TextEditArgs text) { }
 
     protected IResourceStore store { get { return parent_window.store; } }
 

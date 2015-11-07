@@ -24,6 +24,7 @@ public class RectangleControl : Control
     public void set_size(Size2 size)
     {
         _size = size;
+        resize();
     }
 
     public override Size2 size { get { return _size; } }

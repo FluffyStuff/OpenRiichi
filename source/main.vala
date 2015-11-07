@@ -1,12 +1,10 @@
 public static int main(string[] args)
 {
     Environment environment = new Environment();
-    if (!environment.init())
+    if (!environment.init(2))
         return -1;
 
     //Threading.start1(start_game, environment);
-    SDL.GL.set_attribute(SDL.GLattr.MULTISAMPLEBUFFERS, 1);
-    SDL.GL.set_attribute(SDL.GLattr.MULTISAMPLESAMPLES, 4);
     start_game(environment);
 
     return 0;

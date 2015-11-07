@@ -328,7 +328,6 @@ class DataUInt
     {
         // Don't do this, so we maintain consistency over network
         //int bytes = (int)sizeof(int);
-
         int bytes = 4;
 
         int ret = 0;
@@ -348,12 +347,21 @@ class DataUInt
 
         return ret;
     }
+
+    public uint8[] get_data(int length)
+    {
+        uint8[] new_data = new uint8[length];
+        for (int i = 0; i < length; i++)
+            new_data[i] = data[index++];
+
+        return new_data;
+    }
 }
 
-public abstract class SerializableMessage : Object
+public abstract class Serializable : Object
 {
     // TODO: Secure against arbitrary code injections...
-    public static SerializableMessage? deserialize(uint8[] bytes)
+    public static Serializable? deserialize(uint8[] bytes)
     {
         DataUInt data = new DataUInt(bytes);
 
@@ -362,10 +370,10 @@ public abstract class SerializableMessage : Object
         int param_count = data.get_int();
 
         Type? type = Type.from_name(type_name);
-        if (!type.is_a(typeof(SerializableMessage)))
+        if (!type.is_a(typeof(Serializable)))
             return null;
 
-        Parameter[] params = new Parameter[param_count];
+        Parameter?[] params = new Parameter?[param_count];
         string[] names = new string[param_count];
 
         for (int i = 0; i < params.length; i++)
@@ -374,22 +382,22 @@ public abstract class SerializableMessage : Object
             string name = data.get_string(name_len);
             names[i] = name;
 
-            Value val = Value(typeof(string));
-            DataType data_type = (DataType)data.get_int();
+            bool has_value = true;
+            Value val = Value(typeof(int));
+            int t = data.get_int();
+            DataType data_type = (DataType)t;
 
             if (data_type == DataType.INT)
             {
                 val = Value(typeof(int));
                 int v = data.get_int();
                 val.set_int(v);
-                //print("(INT) %s: %d\n", name, v);
             }
             else if (data_type == DataType.BOOL)
             {
                 val = Value(typeof(bool));
                 bool b = (bool)data.get_int();
                 val.set_boolean(b);
-                //print("(BOL) %s: %d\n", name, (int)b);
             }
             else if (data_type == DataType.STRING)
             {
@@ -397,17 +405,50 @@ public abstract class SerializableMessage : Object
                 int len = data.get_int();
                 string str = data.get_string(len);
                 val.set_string(str);
-                //print("(STR) %s: %s\n", name, str);
             }
+            else if (data_type == DataType.SERIALIZABLE)
+            {
+                val = Value(typeof(Serializable));
+                int len = data.get_int();
 
-            params[i] = Parameter();
-            params[i].name = names[i];
-            params[i].value = val;
+                if (len != 0)
+                {
+                    uint8[] sub_data = data.get_data(len);
+                    Serializable sub_obj = deserialize(sub_data);
+                    val.set_object(sub_obj);
+                }
+                else
+                {
+                    Object? obj = null;
+                    val.set_object(obj);
+                }
+            }
+            else
+                has_value = false;
+
+            if (has_value)
+            {
+                params[i] = Parameter();
+                params[i].name = names[i];
+                params[i].value = val;
+            }
+            else
+                params[i] = null;
         }
 
-        Object obj = Object.newv(type, params);
+        int count = 0;
+        for (int i = 0; i < params.length; i++)
+            if (params[i] != null)
+                count++;
+        Parameter[] p = new Parameter[count];
+        count = 0;
+        for (int i = 0; i < params.length; i++)
+            if (params[i] != null)
+                p[count++] = params[i];
 
-        return (SerializableMessage)obj;
+        Object obj = Object.newv(type, p);
+
+        return (Serializable)obj;
     }
 
     public uint8[] serialize()
@@ -426,7 +467,6 @@ public abstract class SerializableMessage : Object
         {
             ParamSpec p = specs[i];
             name_data = UIntData.serialize_string(p.get_name());
-
             data.add_data(UIntData.serialize_int(name_data.length));
             data.add_data(name_data);
 
@@ -466,6 +506,33 @@ public abstract class SerializableMessage : Object
                 data.add_data(UIntData.serialize_int(str_data.length));
                 data.add_data(str_data);
             }
+            else if (p.value_type.is_a(typeof(Serializable)))
+            {
+                int type = (int)DataType.SERIALIZABLE;
+
+                Value val = Value(typeof(Serializable));
+                get_property(p.get_name(), ref val);
+                Serializable? obj = (Serializable?)val.get_object();
+
+                if (obj != null)
+                {
+                    uint8[] obj_data = obj.serialize();
+
+                    data.add_data(UIntData.serialize_int(type));
+                    data.add_data(UIntData.serialize_int(obj_data.length));
+                    data.add_data(obj_data);
+                }
+                else
+                {
+                    data.add_data(UIntData.serialize_int(type));
+                    data.add_data(UIntData.serialize_int(0));
+                }
+            }
+            else
+            {
+                int type = (int)DataType.UNKNOWN;
+                data.add_data(UIntData.serialize_int(type));
+            }
         }
 
         return data.get_data();
@@ -473,8 +540,56 @@ public abstract class SerializableMessage : Object
 
     private enum DataType
     {
+        UNKNOWN,
         INT,
         BOOL,
-        STRING
+        STRING,
+        SERIALIZABLE
     }
+}
+
+public class SerializableList<T> : Serializable
+{
+    public SerializableList(T[] objs)
+    {
+        SerializableListItem[] list = new SerializableListItem[objs.length];
+
+        for (int i = 0; i < objs.length; i++)
+            list[i] = new SerializableListItem((Serializable)objs[i]);
+        for (int i = 0; i < objs.length - 1; i++)
+            list[i].next = list[i + 1];
+
+        if (list.length > 0)
+            root = list[0];
+        else
+            root = null;
+    }
+
+    public T[] to_array()
+    {
+        ArrayList<Serializable> list = new ArrayList<Serializable>();
+
+        SerializableListItem? p = root;
+        while (p != null)
+        {
+            list.add(p.item);
+            p = p.next;
+        }
+
+        return (T[])list.to_array();
+    }
+
+    protected SerializableListItem? root { get; protected set; }
+}
+
+public class SerializableListItem : Serializable
+{
+    public SerializableListItem(Serializable item)
+    {
+        this.item = item;
+        next = null;
+    }
+
+    public Serializable item { get; protected set; }
+    public SerializableListItem? next { get; set; }
 }

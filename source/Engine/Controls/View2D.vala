@@ -66,6 +66,12 @@ public abstract class View2D : View
             control.text_input(text);
     }
 
+    protected override void do_text_edit(TextEditArgs text)
+    {
+        foreach (Control control in child_controls)
+            control.text_edit(text);
+    }
+
     protected virtual void on_resized() {}
     protected virtual void do_process_2D(DeltaArgs args) {}
     protected virtual void do_render_2D(RenderState state, RenderScene2D scene) {}

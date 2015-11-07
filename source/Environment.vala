@@ -5,15 +5,20 @@ public class Environment : Object
 {
     private bool initialized = false;
 
-    public bool init()
+    public bool init(int multisampling)
     {
         if (initialized)
             return true;
 
         if (SDL.init(SDL.InitFlag.EVERYTHING) < 0)
         	return false;
-        //SDL.GL.set_attribute(SDL.GLattr.MULTISAMPLEBUFFERS, 1);
-        //SDL.GL.set_attribute(SDL.GLattr.MULTISAMPLESAMPLES, 16);
+
+        if (multisampling > 0)
+        {
+            int s = (int)Math.pow(2, multisampling);
+            SDL.GL.set_attribute(SDL.GLattr.MULTISAMPLEBUFFERS, 1);
+            SDL.GL.set_attribute(SDL.GLattr.MULTISAMPLESAMPLES, s);
+        }
 
         initialized = true;
         return true;

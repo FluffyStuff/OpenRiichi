@@ -61,9 +61,13 @@ namespace GameServer
             game.game_chii.connect(game_chii);
             game.game_draw.connect(game_draw);
 
+            GamePlayer[] player_info = new GamePlayer[this.players.size];
+            for (int i = 0; i < this.players.size; i++)
+                player_info[i] = new GamePlayer(this.players[i].ID, this.players[i].server_player.name);
+
             for (int i = 0; i < this.players.size; i++)
             {
-                ServerMessageRoundStart start_message = new ServerMessageRoundStart(this.players[i].ID, round_wind, dealer, wall_index);
+                ServerMessageRoundStart start_message = new ServerMessageRoundStart(player_info, this.players[i].ID, round_wind, dealer, wall_index);
                 this.players[i].server_player.send_message(start_message);
             }
 

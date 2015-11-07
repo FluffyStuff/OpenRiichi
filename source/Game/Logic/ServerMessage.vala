@@ -60,15 +60,16 @@ public class ServerMessageParser
     }
 }
 
-public abstract class ServerMessage : SerializableMessage
+public abstract class ServerMessage : Serializable
 {
 
 }
 
 public class ServerMessageRoundStart : ServerMessage
 {
-    public ServerMessageRoundStart(int player_ID, Wind round_wind, int dealer, int wall_index)
+    public ServerMessageRoundStart(GamePlayer[] players, int player_ID, Wind round_wind, int dealer, int wall_index)
     {
+        this.player_list = new SerializableList<GamePlayer>(players);
         this.player_ID = player_ID;
         this.round_wind = (int)round_wind;
         this.dealer = dealer;
@@ -80,6 +81,12 @@ public class ServerMessageRoundStart : ServerMessage
         return (Wind)round_wind;
     }
 
+    public GamePlayer[] get_players()
+    {
+        return player_list.to_array();
+    }
+
+    public SerializableList<GamePlayer> player_list { get; protected set; }
     public int player_ID { get; protected set; }
     public int round_wind { get; protected set; }
     public int dealer { get; protected set; }

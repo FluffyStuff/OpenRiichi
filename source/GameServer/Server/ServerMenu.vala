@@ -18,6 +18,8 @@ namespace GameServer
             observers = new ArrayList<ServerPlayer>();
 
             parser.connect(client_game_start, typeof(ClientMessageMenuGameStart));
+            parser.connect(client_add_bot, typeof(ClientMessageMenuAddBot));
+            parser.connect(client_kick_player, typeof(ClientMessageMenuKickPlayer));
         }
 
         public void player_connected(ServerPlayer player)
@@ -57,15 +59,11 @@ namespace GameServer
         {
             mutex.lock();
 
-            player.disconnected.disconnect(player_disconnected);
-            player.receive_message.disconnect(message_received);
-            players.remove(player);
-
             for (int i = 0; i < slots.length; i++)
                 if (slots[i] == player)
                 {
-                    slots[i] = null;
-                    send_clear(i);
+                    kick_slot(i);
+                    break;
                 }
 
             mutex.unlock();
@@ -107,6 +105,59 @@ namespace GameServer
             }
 
             game_start(players, observers);
+        }
+
+        private void client_add_bot(ServerPlayer player, ClientMessage message)
+        {
+            if (player != host)
+                return;
+
+            var msg = (ClientMessageMenuAddBot)message;
+            string name = typeof(Bot).name();
+            name = name.substring(0, name.length - 3) + msg.name;
+            Type tn = typeof(NullBot);
+            Type? type = Type.from_name(name);
+
+            if (type == null || !type.is_a(typeof(Bot)))
+                return;
+
+            Object? obj = Object.newv(type, new Parameter[0]);
+            if (obj == null)
+                return;
+
+            Bot bot = (Bot)obj;
+            int slot = msg.slot;
+
+            ServerPlayer bot_player = new ServerComputerPlayer(bot);
+
+            players.add(bot_player);
+
+            kick_slot(msg.slot);
+            slots[slot] = bot_player;
+            send_assign(slot, bot_player);
+        }
+
+        private void client_kick_player(ServerPlayer player, ClientMessage message)
+        {
+            if (player != host)
+                return;
+
+            var kick = (ClientMessageMenuKickPlayer)message;
+            kick_slot(kick.slot);
+        }
+
+        private void kick_slot(int slot)
+        {
+            ServerPlayer? p = slots[slot];
+            if (p == null)
+                return;
+
+            p.disconnected.disconnect(player_disconnected);
+            p.receive_message.disconnect(message_received);
+            players.remove(p);
+            p.close();
+            send_clear(slot);
+            slots[slot] = null;
         }
 
         public ArrayList<ServerPlayer> players { get; private set; }

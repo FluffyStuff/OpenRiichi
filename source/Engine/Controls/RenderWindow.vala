@@ -102,9 +102,7 @@ public abstract class RenderWindow
             }
             else if(e.type == EventType.TEXTEDITING)
             {
-                /*print("Edit: " + e.edit.text + "\n");
-                print("Start: " + e.edit.start.to_string() + "\n");
-                print("Len: " + e.edit.length.to_string() + "\n");*/
+                main_view.text_edit(new TextEditArgs(e.edit.text, e.edit.start, e.edit.length));
             }
             else if (e.type == EventType.MOUSEMOTION)
             {

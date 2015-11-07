@@ -152,7 +152,7 @@ namespace GameServer
 
         private void parse_message(Connection connection, Message message)
         {
-            SerializableMessage? msg = SerializableMessage.deserialize(message.data);
+            Serializable? msg = Serializable.deserialize(message.data);
 
             if (msg == null || !msg.get_type().is_a(typeof(ClientMessage)))
             {

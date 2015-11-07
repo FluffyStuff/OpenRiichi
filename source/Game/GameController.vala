@@ -52,8 +52,7 @@ public class GameController
             if (message.get_type() == typeof(ServerMessageRoundStart))
             {
                 ServerMessageRoundStart start = (ServerMessageRoundStart)message;
-                GamePlayer[] players = null;
-                GameStartState state = new GameStartState(connection, players, start.player_ID, start.get_wind(), start.dealer, start.wall_index);
+                GameStartState state = new GameStartState(connection, start.get_players(), start.player_ID, start.get_wind(), start.dealer, start.wall_index);
 
                 create_game(state);
             }

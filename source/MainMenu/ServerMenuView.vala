@@ -3,25 +3,32 @@ using GameServer;
 public class ServerMenuView : View2D
 {
     private ServerController? server = null;
-    private IGameConnection? connection;
+    private IGameConnection? connection = null;
+    private string name;
     private bool host = false;
 
-    private ServerPlayerFieldView players[4];
+    private ServerPlayerFieldView[] players = new ServerPlayerFieldView[4];
     private GameMenuButton start_button;
 
     public signal void start(GameStartState state);
     public signal void back();
 
-    public ServerMenuView(IGameConnection? connection)
+    public ServerMenuView.create_server(string name)
     {
-        if (connection == null)
-            host = true;
-        else
-        {
-            this.connection = connection;
-            this.connection.disconnected.connect(disconnected);
-            this.connection.received_message.connect(received_message);
-        }
+        host = true;
+        this.name = name;
+    }
+
+    public ServerMenuView.join_server(IGameConnection? connection)
+    {
+        this.connection = connection;
+        this.connection.disconnected.connect(disconnected);
+        this.connection.received_message.connect(received_message);
+    }
+
+    ~ServerMenuView()
+    {
+        connection = null; // Fixes warnings because of reasons
     }
 
     private void start_server()
@@ -38,7 +45,7 @@ public class ServerMenuView : View2D
         connection.disconnected.connect(disconnected);
         connection.received_message.connect(received_message);
 
-        ServerHumanPlayer player = new ServerHumanPlayer(server_connection, "Fluffy");
+        ServerHumanPlayer player = new ServerHumanPlayer(server_connection, name);
         server.add_player(player);
 
         server.start_listening(1337);
@@ -75,15 +82,27 @@ public class ServerMenuView : View2D
 
         for (int i = 3; i >= 0; i--)
         {
-            ServerPlayerFieldView player = new ServerPlayerFieldView(host);
-            player.size = Size2(300, 40);
+            ServerPlayerFieldView player = new ServerPlayerFieldView(store, host, i);
+            player.set_size(Size2(300, 40));
             player.position = Vec2(0, -(i - 1.5f) * 60);
-            add_child(player);
+            player.kick.connect(kick_slot);
+            player.add_bot.connect(add_bot);
+            add_control(player);
             players[i] = player;
         }
 
         if (host)
             start_server();
+    }
+
+    private void kick_slot(int slot)
+    {
+        connection.send_message(new ClientMessageMenuKickPlayer(slot));
+    }
+
+    private void add_bot(string name, int slot)
+    {
+        connection.send_message(new ClientMessageMenuAddBot(name, slot));
     }
 
     private void start_clicked()
@@ -120,8 +139,7 @@ public class ServerMenuView : View2D
         connection.received_message.disconnect(received_message);
 
         ServerMessageRoundStart st = (ServerMessageRoundStart)message;
-        GamePlayer[] players = null;
-        GameStartState state = new GameStartState(connection, players, st.player_ID, st.get_wind(), st.dealer, st.wall_index);
+        GameStartState state = new GameStartState(connection, st.get_players(), st.player_ID, st.get_wind(), st.dealer, st.wall_index);
 
         start(state);
     }

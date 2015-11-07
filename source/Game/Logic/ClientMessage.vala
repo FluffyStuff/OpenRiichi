@@ -87,7 +87,7 @@ public class ClientMessageParser
     }
 }
 
-public abstract class ClientMessage : SerializableMessage
+public abstract class ClientMessage : Serializable
 {
 
 }
@@ -103,6 +103,28 @@ public class ClientMessageAuthenticate : ClientMessage
 }
 
 public class ClientMessageMenuGameStart : ClientMessage {}
+
+public class ClientMessageMenuAddBot : ClientMessage
+{
+    public ClientMessageMenuAddBot(string name, int slot)
+    {
+        this.name = name;
+        this.slot = slot;
+    }
+
+    public string name { get; protected set; }
+    public int slot { get; protected set; }
+}
+
+public class ClientMessageMenuKickPlayer : ClientMessage
+{
+    public ClientMessageMenuKickPlayer(int slot)
+    {
+        this.slot = slot;
+    }
+
+    public int slot { get; protected set; }
+}
 
 public class ClientMessageTileDiscard : ClientMessage
 {

@@ -4,6 +4,7 @@ using GameServer;
 class MainMenuView : View2D
 {
     private ServerMenuView server_view;
+    private ServerOptionsView server_options_view;
     private JoinMenuView join_view;
     private OptionsMenuView options_view;
 
@@ -18,7 +19,10 @@ class MainMenuView : View2D
     public MainMenuView()
     {
         // TODO: Fix class reflection bug...
-        typeof(SerializableMessage).class_ref();
+        typeof(Serializable).class_ref();
+        typeof(SerializableList).class_ref();
+        typeof(SerializableListItem).class_ref();
+        typeof(GamePlayer).class_ref();
         typeof(ServerMessage).class_ref();
         typeof(ServerMessageRoundStart).class_ref();
         typeof(ServerMessageAcceptJoin).class_ref();
@@ -54,10 +58,10 @@ class MainMenuView : View2D
     {
         clear_all();
 
-        server_view = new ServerMenuView(null);
-        server_view.start.connect(menu_game_start);
-        server_view.back.connect(server_back);
-        add_child(server_view);
+        server_options_view = new ServerOptionsView();
+        server_options_view.finished.connect(server_options_finished);
+        server_options_view.back.connect(server_options_back);
+        add_child(server_options_view);
     }
 
     private void press_join()
@@ -92,6 +96,13 @@ class MainMenuView : View2D
         show_main_menu();
     }
 
+    private void server_options_back()
+    {
+        remove_child(server_options_view);
+        server_options_view = null;
+        show_main_menu();
+    }
+
     private void join_back()
     {
         remove_child(join_view);
@@ -113,12 +124,23 @@ class MainMenuView : View2D
         show_main_menu();
     }
 
+    private void server_options_finished(string name)
+    {
+        remove_child(server_options_view);
+        server_options_view = null;
+
+        server_view = new ServerMenuView.create_server(name);
+        server_view.start.connect(menu_game_start);
+        server_view.back.connect(server_back);
+        add_child(server_view);
+    }
+
     private void joined_server(IGameConnection connection, string name)
     {
         remove_child(join_view);
         join_view = null;
 
-        server_view = new ServerMenuView(connection);
+        server_view = new ServerMenuView.join_server(connection);
         server_view.start.connect(menu_game_start);
         server_view.back.connect(server_back);
         add_child(server_view);
@@ -131,7 +153,7 @@ class MainMenuView : View2D
 
     public override void added()
     {
-        host_game_button = new GameMenuButton(store, "Create");
+        host_game_button = new GameMenuButton(store, "CreateServer");
         join_game_button = new GameMenuButton(store, "Join");
         options_button = new GameMenuButton(store, "Options");
         quit_button = new GameMenuButton(store, "Quit");

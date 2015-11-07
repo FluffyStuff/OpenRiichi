@@ -84,6 +84,21 @@ public class TextInputArgs
     public string text { get; private set; }
 }
 
+public class TextEditArgs
+{
+    public TextEditArgs(string text, int start, int length)
+    {
+        this.text = text;
+        this.start = start;
+        this.length = length;
+    }
+
+    public bool handled { get; set; }
+    public string text { get; private set; }
+    public int start { get; private set; }
+    public int length { get; private set; }
+}
+
 public class DeltaArgs
 {
     public DeltaArgs(float time, float delta)

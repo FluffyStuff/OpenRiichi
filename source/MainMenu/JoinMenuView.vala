@@ -33,7 +33,6 @@ public class JoinMenuView : View2D
 
         name_text = new TextInputView(store, "Player name");
         name_text.position = Vec2(0, -padding);
-        name_text.text_changed.connect(name_changed);
         add_control(name_text);
 
         join_button = new GameMenuButton(store, "Join");
@@ -50,6 +49,8 @@ public class JoinMenuView : View2D
         back_button.position = Vec2(padding, padding);
         back_button.clicked.connect(back_clicked);
         add_control(back_button);
+
+        name_text.text_changed.connect(name_changed);
     }
 
     private void name_changed()

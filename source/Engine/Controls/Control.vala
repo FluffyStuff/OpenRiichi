@@ -23,8 +23,10 @@ public abstract class Control : IControl
     protected virtual void on_mouse_down(Vec2 position) {}
     protected virtual void on_mouse_up(Vec2 position) {}
     protected virtual void on_focus_lost() {}
+    protected virtual void on_child_focus_lost() {}
     protected virtual void on_key_press(KeyArgs key) {}
     protected virtual void on_text_input(TextInputArgs text) {}
+    protected virtual void on_text_edit(TextEditArgs text) {}
     public signal void clicked(Vec2 position);
 
     protected Control()
@@ -104,6 +106,9 @@ public abstract class Control : IControl
 
     public void mouse_move(MouseMoveArgs mouse)
     {
+        for (int i = child_controls.size - 1; i >= 0; i--)
+            child_controls[i].mouse_move(mouse);
+
         if (mouse.handled || !visible || !selectable)
         {
             hovering = false;
@@ -116,21 +121,36 @@ public abstract class Control : IControl
             return;
         }
 
-        mouse.handled = true;
-        hovering = true;
+        //mouse.handled = true;
 
         if (enabled)
+        {
             mouse.cursor_type = cursor_type;
+            hovering = true;
+        }
 
         on_mouse_move(Vec2(mouse.position.x - rect.x, mouse.position.y - rect.y));
     }
 
     public void mouse_event(MouseEventArgs mouse)
     {
+        bool child_click = !mouse.handled;
+
+        bool handle = false;
+        for (int i = child_controls.size - 1; i >= 0; i--)
+        {
+            child_controls[i].mouse_event(mouse);
+            if (child_click && mouse.handled)
+                handle = true;
+        }
+
+        if (!child_click || !handle)
+            on_child_focus_lost();
+
         if (mouse.handled || !visible || !selectable)
         {
             mouse_down = false;
-            if (focused)
+            if (focused && mouse.down)
                 focus_lost();
             return;
         }
@@ -138,7 +158,7 @@ public abstract class Control : IControl
         if (!hover_check(mouse.position))
         {
             mouse_down = false;
-            if (focused)
+            if (focused && mouse.down)
                 focus_lost();
             return;
         }
@@ -184,6 +204,16 @@ public abstract class Control : IControl
         text.handled = true;
 
         on_text_input(text);
+    }
+
+    public void text_edit(TextEditArgs text)
+    {
+        if (text.handled || !visible || !focused)
+            return;
+
+        text.handled = true;
+
+        on_text_edit(text);
     }
 
     private void click(Vec2 position)
