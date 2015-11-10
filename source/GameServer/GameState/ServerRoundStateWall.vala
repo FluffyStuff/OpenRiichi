@@ -2,7 +2,7 @@ using Gee;
 
 namespace GameServer
 {
-    class GameStateWall
+    class ServerRoundStateWall
     {
         private Tile[] tiles = new Tile[136];
 
@@ -10,7 +10,7 @@ namespace GameServer
         private ArrayList<Tile> dead_wall_tiles = new ArrayList<Tile>();
         private int dora_index = 4;
 
-        public GameStateWall(int dealer, int start_index, Rand rnd)
+        public ServerRoundStateWall(int dealer, int start_index, Rand rnd)
         {
             doras = new ArrayList<Tile>();
             ura_doras = new ArrayList<Tile>();

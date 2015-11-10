@@ -1,25 +1,25 @@
 using Gee;
 
-public class ClientGameState
+public class ClientRoundState
 {
     private Tile[] tiles = new Tile[136];
-    private int player_ID;
+    private int player_index;
     private Wind round_wind;
     private int dealer;
-    private ClientGameStatePlayer[] players = new ClientGameStatePlayer[4];
-    private ClientGameStateWall wall = new ClientGameStateWall();
+    private ClientRoundStatePlayer[] players = new ClientRoundStatePlayer[4];
+    private ClientRoundStateWall wall = new ClientRoundStateWall();
 
     private bool flow_interrupted = false;
 
-    public ClientGameState(int player_ID, Wind round_wind, int dealer)
+    public ClientRoundState(int player_index, Wind round_wind, int dealer)
     {
-        this.player_ID = player_ID;
+        this.player_index = player_index;
         this.round_wind = round_wind;
         this.dealer = dealer;
         discard_tile = null;
 
         for (int i = 0; i < players.length; i++)
-            players[i] = new ClientGameStatePlayer(i, i == dealer, (Wind)((i - dealer + 4) % 4));
+            players[i] = new ClientRoundStatePlayer(i, i == dealer, (Wind)((i - dealer + 4) % 4));
 
         for (int i = 0; i < tiles.length; i++)
             tiles[i] = new Tile(i, TileType.BLANK, false);
@@ -32,17 +32,17 @@ public class ClientGameState
         t.dora = tile.dora;
     }
 
-    public void tile_draw(int player_ID, int tile_ID)
+    public void tile_draw(int player_index, int tile_ID)
     {
         Tile tile = tiles[tile_ID];
         wall.draw_tile(tile);
-        players[player_ID].draw(tile);
+        players[player_index].draw(tile);
     }
 
-    public void tile_discard(int player_ID, int tile_ID)
+    public void tile_discard(int player_index, int tile_ID)
     {
         Tile tile = tiles[tile_ID];
-        ClientGameStatePlayer player = players[player_ID];
+        ClientRoundStatePlayer player = players[player_index];
         player.discard(tile);
 
         discard_tile = tile;
@@ -61,30 +61,30 @@ public class ClientGameState
         wall.flip_ura_dora(tile);
     }
 
-    public void riichi(int player_ID)
+    public void riichi(int player_index)
     {
-        ClientGameStatePlayer player = get_player(player_ID);
+        ClientRoundStatePlayer player = get_player(player_index);
         player.do_riichi();
     }
 
-    public void late_kan(int player_ID, int tile_ID)
+    public void late_kan(int player_index, int tile_ID)
     {
-        ClientGameStatePlayer player = get_player(player_ID);
+        ClientRoundStatePlayer player = get_player(player_index);
         player.do_late_kan(get_tile(tile_ID));
     }
 
-    public void closed_kan(int player_ID, TileType tile_type)
+    public void closed_kan(int player_index, TileType tile_type)
     {
-        ClientGameStatePlayer player = get_player(player_ID);
+        ClientRoundStatePlayer player = get_player(player_index);
         player.do_closed_kan(tile_type);
 
         interrupt_flow(); // TODO: Find out whether this is correct
     }
 
-    public void open_kan(int player_ID, int discarding_player_ID, int tile_ID, int tile_1_ID, int tile_2_ID, int tile_3_ID)
+    public void open_kan(int player_index, int discarding_player_index, int tile_ID, int tile_1_ID, int tile_2_ID, int tile_3_ID)
     {
-        ClientGameStatePlayer player = get_player(player_ID);
-        ClientGameStatePlayer discarder = get_player(discarding_player_ID);
+        ClientRoundStatePlayer player = get_player(player_index);
+        ClientRoundStatePlayer discarder = get_player(discarding_player_index);
 
         Tile tile = get_tile(tile_ID);
         Tile tile_1 = get_tile(tile_1_ID);
@@ -97,10 +97,10 @@ public class ClientGameState
         interrupt_flow();
     }
 
-    public void pon(int player_ID, int discarding_player_ID, int tile_ID, int tile_1_ID, int tile_2_ID)
+    public void pon(int player_index, int discarding_player_index, int tile_ID, int tile_1_ID, int tile_2_ID)
     {
-        ClientGameStatePlayer player = get_player(player_ID);
-        ClientGameStatePlayer discarder = get_player(discarding_player_ID);
+        ClientRoundStatePlayer player = get_player(player_index);
+        ClientRoundStatePlayer discarder = get_player(discarding_player_index);
 
         Tile tile = get_tile(tile_ID);
         Tile tile_1 = get_tile(tile_1_ID);
@@ -112,10 +112,10 @@ public class ClientGameState
         interrupt_flow();
     }
 
-    public void chii(int player_ID, int discarding_player_ID, int tile_ID, int tile_1_ID, int tile_2_ID)
+    public void chii(int player_index, int discarding_player_index, int tile_ID, int tile_1_ID, int tile_2_ID)
     {
-        ClientGameStatePlayer player = get_player(player_ID);
-        ClientGameStatePlayer discarder = get_player(discarding_player_ID);
+        ClientRoundStatePlayer player = get_player(player_index);
+        ClientRoundStatePlayer discarder = get_player(discarding_player_index);
 
         Tile tile = get_tile(tile_ID);
         Tile tile_1 = get_tile(tile_1_ID);
@@ -127,39 +127,39 @@ public class ClientGameState
         interrupt_flow();
     }
 
-    public Scoring get_ron_score(ClientGameStatePlayer player, Tile tile)
+    public Scoring get_ron_score(ClientRoundStatePlayer player, Tile tile)
     {
         return player.get_ron_score(create_context(true, tile));
     }
 
-    public Scoring get_tsumo_score(ClientGameStatePlayer player)
+    public Scoring get_tsumo_score(ClientRoundStatePlayer player)
     {
         return player.get_tsumo_score(create_context(false, player.last_drawn_tile));
     }
 
-    public bool can_ron(ClientGameStatePlayer player, Tile tile)
+    public bool can_ron(ClientRoundStatePlayer player, Tile tile)
     {
         return player.can_ron(create_context(true, tile));
     }
 
-    public bool can_tsumo(ClientGameStatePlayer player)
+    public bool can_tsumo(ClientRoundStatePlayer player)
     {
         return player.can_tsumo(create_context(false, player.last_drawn_tile));
     }
 
-    public bool can_chii(Tile tile, ClientGameStatePlayer player, ClientGameStatePlayer discard_player)
+    public bool can_chii(Tile tile, ClientRoundStatePlayer player, ClientRoundStatePlayer discard_player)
     {
         return ((discard_player.seat + 1) % 4 == player.seat) && TileRules.can_chii(player.hand, tile);
     }
 
-    public ArrayList<Tile> get_tenpai_tiles(ClientGameStatePlayer player)
+    public ArrayList<Tile> get_tenpai_tiles(ClientRoundStatePlayer player)
     {
         return TileRules.tenpai_tiles(player.hand);
     }
 
-    public ClientGameStatePlayer get_player(int player_ID)
+    public ClientRoundStatePlayer get_player(int player_index)
     {
-        return players[player_ID];
+        return players[player_index];
     }
 
     public Tile get_tile(int tile_ID)
@@ -169,18 +169,18 @@ public class ClientGameState
 
     private void interrupt_flow()
     {
-        foreach (ClientGameStatePlayer player in players)
+        foreach (ClientRoundStatePlayer player in players)
             player.flow_interrupted();
         flow_interrupted = true;
     }
 
-    private GameStateContext create_context(bool ron, Tile win_tile)
+    private RoundStateContext create_context(bool ron, Tile win_tile)
     {
         bool last_tile = wall.empty;
         bool rinshan = false;
         bool chankan = false;
 
-        return new GameStateContext
+        return new RoundStateContext
         (
             round_wind,
             wall.dora,
@@ -194,13 +194,13 @@ public class ClientGameState
         );
     }
 
-    public ClientGameStatePlayer self { get { return players[player_ID]; } }
+    public ClientRoundStatePlayer self { get { return players[player_index]; } }
 
     public Tile? discard_tile { get; private set; }
-    public ClientGameStatePlayer? discard_player { get; private set; }
+    public ClientRoundStatePlayer? discard_player { get; private set; }
 }
 
-public class ClientGameStatePlayer
+public class ClientRoundStatePlayer
 {
     private bool double_riichi = true;
     private bool do_riichi_discard = false;
@@ -209,14 +209,14 @@ public class ClientGameStatePlayer
     private Wind wind;
     private bool tiles_called_on = false;
 
-    public ClientGameStatePlayer(int seat, bool dealer, Wind wind)
+    public ClientRoundStatePlayer(int seat, bool dealer, Wind wind)
     {
         this.seat = seat;
         this.dealer = dealer;
         this.wind = wind;
         hand = new ArrayList<Tile>();
         pond = new ArrayList<Tile>();
-        calls = new ArrayList<GameStateCall>();
+        calls = new ArrayList<RoundStateCall>();
         in_riichi = false;
     }
 
@@ -275,9 +275,9 @@ public class ClientGameStatePlayer
         ArrayList<Tile> tiles = new ArrayList<Tile>();
         tiles.add(tile);
 
-        foreach (GameStateCall call in calls)
+        foreach (RoundStateCall call in calls)
         {
-            if (call.call_type == GameStateCall.CallType.PON)
+            if (call.call_type == RoundStateCall.CallType.PON)
                 if (call.tiles[0].tile_type == tile.tile_type)
                 {
                     calls.remove(call);
@@ -286,7 +286,7 @@ public class ClientGameStatePlayer
                 }
         }
 
-        calls.add(new GameStateCall(GameStateCall.CallType.LATE_KAN, tiles));
+        calls.add(new RoundStateCall(RoundStateCall.CallType.LATE_KAN, tiles));
     }
 
     public void do_closed_kan(TileType type)
@@ -296,7 +296,7 @@ public class ClientGameStatePlayer
             if (hand[i].tile_type == type)
                 tiles.add(hand.remove_at(i--));
 
-        calls.add(new GameStateCall(GameStateCall.CallType.CLOSED_KAN, tiles));
+        calls.add(new RoundStateCall(RoundStateCall.CallType.CLOSED_KAN, tiles));
     }
 
     public void do_open_kan(Tile discard_tile, Tile tile_1, Tile tile_2, Tile tile_3)
@@ -311,7 +311,7 @@ public class ClientGameStatePlayer
         tiles.add(tile_2);
         tiles.add(tile_3);
 
-        calls.add(new GameStateCall(GameStateCall.CallType.OPEN_KAN, tiles));
+        calls.add(new RoundStateCall(RoundStateCall.CallType.OPEN_KAN, tiles));
     }
 
     public void do_pon(Tile discard_tile, Tile tile_1, Tile tile_2)
@@ -324,7 +324,7 @@ public class ClientGameStatePlayer
         tiles.add(tile_1);
         tiles.add(tile_2);
 
-        calls.add(new GameStateCall(GameStateCall.CallType.PON, tiles));
+        calls.add(new RoundStateCall(RoundStateCall.CallType.PON, tiles));
     }
 
     public void do_chii(Tile discard_tile, Tile tile_1, Tile tile_2)
@@ -337,7 +337,7 @@ public class ClientGameStatePlayer
         tiles.add(tile_1);
         tiles.add(tile_2);
 
-        calls.add(new GameStateCall(GameStateCall.CallType.CHII, tiles));
+        calls.add(new RoundStateCall(RoundStateCall.CallType.CHII, tiles));
     }
 
     public ArrayList<Tile> get_late_kan_tiles(Tile tile)
@@ -346,9 +346,9 @@ public class ClientGameStatePlayer
 
         for (int i = 0; i < calls.size; i++)
         {
-            GameStateCall call = calls[i];
+            RoundStateCall call = calls[i];
 
-            if (call.call_type == GameStateCall.CallType.PON)
+            if (call.call_type == RoundStateCall.CallType.PON)
             {
                 if (call.tiles[0].tile_type == tile.tile_type)
                 {
@@ -361,22 +361,22 @@ public class ClientGameStatePlayer
         return tiles;
     }
 
-    public Scoring get_ron_score(GameStateContext context)
+    public Scoring get_ron_score(RoundStateContext context)
     {
         return TileRules.get_score(create_context(false), context);
     }
 
-    public Scoring get_tsumo_score(GameStateContext context)
+    public Scoring get_tsumo_score(RoundStateContext context)
     {
         return TileRules.get_score(create_context(true), context);
     }
 
-    public bool can_ron(GameStateContext context)
+    public bool can_ron(RoundStateContext context)
     {
         return !TileRules.in_furiten(hand, pond) && TileRules.can_ron(create_context(false), context);
     }
 
-    public bool can_tsumo(GameStateContext context)
+    public bool can_tsumo(RoundStateContext context)
     {
         return TileRules.can_tsumo(create_context(true), context);
     }
@@ -386,8 +386,8 @@ public class ClientGameStatePlayer
         if (in_riichi)
             return false;
 
-        foreach (GameStateCall call in calls)
-            if (call.call_type != GameStateCall.CallType.CLOSED_KAN)
+        foreach (RoundStateCall call in calls)
+            if (call.call_type != RoundStateCall.CallType.CLOSED_KAN)
                 return false;
 
         return TileRules.tenpai_tiles(hand).size > 0;
@@ -434,16 +434,16 @@ public class ClientGameStatePlayer
     public int seat { get; private set; }
     public ArrayList<Tile> hand { get; private set; }
     public ArrayList<Tile> pond { get; private set; }
-    public ArrayList<GameStateCall> calls { get; private set; }
+    public ArrayList<RoundStateCall> calls { get; private set; }
     public bool in_riichi { get; private set; }
     public Tile? last_drawn_tile { get; private set; }
 }
 
-public class ClientGameStateWall
+public class ClientRoundStateWall
 {
     private int tile_count = 136;
 
-    public ClientGameStateWall()
+    public ClientRoundStateWall()
     {
         dora = new ArrayList<Tile>();
         ura_dora = new ArrayList<Tile>();

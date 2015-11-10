@@ -66,7 +66,7 @@ namespace GameServer
             menu.player_connected(player);
         }
 
-        private void game_start()
+        private void game_start(GameStartInfo info)
         {
             mutex.lock();
 
@@ -96,20 +96,21 @@ namespace GameServer
             menu = null;
 
             ref(); // Keep alive until graceful shutdown
-            Threading.start2(server_worker, players, observers);
+            Threading.start3(server_worker, players, observers, info);
 
             mutex.unlock();
         }
 
-        private void server_worker(Object players_obj, Object observers_obj)
+        private void server_worker(Object players_obj, Object observers_obj, Object start_info_obj)
         {
             ArrayList<ServerPlayer> players = players_obj as ArrayList<ServerPlayer>;
             ArrayList<ServerPlayer> observers = observers_obj as ArrayList<ServerPlayer>;
+            GameStartInfo info = (GameStartInfo)start_info_obj;
 
-            server = new Server(players, new Rand());
+            server = new Server(players, observers, new Rand(), info);
             Timer timer = new Timer();
 
-            while (!finished)
+            while (!finished && !server.finished)
             {
                 process_messages();
                 server.process((float)timer.elapsed());
@@ -119,6 +120,11 @@ namespace GameServer
             die(players, observers);
 
             unref(); // Allow graceful deallocation
+        }
+
+        private void sleep()
+        {
+            Thread.usleep(10000); // Server is not cpu intensive at all (can save cycles)
         }
 
         private void process_messages()
@@ -136,11 +142,6 @@ namespace GameServer
         private void player_disconnected(ServerPlayer player)
         {
             finished = true;
-        }
-
-        private void sleep()
-        {
-            Thread.usleep(10000); // Server is not cpu intensive at all (can save cycles)
         }
 
         private void die(ArrayList<ServerPlayer> players, ArrayList<ServerPlayer> observers)

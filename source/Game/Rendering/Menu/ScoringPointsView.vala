@@ -2,11 +2,11 @@ using Gee;
 
 public class ScoringPointsView : View2D
 {
-    private Scoring score;
-    private ScoringHandView hand;
+    private RoundScoreState score;
+    private ScoringHandView? hand = null;
     private ArrayList<LabelControl> labels = new ArrayList<LabelControl>();
 
-    public ScoringPointsView(Scoring score)
+    public ScoringPointsView(RoundScoreState score)
     {
         base();
 
@@ -16,20 +16,46 @@ public class ScoringPointsView : View2D
 
     public override void added()
     {
+        bool draw = false;
         string score_text;
-        if (score.ron)
+
+        if (score.result.result == RoundFinishResult.RoundResultEnum.RON)
+        {
             score_text = "Ron";
-        else
+            if (score.result.score.dealer)
+                score_text = "Dealer " + score_text;
+        }
+        else if (score.result.result == RoundFinishResult.RoundResultEnum.TSUMO)
+        {
             score_text = "Tsumo";
+            if (score.result.score.dealer)
+                score_text = "Dealer " + score_text;
+        }
+        else
+        {
+            score_text = "Draw";
+            draw = true;
+        }
+
+        Scoring scoring = score.result.score;
 
         LabelControl score_label = new LabelControl(store);
         score_label.text = score_text;
+        score_label.position = Vec2(0, 0);
+
+        if (draw)
+        {
+            score_label.inner_anchor = Size2(0.5f, 0.5f);
+            score_label.outer_anchor = Size2(0.5f, 0.5f);
+            add_control(score_label);
+            return;
+        }
+
         score_label.inner_anchor = Size2(0.5f, 1);
         score_label.outer_anchor = Size2(0.5f, 1);
-        score_label.position = Vec2(0, 0);
         labels.add(score_label);
 
-        hand = new ScoringHandView(score);
+        hand = new ScoringHandView(scoring);
         add_child(hand);
         hand.outer_anchor = Vec2(0.5f, 1);
         hand.size = Size2(size.width, 80);
@@ -41,7 +67,7 @@ public class ScoringPointsView : View2D
         int h = 0;
         float start = hand.size.height / 2 - hand.position.y;
 
-        foreach (Yaku yaku in score.yaku)
+        foreach (Yaku yaku in scoring.yaku)
         {
             LabelControl name = new LabelControl(store);
             name.text = yaku_to_string(yaku);
@@ -71,19 +97,19 @@ public class ScoringPointsView : View2D
 
         string points;
 
-        if (score.ron)
-            points = score.ron_points.to_string();
+        if (scoring.ron)
+            points = scoring.ron_points.to_string();
         else
         {
-            if (score.dealer)
-                points = score.tsumo_points_higher.to_string();
+            if (scoring.dealer)
+                points = "3 * " + scoring.tsumo_points_higher.to_string();
             else
-                points = score.tsumo_points_lower.to_string() + "/" + score.tsumo_points_higher.to_string();
+                points = scoring.tsumo_points_lower.to_string() + "/" + scoring.tsumo_points_higher.to_string();
         }
 
         string name = "";
 
-        switch (score.score_type)
+        switch (scoring.score_type)
         {
         case Scoring.ScoreType.MANGAN:
             name = "Mangan";
@@ -113,7 +139,11 @@ public class ScoringPointsView : View2D
         }
 
         if (name != "")
+        {
+            if (scoring.dealer)
+                name = "Dealer " + name;
             name += " - ";
+        }
 
         LabelControl points_label = new LabelControl(store);
         points_label.text = name + points + " points";
@@ -145,7 +175,7 @@ public class ScoringPointsView : View2D
 
     public override void do_process(DeltaArgs delta)
     {
-        hand.size = Size2(size.width, hand.size.height);
-        //hand.size = Size2(parent_window.size.width, parent_window.size.height);
+        if (hand != null)
+            hand.size = Size2(size.width, hand.size.height);
     }
 }

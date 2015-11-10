@@ -4,26 +4,26 @@ public class TileRules
 {
     private TileRules(){} // Static class
 
-    public static Scoring get_score(PlayerStateContext player, GameStateContext game)
+    public static Scoring get_score(PlayerStateContext player, RoundStateContext round)
     {
-        return calculate_yaku(player, game, false);
+        return calculate_yaku(player, round, false);
     }
 
-    public static bool can_ron(PlayerStateContext player, GameStateContext game)
+    public static bool can_ron(PlayerStateContext player, RoundStateContext round)
     {
-        return calculate_yaku(player, game, true).valid;
+        return calculate_yaku(player, round, true).valid;
     }
 
-    public static bool can_tsumo(PlayerStateContext player, GameStateContext game)
+    public static bool can_tsumo(PlayerStateContext player, RoundStateContext round)
     {
-        return calculate_yaku(player, game, true).valid;
+        return calculate_yaku(player, round, true).valid;
     }
 
-    private static Scoring calculate_yaku(PlayerStateContext player, GameStateContext game, bool early_return)
+    private static Scoring calculate_yaku(PlayerStateContext player, RoundStateContext round, bool early_return)
     {
         ArrayList<Tile> hand = new ArrayList<Tile>();
         hand.add_all(player.hand);
-        hand.add(game.win_tile);
+        hand.add(round.win_tile);
 
         ArrayList<HandReading> readings = hand_readings(hand, false, false);
         if (readings.size == 0)
@@ -31,13 +31,13 @@ public class TileRules
 
         ArrayList<TileMeld> call_melds = new ArrayList<TileMeld>();
 
-        foreach (GameStateCall call in player.calls)
+        foreach (RoundStateCall call in player.calls)
         {
-            if (call.call_type == GameStateCall.CallType.CHII || call.call_type == GameStateCall.CallType.PON)
+            if (call.call_type == RoundStateCall.CallType.CHII || call.call_type == RoundStateCall.CallType.PON)
                 call_melds.add(new TileMeld(call.tiles[0], call.tiles[1], call.tiles[2], false));
-            else if (call.call_type == GameStateCall.CallType.OPEN_KAN || call.call_type == GameStateCall.CallType.LATE_KAN)
+            else if (call.call_type == RoundStateCall.CallType.OPEN_KAN || call.call_type == RoundStateCall.CallType.LATE_KAN)
                 call_melds.add(new TileMeld.kan(call.tiles[0], call.tiles[1], call.tiles[2], call.tiles[3], false));
-            else if (call.call_type == GameStateCall.CallType.CLOSED_KAN)
+            else if (call.call_type == RoundStateCall.CallType.CLOSED_KAN)
                 call_melds.add(new TileMeld.kan(call.tiles[0], call.tiles[1], call.tiles[2], call.tiles[3], true));
         }
 
@@ -48,8 +48,8 @@ public class TileRules
             foreach (TileMeld meld in call_melds)
                 reading.add_meld(meld);
 
-            ArrayList<Yaku> yaku = Yaku.get_yaku(player, game, reading);
-            Scoring score = new Scoring(game, player, reading, yaku);
+            ArrayList<Yaku> yaku = Yaku.get_yaku(player, round, reading);
+            Scoring score = new Scoring(round, player, reading, yaku);
 
             if (top == null || score.total_points > top.total_points)
                 top = score;
@@ -58,10 +58,10 @@ public class TileRules
         return top;
     }
 
-    public static bool can_late_kan(ArrayList<Tile> hand, ArrayList<GameStateCall> calls)
+    public static bool can_late_kan(ArrayList<Tile> hand, ArrayList<RoundStateCall> calls)
     {
-        foreach (GameStateCall call in calls)
-            if (call.call_type == GameStateCall.CallType.PON)
+        foreach (RoundStateCall call in calls)
+            if (call.call_type == RoundStateCall.CallType.PON)
                 foreach (Tile tile in hand)
                     if (tile.tile_type == call.tiles[0].tile_type)
                         return true;
@@ -112,12 +112,12 @@ public class TileRules
         return get_chii_groups(hand, tile).size > 0;
     }
 
-    public static ArrayList<Tile> get_late_kan_tiles(ArrayList<Tile> hand, ArrayList<GameStateCall> calls)
+    public static ArrayList<Tile> get_late_kan_tiles(ArrayList<Tile> hand, ArrayList<RoundStateCall> calls)
     {
         ArrayList<Tile> tiles = new ArrayList<Tile>();
 
-        foreach (GameStateCall call in calls)
-            if (call.call_type == GameStateCall.CallType.PON)
+        foreach (RoundStateCall call in calls)
+            if (call.call_type == RoundStateCall.CallType.PON)
                 foreach (Tile tile in hand)
                     if (tile.tile_type == call.tiles[0].tile_type)
                     {
@@ -272,7 +272,7 @@ public class TileRules
         return false;
     }
 
-    public static bool winning_hand(ArrayList<Tile> hand)//, ArrayList<GameStateCall> calls)
+    public static bool winning_hand(ArrayList<Tile> hand)//, ArrayList<RoundStateCall> calls)
     {
         return hand_readings(hand, false, true).size > 0;
     }
@@ -483,9 +483,9 @@ public class TileRules
     }
 }
 
-public class GameStateCall
+public class RoundStateCall
 {
-    public GameStateCall(CallType type, ArrayList<Tile> tiles)
+    public RoundStateCall(CallType type, ArrayList<Tile> tiles)
     {
         call_type = type;
         this.tiles = tiles;
@@ -504,9 +504,9 @@ public class GameStateCall
     }
 }
 
-public class GameStateContext
+public class RoundStateContext
 {
-    public GameStateContext
+    public RoundStateContext
     (
         Wind round_wind,
         ArrayList<Tile> dora,
@@ -548,7 +548,7 @@ public class PlayerStateContext
     (
         ArrayList<Tile> hand, // Without the winning tile
         ArrayList<Tile> pond,
-        ArrayList<GameStateCall> calls,
+        ArrayList<RoundStateCall> calls,
         Wind wind,
         bool dealer,
         bool in_riichi,
@@ -570,7 +570,7 @@ public class PlayerStateContext
 
     public ArrayList<Tile> hand { get; private set; }
     public ArrayList<Tile> pond { get; private set; }
-    public ArrayList<GameStateCall> calls { get; private set; }
+    public ArrayList<RoundStateCall> calls { get; private set; }
     public Wind wind { get; private set; }
     public bool dealer { get; private set; }
     public bool in_riichi { get; private set; }
@@ -712,14 +712,14 @@ public class TilePair
 
 public class Scoring
 {
-    public Scoring(GameStateContext game, PlayerStateContext player, HandReading hand, ArrayList<Yaku> yaku)
+    public Scoring(RoundStateContext round, PlayerStateContext player, HandReading hand, ArrayList<Yaku> yaku)
     {
         valid = true;
         this.hand = hand;
-        this.game = game;
+        this.round = round;
         this.player = player;
         this.yaku = yaku;
-        ron = game.ron;
+        ron = round.ron;
         dealer = player.dealer;
         calculate_fu();
         tsumo_points_lower = 0;
@@ -747,12 +747,12 @@ public class Scoring
 
         foreach (TileMeld meld in hand.melds)
         {
-            foreach (Tile d in game.dora)
+            foreach (Tile d in round.dora)
                 if (meld.is_kan && meld[0].tile_type == d.dora_indicator())
                     dora++;
             if (riichi)
             {
-                foreach (Tile d in game.ura_dora)
+                foreach (Tile d in round.ura_dora)
                     if (meld.is_kan && meld[0].tile_type == d.dora_indicator())
                         ura_dora++;
             }
@@ -760,12 +760,12 @@ public class Scoring
 
         foreach (Tile tile in hand.tiles)
         {
-            foreach (Tile d in game.dora)
+            foreach (Tile d in round.dora)
                 if (tile.tile_type == d.dora_indicator())
                     dora++;
             if (riichi)
             {
-                foreach (Tile d in game.ura_dora)
+                foreach (Tile d in round.ura_dora)
                     if (tile.tile_type == d.dora_indicator())
                         ura_dora++;
             }
@@ -846,7 +846,7 @@ public class Scoring
     {
         valid = false;
         hand = null;
-        game = null;
+        round = null;
         player = null;
         yaku = null;
         ron = false;
@@ -897,7 +897,7 @@ public class Scoring
         fu = 0;
 
         WaitType wait = WaitType.NONE;
-        Tile win_tile = game.win_tile;
+        Tile win_tile = round.win_tile;
 
         foreach (TileMeld meld in hand.melds)
         {
@@ -908,7 +908,7 @@ public class Scoring
                     f *= 2;
                 if (meld.is_kan)
                     f *= 4;
-                if (meld[0].is_dragon_tile() || meld[0].is_wind(game.round_wind) || meld[0].is_wind(player.wind))
+                if (meld[0].is_dragon_tile() || meld[0].is_wind(round.round_wind) || meld[0].is_wind(player.wind))
                     f *= 2;
 
                 fu += f;
@@ -940,7 +940,7 @@ public class Scoring
             fu += 2;
 
         Tile pair_tile = hand.pairs[0][0];
-        if (pair_tile.is_dragon_tile() || pair_tile.is_wind(game.round_wind) || pair_tile.is_wind(player.wind))
+        if (pair_tile.is_dragon_tile() || pair_tile.is_wind(round.round_wind) || pair_tile.is_wind(player.wind))
             fu += 2;
 
         bool closed = player.calls.size == 0;
@@ -955,7 +955,7 @@ public class Scoring
         }
         else
         {
-            if (!game.ron)
+            if (!round.ron)
                 fu += 2; // Tsumo is awarded 2 fu
             if (wait == WaitType.AMBIGUOUS)
                 fu += 2;
@@ -963,7 +963,7 @@ public class Scoring
 
         fu += 20;
 
-        if (closed && game.ron)
+        if (closed && round.ron)
             fu += 10;
 
         fu = (fu + 9) / 10 * 10;
@@ -971,7 +971,7 @@ public class Scoring
 
     public bool valid { get; private set; }
     public HandReading hand { get; private set; }
-    public GameStateContext game { get; private set; }
+    public RoundStateContext round { get; private set; }
     public PlayerStateContext player { get; private set; }
     public ArrayList<Yaku> yaku { get; private set; }
     public bool ron { get; private set; }
@@ -1016,12 +1016,12 @@ public class Yaku
         this.yakuman = yakuman;
     }
 
-    public static bool has_yaku(PlayerStateContext player, GameStateContext game, HandReading hand)
+    public static bool has_yaku(PlayerStateContext player, RoundStateContext round, HandReading hand)
     {
-        return get_yaku(player, game, hand).size > 0;
+        return get_yaku(player, round, hand).size > 0;
     }
 
-    public static ArrayList<Yaku> get_yaku(PlayerStateContext player, GameStateContext game, HandReading hand)
+    public static ArrayList<Yaku> get_yaku(PlayerStateContext player, RoundStateContext round, HandReading hand)
     {
         ArrayList<Yaku> yaku = new ArrayList<Yaku>();
 
@@ -1052,7 +1052,7 @@ public class Yaku
             bool one = false;
 
             foreach (Tile tile in hand.tiles)
-                if (tile.tile_type == game.win_tile.tile_type)
+                if (tile.tile_type == round.win_tile.tile_type)
                 {
                     if (!one)
                         one = true;
@@ -1070,7 +1070,7 @@ public class Yaku
         }
 
         // Tsumo
-        if (closed_hand && !game.ron)
+        if (closed_hand && !round.ron)
             yaku.add(new Yaku(YakuType.MENZEN_TSUMO, 1, 0));
 
         // Riichi / Double riichi
@@ -1086,20 +1086,20 @@ public class Yaku
         }
 
         // Haitei raoyue / Houtei raoyui
-        if (game.last_tile)
+        if (round.last_tile)
         {
-            if (game.ron)
+            if (round.ron)
                 yaku.add(new Yaku(YakuType.HOUTEI_RAOYUI, 1, 0));
             else
                 yaku.add(new Yaku(YakuType.HAITEI_RAOYUE, 1, 0));
         }
 
         // Rinshan kaihou
-        if (game.rinshan)
+        if (round.rinshan)
             yaku.add(new Yaku(YakuType.RINSHAN_KAIHOU, 1, 0));
 
         // Chankan
-        if (game.chankan)
+        if (round.chankan)
             yaku.add(new Yaku(YakuType.CHANKAN, 1, 0));
 
         // TODO: Pinfu
@@ -1188,7 +1188,7 @@ public class Yaku
                 {
                     if (meld[0].is_wind(player.wind))
                         count++;
-                    if (meld[0].is_wind(game.round_wind))
+                    if (meld[0].is_wind(round.round_wind))
                         count++;
                 }
             }
@@ -1489,7 +1489,7 @@ public class Yaku
 
                 if (chuuren)
                 {
-                    bool pair_wait = counts[game.win_tile.get_number_index()] > 0;
+                    bool pair_wait = counts[round.win_tile.get_number_index()] > 0;
                     yaku.add(new Yaku(YakuType.CHUUREN_POUTOU, 0, pair_wait ? 2 : 1));
                 }
             }

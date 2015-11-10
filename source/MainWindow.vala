@@ -24,11 +24,11 @@ public class MainWindow : RenderWindow
         main_view.add_child(menu);
     }
 
-    private void game_start(GameStartState state)
+    private void game_start(GameStartInfo info, IGameConnection connection, int player_index)
     {
         main_view.remove_child(menu);
         menu = null;
-        game_controller = new GameController(main_view, state, new Options.from_disk());
+        game_controller = new GameController(main_view, info, connection, player_index, new Options.from_disk());
         game_controller.finished.connect(game_finished);
         game_running = true;
     }

@@ -10,7 +10,7 @@ public class ServerMenuView : View2D
     private ServerPlayerFieldView[] players = new ServerPlayerFieldView[4];
     private GameMenuButton start_button;
 
-    public signal void start(GameStartState state);
+    public signal void start(GameStartInfo info, IGameConnection connection, int player_index);
     public signal void back();
 
     public ServerMenuView.create_server(string name)
@@ -126,22 +126,18 @@ public class ServerMenuView : View2D
     {
         ServerMessage? message = connection.dequeue_message();
 
-        if (message is ServerMessageRoundStart)
-            start_message(message as ServerMessageRoundStart);
+        if (message is ServerMessageGameStart)
+            start_message(message as ServerMessageGameStart);
         else if (message is ServerMessageMenuSlotAssign)
             assign_message(message as ServerMessageMenuSlotAssign);
         else if (message is ServerMessageMenuSlotClear)
             clear_message(message as ServerMessageMenuSlotClear);
     }
 
-    private void start_message(ServerMessageRoundStart message)
+    private void start_message(ServerMessageGameStart message)
     {
         connection.received_message.disconnect(received_message);
-
-        ServerMessageRoundStart st = (ServerMessageRoundStart)message;
-        GameStartState state = new GameStartState(connection, st.get_players(), st.player_ID, st.get_wind(), st.dealer, st.wall_index);
-
-        start(state);
+        start(message.info, connection, message.player_index);
     }
 
     private void assign_message(ServerMessageMenuSlotAssign message)

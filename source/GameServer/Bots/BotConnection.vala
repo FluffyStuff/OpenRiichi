@@ -58,13 +58,16 @@ class BotConnection
 
         while ((message = connection.dequeue_message()) != null)
         {
-            if (message.get_type() != typeof(ServerMessageRoundStart))
-                continue;
-
-            ServerMessageRoundStart start = (ServerMessageRoundStart)message;
-            connection.received_message.disconnect(message_received);
-            bot.start(start.player_ID, start.get_wind(), start.dealer);
-            break;
+            if (message is ServerMessageGameStart)
+            {
+                ServerMessageGameStart start = message as ServerMessageGameStart;
+                bot.init_game(start.info, start.player_index);
+            }
+            else if (message is ServerMessageRoundStart)
+            {
+                round_start(message);
+                break;
+            }
         }
     }
 
@@ -77,9 +80,9 @@ class BotConnection
 
     private void round_start(ServerMessage message)
     {
-        ServerMessageRoundStart start = (ServerMessageRoundStart)message;
+        ServerMessageRoundStart start = message as ServerMessageRoundStart;
         connection.received_message.disconnect(message_received);
-        bot.reset(start.player_ID, start.get_wind(), start.dealer);
+        bot.start_round(start.info);
     }
 
     private void tile_assignment(ServerMessage message)
@@ -91,31 +94,31 @@ class BotConnection
     private void tile_draw(ServerMessage message)
     {
         ServerMessageTileDraw tile_draw = (ServerMessageTileDraw)message;
-        bot.tile_draw(tile_draw.player_ID, tile_draw.tile_ID);
+        bot.tile_draw(tile_draw.player_index, tile_draw.tile_ID);
     }
 
     private void tile_discard(ServerMessage message)
     {
         ServerMessageTileDiscard tile_discard = (ServerMessageTileDiscard)message;
-        bot.tile_discard(tile_discard.player_ID, tile_discard.tile_ID);
+        bot.tile_discard(tile_discard.player_index, tile_discard.tile_ID);
     }
 
     private void ron(ServerMessage message)
     {
         ServerMessageRon ron = (ServerMessageRon)message;
-        bot.ron(ron.player_ID, ron.discard_player_ID, ron.tile_ID);
+        bot.ron(ron.player_index, ron.discard_player_index, ron.tile_ID);
     }
 
     private void tsumo(ServerMessage message)
     {
         ServerMessageTsumo tsumo = (ServerMessageTsumo)message;
-        bot.tsumo(tsumo.player_ID);
+        bot.tsumo(tsumo.player_index);
     }
 
     private void riichi(ServerMessage message)
     {
         ServerMessageRiichi riichi = (ServerMessageRiichi)message;
-        bot.riichi(riichi.player_ID);
+        bot.riichi(riichi.player_index);
     }
 
     private void turn_decision(ServerMessage message)
@@ -126,42 +129,43 @@ class BotConnection
     private void call_decision(ServerMessage message)
     {
         ServerMessageCallDecision call_decision = (ServerMessageCallDecision)message;
-        bot.call_decision(call_decision.player_ID, call_decision.tile_ID);
+        bot.call_decision(call_decision.player_index, call_decision.tile_ID);
     }
 
     private void late_kan(ServerMessage message)
     {
         ServerMessageLateKan kan = (ServerMessageLateKan)message;
-        bot.late_kan(kan.player_ID, kan.tile_ID);
+        bot.late_kan(kan.player_index, kan.tile_ID);
     }
 
     private void closed_kan(ServerMessage message)
     {
         ServerMessageClosedKan kan = (ServerMessageClosedKan)message;
-        bot.closed_kan(kan.player_ID, kan.get_type_enum());
+        bot.closed_kan(kan.player_index, kan.get_type_enum());
     }
 
     private void open_kan(ServerMessage message)
     {
         ServerMessageOpenKan kan = (ServerMessageOpenKan)message;
-        bot.open_kan(kan.player_ID, kan.discard_player_ID, kan.tile_ID, kan.tile_1_ID, kan.tile_2_ID, kan.tile_3_ID);
+        bot.open_kan(kan.player_index, kan.discard_player_index, kan.tile_ID, kan.tile_1_ID, kan.tile_2_ID, kan.tile_3_ID);
     }
 
     private void pon(ServerMessage message)
     {
         ServerMessagePon pon = (ServerMessagePon)message;
-        bot.pon(pon.player_ID, pon.discard_player_ID, pon.tile_ID, pon.tile_1_ID, pon.tile_2_ID);
+        bot.pon(pon.player_index, pon.discard_player_index, pon.tile_ID, pon.tile_1_ID, pon.tile_2_ID);
     }
 
     private void chii(ServerMessage message)
     {
         ServerMessageChii chii = (ServerMessageChii)message;
-        bot.chii(chii.player_ID, chii.discard_player_ID, chii.tile_ID, chii.tile_1_ID, chii.tile_2_ID);
+        bot.chii(chii.player_index, chii.discard_player_index, chii.tile_ID, chii.tile_1_ID, chii.tile_2_ID);
     }
 
     private void draw(ServerMessage message)
     {
-        bot.draw();
+        ServerMessageDraw draw = message as ServerMessageDraw;
+        bot.draw(draw.get_tenpai_indices());
     }
 
     /////////////////

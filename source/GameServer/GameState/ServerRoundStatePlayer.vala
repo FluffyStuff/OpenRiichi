@@ -2,7 +2,7 @@ using Gee;
 
 namespace GameServer
 {
-    class GameStatePlayer
+    class ServerRoundStatePlayer
     {
         private ArrayList<Tile> pond = new ArrayList<Tile>();
 
@@ -13,13 +13,13 @@ namespace GameServer
         private bool ippatsu = false;
         private bool tiles_called_on = false;
 
-        public GameStatePlayer(int ID, Wind wind, bool dealer)
+        public ServerRoundStatePlayer(int index, Wind wind, bool dealer)
         {
-            this.ID = ID;
+            this.index = index;
             call_decision = null;
             state = PlayerState.DONE;
             hand = new ArrayList<Tile>();
-            calls = new ArrayList<GameStateCall>();
+            calls = new ArrayList<RoundStateCall>();
             in_riichi = false;
             this.wind = wind;
             this.dealer = dealer;
@@ -69,12 +69,12 @@ namespace GameServer
             tiles_called_on = true;
         }
 
-        public bool can_ron(GameStateContext context)
+        public bool can_ron(RoundStateContext context)
         {
             return !TileRules.in_furiten(hand, pond) && TileRules.can_ron(create_context(false), context);
         }
 
-        public bool can_tsumo(GameStateContext context)
+        public bool can_tsumo(RoundStateContext context)
         {
             return TileRules.can_tsumo(create_context(true), context);
         }
@@ -105,8 +105,8 @@ namespace GameServer
             if (in_riichi)
                 return false;
 
-            foreach (GameStateCall call in calls)
-                if (call.call_type != GameStateCall.CallType.CLOSED_KAN)
+            foreach (RoundStateCall call in calls)
+                if (call.call_type != RoundStateCall.CallType.CLOSED_KAN)
                     return false;
 
             return TileRules.tenpai_tiles(hand).size > 0;
@@ -146,9 +146,9 @@ namespace GameServer
 
             for (int i = 0; i < calls.size; i++)
             {
-                GameStateCall call = calls[i];
+                RoundStateCall call = calls[i];
 
-                if (call.call_type == GameStateCall.CallType.PON)
+                if (call.call_type == RoundStateCall.CallType.PON)
                 {
                     if (call.tiles[0].tile_type == tile.tile_type)
                     {
@@ -156,7 +156,7 @@ namespace GameServer
                         ArrayList<Tile> kan = new ArrayList<Tile>();
                         kan.add_all(call.tiles);
                         kan.add(tile);
-                        calls.insert(i, new GameStateCall(GameStateCall.CallType.LATE_KAN, kan));
+                        calls.insert(i, new RoundStateCall(RoundStateCall.CallType.LATE_KAN, kan));
                         hand.remove(tile);
 
                         can_double_riichi = false;
@@ -182,7 +182,7 @@ namespace GameServer
                     kan.add(t);
                     if (kan.size == 4)
                     {
-                        calls.add(new GameStateCall(GameStateCall.CallType.CLOSED_KAN, kan));
+                        calls.add(new RoundStateCall(RoundStateCall.CallType.CLOSED_KAN, kan));
                         remove_hand_tiles(kan);
 
                         can_double_riichi = false;
@@ -200,7 +200,7 @@ namespace GameServer
             kan.add(discard_tile);
             remove_hand_tiles(tiles);
 
-            calls.add(new GameStateCall(GameStateCall.CallType.OPEN_KAN, kan));
+            calls.add(new RoundStateCall(RoundStateCall.CallType.OPEN_KAN, kan));
             can_double_riichi = false;
         }
 
@@ -211,7 +211,7 @@ namespace GameServer
             pon.add(discard_tile);
             remove_hand_tiles(tiles);
 
-            calls.add(new GameStateCall(GameStateCall.CallType.PON, pon));
+            calls.add(new RoundStateCall(RoundStateCall.CallType.PON, pon));
             can_double_riichi = false;
         }
 
@@ -222,7 +222,7 @@ namespace GameServer
             chii.add(discard_tile);
             remove_hand_tiles(tiles);
 
-            calls.add(new GameStateCall(GameStateCall.CallType.CHII, chii));
+            calls.add(new RoundStateCall(RoundStateCall.CallType.CHII, chii));
             can_double_riichi = false;
         }
 
@@ -275,21 +275,21 @@ namespace GameServer
             return TileRules.in_tenpai(hand);
         }
 
-        public Scoring get_ron_score(GameStateContext context)
+        public Scoring get_ron_score(RoundStateContext context)
         {
             return TileRules.get_score(create_context(false), context);
         }
 
-        public Scoring get_tsumo_score(GameStateContext context)
+        public Scoring get_tsumo_score(RoundStateContext context)
         {
             return TileRules.get_score(create_context(true), context);
         }
 
-        public int ID { get; private set; }
-        public GameStateCallDecision? call_decision { get; set; }
+        public int index { get; private set; }
+        public RoundStateCallDecision? call_decision { get; set; }
         public PlayerState state { get; set; }
         public ArrayList<Tile> hand { get; private set; }
-        public ArrayList<GameStateCall> calls { get; private set; }
+        public ArrayList<RoundStateCall> calls { get; private set; }
         public bool in_riichi { get; private set; }
         public Tile? last_drawn_tile { get; private set; }
 
@@ -301,9 +301,9 @@ namespace GameServer
         }
     }
 
-    class GameStateCallDecision
+    class RoundStateCallDecision
     {
-        public GameStateCallDecision(CallDecisionType type, ArrayList<Tile>? tiles)
+        public RoundStateCallDecision(CallDecisionType type, ArrayList<Tile>? tiles)
         {
             call_type = type;
             this.tiles = tiles;

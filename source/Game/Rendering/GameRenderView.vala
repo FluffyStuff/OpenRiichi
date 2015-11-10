@@ -5,7 +5,7 @@ public class GameRenderView : View, IGameRenderer
 {
     private RenderTile[] tiles;
     private RenderPlayer[] players;
-    private GameStartState start_state;
+    private GameStartInfo start_info;
 
     private RenderSceneManager scene;
     private ServerMessageParser parser = new ServerMessageParser();
@@ -13,10 +13,8 @@ public class GameRenderView : View, IGameRenderer
     private ArrayList<TileSelectionGroup>? select_groups = null;
     private ArrayList<RenderPlayer> tenpai_players = new ArrayList<RenderPlayer>();
 
-    public GameRenderView(GameStartState state, string extension)
+    public GameRenderView(RoundStartInfo info, int player_index, Wind round_wind, int dealer_index, string extension)
     {
-        start_state = state;
-
         parser.connect(server_tile_assignment, typeof(ServerMessageTileAssignment));
         parser.connect(server_tile_draw, typeof(ServerMessageTileDraw));
         parser.connect(server_tile_discard, typeof(ServerMessageTileDiscard));
@@ -34,7 +32,7 @@ public class GameRenderView : View, IGameRenderer
         parser.connect(server_tenpai_player, typeof(ServerMessageTenpaiPlayer));
         parser.connect(server_draw, typeof(ServerMessageDraw));
 
-        scene = new RenderSceneManager(extension, state.player_ID, state.round_wind, state.dealer, state.wall_index);
+        scene = new RenderSceneManager(extension, player_index, round_wind, dealer_index, info.wall_index);
     }
 
     public override void added()
@@ -64,7 +62,7 @@ public class GameRenderView : View, IGameRenderer
     private void server_tile_draw(ServerMessage message)
     {
         ServerMessageTileDraw tile_draw = (ServerMessageTileDraw)message;
-        RenderPlayer player = players[tile_draw.player_ID];
+        RenderPlayer player = players[tile_draw.player_index];
 
         if (tile_draw.dead_wall)
             player.draw_tile(scene.wall.draw_dead_wall());
@@ -75,7 +73,7 @@ public class GameRenderView : View, IGameRenderer
     private void server_tile_discard(ServerMessage message)
     {
         ServerMessageTileDiscard tile_discard = (ServerMessageTileDiscard)message;
-        RenderPlayer player = players[tile_discard.player_ID];
+        RenderPlayer player = players[tile_discard.player_index];
         RenderTile tile = tiles[tile_discard.tile_ID];
         player.discard(tile);
     }
@@ -93,8 +91,8 @@ public class GameRenderView : View, IGameRenderer
     private void server_ron(ServerMessage message)
     {
         ServerMessageRon ron = (ServerMessageRon)message;
-        RenderPlayer player = players[ron.player_ID];
-        RenderPlayer discard_player = players[ron.discard_player_ID];
+        RenderPlayer player = players[ron.player_index];
+        RenderPlayer discard_player = players[ron.discard_player_index];
 
         RenderTile tile = tiles[ron.tile_ID];
         discard_player.rob_tile(tile);
@@ -105,7 +103,7 @@ public class GameRenderView : View, IGameRenderer
     private void server_tsumo(ServerMessage message)
     {
         ServerMessageTsumo tsumo = (ServerMessageTsumo)message;
-        RenderPlayer player = players[tsumo.player_ID];
+        RenderPlayer player = players[tsumo.player_index];
 
         scene.tsumo(player);
     }
@@ -113,7 +111,7 @@ public class GameRenderView : View, IGameRenderer
     private void server_riichi(ServerMessage message)
     {
         ServerMessageRiichi riichi = (ServerMessageRiichi)message;
-        RenderPlayer player = players[riichi.player_ID];
+        RenderPlayer player = players[riichi.player_index];
 
         player.riichi();
     }
@@ -121,7 +119,7 @@ public class GameRenderView : View, IGameRenderer
     private void server_late_kan(ServerMessage message)
     {
         ServerMessageLateKan kan = (ServerMessageLateKan)message;
-        RenderPlayer player = players[kan.player_ID];
+        RenderPlayer player = players[kan.player_index];
         RenderTile tile = tiles[kan.tile_ID];
         player.late_kan(tile);
     }
@@ -129,15 +127,15 @@ public class GameRenderView : View, IGameRenderer
     private void server_closed_kan(ServerMessage message)
     {
         ServerMessageClosedKan kan = (ServerMessageClosedKan)message;
-        RenderPlayer player = players[kan.player_ID];
+        RenderPlayer player = players[kan.player_index];
         player.closed_kan(kan.get_type_enum());
     }
 
     private void server_open_kan(ServerMessage message)
     {
         ServerMessageOpenKan kan = (ServerMessageOpenKan)message;
-        RenderPlayer player = players[kan.player_ID];
-        RenderPlayer discard_player = players[kan.discard_player_ID];
+        RenderPlayer player = players[kan.player_index];
+        RenderPlayer discard_player = players[kan.discard_player_index];
 
         RenderTile tile   = tiles[kan.tile_ID];
         RenderTile tile_1 = tiles[kan.tile_1_ID];
@@ -151,8 +149,8 @@ public class GameRenderView : View, IGameRenderer
     private void server_pon(ServerMessage message)
     {
         ServerMessagePon pon = (ServerMessagePon)message;
-        RenderPlayer player = players[pon.player_ID];
-        RenderPlayer discard_player = players[pon.discard_player_ID];
+        RenderPlayer player = players[pon.player_index];
+        RenderPlayer discard_player = players[pon.discard_player_index];
 
         RenderTile tile   = tiles[pon.tile_ID];
         RenderTile tile_1 = tiles[pon.tile_1_ID];
@@ -165,8 +163,8 @@ public class GameRenderView : View, IGameRenderer
     private void server_chii(ServerMessage message)
     {
         ServerMessageChii chii = (ServerMessageChii)message;
-        RenderPlayer player = players[chii.player_ID];
-        RenderPlayer discard_player = players[chii.discard_player_ID];
+        RenderPlayer player = players[chii.player_index];
+        RenderPlayer discard_player = players[chii.discard_player_index];
 
         RenderTile tile   = tiles[chii.tile_ID];
         RenderTile tile_1 = tiles[chii.tile_1_ID];
@@ -179,7 +177,7 @@ public class GameRenderView : View, IGameRenderer
     private void server_tenpai_player(ServerMessage message)
     {
         ServerMessageTenpaiPlayer tenpai = (ServerMessageTenpaiPlayer)message;
-        RenderPlayer player = players[tenpai.player_ID];
+        RenderPlayer player = players[tenpai.player_index];
 
         tenpai_players.add(player);
     }

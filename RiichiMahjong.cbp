@@ -90,10 +90,10 @@
 		<Unit filename="source/GameServer/Bots/Bot.vala" />
 		<Unit filename="source/GameServer/Bots/BotConnection.vala" />
 		<Unit filename="source/GameServer/Bots/NullBot.vala" />
-		<Unit filename="source/GameServer/GameState/GameStateGame.vala" />
-		<Unit filename="source/GameServer/GameState/GameStatePlayer.vala" />
-		<Unit filename="source/GameServer/GameState/GameStatePlayers.vala" />
-		<Unit filename="source/GameServer/GameState/GameStateWall.vala" />
+		<Unit filename="source/GameServer/GameState/ServerRoundState.vala" />
+		<Unit filename="source/GameServer/GameState/ServerRoundStatePlayer.vala" />
+		<Unit filename="source/GameServer/GameState/ServerRoundStatePlayers.vala" />
+		<Unit filename="source/GameServer/GameState/ServerRoundStateWall.vala" />
 		<Unit filename="source/GameServer/Server/Server.vala" />
 		<Unit filename="source/GameServer/Server/ServerController.vala" />
 		<Unit filename="source/GameServer/Server/ServerGameRound.vala" />
@@ -101,13 +101,14 @@
 		<Unit filename="source/GameServer/Server/ServerNetworking.vala" />
 		<Unit filename="source/GameServer/Server/ServerPlayer.vala" />
 		<Unit filename="source/Game/GameController.vala" />
-		<Unit filename="source/Game/Logic/ClientGameState.vala" />
 		<Unit filename="source/Game/Logic/ClientMessage.vala" />
+		<Unit filename="source/Game/Logic/ClientRoundState.vala" />
 		<Unit filename="source/Game/Logic/DelayTimer.vala" />
 		<Unit filename="source/Game/Logic/GamePlayer.vala" />
-		<Unit filename="source/Game/Logic/GameStartState.vala" />
+		<Unit filename="source/Game/Logic/GameStartInfo.vala" />
 		<Unit filename="source/Game/Logic/GameState.vala" />
 		<Unit filename="source/Game/Logic/IGameConnection.vala" />
+		<Unit filename="source/Game/Logic/RoundState.vala" />
 		<Unit filename="source/Game/Logic/ServerMessage.vala" />
 		<Unit filename="source/Game/Logic/Tile.vala" />
 		<Unit filename="source/Game/Logic/TileRules.vala" />
@@ -116,7 +117,6 @@
 		<Unit filename="source/Game/Rendering/IGameRenderer.vala" />
 		<Unit filename="source/Game/Rendering/Menu/GameMenuButton.vala" />
 		<Unit filename="source/Game/Rendering/Menu/GameMenuView.vala" />
-		<Unit filename="source/Game/Rendering/Menu/GameTextBox.vala" />
 		<Unit filename="source/Game/Rendering/Menu/ImageControl.vala" />
 		<Unit filename="source/Game/Rendering/Menu/LabelControl.vala" />
 		<Unit filename="source/Game/Rendering/Menu/RectangleControl.vala" />
@@ -135,6 +135,7 @@
 		<Unit filename="source/MainMenu/OptionItemControl.vala" />
 		<Unit filename="source/MainMenu/OptionsMenuView.vala" />
 		<Unit filename="source/MainMenu/ServerMenuView.vala" />
+		<Unit filename="source/MainMenu/ServerOptionsView.vala" />
 		<Unit filename="source/MainMenu/ServerPlayerFieldView.vala" />
 		<Unit filename="source/MainWindow.vala" />
 		<Unit filename="source/main.vala" />

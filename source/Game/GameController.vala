@@ -1,28 +1,34 @@
 public class GameController
 {
-    private GameState? game;
+    private GameState game;
+    private RoundState round;
     private GameRenderView? renderer = null;
     private GameMenuView? menu = null;
 
-    private IGameConnection connection;
     private unowned View parent_view;
+    private GameStartInfo start_info;
+    private IGameConnection connection;
+    private int player_index;
 
     private string extension;
     private bool game_finished = false;
     public signal void finished();
 
-    public GameController(View parent_view, GameStartState game_start, Options options)
+    public GameController(View parent_view, GameStartInfo start_info, IGameConnection connection, int player_index, Options options)
     {
         this.parent_view = parent_view;
+        this.start_info = start_info;
+        this.connection = connection;
+        this.player_index = player_index;
 
-        connection = game_start.connection;
-        connection.disconnected.connect(disconnected);
+        this.connection.disconnected.connect(disconnected);
 
         string quality = Options.quality_enum_to_string(options.shader_quality);
         extension = Options.quality_enum_to_string(options.model_quality);
 
         parent_view.window.renderer.shader_3D = "open_gl_shader_3D_" + quality;
-        create_game(game_start);
+
+        game = new GameState(start_info);
     }
 
     ~GameController()
@@ -46,72 +52,82 @@ public class GameController
         {
             if (renderer != null)
                 renderer.receive_message(message);
-            if (game != null)
-                game.receive_message(message);
+            if (!game.round_is_finished)
+                round.receive_message(message);
 
-            if (message.get_type() == typeof(ServerMessageRoundStart))
+            if (message is ServerMessageRoundStart)
             {
-                ServerMessageRoundStart start = (ServerMessageRoundStart)message;
-                GameStartState state = new GameStartState(connection, start.get_players(), start.player_ID, start.get_wind(), start.dealer, start.wall_index);
+                ServerMessageRoundStart start = message as ServerMessageRoundStart;
+                create_round(start.info);
+            }
+        }
 
-                create_game(state);
+        if (!game.round_is_finished)
+        {
+            if (round.finished)
+            {
+                var state = game.round_finished(round.result);
+                menu.display_score(state, player_index, start_info.round_wait_time, start_info.hanchan_wait_time, start_info.game_wait_time);
+
+                print("----Client----\n");
+                print(game.to_string() + "\n");
             }
         }
     }
 
-    private void create_game_state(GameStartState game_start)
+    private void create_round_state(RoundStartInfo round_start)
     {
-        game = new GameState(game_start);
-        game.send_message.connect(connection.send_message);
-        game.set_chii_state.connect(menu.set_chii);
-        game.set_pon_state.connect(menu.set_pon);
-        game.set_kan_state.connect(menu.set_kan);
-        game.set_riichi_state.connect(menu.set_riichi);
-        game.set_tsumo_state.connect(menu.set_tsumo);
-        game.set_ron_state.connect(menu.set_ron);
-        game.set_continue_state.connect(menu.set_continue);
-        game.display_score.connect(menu.display_score);
-        game.set_tile_select_state.connect(renderer.set_active);
-        game.set_tile_select_groups.connect(renderer.set_tile_select_groups);
+        round = new RoundState(round_start, player_index, game.round_wind, game.dealer_index);
+        round.send_message.connect(connection.send_message);
+        round.set_chii_state.connect(menu.set_chii);
+        round.set_pon_state.connect(menu.set_pon);
+        round.set_kan_state.connect(menu.set_kan);
+        round.set_riichi_state.connect(menu.set_riichi);
+        round.set_tsumo_state.connect(menu.set_tsumo);
+        round.set_ron_state.connect(menu.set_ron);
+        round.set_continue_state.connect(menu.set_continue);
+        round.set_tile_select_state.connect(renderer.set_active);
+        round.set_tile_select_groups.connect(renderer.set_tile_select_groups);
 
-        renderer.tile_selected.connect(game.client_tile_selected);
+        renderer.tile_selected.connect(round.client_tile_selected);
 
-        menu.chii_pressed.connect(game.client_chii);
-        menu.pon_pressed.connect(game.client_pon);
-        menu.kan_pressed.connect(game.client_kan);
-        menu.riichi_pressed.connect(game.client_riichi);
-        menu.tsumo_pressed.connect(game.client_tsumo);
-        menu.ron_pressed.connect(game.client_ron);
-        menu.continue_pressed.connect(game.client_continue);
+        menu.chii_pressed.connect(round.client_chii);
+        menu.pon_pressed.connect(round.client_pon);
+        menu.kan_pressed.connect(round.client_kan);
+        menu.riichi_pressed.connect(round.client_riichi);
+        menu.tsumo_pressed.connect(round.client_tsumo);
+        menu.ron_pressed.connect(round.client_ron);
+        menu.continue_pressed.connect(round.client_continue);
     }
 
-    private void create_game(GameStartState game_start)
+    private void create_round(RoundStartInfo info)
     {
         if (renderer != null)
             parent_view.remove_child(renderer);
         if (menu != null)
             parent_view.remove_child(menu);
 
+        game.start_round(info);
         menu = new GameMenuView();
         menu.quit.connect(finish_game);
 
-        if (game != null)
+        if (round != null)
         {
-            menu.chii_pressed.disconnect(game.client_chii);
-            menu.pon_pressed.disconnect(game.client_pon);
-            menu.kan_pressed.disconnect(game.client_kan);
-            menu.riichi_pressed.disconnect(game.client_riichi);
-            menu.tsumo_pressed.disconnect(game.client_tsumo);
-            menu.ron_pressed.disconnect(game.client_ron);
-            menu.continue_pressed.disconnect(game.client_continue);
+            menu.chii_pressed.disconnect(round.client_chii);
+            menu.pon_pressed.disconnect(round.client_pon);
+            menu.kan_pressed.disconnect(round.client_kan);
+            menu.riichi_pressed.disconnect(round.client_riichi);
+            menu.tsumo_pressed.disconnect(round.client_tsumo);
+            menu.ron_pressed.disconnect(round.client_ron);
+            menu.continue_pressed.disconnect(round.client_continue);
         }
 
-        renderer = new GameRenderView(game_start, extension);
+        renderer = new GameRenderView(info, player_index, game.round_wind, game.dealer_index, extension);
         parent_view.add_child(renderer);
         parent_view.add_child(menu);
 
-        if (game_start.player_ID != -1)
-            create_game_state(game_start);
+        if (player_index != -1)
+            create_round_state(info);
     }
 
     private void disconnected()

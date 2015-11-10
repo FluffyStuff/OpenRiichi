@@ -13,7 +13,7 @@ class MainMenuView : View2D
     private GameMenuButton options_button;
     private GameMenuButton quit_button;
 
-    public signal void game_start(GameStartState state);
+    public signal void game_start(GameStartInfo info, IGameConnection connection, int player_index);
     public signal void quit();
 
     public MainMenuView()
@@ -146,9 +146,9 @@ class MainMenuView : View2D
         add_child(server_view);
     }
 
-    private void menu_game_start(GameStartState state)
+    private void menu_game_start(GameStartInfo info, IGameConnection connection, int player_index)
     {
-        game_start(state);
+        game_start(info, connection, player_index);
     }
 
     public override void added()

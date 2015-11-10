@@ -4,19 +4,23 @@ public abstract class Bot : Object
 {
     private bool active = false;
     private Mutex mutex = Mutex();
+    private int player_index;
 
-    protected ClientGameState state;
+    protected GameState game_state;
+    protected ClientRoundState? round_state;
 
-    public void start(int player_ID, Wind round_wind, int dealer)
+    public void init_game(GameStartInfo info, int player_index)
     {
+        game_state = new GameState(info);
+        this.player_index = player_index;
         active = true;
-        reset(player_ID, round_wind, dealer);
         Threading.start0(logic);
     }
 
-    public void reset(int player_ID, Wind round_wind, int dealer)
+    public void start_round(RoundStartInfo info)
     {
-        state = new ClientGameState(player_ID, round_wind, dealer);
+        game_state.start_round(info);
+        round_state = new ClientRoundState(player_index, game_state.round_wind, game_state.dealer_index);
     }
 
     public void stop(bool use_lock)
@@ -25,7 +29,7 @@ public abstract class Bot : Object
             mutex.lock();
 
         active = false;
-        state = null;
+        round_state = null;
 
         if (use_lock)
             mutex.unlock();
@@ -41,8 +45,10 @@ public abstract class Bot : Object
             if (!active)
                 break;
 
-            do_logic();
             poll();
+
+            if (round_state != null)
+                do_logic();
 
             if (!active)
                 break;
@@ -65,32 +71,41 @@ public abstract class Bot : Object
 
     public void tile_assign(Tile tile)
     {
-        state.tile_assign(tile);
+        round_state.tile_assign(tile);
     }
 
-    public void tile_draw(int player_ID, int tile_ID)
+    public void tile_draw(int player_index, int tile_ID)
     {
-        state.tile_draw(player_ID, tile_ID);
+        round_state.tile_draw(player_index, tile_ID);
     }
 
-    public void tile_discard(int player_ID, int tile_ID)
+    public void tile_discard(int player_index, int tile_ID)
     {
-        state.tile_discard(player_ID, tile_ID);
+        round_state.tile_discard(player_index, tile_ID);
     }
 
-    public void ron(int player_ID, int discarding_player_ID, int tile_ID)
+    public void ron(int player_index, int discarding_player_index, int tile_ID)
     {
+        ClientRoundStatePlayer player = round_state.get_player(player_index);
+        Tile tile = round_state.get_tile(tile_ID);
 
+        Scoring score = round_state.get_ron_score(player, tile);
+        RoundFinishResult result = new RoundFinishResult.ron(score, player_index, discarding_player_index);
+        game_state.round_finished(result);
     }
 
-    public void tsumo(int player_ID)
+    public void tsumo(int player_index)
     {
+        ClientRoundStatePlayer player = round_state.get_player(player_index);
 
+        Scoring score = round_state.get_tsumo_score(player);
+        RoundFinishResult result = new RoundFinishResult.tsumo(score, player_index);
+        game_state.round_finished(result);
     }
 
-    public void riichi(int player_ID)
+    public void riichi(int player_index)
     {
-        state.riichi(player_ID);
+        round_state.riichi(player_index);
     }
 
     public void turn_decision()
@@ -98,39 +113,40 @@ public abstract class Bot : Object
         do_turn_decision();
     }
 
-    public void call_decision(int discarding_player_ID, int tile_ID)
+    public void call_decision(int discarding_player_index, int tile_ID)
     {
-        do_call_decision(state.get_player(discarding_player_ID), state.get_tile(tile_ID));
+        do_call_decision(round_state.get_player(discarding_player_index), round_state.get_tile(tile_ID));
     }
 
-    public void late_kan(int player_ID, int tile_ID)
+    public void late_kan(int player_index, int tile_ID)
     {
-        state.late_kan(player_ID, tile_ID);
+        round_state.late_kan(player_index, tile_ID);
     }
 
-    public void closed_kan(int player_ID, TileType type)
+    public void closed_kan(int player_index, TileType type)
     {
-        state.closed_kan(player_ID, type);
+        round_state.closed_kan(player_index, type);
     }
 
-    public void open_kan(int player_ID, int discarding_player_ID, int tile_ID, int tile_1_ID, int tile_2_ID, int tile_3_ID)
+    public void open_kan(int player_index, int discarding_player_index, int tile_ID, int tile_1_ID, int tile_2_ID, int tile_3_ID)
     {
-        state.open_kan(player_ID, discarding_player_ID, tile_ID, tile_1_ID, tile_2_ID, tile_3_ID);
+        round_state.open_kan(player_index, discarding_player_index, tile_ID, tile_1_ID, tile_2_ID, tile_3_ID);
     }
 
-    public void pon(int player_ID, int discarding_player_ID, int tile_ID, int tile_1_ID, int tile_2_ID)
+    public void pon(int player_index, int discarding_player_index, int tile_ID, int tile_1_ID, int tile_2_ID)
     {
-        state.pon(player_ID, discarding_player_ID, tile_ID, tile_1_ID, tile_2_ID);
+        round_state.pon(player_index, discarding_player_index, tile_ID, tile_1_ID, tile_2_ID);
     }
 
-    public void chii(int player_ID, int discarding_player_ID, int tile_ID, int tile_1_ID, int tile_2_ID)
+    public void chii(int player_index, int discarding_player_index, int tile_ID, int tile_1_ID, int tile_2_ID)
     {
-        state.chii(player_ID, discarding_player_ID, tile_ID, tile_1_ID, tile_2_ID);
+        round_state.chii(player_index, discarding_player_index, tile_ID, tile_1_ID, tile_2_ID);
     }
 
-    public void draw()
+    public void draw(int[] tenpai_indices)
     {
-
+        RoundFinishResult result = new RoundFinishResult.draw(tenpai_indices);
+        game_state.round_finished(result);
     }
 
     ////////////
@@ -149,7 +165,7 @@ public abstract class Bot : Object
     public signal void call_chii(Tile tile_1, Tile tile_2);
 
     protected abstract void do_turn_decision();
-    protected abstract void do_call_decision(ClientGameStatePlayer discarding_player, Tile tile);
+    protected abstract void do_call_decision(ClientRoundStatePlayer discarding_player, Tile tile);
     protected virtual void do_logic() {}
     public abstract string name { get; }
 }

@@ -147,9 +147,9 @@ public class GameMenuView : View2D
         conti.enabled = enabled;
     }
 
-    public void display_score(Scoring score)
+    public void display_score(RoundScoreState score, int player_index, int round_time, int hanchan_time, int game_time)
     {
-        score_view = new ScoringView(score);
+        score_view = new ScoringView(score, player_index, round_time, hanchan_time, game_time);
         add_child(score_view);
     }
 }

@@ -10,7 +10,7 @@ namespace GameServer
         private ServerPlayer? host = null;
         private ServerPlayer?[] slots = new ServerPlayer?[4];
 
-        public signal void game_start(ArrayList<ServerPlayer> players, ArrayList<ServerPlayer> observers);
+        public signal void game_start(GameStartInfo info);
 
         public ServerMenu()
         {
@@ -104,7 +104,17 @@ namespace GameServer
                 p.disconnected.disconnect(player_disconnected);
             }
 
-            game_start(players, observers);
+            GamePlayer[] players = new GamePlayer[slots.length];
+            for (int i = 0; i < slots.length; i++)
+                players[i] = new GamePlayer(i, slots[i].name);
+
+            int starting_dealer = 1;
+            int starting_score = 25000;
+            int round_count = 2;
+            int hanchan_count = 3;
+
+            GameStartInfo info = new GameStartInfo(players, starting_dealer, starting_score, round_count, hanchan_count, 15, 30, 60);
+            game_start(info);
         }
 
         private void client_add_bot(ServerPlayer player, ClientMessage message)
@@ -115,7 +125,7 @@ namespace GameServer
             var msg = (ClientMessageMenuAddBot)message;
             string name = typeof(Bot).name();
             name = name.substring(0, name.length - 3) + msg.name;
-            Type tn = typeof(NullBot);
+            Type tn = typeof(NullBot); // TODO: Find better fix for this
             Type? type = Type.from_name(name);
 
             if (type == null || !type.is_a(typeof(Bot)))

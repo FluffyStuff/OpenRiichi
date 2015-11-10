@@ -72,12 +72,12 @@ class ScoringPlayerElement : View2D
         transfer_label.font_size = 20;
         if (transfer > 0)
         {
-            transfer_label.text = " +" + transfer.to_string();
+            transfer_label.text = " (+" + transfer.to_string() + ")";
             transfer_label.color = Color.green();
         }
         else if (transfer < 0)
         {
-            transfer_label.text = " -" + (-transfer).to_string();
+            transfer_label.text = " (-" + (-transfer).to_string() + ")";
             transfer_label.color = Color.red();
         }
         else

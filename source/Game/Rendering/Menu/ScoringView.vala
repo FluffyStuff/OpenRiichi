@@ -2,24 +2,32 @@ using Gee;
 
 public class ScoringView : View2D
 {
-    private Scoring score;
+    private RoundScoreState score;
+    private int player_index;
     private LabelControl time_label;
     private RectangleControl rectangle;
     private GameMenuButton next_button;
-    private ScoringHandView hand;
     private ScoringPointsView view;
     private ScoringPlayerElement bottom;
     private ScoringPlayerElement right;
     private ScoringPlayerElement top;
     private ScoringPlayerElement left;
     private int padding = 10;
-    private float time = 15;
+    private float time;
     private float start_time = 0;
 
-    public ScoringView(Scoring score)
+    public ScoringView(RoundScoreState score, int player_index, int round_time, int hanchan_time, int game_time)
     {
         this.score = score;
+        this.player_index = player_index;
         relative_size = Size2(0.9f, 0.9f);
+
+        if (score.game_is_finished)
+            time = game_time;
+        else if (score.hanchan_is_finished)
+            time = hanchan_time;
+        else
+            time = round_time;
     }
 
     public override void added()
@@ -42,28 +50,32 @@ public class ScoringView : View2D
         next_button.position = Vec2(-padding, padding);
         add_control(next_button);
 
-        bottom = new ScoringPlayerElement(Wind.SOUTH, "Fluffy", 180000, 32000);
+        var player = score.players[player_index];
+        bottom = new ScoringPlayerElement(player.wind, player.name, player.points, player.transfer);
         bottom.resize_style = ResizeStyle.ABSOLUTE;
         bottom.inner_anchor = Vec2(0.5f, 0);
         bottom.outer_anchor = Vec2(0.5f, 0);
         bottom.position = Vec2(0, padding);
         add_child(bottom);
 
-        right = new ScoringPlayerElement(Wind.WEST, "NullBot1", 100, -300);
+        player = score.players[(player_index + 1) % 4];
+        right = new ScoringPlayerElement(player.wind, player.name, player.points, player.transfer);
         right.resize_style = ResizeStyle.ABSOLUTE;
         right.inner_anchor = Vec2(1, 0.5f);
         right.outer_anchor = Vec2(1, 0.5f);
         right.position = Vec2(-padding, 0);
         add_child(right);
 
-        top = new ScoringPlayerElement(Wind.NORTH, "NullBot2", 25000, 0);
+        player = score.players[(player_index + 2) % 4];
+        top = new ScoringPlayerElement(player.wind, player.name, player.points, player.transfer);
         top.resize_style = ResizeStyle.ABSOLUTE;
         top.inner_anchor = Vec2(0.5f, 1);
         top.outer_anchor = Vec2(0.5f, 1);
         top.position = Vec2(0, -padding);
         add_child(top);
 
-        left = new ScoringPlayerElement(Wind.EAST, "NullBot3", 25000, -32000);
+        player = score.players[(player_index + 3) % 4];
+        left = new ScoringPlayerElement(player.wind, player.name, player.points, player.transfer);
         left.resize_style = ResizeStyle.ABSOLUTE;
         left.inner_anchor = Vec2(0, 0.5f);
         left.outer_anchor = Vec2(0, 0.5f);
