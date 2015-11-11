@@ -65,7 +65,9 @@ class BotConnection
             }
             else if (message is ServerMessageRoundStart)
             {
-                round_start(message);
+                connection.received_message.disconnect(message_received);
+                var start = message as ServerMessageRoundStart;
+                bot.start_round(true, start.info);
                 break;
             }
         }
@@ -81,8 +83,7 @@ class BotConnection
     private void round_start(ServerMessage message)
     {
         ServerMessageRoundStart start = message as ServerMessageRoundStart;
-        connection.received_message.disconnect(message_received);
-        bot.start_round(start.info);
+        bot.start_round(false, start.info);
     }
 
     private void tile_assignment(ServerMessage message)

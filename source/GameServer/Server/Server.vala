@@ -98,10 +98,10 @@ namespace GameServer
 
             int wall_index = rnd.int_range(1, 7) + rnd.int_range(1, 7); // Emulate dual die roll probability
             RoundStartInfo info = new RoundStartInfo(wall_index);
-
             state.start_round(info);
 
             round = new ServerGameRound(info, players, spectators, state.round_wind, state.dealer_index, rnd);
+            round.start();
         }
 
         private int[] random_seats(Rand rnd, int count)

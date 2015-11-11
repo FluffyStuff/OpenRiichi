@@ -91,13 +91,16 @@ public class GameController
 
         renderer.tile_selected.connect(round.client_tile_selected);
 
-        menu.chii_pressed.connect(round.client_chii);
-        menu.pon_pressed.connect(round.client_pon);
-        menu.kan_pressed.connect(round.client_kan);
-        menu.riichi_pressed.connect(round.client_riichi);
-        menu.tsumo_pressed.connect(round.client_tsumo);
-        menu.ron_pressed.connect(round.client_ron);
-        menu.continue_pressed.connect(round.client_continue);
+        if (menu != null)
+        {
+            menu.chii_pressed.connect(round.client_chii);
+            menu.pon_pressed.connect(round.client_pon);
+            menu.kan_pressed.connect(round.client_kan);
+            menu.riichi_pressed.connect(round.client_riichi);
+            menu.tsumo_pressed.connect(round.client_tsumo);
+            menu.ron_pressed.connect(round.client_ron);
+            menu.continue_pressed.connect(round.client_continue);
+        }
     }
 
     private void create_round(RoundStartInfo info)
@@ -105,22 +108,24 @@ public class GameController
         if (renderer != null)
             parent_view.remove_child(renderer);
         if (menu != null)
+        {
+            /*if (round != null)
+            {
+                menu.chii_pressed.disconnect(round.client_chii);
+                menu.pon_pressed.disconnect(round.client_pon);
+                menu.kan_pressed.disconnect(round.client_kan);
+                menu.riichi_pressed.disconnect(round.client_riichi);
+                menu.tsumo_pressed.disconnect(round.client_tsumo);
+                menu.ron_pressed.disconnect(round.client_ron);
+                menu.continue_pressed.disconnect(round.client_continue);
+            }*/
+
             parent_view.remove_child(menu);
+        }
 
         game.start_round(info);
         menu = new GameMenuView();
         menu.quit.connect(finish_game);
-
-        if (round != null)
-        {
-            menu.chii_pressed.disconnect(round.client_chii);
-            menu.pon_pressed.disconnect(round.client_pon);
-            menu.kan_pressed.disconnect(round.client_kan);
-            menu.riichi_pressed.disconnect(round.client_riichi);
-            menu.tsumo_pressed.disconnect(round.client_tsumo);
-            menu.ron_pressed.disconnect(round.client_ron);
-            menu.continue_pressed.disconnect(round.client_continue);
-        }
 
         renderer = new GameRenderView(info, player_index, game.round_wind, game.dealer_index, extension);
         parent_view.add_child(renderer);

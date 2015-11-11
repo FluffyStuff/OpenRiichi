@@ -4,6 +4,8 @@ namespace GameServer
 {
     class ServerGameRound : Object // Signal receiver needs to be object
     {
+        private RoundStartInfo info;
+
         private ArrayList<GameRoundServerPlayer> players = new ArrayList<GameRoundServerPlayer>();
         private ServerRoundState round;
         private ClientMessageParser parser = new ClientMessageParser();
@@ -13,6 +15,8 @@ namespace GameServer
 
         public ServerGameRound(RoundStartInfo info, ArrayList<ServerPlayer> players, ArrayList<ServerPlayer> spectators, Wind round_wind, int dealer, Rand rnd)
         {
+            this.info = info;
+
             parser.connect(client_tile_discard, typeof(ClientMessageTileDiscard));
             parser.connect(client_no_call, typeof(ClientMessageNoCall));
             parser.connect(client_ron, typeof(ClientMessageRon));
@@ -23,18 +27,6 @@ namespace GameServer
             parser.connect(client_open_kan, typeof(ClientMessageOpenKan));
             parser.connect(client_pon, typeof(ClientMessagePon));
             parser.connect(client_chii, typeof(ClientMessageChii));
-
-            for (int i = 0; i < players.size; i++)
-            {
-                GameRoundServerPlayer player = new GameRoundServerPlayer(players[i], i);
-                this.players.add(player);
-            }
-
-            foreach (ServerPlayer player in spectators)
-            {
-                GameRoundServerPlayer p = new GameRoundServerPlayer(player, -1);
-                this.players.add(p);
-            }
 
             round = new ServerRoundState(round_wind, dealer, info.wall_index, rnd);
             round.game_draw_tile.connect(game_draw_tile);
@@ -54,6 +46,21 @@ namespace GameServer
             round.game_chii.connect(game_chii);
             round.game_draw.connect(game_draw);
 
+            for (int i = 0; i < players.size; i++)
+            {
+                GameRoundServerPlayer player = new GameRoundServerPlayer(players[i], i);
+                this.players.add(player);
+            }
+
+            /*foreach (ServerPlayer player in spectators)
+            {
+                GameRoundServerPlayer p = new GameRoundServerPlayer(player, -1);
+                this.players.add(p);
+            }*/
+        }
+
+        public void start()
+        {
             for (int i = 0; i < this.players.size; i++)
             {
                 ServerMessageRoundStart start_message = new ServerMessageRoundStart(info);

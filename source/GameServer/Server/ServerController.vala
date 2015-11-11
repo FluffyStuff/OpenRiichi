@@ -106,8 +106,9 @@ namespace GameServer
             ArrayList<ServerPlayer> players = players_obj as ArrayList<ServerPlayer>;
             ArrayList<ServerPlayer> observers = observers_obj as ArrayList<ServerPlayer>;
             GameStartInfo info = (GameStartInfo)start_info_obj;
+            Rand rnd = new Rand();
 
-            server = new Server(players, observers, new Rand(), info);
+            server = new Server(players, observers, rnd, info);
             Timer timer = new Timer();
 
             while (!finished && !server.finished)

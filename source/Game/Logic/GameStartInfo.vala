@@ -38,7 +38,6 @@ public class GameStartInfo : Serializable
     public int game_wait_time { get; protected set; }
 
     public SerializableList<GamePlayer> player_list { get; protected set; }
-    protected int wind_number { get; protected set; }
 }
 
 public class RoundStartInfo : Serializable

@@ -17,10 +17,16 @@ public abstract class Bot : Object
         Threading.start0(logic);
     }
 
-    public void start_round(RoundStartInfo info)
+    public void start_round(bool use_lock, RoundStartInfo info)
     {
+        if (use_lock)
+            mutex.lock();
+
         game_state.start_round(info);
         round_state = new ClientRoundState(player_index, game_state.round_wind, game_state.dealer_index);
+
+        if (use_lock)
+            mutex.unlock();
     }
 
     public void stop(bool use_lock)
