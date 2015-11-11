@@ -295,29 +295,29 @@ public class ServerMessageChii : ServerMessage
     public int tile_2_ID { get; protected set; }
 }
 
-public class ServerMessageTenpaiPlayer : ServerMessage
-{
-    public ServerMessageTenpaiPlayer(int player_index)
-    {
-        this.player_index = player_index;
-    }
-
-    public int player_index { get; protected set; }
-}
-
 public class ServerMessageDraw : ServerMessage
 {
     public ServerMessageDraw(int[] tenpai_indices)
     {
-        list = new SerializableList<int>(tenpai_indices);
+        Obj<int>[] ints = new Obj<int>[tenpai_indices.length];
+        for (int i = 0; i < tenpai_indices.length; i++)
+            ints[i] = new Obj<int>(tenpai_indices[i]);
+
+        list = new SerializableList<Obj<int>>(ints);
     }
 
     public int[] get_tenpai_indices()
     {
-        return list.to_array();
+        var objs = list.to_array();
+
+        int[] ints = new int[objs.length];
+        for (int i = 0; i < objs.length; i++)
+            ints[i] = objs[i].obj;
+
+        return ints;
     }
 
-    protected SerializableList<int> list { get; protected set; }
+    public SerializableList<Obj<int>> list { get; protected set; }
 }
 
 public class ServerMessageAcceptJoin : ServerMessage {}

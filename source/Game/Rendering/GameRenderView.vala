@@ -11,7 +11,6 @@ public class GameRenderView : View, IGameRenderer
     private ServerMessageParser parser = new ServerMessageParser();
     private RenderTile? mouse_down_tile;
     private ArrayList<TileSelectionGroup>? select_groups = null;
-    private ArrayList<RenderPlayer> tenpai_players = new ArrayList<RenderPlayer>();
 
     public GameRenderView(RoundStartInfo info, int player_index, Wind round_wind, int dealer_index, string extension)
     {
@@ -29,7 +28,6 @@ public class GameRenderView : View, IGameRenderer
         parser.connect(server_open_kan, typeof(ServerMessageOpenKan));
         parser.connect(server_pon, typeof(ServerMessagePon));
         parser.connect(server_chii, typeof(ServerMessageChii));
-        parser.connect(server_tenpai_player, typeof(ServerMessageTenpaiPlayer));
         parser.connect(server_draw, typeof(ServerMessageDraw));
 
         scene = new RenderSceneManager(extension, player_index, round_wind, dealer_index, info.wall_index);
@@ -174,16 +172,14 @@ public class GameRenderView : View, IGameRenderer
         player.chii(discard_player, tile, tile_1, tile_2);
     }
 
-    private void server_tenpai_player(ServerMessage message)
-    {
-        ServerMessageTenpaiPlayer tenpai = (ServerMessageTenpaiPlayer)message;
-        RenderPlayer player = players[tenpai.player_index];
-
-        tenpai_players.add(player);
-    }
-
     private void server_draw(ServerMessage message)
     {
+        ServerMessageDraw draw = message as ServerMessageDraw;
+
+        ArrayList<RenderPlayer> tenpai_players = new ArrayList<RenderPlayer>();
+        foreach (int i in draw.get_tenpai_indices())
+            tenpai_players.add(players[i]);
+
         scene.draw(tenpai_players);
     }
 

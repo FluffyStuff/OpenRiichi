@@ -323,14 +323,6 @@ namespace GameServer
             foreach (Tile t in all_tenpai_tiles)
                 game_reveal_tile(t);
 
-            for (int i = 0; i < tenpai_indices.length; i++)
-            {
-                ServerMessageTenpaiPlayer m = new ServerMessageTenpaiPlayer(tenpai_indices[i]);
-
-                foreach (GameRoundServerPlayer pl in players)
-                    pl.server_player.send_message(m);
-            }
-
             ServerMessageDraw message = new ServerMessageDraw(tenpai_indices);
 
             foreach (GameRoundServerPlayer pl in players)

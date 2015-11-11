@@ -179,7 +179,7 @@ public /*static*/ class Threading
 }
 
 // A class for storing primitives/structs as objects
-public class Obj<T> : Object
+public class Obj<T> : Serializable
 {
     //Can't create property due to a bug in vala
     public T obj;
