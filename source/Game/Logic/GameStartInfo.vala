@@ -11,7 +11,9 @@ public class GameStartInfo : Serializable
         int hanchan_count,
         int round_wait_time,
         int hanchan_wait_time,
-        int game_wait_time
+        int game_wait_time,
+        int uma_higher,
+        int uma_lower
     )
     {
         player_list = new SerializableList<GamePlayer>(players);
@@ -22,6 +24,8 @@ public class GameStartInfo : Serializable
         this.round_wait_time = round_wait_time;
         this.hanchan_wait_time = hanchan_wait_time;
         this.game_wait_time = game_wait_time;
+        this.uma_higher = uma_higher;
+        this.uma_lower = uma_lower;
     }
 
     public GamePlayer[] get_players()
@@ -36,6 +40,8 @@ public class GameStartInfo : Serializable
     public int round_wait_time { get; protected set; }
     public int hanchan_wait_time { get; protected set; }
     public int game_wait_time { get; protected set; }
+    public int uma_higher { get; protected set; }
+    public int uma_lower { get; protected set; }
 
     public SerializableList<GamePlayer> player_list { get; protected set; }
 }

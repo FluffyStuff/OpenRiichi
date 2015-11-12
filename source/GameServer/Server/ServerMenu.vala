@@ -112,8 +112,10 @@ namespace GameServer
             int starting_score = 25000;
             int round_count = 2;
             int hanchan_count = 3;
+            int uma_higher = 20;
+            int uma_lower = 10;
 
-            GameStartInfo info = new GameStartInfo(players, starting_dealer, starting_score, round_count, hanchan_count, 15, 30, 60);
+            GameStartInfo info = new GameStartInfo(players, starting_dealer, starting_score, round_count, hanchan_count, 15, 30, 60, uma_higher, uma_lower);
             game_start(info);
         }
 

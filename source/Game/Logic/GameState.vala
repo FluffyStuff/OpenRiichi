@@ -4,10 +4,14 @@ public class GameState
 {
     private GameScorePlayer[] players;
     private int starting_score;
+    private int uma_higher;
+    private int uma_lower;
 
     public GameState(GameStartInfo info)
     {
         starting_score = info.starting_score;
+        uma_higher = info.uma_higher;
+        uma_lower = info.uma_lower;
         dealer_index = starting_dealer_index = info.starting_dealer;
         round_count = info.round_count;
         hanchan_count = info.hanchan_count;
@@ -18,7 +22,7 @@ public class GameState
         players = new GameScorePlayer[p.length];
 
         for (int i = 0; i < players.length; i++)
-            players[i] = new GameScorePlayer(p[i].name, i, (Wind)((i + 4 - starting_dealer_index) % 4), info.starting_score, 0);
+            players[i] = new GameScorePlayer(p[i].name, i, (Wind)((i + 4 - starting_dealer_index) % 4), info.starting_score, 0, 0);
 
         add_round_score_state(new RoundFinishResult()); // Add initial info (is not a proper round)
     }
@@ -45,7 +49,7 @@ public class GameState
                 round_wind = Wind.EAST;
 
                 for (int i = 0; i < players.length; i++)
-                    players[i] = new GameScorePlayer(players[i].name, players[i].index, (Wind)((i + 4 - starting_dealer_index) % 4), starting_score, 0);
+                    players[i] = new GameScorePlayer(players[i].name, players[i].index, (Wind)((i + 4 - starting_dealer_index) % 4), starting_score, players[i].score, 0);
             }
             else
             {
@@ -188,29 +192,48 @@ public class GameState
     {
         int first = starting_dealer_index;
 
+        GameScorePlayer[] ordered_players = new GameScorePlayer[players.length];
+
+        for (int i = 0; i < ordered_players.length; i++)
+        {
+            int a = (starting_dealer_index + i) % players.length;
+            ordered_players[i] = players[a];
+        }
+
         for (int i = 1; i < players.length; i++)
-            if (players[(starting_dealer_index + i) % players.length].points > players[first].points)
-                first = i;
+        {
+            int j = i;
+            while (j > 0 && ordered_players[j].points > ordered_players[j-1].points)
+            {
+                var p = ordered_players[j];
+                ordered_players[j] = ordered_players[j-1];
+                ordered_players[j-1] = p;
+                j--;
+            }
+        }
 
         int[] score = new int[players.length];
 
         int sum = 0;
-        for (int i = 0; i < players.length; i++)
-            if (i != first)
-            {
-                // Round to nearest 1000
-                int p = players[i].points;
-                if (players[i].points > 0)
-                    p += 500;
-                else
-                    p -= 500;
+        for (int i = 1; i < ordered_players.length; i++)
+        {
+            // Round to nearest 1000
+            int p = ordered_players[i].points;
+            if (ordered_players[i].points > 0)
+                p += 500;
+            else
+                p -= 500;
 
-                p = p / 1000 - 30;
-                sum -= p;
-                players[i].score += p;
-            }
+            p = p / 1000 - starting_score / 1000 - 5;
+            sum -= p;
+            ordered_players[i].score += p;
+        }
 
-        players[first].score += sum;
+        ordered_players[0].score += sum;
+        ordered_players[0].score += uma_higher;
+        ordered_players[1].score += uma_lower;
+        ordered_players[ordered_players.length - 2].score -= uma_lower;
+        ordered_players[ordered_players.length - 1].score -= uma_higher;
     }
 
     private RoundScoreState add_round_score_state(RoundFinishResult result)
@@ -303,10 +326,7 @@ public class RoundScoreState
 
         this.players = new GameScorePlayer[players.length];
         for (int i = 0; i < players.length; i++)
-        {
-            this.players[i] = new GameScorePlayer(players[i].name, players[i].index, players[i].wind, players[i].points, players[i].transfer);
-            this.players[i].score = players[i].score;
-        }
+            this.players[i] = new GameScorePlayer(players[i].name, players[i].index, players[i].wind, players[i].points, players[i].score, players[i].transfer);
     }
 
     public RoundFinishResult result { get; private set; }
@@ -329,13 +349,13 @@ public class RoundScoreState
 
 public class GameScorePlayer
 {
-    public GameScorePlayer(string name, int index, Wind wind, int starting_points, int transfer)
+    public GameScorePlayer(string name, int index, Wind wind, int starting_points, int score, int transfer)
     {
         this.name = name;
         this.index = index;
         this.wind = wind;
         points = starting_points;
-        score = 0;
+        this.score = score;
         this.transfer = transfer;
     }
 
