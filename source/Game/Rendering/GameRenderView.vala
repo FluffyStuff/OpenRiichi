@@ -5,7 +5,6 @@ public class GameRenderView : View, IGameRenderer
 {
     private RenderTile[] tiles;
     private RenderPlayer[] players;
-    private GameStartInfo start_info;
 
     private RenderSceneManager scene;
     private ServerMessageParser parser = new ServerMessageParser();

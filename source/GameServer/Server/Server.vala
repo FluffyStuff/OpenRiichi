@@ -24,7 +24,7 @@ namespace GameServer
             int[] seats = random_seats(rnd, players.size);
             for (int i = 0; i < players.size; i++)
             {
-                ServerPlayer player = players[i];
+                ServerPlayer player = players[seats[i]];
                 this.players.add(player);
 
                 ServerMessageGameStart start = new ServerMessageGameStart(start_info, i);

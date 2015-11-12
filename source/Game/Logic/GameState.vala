@@ -190,8 +190,6 @@ public class GameState
 
     private void calculate_score()
     {
-        int first = starting_dealer_index;
-
         GameScorePlayer[] ordered_players = new GameScorePlayer[players.length];
 
         for (int i = 0; i < ordered_players.length; i++)
@@ -211,8 +209,6 @@ public class GameState
                 j--;
             }
         }
-
-        int[] score = new int[players.length];
 
         int sum = 0;
         for (int i = 1; i < ordered_players.length; i++)

@@ -108,7 +108,7 @@ namespace GameServer
             for (int i = 0; i < slots.length; i++)
                 players[i] = new GamePlayer(i, slots[i].name);
 
-            int starting_dealer = 1;
+            int starting_dealer = 0;
             int starting_score = 25000;
             int round_count = 2;
             int hanchan_count = 3;
