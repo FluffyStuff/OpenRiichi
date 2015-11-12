@@ -238,6 +238,7 @@ namespace GameServer
             game_closed_kan(player_index, tiles);
             kan(player);
             game_get_turn_decision(player.index);
+            flow_interrupted = true;
 
             return true;
         }
@@ -411,16 +412,19 @@ namespace GameServer
 
             if (decision.call_type == RoundStateCallDecision.CallDecisionType.CHII)
             {
+                discarder.rob_tile(discard_tile);
                 player.do_chii(discard_tile, decision.tiles);
                 game_chii(player.index, discarder.index, discard_tile, decision.tiles);
             }
             else if (decision.call_type == RoundStateCallDecision.CallDecisionType.PON)
             {
+                discarder.rob_tile(discard_tile);
                 player.do_pon(discard_tile, decision.tiles);
                 game_pon(player.index, discarder.index, discard_tile, decision.tiles);
             }
             else if (decision.call_type == RoundStateCallDecision.CallDecisionType.KAN)
             {
+                discarder.rob_tile(discard_tile);
                 player.do_open_kan(discard_tile, decision.tiles);
                 game_open_kan(player.index, discarder.index, discard_tile, decision.tiles);
 

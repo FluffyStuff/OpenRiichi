@@ -66,11 +66,15 @@ public class GameController
         {
             if (round.finished)
             {
-                var state = game.round_finished(round.result);
-                menu.display_score(state, player_index, start_info.round_wait_time, start_info.hanchan_wait_time, start_info.game_wait_time);
+                var result = game.round_finished(round.result);
+                menu.display_score(result, player_index, start_info.round_wait_time, start_info.hanchan_wait_time, start_info.game_wait_time);
 
-                print("----Client----\n");
-                print(game.to_string() + "\n");
+                if (result.result.result != RoundFinishResult.RoundResultEnum.DRAW)
+                {
+                    print("----Client----\n");
+                    print(result.result.score.round.to_string() + "\n");
+                    print(result.result.score.player.to_string() + "\n");
+                }
             }
         }
     }

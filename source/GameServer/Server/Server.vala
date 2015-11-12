@@ -21,10 +21,9 @@ namespace GameServer
             this.rnd = rnd;
             this.start_info = start_info;
 
-            int[] seats = random_seats(rnd, players.size);
             for (int i = 0; i < players.size; i++)
             {
-                ServerPlayer player = players[seats[i]];
+                ServerPlayer player = players[i];
                 this.players.add(player);
 
                 ServerMessageGameStart start = new ServerMessageGameStart(start_info, i);
@@ -50,8 +49,12 @@ namespace GameServer
                     RoundFinishResult result = round.result;
                     state.round_finished(result);
 
-                    print("----Server----\n");
-                    print(state.to_string() + "\n");
+                    if (result.result != RoundFinishResult.RoundResultEnum.DRAW)
+                    {
+                        print("----Server----\n");
+                        print(result.score.round.to_string() + "\n");
+                        print(result.score.player.to_string() + "\n");
+                    }
 
                     if (state.game_is_finished)
                     {
@@ -102,24 +105,6 @@ namespace GameServer
 
             round = new ServerGameRound(info, players, spectators, state.round_wind, state.dealer_index, rnd);
             round.start();
-        }
-
-        private int[] random_seats(Rand rnd, int count)
-        {
-            int[] seats = new int[count];
-
-            for (int i = 0; i < count; i++)
-                seats[i] = i;
-
-            for (int i = 0; i < count; i++)
-            {
-                int tmp = rnd.int_range(0, count);
-                int a = seats[i];
-                seats[i] = seats[tmp];
-                seats[tmp] = a;
-            }
-
-            return seats;
         }
 
         public bool finished { get; private set; }

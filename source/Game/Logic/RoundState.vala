@@ -509,7 +509,7 @@ public class RoundState
     private void server_pon(ServerMessage message)
     {
         ServerMessagePon pon = (ServerMessagePon)message;
-        state.pon(pon.player_index, pon.player_index, pon.tile_ID, pon.tile_1_ID, pon.tile_2_ID);
+        state.pon(pon.player_index, pon.discard_player_index, pon.tile_ID, pon.tile_1_ID, pon.tile_2_ID);
 
         decision_finished();
     }
@@ -517,7 +517,7 @@ public class RoundState
     private void server_chii(ServerMessage message)
     {
         ServerMessageChii chii = (ServerMessageChii)message;
-        state.chii(chii.player_index, chii.player_index, chii.tile_ID, chii.tile_1_ID, chii.tile_2_ID);
+        state.chii(chii.player_index, chii.discard_player_index, chii.tile_ID, chii.tile_1_ID, chii.tile_2_ID);
     }
 
     ////////////////////////

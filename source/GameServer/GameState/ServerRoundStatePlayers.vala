@@ -13,7 +13,7 @@ namespace GameServer
             players = new ServerRoundStatePlayer[4];
 
             for (int i = 0; i < players.length; i++)
-                players[i] = new ServerRoundStatePlayer(i, (Wind)i, i == 0);
+                players[i] = new ServerRoundStatePlayer(i, (Wind)((4 - dealer + i) % 4), i == dealer);
         }
 
         public ArrayList<ServerRoundStatePlayer> get_call_players(ServerRoundStatePlayer caller, RoundStateContext context)

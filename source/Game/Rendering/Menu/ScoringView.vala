@@ -50,7 +50,7 @@ public class ScoringView : View2D
         next_button.position = Vec2(-padding, padding);
         add_control(next_button);
 
-        var player = score.players[(4 + player_index) % 4];
+        var player = score.players[player_index];
         bottom = new ScoringPlayerElement(player.wind, player.name, player.points, player.transfer, player.score);
         bottom.resize_style = ResizeStyle.ABSOLUTE;
         bottom.inner_anchor = Vec2(0.5f, 0);
@@ -59,7 +59,7 @@ public class ScoringView : View2D
         add_child(bottom);
         bottom.show_score = score.hanchan_is_finished;
 
-        player = score.players[(4 + player_index + 1) % 4];
+        player = score.players[(player_index + 1) % 4];
         right = new ScoringPlayerElement(player.wind, player.name, player.points, player.transfer, player.score);
         right.resize_style = ResizeStyle.ABSOLUTE;
         right.inner_anchor = Vec2(1, 0.5f);
@@ -68,7 +68,7 @@ public class ScoringView : View2D
         add_child(right);
         right.show_score = score.hanchan_is_finished;
 
-        player = score.players[(4 + player_index + 2) % 4];
+        player = score.players[(player_index + 2) % 4];
         top = new ScoringPlayerElement(player.wind, player.name, player.points, player.transfer, player.score);
         top.resize_style = ResizeStyle.ABSOLUTE;
         top.inner_anchor = Vec2(0.5f, 1);
@@ -77,7 +77,7 @@ public class ScoringView : View2D
         add_child(top);
         top.show_score = score.hanchan_is_finished;
 
-        player = score.players[(4 + player_index + 3) % 4];
+        player = score.players[(player_index + 3) % 4];
         left = new ScoringPlayerElement(player.wind, player.name, player.points, player.transfer, player.score);
         left.resize_style = ResizeStyle.ABSOLUTE;
         left.inner_anchor = Vec2(0, 0.5f);

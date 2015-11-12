@@ -29,7 +29,6 @@ public class ScoringHandView : View
         {
             Tile t = score.player.hand[i];
             RenderTile tile = new RenderTile(store, extension, t, tile_scale);
-            tile.set_absolute_location(Vec3((i - (score.player.hand.size + 1.0f) / 2 + 0.5f) * tile_size.x, 0, 0), Vec3(0.4f, 1, 0));
 
             bool added = false;
             for (int j = 0; j < tiles.size - 1; j++)
@@ -45,6 +44,9 @@ public class ScoringHandView : View
             if (!added)
                 tiles.add(tile);
         }
+
+        for (int i = 0; i < tiles.size; i++)
+            tiles[i].set_absolute_location(Vec3((i - (score.player.hand.size + 1.0f) / 2 + 0.5f) * tile_size.x, 0, 0), Vec3(0.4f, 1, 0));
 
         RenderTile tile = new RenderTile(store, extension, score.round.win_tile, tile_scale);
         tile.set_absolute_location(Vec3((score.player.hand.size + 1 - (score.player.hand.size + 1.0f) / 2 + 0.5f) * tile_size.x, 0, 0), Vec3(0.4f, 1, 0));

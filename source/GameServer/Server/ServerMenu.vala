@@ -9,6 +9,7 @@ namespace GameServer
         private ClientMessageParser parser = new ClientMessageParser();
         private ServerPlayer? host = null;
         private ServerPlayer?[] slots = new ServerPlayer?[4];
+        private Rand rnd = new Rand();
 
         public signal void game_start(GameStartInfo info);
 
@@ -104,9 +105,16 @@ namespace GameServer
                 p.disconnected.disconnect(player_disconnected);
             }
 
+
             GamePlayer[] players = new GamePlayer[slots.length];
+            int[] seats = random_seats(rnd, players.length);
             for (int i = 0; i < slots.length; i++)
-                players[i] = new GamePlayer(i, slots[i].name);
+                players[i] = new GamePlayer(i, slots[seats[i]].name);
+
+            ArrayList<ServerPlayer> shuffled_players = new ArrayList<ServerPlayer>();
+            for (int i = 0; i < this.players.size; i++)
+                shuffled_players.add(this.players[seats[i]]);
+            this.players = shuffled_players;
 
             int starting_dealer = 0;
             int starting_score = 25000;
@@ -170,6 +178,24 @@ namespace GameServer
             p.close();
             send_clear(slot);
             slots[slot] = null;
+        }
+
+        private int[] random_seats(Rand rnd, int count)
+        {
+            int[] seats = new int[count];
+
+            for (int i = 0; i < count; i++)
+                seats[i] = i;
+
+            for (int i = 0; i < count; i++)
+            {
+                int tmp = rnd.int_range(0, count);
+                int a = seats[i];
+                seats[i] = seats[tmp];
+                seats[tmp] = a;
+            }
+
+            return seats;
         }
 
         public ArrayList<ServerPlayer> players { get; private set; }

@@ -530,6 +530,28 @@ public class RoundStateContext
         this.flow_interrupted = flow_interrupted;
     }
 
+    public string to_string()
+    {
+        string str =
+        "round_wind: " + round_wind.to_string() + "\n" +
+        "ron: " + ron.to_string() + "\n" +
+        "win_wile: " + win_tile.tile_type.to_string() + "\n" +
+        "last_tile: " + last_tile.to_string() + "\n" +
+        "rinshan: " + rinshan.to_string() + "\n" +
+        "chankan: " + chankan.to_string() + "\n" +
+        "flow_interrupted: " + flow_interrupted.to_string() + "\n";
+
+        str += "dora: \n";
+        foreach (Tile t in dora)
+            str += "\t" + t.tile_type.to_string() + "\n";
+
+        str += "ura_dora: \n";
+        foreach (Tile t in ura_dora)
+            str += "\t" + t.tile_type.to_string() + "\n";
+
+        return str;
+    }
+
     public Wind round_wind { get; private set; }
     public ArrayList<Tile> dora { get; private set; }
     public ArrayList<Tile> ura_dora { get; private set; }
@@ -566,6 +588,27 @@ public class PlayerStateContext
         this.double_riichi = double_riichi;
         this.ippatsu = ippatsu;
         this.tiles_called_on = tiles_called_on;
+    }
+
+    public string to_string()
+    {
+        string str =
+        "wind: " + wind.to_string() + "\n" +
+        "dealer: " + dealer.to_string() + "\n" +
+        "in_riichi: " + in_riichi.to_string() + "\n" +
+        "double_riichi: " + double_riichi.to_string() + "\n" +
+        "ippatsu: " + ippatsu.to_string() + "\n" +
+        "tiles_called_on: " + tiles_called_on.to_string() + "\n";
+
+        str += "hand: \n";
+        foreach (Tile t in hand)
+            str += "\t" + t.tile_type.to_string() + "\n";
+
+        /*str += "pond: \n";
+        foreach (Tile t in pond)
+            str += "\t" + t.tile_type.to_string() + "\n";*/
+
+        return str;
     }
 
     public ArrayList<Tile> hand { get; private set; }
