@@ -1,4 +1,4 @@
-#version 330 core
+#version 130
 #define MAX_LIGHTS 2
 //#define PI 3.1415926535897932384626433832795
 

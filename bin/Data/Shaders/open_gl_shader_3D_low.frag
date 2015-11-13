@@ -1,4 +1,4 @@
-#version 330 core
+#version 130
 
 uniform sampler2D tex;
 uniform vec4 diffuse_color;

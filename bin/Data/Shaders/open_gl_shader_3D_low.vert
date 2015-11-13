@@ -1,4 +1,4 @@
-#version 330 core
+#version 130
 #define MAX_LIGHTS 2
 
 struct lightSourceParameters 
@@ -11,6 +11,9 @@ struct lightSourceParameters
 uniform mat4 projection_transform;
 uniform mat4 view_transform;
 uniform mat4 model_transform;
+uniform mat4 un_projection_transform;
+uniform mat4 un_view_transform;
+uniform mat4 un_model_transform;
 
 uniform float light_multiplier;
 uniform vec4 diffuse_color;
@@ -29,8 +32,8 @@ out vec3 light_color_additive;
 void main()
 {
 	vec3 mod_pos = (model_transform * position).xyz;
-	vec3 frag_camera_normal = inverse(view_transform)[3].xyz - mod_pos;
-	vec3 frag_normal = normalize((vec4(normal, 1.0) * inverse(model_transform)).xyz);
+	vec3 frag_camera_normal = un_view_transform[3].xyz - mod_pos;
+	vec3 frag_normal = normalize((vec4(normal, 1.0) * un_model_transform).xyz);
 	
 	vec3 original = vec3(0.02);
 	vec3 additive = vec3(0);

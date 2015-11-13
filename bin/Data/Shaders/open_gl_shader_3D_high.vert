@@ -1,4 +1,4 @@
-#version 330 core
+#version 130
 #define MAX_LIGHTS 2
 
 struct lightSourceParameters 
@@ -6,12 +6,14 @@ struct lightSourceParameters
 	vec3 position;
 	vec3 color;
 	float intensity;
-	/*vec3 spotDirection;*/
 };
 
 uniform mat4 projection_transform;
 uniform mat4 view_transform;
 uniform mat4 model_transform;
+uniform mat4 un_projection_transform;
+uniform mat4 un_view_transform;
+uniform mat4 un_model_transform;
 
 uniform int light_count;
 uniform lightSourceParameters light_source[MAX_LIGHTS];
@@ -39,7 +41,7 @@ void main()
 	}
 	
 	frag_texture_coord = texture_coord.xy;
-	frag_normal = (vec4(normalize(normal), 1.0) * inverse(model_transform)).xyz;
-	frag_camera_normal = inverse(view_transform)[3].xyz - mod_pos;
+	frag_normal = (vec4(normalize(normal), 1.0) * un_model_transform).xyz;
+	frag_camera_normal = un_view_transform[3].xyz - mod_pos;
 	gl_Position = projection_transform * view_transform * model_transform * position;
 }

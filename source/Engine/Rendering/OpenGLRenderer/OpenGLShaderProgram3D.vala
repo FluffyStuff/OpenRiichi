@@ -17,6 +17,9 @@ public class OpenGLShaderProgram3D
     private int projection_transform_attrib = -1;
     private int view_transform_attrib = -1;
     private int model_transform_attrib = -1;
+    private int un_projection_transform_attrib = -1;
+    private int un_view_transform_attrib = -1;
+    private int un_model_transform_attrib = -1;
     private int light_count_attrib = -1;
     private int light_multi_attrib = -1;
     private int diffuse_color_attrib = -1;
@@ -63,6 +66,9 @@ public class OpenGLShaderProgram3D
         projection_transform_attrib = glGetUniformLocation(program, "projection_transform");
         view_transform_attrib = glGetUniformLocation(program, "view_transform");
         model_transform_attrib = glGetUniformLocation(program, "model_transform");
+        un_projection_transform_attrib = glGetUniformLocation(program, "un_projection_transform");
+        un_view_transform_attrib = glGetUniformLocation(program, "un_view_transform");
+        un_model_transform_attrib = glGetUniformLocation(program, "un_model_transform");
         light_count_attrib = glGetUniformLocation(program, "light_count");
         light_multi_attrib = glGetUniformLocation(program, "light_multiplier");
         diffuse_color_attrib = glGetUniformLocation(program, "diffuse_color");
@@ -91,6 +97,8 @@ public class OpenGLShaderProgram3D
 
         glUniformMatrix4fv(projection_transform_attrib, 1, false, projection_transform.get_data());
         glUniformMatrix4fv(view_transform_attrib, 1, false, view_transform.get_data());
+        glUniformMatrix4fv(un_projection_transform_attrib, 1, false, projection_transform.inverse().get_data());
+        glUniformMatrix4fv(un_view_transform_attrib, 1, false, view_transform.inverse().get_data());
         glUniform1i(light_count_attrib, lights.size);
 
         for (int i = 0; i < lights.size; i++)
@@ -100,6 +108,7 @@ public class OpenGLShaderProgram3D
     public void render_object(int triangle_count, Mat4 model_transform, float light_multiplier, Color diffuse_color)
     {
         glUniformMatrix4fv(model_transform_attrib, 1, false, model_transform.get_data());
+        glUniformMatrix4fv(un_model_transform_attrib, 1, false, model_transform.inverse().get_data());
         glUniform1f(light_multi_attrib, light_multiplier);
         glUniform4f(diffuse_color_attrib, diffuse_color.r, diffuse_color.g, diffuse_color.b, diffuse_color.a);
 
