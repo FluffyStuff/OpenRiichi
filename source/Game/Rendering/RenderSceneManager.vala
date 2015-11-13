@@ -56,7 +56,7 @@ class RenderSceneManager
         wall = new RenderWall(tiles, tile_size, center, wall_offset, dealer, wall_index);
 
         for (int i = 0; i < players.length; i++)
-            players[i] = new RenderPlayer(store, center, i, table_length, wall_offset, tile_size, i == player_ID);
+            players[i] = new RenderPlayer(store, center, i == dealer, i, table_length, wall_offset, tile_size, i == player_ID, round_wind);
 
         if (player_ID != -1)
             observer = players[player_ID];

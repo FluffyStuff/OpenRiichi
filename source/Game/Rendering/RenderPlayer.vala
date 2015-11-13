@@ -14,8 +14,9 @@ public class RenderPlayer
     private RenderPond pond;
     private RenderCalls calls;
     private RenderRiichi render_riichi;
+    private RenderObject3D? wind_indicator = null;
 
-    public RenderPlayer(IResourceStore store, Vec3 center, int seat, float player_offset, float wall_offset, Vec3 tile_size, bool observed)
+    public RenderPlayer(IResourceStore store, Vec3 center, bool dealer, int seat, float player_offset, float wall_offset, Vec3 tile_size, bool observed, Wind round_wind)
     {
         this.center = center;
         this.player_offset = player_offset;
@@ -43,6 +44,29 @@ public class RenderPlayer
         calls = new RenderCalls(pos, tile_size, seat);
 
         render_riichi = new RenderRiichi(store, tile_size, seat, center, player_offset, tile_size.x * 2.4f);
+
+        if (dealer)
+        {
+            string wind_string;
+            if (round_wind == Wind.SOUTH)
+                wind_string = "South";
+            else if (round_wind == Wind.WEST)
+                wind_string = "West";
+            else if (round_wind == Wind.NORTH)
+                wind_string = "North";
+            else
+                wind_string = "East";
+
+            RenderModel? model = store.load_model("wind_indicator", true);
+            RenderTexture? texture = store.load_texture("WindIndicators/" + wind_string, false);
+            wind_indicator = new RenderObject3D(model, texture);
+
+            pos = Vec3(this.player_offset - model.size.x / 2 - (tile_size.x * 3 + tile_size.y), 0, this.player_offset);
+            pos = Calculations.rotate_y(Vec3.empty(), (float)seat / 2, pos);
+            pos = center.plus(pos);
+            wind_indicator.position = Vec3(pos.x, pos.y + model.size.y / 2, pos.z);
+            wind_indicator.rotation = Vec3(0, -(float)seat / 2, 0);
+        }
     }
 
     public void process(DeltaArgs args)
@@ -53,6 +77,9 @@ public class RenderPlayer
     public void render(RenderScene3D scene)
     {
         render_riichi.render(scene);
+
+        if (wind_indicator != null)
+            scene.add_object(wind_indicator);
     }
 
     public void draw_tile(RenderTile tile)
