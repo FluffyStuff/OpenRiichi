@@ -76,5 +76,7 @@ namespace GameServer
         }
 
         public ServerRoundStatePlayer[] players { get; private set; }
+
+        public int count { get { return players.length; } }
     }
 }

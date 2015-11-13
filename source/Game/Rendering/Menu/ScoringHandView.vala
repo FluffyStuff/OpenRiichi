@@ -33,7 +33,7 @@ public class ScoringHandView : View
             bool added = false;
             for (int j = 0; j < tiles.size - 1; j++)
             {
-                if (t.get_number_index() <= tiles[j].tile_type.get_number_index())
+                if (t.tile_type <= tiles[j].tile_type.tile_type)
                 {
                     tiles.insert(j, tile);
                     added = true;

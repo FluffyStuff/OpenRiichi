@@ -11,12 +11,14 @@ public class TileRules
 
     public static bool can_ron(PlayerStateContext player, RoundStateContext round)
     {
-        return calculate_yaku(player, round, true).valid;
+        Scoring score = calculate_yaku(player, round, true);
+        return score.valid && score.has_valid_yaku();
     }
 
     public static bool can_tsumo(PlayerStateContext player, RoundStateContext round)
     {
-        return calculate_yaku(player, round, true).valid;
+        Scoring score = calculate_yaku(player, round, true);
+        return score.valid && score.has_valid_yaku();
     }
 
     private static Scoring calculate_yaku(PlayerStateContext player, RoundStateContext round, bool early_return)
@@ -48,12 +50,36 @@ public class TileRules
             foreach (TileMeld meld in call_melds)
                 reading.add_meld(meld);
 
+            foreach (TileMeld meld in reading.melds)
+            {
+                if (meld.tile_1.ID == round.win_tile.ID ||
+                    meld.tile_2.ID == round.win_tile.ID ||
+                    meld.tile_3.ID == round.win_tile.ID ||
+                    (meld.tile_4 != null && meld.tile_4.ID == round.win_tile.ID))
+                    meld.is_closed = false;
+            }
+
             ArrayList<Yaku> yaku = Yaku.get_yaku(player, round, reading);
             Scoring score = new Scoring(round, player, reading, yaku);
 
-            if (top == null || score.total_points > top.total_points)
+            if
+            (
+                top == null ||
+                (
+                    !(top.has_valid_yaku() && !score.has_valid_yaku()) &&
+                    (
+                        (score.has_valid_yaku() && !top.has_valid_yaku()) ||
+                        (score.total_points > top.total_points)
+                    )
+                )
+            )
+            {
                 top = score;
+            }
         }
+
+        if (top == null)
+            top = new Scoring.invalid();
 
         return top;
     }
@@ -310,46 +336,78 @@ public class TileRules
 
         if (hand.size == 13 || hand.size == 14)
         {
-            // -------- Chii-toi ---------
+            // -------- Kokushi musou --------
+            {
+                bool[] kokushi = new bool[13];
 
-            bool same = true;
-            bool offset = false;
-            for (int i = 0; i < (tenpai_only ? 12 : 13); i += 2)
-                if (hand[i].tile_type != hand[i+1].tile_type)
+                foreach (Tile tile in remaining_tiles)
                 {
-                    if (tenpai_only && !offset)
+                         if (tile.tile_type == TileType.MAN1 ) kokushi[ 0] = true;
+                    else if (tile.tile_type == TileType.MAN9 ) kokushi[ 1] = true;
+                    else if (tile.tile_type == TileType.PIN1 ) kokushi[ 2] = true;
+                    else if (tile.tile_type == TileType.PIN9 ) kokushi[ 3] = true;
+                    else if (tile.tile_type == TileType.SOU1 ) kokushi[ 4] = true;
+                    else if (tile.tile_type == TileType.SOU9 ) kokushi[ 5] = true;
+                    else if (tile.tile_type == TileType.TON  ) kokushi[ 6] = true;
+                    else if (tile.tile_type == TileType.NAN  ) kokushi[ 7] = true;
+                    else if (tile.tile_type == TileType.SHAA ) kokushi[ 8] = true;
+                    else if (tile.tile_type == TileType.PEI  ) kokushi[ 9] = true;
+                    else if (tile.tile_type == TileType.HATSU) kokushi[10] = true;
+                    else if (tile.tile_type == TileType.HAKU ) kokushi[11] = true;
+                    else if (tile.tile_type == TileType.CHUN ) kokushi[12] = true;
+                }
+
+                int count = 0;
+                for (int i = 0; i < kokushi.length; i++)
+                    if (kokushi[i])
+                        count++;
+
+                if (hand.size - count <= 1)
+                {
+                    readings.add(new HandReading.kokushi(remaining_tiles));
+                    return readings; // Can't be anything else
+                }
+            }
+            // -------- /Kokushi musou --------
+
+            // -------- Chii-toi ---------
+            {
+                bool same = true;
+                bool offset = false;
+                for (int i = 0; i < (tenpai_only ? 12 : 13); i += 2)
+                    if (hand[i].tile_type != hand[i+1].tile_type)
                     {
-                        offset = true;
-                        i--;
+                        if (tenpai_only && !offset)
+                        {
+                            offset = true;
+                            i--;
+                        }
+                        else
+                        {
+                            same = false;
+                            break;
+                        }
+                    }
+                if (same)
+                {
+                    if (tenpai_only || early_return)
+                    {
+                        readings.add(new HandReading.empty());
+
+                        if (early_return)
+                            return readings;
                     }
                     else
                     {
-                        same = false;
-                        break;
+                        ArrayList<TilePair> p = new ArrayList<TilePair>();
+
+                        for (int i = 0; i < 14; i += 2)
+                            p.add(new TilePair(hand[i], hand[i+1]));
+                        readings.add(new HandReading.chiitoi(p));
                     }
                 }
-            if (same)
-            {
-                if (tenpai_only || early_return)
-                {
-                    readings.add(new HandReading.empty());
-
-                    if (early_return)
-                        return readings;
-                }
-                else
-                {
-                    ArrayList<TilePair> p = new ArrayList<TilePair>();
-
-                    for (int i = 0; i < 14; i += 2)
-                        p.add(new TilePair(hand[i], hand[i+1]));
-                    readings.add(new HandReading.chiitoi(p));
-                }
             }
-
             // -------- /Chii-toi --------
-
-            // TODO: Check for kokushi musou
         }
 
         for (int i = 0; i < hand.size; i++)
@@ -516,7 +574,8 @@ public class RoundStateContext
         bool last_tile,
         bool rinshan,
         bool chankan,
-        bool flow_interrupted
+        bool flow_interrupted,
+        bool first_turn
     )
     {
         this.round_wind = round_wind;
@@ -528,6 +587,7 @@ public class RoundStateContext
         this.rinshan = rinshan;
         this.chankan = chankan;
         this.flow_interrupted = flow_interrupted;
+        this.first_turn = first_turn;
     }
 
     public string to_string()
@@ -539,7 +599,8 @@ public class RoundStateContext
         "last_tile: " + last_tile.to_string() + "\n" +
         "rinshan: " + rinshan.to_string() + "\n" +
         "chankan: " + chankan.to_string() + "\n" +
-        "flow_interrupted: " + flow_interrupted.to_string() + "\n";
+        "flow_interrupted: " + flow_interrupted.to_string() + "\n" +
+        "first_turn: " + first_turn.to_string() + "\n";
 
         str += "dora: \n";
         foreach (Tile t in dora)
@@ -561,7 +622,7 @@ public class RoundStateContext
     public bool rinshan { get; private set; }
     public bool chankan { get; private set; }
     public bool flow_interrupted { get; private set; }
-
+    public bool first_turn { get; private set; }
 }
 
 public class PlayerStateContext
@@ -641,7 +702,7 @@ public class HandReading
         tiles.add(pair[0]);
         tiles.add(pair[1]);
 
-        kokushi = false;
+        is_kokushi = false;
     }
 
     public HandReading.chiitoi(ArrayList<TilePair> pairs)
@@ -657,7 +718,15 @@ public class HandReading
         }
 
         this.pairs.add_all(pairs);
-        kokushi = false;
+        is_kokushi = false;
+    }
+
+    public HandReading.kokushi(ArrayList<Tile> tiles)
+    {
+        this.tiles = tiles;
+        melds = new ArrayList<TileMeld>();
+        pairs = new ArrayList<TilePair>();
+        is_kokushi = true;
     }
 
     public HandReading.empty()
@@ -665,7 +734,7 @@ public class HandReading
         tiles = new ArrayList<Tile>();
         melds = new ArrayList<TileMeld>();
         pairs = new ArrayList<TilePair>();
-        kokushi = false;
+        is_kokushi = false;
     }
 
     public void add_meld(TileMeld meld)
@@ -679,7 +748,7 @@ public class HandReading
     public ArrayList<Tile> tiles { get; private set; }
     public ArrayList<TileMeld> melds { get; private set; }
     public ArrayList<TilePair> pairs { get; private set; }
-    public bool kokushi { get; private set; }
+    public bool is_kokushi { get; private set; }
 }
 
 public class TileMeld
@@ -714,7 +783,7 @@ public class TileMeld
     public Tile? tile_4 { get; private set; }
     public bool is_triplet { get; private set; } // This is also true for kans
     public bool is_kan { get; private set; }
-    public bool is_closed { get; private set; }
+    public bool is_closed { get; set; }
 
     public Tile? get(int i)
     {
@@ -928,6 +997,18 @@ public class Scoring
         total_points = 2 * tsumo_points_lower + tsumo_points_higher;
     }
 
+    public bool has_valid_yaku()
+    {
+        if (yaku == null)
+            return false;
+
+        foreach (Yaku y in yaku)
+            if (y.yaku_type != YakuType.DORA && y.yaku_type != YakuType.URA_DORA)
+                return true;
+
+        return false;
+    }
+
     private void calculate_fu()
     {
         // Chiitoi
@@ -1059,6 +1140,10 @@ public class Yaku
         this.yakuman = yakuman;
     }
 
+    public YakuType yaku_type { get; private set; }
+    public int han { get; private set; }
+    public int yakuman { get; private set; }
+
     public static bool has_yaku(PlayerStateContext player, RoundStateContext round, HandReading hand)
     {
         return get_yaku(player, round, hand).size > 0;
@@ -1070,8 +1155,7 @@ public class Yaku
 
         bool closed_hand = player.calls.size == 0;
 
-        // TODO: Tenhou / Chiichou / Renhou
-        // TODO: Fix Kazehai / Pinfu / Nagashi / Ittsuu / Sanshoku(x2) / Kokushi
+        // TODO: Fix Chankan / Nagashi mangan
 
         // Nagashi mangan (Should we do this here?)
         /*{
@@ -1088,8 +1172,19 @@ public class Yaku
             return yaku;
         }*/
 
+        // Tenhou / Chiihou / Renhou
+        if (round.first_turn)
+        {
+            if (player.dealer)
+                yaku.add(new Yaku(YakuType.TENHOU, 0, 1));
+            else if (!round.ron)
+                yaku.add(new Yaku(YakuType.CHIIHOU, 0, 1));
+            else
+                yaku.add(new Yaku(YakuType.RENHOU, 0, 1));
+        }
+
         // Kokushi musou
-        if (hand.kokushi)
+        if (hand.is_kokushi)
         {
             bool pair_wait = false;
             bool one = false;
@@ -1144,8 +1239,6 @@ public class Yaku
         // Chankan
         if (round.chankan)
             yaku.add(new Yaku(YakuType.CHANKAN, 1, 0));
-
-        // TODO: Pinfu
 
         // Tanyao
         {
@@ -1240,16 +1333,14 @@ public class Yaku
                 yaku.add(new Yaku(YakuType.YAKUHAI, count, 0));
         }
 
-        // Sanshoku doujin
+        // Sanshoku doujun
         if (hand.melds.size == 4)
         {
-            bool sanshoku = false;
-
-            for (int i = 0; i < 2; i++)
+            for (int i = 0; i < 4; i++)
             {
                 TileMeld m1 = hand.melds[i];
-                TileMeld m2 = hand.melds[i+1];
-                TileMeld m3 = hand.melds[i+2];
+                TileMeld m2 = hand.melds[(i + 1) % 4];
+                TileMeld m3 = hand.melds[(i + 2) % 4];
 
                 if (m1.is_triplet || m2.is_triplet || m3.is_triplet)
                     continue;
@@ -1262,25 +1353,20 @@ public class Yaku
                     t1.get_number_index() == t2.get_number_index() && t2.get_number_index() == t3.get_number_index() &&
                     !t1.is_same_sort(t2) && !t1.is_same_sort(t3) && !t2.is_same_sort(t3))
                 {
-                    sanshoku = true;
+                    yaku.add(new Yaku(YakuType.SANSHOKU_DOUJUN, closed_hand ? 2 : 1, 0));
                     break;
                 }
             }
-
-            if (sanshoku)
-                yaku.add(new Yaku(YakuType.SANSHOKU_DOUJIN, closed_hand ? 2 : 1, 0));
         }
 
         // Ittsuu
         if (hand.melds.size == 4)
         {
-            bool ittsuu = false;
-
-            for (int i = 0; i < 2; i++)
+            for (int i = 0; i < 4 ; i++)
             {
                 TileMeld m1 = hand.melds[i];
-                TileMeld m2 = hand.melds[i+1];
-                TileMeld m3 = hand.melds[i+2];
+                TileMeld m2 = hand.melds[(i + 1) % 4];
+                TileMeld m3 = hand.melds[(i + 2) % 4];
 
                 if (m1.is_triplet || m2.is_triplet || m3.is_triplet)
                     continue;
@@ -1293,11 +1379,18 @@ public class Yaku
                     !t1.is_same_sort(t2) || !t1.is_same_sort(t3))
                     continue;
 
-                //bool
-            }
+                bool[] l = new bool[7];
 
-            if (ittsuu)
-                yaku.add(new Yaku(YakuType.ITTSUU, closed_hand ? 2 : 1, 0));
+                l[t1.tile_type - t1.get_number_index()] = true;
+                l[t2.tile_type - t1.get_number_index()] = true;
+                l[t3.tile_type - t1.get_number_index()] = true;
+
+                if (l[0] && l[3] && l[6])
+                {
+                    yaku.add(new Yaku(YakuType.ITTSUU, closed_hand ? 2 : 1, 0));
+                    break;
+                }
+            }
         }
 
         // Honroutou / Junchan / Chanta / Chinroutou
@@ -1395,13 +1488,11 @@ public class Yaku
         // Sanshoku doukou
         if (hand.melds.size == 4)
         {
-            bool sanshoku = false;
-
-            for (int i = 0; i < 2; i++)
+            for (int i = 0; i < 4; i++)
             {
                 TileMeld m1 = hand.melds[i];
-                TileMeld m2 = hand.melds[i+1];
-                TileMeld m3 = hand.melds[i+2];
+                TileMeld m2 = hand.melds[(i + 1) % 4];
+                TileMeld m3 = hand.melds[(i + 2) % 4];
 
                 if (!m1.is_triplet || !m2.is_triplet || !m3.is_triplet)
                     continue;
@@ -1414,13 +1505,10 @@ public class Yaku
                 if (t1.is_suit_tile() && t2.is_suit_tile() && t3.is_suit_tile() &&
                     t1.get_number_index() == t2.get_number_index() && t2.get_number_index() == t3.get_number_index())
                 {
-                    sanshoku = true;
+                    yaku.add(new Yaku(YakuType.SANSHOKU_DOUKOU, 2, 0));
                     break;
                 }
             }
-
-            if (sanshoku)
-                yaku.add(new Yaku(YakuType.SANSHOKU_DOUKOU, 2, 0));
         }
 
         // Chiitoi
@@ -1579,10 +1667,6 @@ public class Yaku
 
         return yaku;
     }
-
-    public YakuType yaku_type { get; private set; }
-    public int han { get; private set; }
-    public int yakuman { get; private set; }
 }
 
 public enum YakuType // Han
@@ -1603,7 +1687,7 @@ public enum YakuType // Han
     TANYAO, // All simples
     IIPEIKOU, // Double sequence
     YAKUHAI, // Special tiles
-    SANSHOKU_DOUJIN, // Three color sequence
+    SANSHOKU_DOUJUN, // Three color sequence
     ITTSUU, // Straight
     CHANTA, // Terminals or honours in each set
     HONROUTOU, // Terminals or honours

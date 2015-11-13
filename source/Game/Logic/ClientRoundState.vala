@@ -10,6 +10,8 @@ public class ClientRoundState
     private ClientRoundStateWall wall = new ClientRoundStateWall();
 
     private bool flow_interrupted = false;
+    private int turn_counter = 0;
+    private bool rinshan = false;
 
     public ClientRoundState(int player_index, Wind round_wind, int dealer)
     {
@@ -34,6 +36,7 @@ public class ClientRoundState
 
     public void tile_draw(int player_index, int tile_ID)
     {
+        turn_counter++;
         Tile tile = tiles[tile_ID];
         wall.draw_tile(tile);
         players[player_index].draw(tile);
@@ -47,6 +50,7 @@ public class ClientRoundState
 
         discard_tile = tile;
         discard_player = player;
+        rinshan = false;
     }
 
     public void flip_dora(int tile_ID)
@@ -71,6 +75,7 @@ public class ClientRoundState
     {
         ClientRoundStatePlayer player = get_player(player_index);
         player.do_late_kan(get_tile(tile_ID));
+        rinshan = true;
     }
 
     public void closed_kan(int player_index, TileType tile_type)
@@ -79,6 +84,7 @@ public class ClientRoundState
         player.do_closed_kan(tile_type);
 
         interrupt_flow(); // TODO: Find out whether this is correct
+        rinshan = true;
     }
 
     public void open_kan(int player_index, int discarding_player_index, int tile_ID, int tile_1_ID, int tile_2_ID, int tile_3_ID)
@@ -95,6 +101,7 @@ public class ClientRoundState
         player.do_open_kan(tile, tile_1, tile_2, tile_3);
 
         interrupt_flow();
+        rinshan = true;
     }
 
     public void pon(int player_index, int discarding_player_index, int tile_ID, int tile_1_ID, int tile_2_ID)
@@ -177,7 +184,6 @@ public class ClientRoundState
     private RoundStateContext create_context(bool ron, Tile win_tile)
     {
         bool last_tile = wall.empty;
-        bool rinshan = false;
         bool chankan = false;
 
         return new RoundStateContext
@@ -188,9 +194,10 @@ public class ClientRoundState
             ron,
             win_tile,
             last_tile,
-            rinshan,
+            rinshan && !ron,
             chankan,
-            flow_interrupted
+            flow_interrupted,
+            turn_counter <= players.length && !flow_interrupted
         );
     }
 

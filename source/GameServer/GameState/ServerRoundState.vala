@@ -31,6 +31,9 @@ namespace GameServer
 
         // Whether the standard game flow has been interrupted
         private bool flow_interrupted = false;
+        // Used to check for Tenhou / Chiihou / Renhou
+        private int turn_counter = 0;
+        private bool rinshan = false;
 
         public ServerRoundState(Wind round_wind, int dealer, int wall_index, Rand rnd)
         {
@@ -76,6 +79,7 @@ namespace GameServer
 
             current_state = ActionState.WAITING_CALLS;
 
+            rinshan = false;
             game_discard_tile(player_index, tile);
 
             var call_players = players.get_call_players(player, create_context(true, tile));
@@ -448,6 +452,7 @@ namespace GameServer
 
         private void kan(ServerRoundStatePlayer player)
         {
+            rinshan = true;
             flip_dora();
             Tile tile = tiles.dead_tile_add();
             game_dead_tile_add(tile);
@@ -466,6 +471,7 @@ namespace GameServer
                 return;
             }
 
+            turn_counter++;
             discard_tile = null;
             players.next_player();
             ServerRoundStatePlayer player = players.get_current_player();
@@ -538,7 +544,6 @@ namespace GameServer
         private RoundStateContext create_context(bool ron, Tile win_tile)
         {
             bool last_tile = tiles.empty;
-            bool rinshan = false;
             bool chankan = false;
 
             return new RoundStateContext
@@ -549,9 +554,10 @@ namespace GameServer
                 ron,
                 win_tile,
                 last_tile,
-                rinshan,
+                rinshan && !ron,
                 chankan,
-                flow_interrupted
+                flow_interrupted,
+                turn_counter <= players.count && !flow_interrupted
             );
         }
 

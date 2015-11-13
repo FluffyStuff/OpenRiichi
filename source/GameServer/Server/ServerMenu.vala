@@ -118,8 +118,8 @@ namespace GameServer
 
             int starting_dealer = 0;
             int starting_score = 25000;
-            int round_count = 2;
-            int hanchan_count = 3;
+            int round_count = 8;
+            int hanchan_count = 2;
             int uma_higher = 20;
             int uma_lower = 10;
 
