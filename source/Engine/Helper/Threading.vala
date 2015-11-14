@@ -1,25 +1,15 @@
-public /*static*/ class Threading
+public class Threading
 {
     public delegate void Del0Arg();
     public delegate void Del1Arg(Object arg1);
     public delegate void Del2Arg(Object arg1, Object arg2);
     public delegate void Del3Arg(Object arg1, Object arg2, Object arg3);
 
+    private Threading() {} // Instead of static class
+
     private static void start_thread(Thread thread)
     {
-#if LINUX
-        try
-        {
-            new GLib.Thread<int>.try(null, thread.start);
-            //GLib.Thread.create<int>(thread.start, false);
-        }
-        catch (ThreadError e)
-        {
-            // TODO: Error handling?
-        }
-#else
         new GLib.Thread<Object?>(null, thread.start);
-#endif
     }
 
     public static void start0(Del0Arg function)
@@ -44,11 +34,7 @@ public /*static*/ class Threading
 
     private abstract class Thread
     {
-#if LINUX
-        public abstract int start();
-#else
         public abstract Object? start();
-#endif
     }
 
     private class Thread0 : Thread
@@ -62,21 +48,12 @@ public /*static*/ class Threading
             this.func = func;
         }
 
-#if LINUX
-        public override int start()
-        {
-            func();
-            self = null;
-            return 0;
-        }
-#else
         public override Object? start()
         {
             func();
             self = null;
             return null;
         }
-#endif
     }
 
     private class Thread1 : Thread
@@ -92,21 +69,12 @@ public /*static*/ class Threading
             this.arg1 = arg1;
         }
 
-#if LINUX
-        public override int start()
-        {
-            func(arg1);
-            self = null;
-            return 0;
-        }
-#else
         public override Object? start()
         {
             func(arg1);
             self = null;
             return null;
         }
-#endif
     }
 
     private class Thread2 : Thread
@@ -124,21 +92,12 @@ public /*static*/ class Threading
             this.arg2 = arg2;
         }
 
-#if LINUX
-        public override int start()
-        {
-            func(arg1, arg2);
-            self = null;
-            return 0;
-        }
-#else
         public override Object? start()
         {
             func(arg1, arg2);
             self = null;
             return null;
         }
-#endif
     }
 
     private class Thread3 : Thread
@@ -158,21 +117,12 @@ public /*static*/ class Threading
             this.arg3 = arg3;
         }
 
-#if LINUX
-        public override int start()
-        {
-            func(arg1, arg2, arg3);
-            self = null;
-            return 0;
-        }
-#else
         public override Object? start()
         {
             func(arg1, arg2, arg3);
             self = null;
             return null;
         }
-#endif
     }
 
     public static bool threading { get { return GLib.Thread.supported(); } }

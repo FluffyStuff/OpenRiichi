@@ -72,9 +72,7 @@ namespace GameServer
 
         private void message_received(ServerPlayer player, ClientMessage message)
         {
-            mutex.lock();
             parser.execute(player, message);
-            mutex.unlock();
         }
 
         private void send_assign(int slot, ServerPlayer player)
@@ -96,8 +94,13 @@ namespace GameServer
             if (player != host)
                 return;
 
+            mutex.lock();
+
             if (players.size != 4)
+            {
+                mutex.unlock();
                 return;
+            }
 
             foreach (ServerPlayer p in players)
             {
@@ -124,6 +127,8 @@ namespace GameServer
             int uma_lower = 10;
 
             GameStartInfo info = new GameStartInfo(players, starting_dealer, starting_score, round_count, hanchan_count, 15, 30, 60, uma_higher, uma_lower);
+
+            mutex.unlock();
             game_start(info);
         }
 
@@ -131,6 +136,8 @@ namespace GameServer
         {
             if (player != host)
                 return;
+
+            mutex.lock();
 
             var msg = (ClientMessageMenuAddBot)message;
             string name = typeof(Bot).name();
@@ -152,6 +159,8 @@ namespace GameServer
 
             players.add(bot_player);
 
+            mutex.unlock();
+
             kick_slot(msg.slot);
             slots[slot] = bot_player;
             send_assign(slot, bot_player);
@@ -168,16 +177,23 @@ namespace GameServer
 
         private void kick_slot(int slot)
         {
+            mutex.lock();
+
             ServerPlayer? p = slots[slot];
             if (p == null)
+            {
+                mutex.unlock();
                 return;
+            }
 
             p.disconnected.disconnect(player_disconnected);
             p.receive_message.disconnect(message_received);
             players.remove(p);
-            p.close();
             send_clear(slot);
             slots[slot] = null;
+
+            mutex.unlock();
+            p.close();
         }
 
         private int[] random_seats(Rand rnd, int count)
