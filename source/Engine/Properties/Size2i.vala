@@ -1,7 +1,7 @@
-public struct Size2i : Vec2i
+public struct Size2i
 {
-    public int width { get { return x; } set { x = value; } }
-    public int height { get { return y; } set { y = value; } }
+    int width;
+    int height;
 
     public Size2i(int width, int height)
     {

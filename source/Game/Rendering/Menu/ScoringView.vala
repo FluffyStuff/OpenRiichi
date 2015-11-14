@@ -38,15 +38,15 @@ public class ScoringView : View2D
         add_control(rectangle);
 
         time_label = new LabelControl(store);
-        time_label.inner_anchor = Size2(0, 0);
-        time_label.outer_anchor = Size2(0, 0);
+        time_label.inner_anchor = Vec2(0, 0);
+        time_label.outer_anchor = Vec2(0, 0);
         time_label.position = Vec2(padding, padding);
         add_control(time_label);
 
         next_button = new GameMenuButton(store, "Next");
         next_button.selectable = true;
-        next_button.inner_anchor = Size2(1, 0);
-        next_button.outer_anchor = Size2(1, 0);
+        next_button.inner_anchor = Vec2(1, 0);
+        next_button.outer_anchor = Vec2(1, 0);
         next_button.position = Vec2(-padding, padding);
         add_control(next_button);
 

@@ -275,19 +275,19 @@ public class Calculations
         return new Mat3.with_array(vals);
     }
 
-    public static Mat3 scale_matrix_3(Vec2 vec)
+    public static Mat3 scale_matrix_3(Size2 vec)
     {
         float[] vals =
         {
-            vec.x, 0, 0,
-            0, vec.y, 0,
-            0,     0, 1
+            vec.width,  0, 0,
+            0, vec.height, 0,
+            0,          0, 1
         };
 
         return new Mat3.with_array(vals);
     }
 
-    public static Mat3 get_model_matrix_3(Vec2 position, float rotation, Vec2 scale)
+    public static Mat3 get_model_matrix_3(Vec2 position, float rotation, Size2 scale)
     {
         Mat3 rot = rotation_matrix_3(rotation * (float)Math.PI);
         return rot.mul_mat(scale_matrix_3(scale))/*.mul_mat(rot)*/.mul_mat(translation_matrix_3(position));

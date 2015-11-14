@@ -1,14 +1,16 @@
-public struct Rectangle : Vec4
+public struct Rectangle
 {
-    public float width { get { return z; } set { z = value; } }
-    public float height { get { return w; } set { w = value; } }
+    float x;
+    float y;
+    float width;
+    float height;
 
     public Rectangle(float x, float y, float width, float height)
     {
         this.x = x;
         this.y = y;
-        z = width;
-        w = height;
+        this.width = width;
+        this.height = height;
     }
 
     public Vec2 position { get { return Vec2(x, y); } }

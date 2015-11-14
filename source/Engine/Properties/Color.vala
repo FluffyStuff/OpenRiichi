@@ -1,9 +1,9 @@
-public struct Color : Vec4
+public struct Color
 {
-    public float r { get { return x; } set { x = value; } }
-    public float g { get { return y; } set { y = value; } }
-    public float b { get { return z; } set { z = value; } }
-    public float a { get { return w; } set { w = value; } }
+    float r;
+    float g;
+    float b;
+    float a;
 
     public Color(float r, float g, float b, float a)
     {

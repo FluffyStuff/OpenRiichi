@@ -9,7 +9,7 @@ public class MainView : View
 
 public class MouseEventArgs
 {
-    public MouseEventArgs(Button button, MouseReference? reference, bool down, Vec2i position, Vec2i size)
+    public MouseEventArgs(Button button, MouseReference? reference, bool down, Vec2i position, Size2i size)
     {
         this.button = button;
         this.down = down;
@@ -22,7 +22,7 @@ public class MouseEventArgs
     public Button button { get; private set; }
     public bool down { get; private set; }
     public Vec2i position { get; private set; }
-    public Vec2i size { get; private set; }
+    public Size2i size { get; private set; }
 
     public enum Button
     {
@@ -34,7 +34,7 @@ public class MouseEventArgs
 
 public class MouseMoveArgs
 {
-    public MouseMoveArgs(Vec2i position, Vec2i delta, Vec2i size)
+    public MouseMoveArgs(Vec2i position, Vec2i delta, Size2i size)
     {
         this.position = position;
         this.delta = delta;
@@ -46,7 +46,7 @@ public class MouseMoveArgs
     public CursorType cursor_type { get; set; }
     public Vec2i position { get; private set; }
     public Vec2i delta { get; private set; }
-    public Vec2i size { get; private set; }
+    public Size2i size { get; private set; }
 }
 
 public class MouseReference {}

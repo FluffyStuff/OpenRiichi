@@ -1,7 +1,7 @@
-public struct Size2 : Vec2
+public struct Size2
 {
-    public float width { get { return x; } set { x = value; } }
-    public float height { get { return y; } set { y = value; } }
+    float width;
+    float height;
 
     public Size2(float width, float height)
     {

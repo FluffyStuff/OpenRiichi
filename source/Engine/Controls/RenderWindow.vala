@@ -135,7 +135,7 @@ public abstract class RenderWindow
 
                 int ax = 0, ay = 0;
                 Cursor.get_state(ref ax, ref ay);
-                MouseEventArgs mouse = new MouseEventArgs(button, null, ev.state == 1, Vec2i(ax, size.y - ay), size);
+                MouseEventArgs mouse = new MouseEventArgs(button, null, ev.state == 1, Vec2i(ax, size.height - ay), size);
                 main_view.mouse_event(mouse);
             }
             else if (e.type == EventType.MOUSEWHEEL)
@@ -159,7 +159,7 @@ public abstract class RenderWindow
         Cursor.get_relative_state(ref rx, ref ry);
         Cursor.get_state(ref ax, ref ay);
 
-        MouseMoveArgs mouse = new MouseMoveArgs(Vec2i(ax, size.y - ay), Vec2i(rx, -ry), size);
+        MouseMoveArgs mouse = new MouseMoveArgs(Vec2i(ax, size.height - ay), Vec2i(rx, -ry), size);
         main_view.mouse_move(mouse);
 
         if (mouse.cursor_type != CursorType.UNDEFINED)

@@ -45,14 +45,14 @@ public class ScoringPointsView : View2D
 
         if (draw)
         {
-            score_label.inner_anchor = Size2(0.5f, 0.5f);
-            score_label.outer_anchor = Size2(0.5f, 0.5f);
+            score_label.inner_anchor = Vec2(0.5f, 0.5f);
+            score_label.outer_anchor = Vec2(0.5f, 0.5f);
             add_control(score_label);
             return;
         }
 
-        score_label.inner_anchor = Size2(0.5f, 1);
-        score_label.outer_anchor = Size2(0.5f, 1);
+        score_label.inner_anchor = Vec2(0.5f, 1);
+        score_label.outer_anchor = Vec2(0.5f, 1);
         labels.add(score_label);
 
         hand = new ScoringHandView(scoring);
@@ -71,8 +71,8 @@ public class ScoringPointsView : View2D
         {
             LabelControl name = new LabelControl(store);
             name.text = yaku_to_string(yaku);
-            name.inner_anchor = Size2(0, 1);
-            name.outer_anchor = Size2(0, 1);
+            name.inner_anchor = Vec2(0, 1);
+            name.outer_anchor = Vec2(0, 1);
             name.position = Vec2(0, -start - h * name.size.height);
             labels.add(name);
 
@@ -85,8 +85,8 @@ public class ScoringPointsView : View2D
 
             LabelControl num = new LabelControl(store);
             num.text = str;
-            num.inner_anchor = Size2(1, 1);
-            num.outer_anchor = Size2(1, 1);
+            num.inner_anchor = Vec2(1, 1);
+            num.outer_anchor = Vec2(1, 1);
             num.position = Vec2(0, -start - h * num.size.height);
             labels.add(num);
 
@@ -147,8 +147,8 @@ public class ScoringPointsView : View2D
 
         LabelControl points_label = new LabelControl(store);
         points_label.text = name + points + " points";
-        points_label.inner_anchor = Size2(0.5f, 0);
-        points_label.outer_anchor = Size2(0.5f, 0);
+        points_label.inner_anchor = Vec2(0.5f, 0);
+        points_label.outer_anchor = Vec2(0.5f, 0);
         labels.add(points_label);
 
         foreach (LabelControl label in labels)

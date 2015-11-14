@@ -26,12 +26,12 @@ public class OptionItemControl : View2D
 
         name_label = new LabelControl(store);
         name_label.text = name;
-        name_label.inner_anchor = Size2(0, 0.5f);
-        name_label.outer_anchor = Size2(0, 0.5f);
+        name_label.inner_anchor = Vec2(0, 0.5f);
+        name_label.outer_anchor = Vec2(0, 0.5f);
         add_control(name_label);
 
-        prev_button.inner_anchor = Size2(0, 0.5f);
-        prev_button.outer_anchor = Size2(1, 0.5f);
+        prev_button.inner_anchor = Vec2(0, 0.5f);
+        prev_button.outer_anchor = Vec2(1, 0.5f);
         prev_button.position = Vec2(-width, 0);
         prev_button.selectable = true;
         prev_button.clicked.connect(prev);
@@ -39,13 +39,13 @@ public class OptionItemControl : View2D
 
         text_label = new LabelControl(store);
         text_label.text = "";
-        text_label.inner_anchor = Size2(0.5f, 0.5f);
-        text_label.outer_anchor = Size2(1, 0.5f);
+        text_label.inner_anchor = Vec2(0.5f, 0.5f);
+        text_label.outer_anchor = Vec2(1, 0.5f);
         text_label.position = Vec2(-width / 2, 0);
         add_control(text_label);
 
-        next_button.inner_anchor = Size2(1, 0.5f);
-        next_button.outer_anchor = Size2(1, 0.5f);
+        next_button.inner_anchor = Vec2(1, 0.5f);
+        next_button.outer_anchor = Vec2(1, 0.5f);
         next_button.selectable = true;
         next_button.clicked.connect(next);
         add_control(next_button);

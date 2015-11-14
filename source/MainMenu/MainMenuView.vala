@@ -169,7 +169,7 @@ class MainMenuView : View2D
             add_control(button);
 
         int padding = 30;
-        float height = host_game_button.size.y + padding;
+        float height = host_game_button.size.height + padding;
 
         host_game_button.position = Vec2(0, height * 1.5f);
         join_game_button.position = Vec2(0, height * 0.5f);

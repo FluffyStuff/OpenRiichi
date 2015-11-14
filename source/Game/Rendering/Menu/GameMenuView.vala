@@ -73,14 +73,14 @@ public class GameMenuView : View2D
             button.outer_anchor = Vec2(0.5f, 0);
             button.scale = Size2(scale, scale);
 
-            width += button.size.x / 2 * scale;
+            width += button.size.width / 2 * scale;
         }
 
         float p = 0;
         foreach (GameMenuButton button in buttons)
         {
-            button.position = Vec2(button.size.x / 2 * scale - width + p, 0);
-            p += button.size.x * scale;
+            button.position = Vec2(button.size.width / 2 * scale - width + p, 0);
+            p += button.size.width * scale;
         }
     }
 
