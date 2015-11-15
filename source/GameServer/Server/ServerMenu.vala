@@ -108,16 +108,15 @@ namespace GameServer
                 p.disconnected.disconnect(player_disconnected);
             }
 
-
-            GamePlayer[] players = new GamePlayer[slots.length];
-            int[] seats = random_seats(rnd, players.length);
-            for (int i = 0; i < slots.length; i++)
-                players[i] = new GamePlayer(i, slots[seats[i]].name);
-
+            int[] seats = random_seats(rnd, this.players.size);
             ArrayList<ServerPlayer> shuffled_players = new ArrayList<ServerPlayer>();
             for (int i = 0; i < this.players.size; i++)
                 shuffled_players.add(this.players[seats[i]]);
             this.players = shuffled_players;
+
+            GamePlayer[] players = new GamePlayer[this.players.size];
+            for (int i = 0; i < players.length; i++)
+                players[i] = new GamePlayer(i, this.players[i].name);
 
             int starting_dealer = 0;
             int starting_score = 25000;
