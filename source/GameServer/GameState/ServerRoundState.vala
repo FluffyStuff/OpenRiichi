@@ -495,12 +495,6 @@ namespace GameServer
             }
 
             game_draw(tenpai_indices, tiles);
-
-            /*int[] pl = new int[tenpai_players.size];
-            for (int i = 0; i < pl.length; i++)
-                pl[i] = tenpai_players[i].index;
-
-            game_draw(pl);*/
         }
 
         private void flip_dora()
