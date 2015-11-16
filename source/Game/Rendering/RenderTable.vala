@@ -25,7 +25,7 @@ public class RenderTable
 
         table.position = Vec3(0, -0.163f, 0);
         table.scale = Vec3(10, 10, 10);
-        field.position = Vec3(0, 12.4f, 0);
+        field.position = Vec3(0, 0, 0);
         field.scale = Vec3(9.6f, 1, 9.6f);
 
         center = Vec3(0, field.position.y, 0);
