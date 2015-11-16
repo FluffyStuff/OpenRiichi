@@ -912,6 +912,7 @@ public class RenderCalls
 class RenderRiichi
 {
     private RenderObject3D stick;
+    private bool visible = false;
 
     private bool animation_started = false;
     private bool animation_set_time = false;
@@ -967,7 +968,8 @@ class RenderRiichi
 
     public void render(RenderScene3D scene)
     {
-        scene.add_object(stick);
+        if (visible)
+            scene.add_object(stick);
     }
 
     public void animate()
@@ -975,6 +977,7 @@ class RenderRiichi
         if (animation_started)
             return;
 
+        visible = true;
         animation_set_time = true;
         animation_started = true;
     }
