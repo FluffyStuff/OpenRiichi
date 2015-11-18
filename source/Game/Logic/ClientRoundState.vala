@@ -10,7 +10,7 @@ public class ClientRoundState
     private ClientRoundStateWall wall = new ClientRoundStateWall();
 
     private bool flow_interrupted = false;
-    private int turn_counter = 0;
+    private int turn_counter = -52; // TODO: seperate out initial tile draw
     private bool rinshan = false;
 
     public ClientRoundState(int player_index, Wind round_wind, int dealer)
