@@ -31,7 +31,7 @@ public class ScoringHandView : View
             RenderTile tile = new RenderTile(store, extension, t, tile_scale);
 
             bool added = false;
-            for (int j = 0; j < tiles.size - 1; j++)
+            for (int j = 0; j < tiles.size; j++)
             {
                 if (t.tile_type <= tiles[j].tile_type.tile_type)
                 {
@@ -46,10 +46,10 @@ public class ScoringHandView : View
         }
 
         for (int i = 0; i < tiles.size; i++)
-            tiles[i].set_absolute_location(Vec3((i - (score.player.hand.size + 1.0f) / 2 + 0.5f) * tile_size.x, 0, 0), Vec3(0.4f, 1, 0));
+            tiles[i].set_absolute_location(Vec3((i - (tiles.size + 1.0f) / 2 + 0.5f) * tile_size.x, 0, 0), Vec3(0.4f, 1, 0));
 
         RenderTile tile = new RenderTile(store, extension, score.round.win_tile, tile_scale);
-        tile.set_absolute_location(Vec3((score.player.hand.size + 1 - (score.player.hand.size + 1.0f) / 2 + 0.5f) * tile_size.x, 0, 0), Vec3(0.4f, 1, 0));
+        tile.set_absolute_location(Vec3((tiles.size + 1 - (tiles.size + 1.0f) / 2 + 0.5f) * tile_size.x, 0, 0), Vec3(0.4f, 1, 0));
         tiles.add(tile);
 
         float len = 15;
