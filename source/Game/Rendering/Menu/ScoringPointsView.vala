@@ -64,11 +64,20 @@ public class ScoringPointsView : View2D
         int han = 0;
         int yakuman = 0;
 
+        foreach (Yaku yaku in scoring.yaku)
+        {
+            han += yaku.han;
+            yakuman += yaku.yakuman;
+        }
+
         int h = 0;
         float start = hand.size.height / 2 - hand.position.y;
 
         foreach (Yaku yaku in scoring.yaku)
         {
+            if (yakuman > 0 && yaku.yakuman == 0)
+                continue;
+
             LabelControl name = new LabelControl(store);
             name.text = yaku_to_string(yaku);
             name.inner_anchor = Vec2(0, 1);
@@ -89,9 +98,6 @@ public class ScoringPointsView : View2D
             num.outer_anchor = Vec2(1, 1);
             num.position = Vec2(0, -start - h * num.size.height);
             labels.add(num);
-
-            han += yaku.han;
-            yakuman += yaku.yakuman;
             h++;
         }
 
