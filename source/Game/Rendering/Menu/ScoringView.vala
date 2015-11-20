@@ -6,7 +6,7 @@ public class ScoringView : View2D
     private int player_index;
     private LabelControl time_label;
     private RectangleControl rectangle;
-    private GameMenuButton next_button;
+    //private GameMenuButton next_button;
     private ScoringPointsView view;
     private ScoringPlayerElement bottom;
     private ScoringPlayerElement right;
@@ -43,12 +43,12 @@ public class ScoringView : View2D
         time_label.position = Vec2(padding, padding);
         add_control(time_label);
 
-        next_button = new GameMenuButton(store, "Next");
+        /*next_button = new GameMenuButton(store, "Next");
         next_button.selectable = true;
         next_button.inner_anchor = Vec2(1, 0);
         next_button.outer_anchor = Vec2(1, 0);
         next_button.position = Vec2(-padding, padding);
-        add_control(next_button);
+        add_control(next_button);*/
 
         var player = score.players[player_index];
         bottom = new ScoringPlayerElement(player.wind, player.name, player.points, player.transfer, player.score);
