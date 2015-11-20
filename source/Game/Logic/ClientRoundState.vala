@@ -36,6 +36,10 @@ public class ClientRoundState
 
     public void tile_draw(int player_index, int tile_ID)
     {
+        if (discard_tile != null)
+            foreach (var player in players)
+                player.check_temporary_furiten(discard_tile);
+
         turn_counter++;
         Tile tile = tiles[tile_ID];
         wall.draw_tile(tile);
@@ -215,6 +219,7 @@ public class ClientRoundStatePlayer
     private bool dealer;
     private Wind wind;
     private bool tiles_called_on = false;
+    private bool temporary_furiten = false;
 
     public ClientRoundStatePlayer(int seat, bool dealer, Wind wind)
     {
@@ -239,6 +244,9 @@ public class ClientRoundStatePlayer
     {
         hand.add(tile);
         last_drawn_tile = tile;
+
+        if (!in_riichi)
+            temporary_furiten = false;
     }
 
     public void discard(Tile tile)
@@ -259,6 +267,16 @@ public class ClientRoundStatePlayer
     {
         //pond.remove(tile); // Don't need to do this
         tiles_called_on = true;
+    }
+
+    public void check_temporary_furiten(Tile tile)
+    {
+        ArrayList<Tile> hand = new ArrayList<Tile>();
+        hand.add_all(this.hand);
+        hand.add(tile);
+
+        if (TileRules.winning_hand(hand))
+            temporary_furiten = true;
     }
 
     public void flow_interrupted()
@@ -380,7 +398,7 @@ public class ClientRoundStatePlayer
 
     public bool can_ron(RoundStateContext context)
     {
-        return !TileRules.in_furiten(hand, pond) && TileRules.can_ron(create_context(false), context);
+        return !temporary_furiten && !TileRules.in_furiten(hand, pond) && TileRules.can_ron(create_context(false), context);
     }
 
     public bool can_tsumo(RoundStateContext context)

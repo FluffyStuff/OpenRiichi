@@ -75,6 +75,12 @@ namespace GameServer
             }
         }
 
+        public void check_temporary_furiten(Tile tile)
+        {
+            foreach (ServerRoundStatePlayer player in players)
+                player.check_temporary_furiten(tile);
+        }
+
         public ServerRoundStatePlayer[] players { get; private set; }
 
         public int count { get { return players.length; } }

@@ -446,6 +446,7 @@ namespace GameServer
 
             flow_interrupted = true;
             players.set_current_player(player);
+            players.check_temporary_furiten(discard_tile);
             current_state = ActionState.WAITING_TURN;
             game_get_turn_decision(player.index);
         }

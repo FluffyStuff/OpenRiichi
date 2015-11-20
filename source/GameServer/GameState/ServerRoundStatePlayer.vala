@@ -12,6 +12,7 @@ namespace GameServer
         private bool can_double_riichi = true;
         private bool ippatsu = false;
         private bool tiles_called_on = false;
+        private bool temporary_furiten = false; // Temporary/Permanent temporary furiten
 
         public ServerRoundStatePlayer(int index, Wind wind, bool dealer)
         {
@@ -30,6 +31,9 @@ namespace GameServer
         {
             hand.add(tile);
             last_drawn_tile = tile;
+
+            if (!in_riichi) // Check for permanent temporary furiten
+                temporary_furiten = false;
         }
 
         public bool discard(Tile tile)
@@ -69,9 +73,19 @@ namespace GameServer
             tiles_called_on = true;
         }
 
+        public void check_temporary_furiten(Tile tile)
+        {
+            ArrayList<Tile> hand = new ArrayList<Tile>();
+            hand.add_all(this.hand);
+            hand.add(tile);
+
+            if (TileRules.winning_hand(hand))
+                temporary_furiten = true;
+        }
+
         public bool can_ron(RoundStateContext context)
         {
-            return !TileRules.in_furiten(hand, pond) && TileRules.can_ron(create_context(false), context);
+            return !temporary_furiten && !TileRules.in_furiten(hand, pond) && TileRules.can_ron(create_context(false), context);
         }
 
         public bool can_tsumo(RoundStateContext context)

@@ -269,11 +269,6 @@ public class TileRules
         return tiles;
     }
 
-    public static bool in_tenpai(ArrayList<Tile> hand)
-    {
-        return hand_readings(hand, true, true).size > 0;
-    }
-
     public static bool in_furiten(ArrayList<Tile> hand, ArrayList<Tile> pond_in)
     {
         ArrayList<Tile> pond = sort_tiles(pond_in);
@@ -289,13 +284,18 @@ public class TileRules
 
             tiles.add(tile);
 
-            if (in_tenpai(tiles))
+            if (winning_hand(hand))
                 return true;
 
             tiles.remove(tile);
         }
 
         return false;
+    }
+
+    public static bool in_tenpai(ArrayList<Tile> hand)
+    {
+        return hand_readings(hand, true, true).size > 0;
     }
 
     public static bool winning_hand(ArrayList<Tile> hand)//, ArrayList<RoundStateCall> calls)
