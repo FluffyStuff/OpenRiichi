@@ -81,7 +81,7 @@ public class GameController
 
     private void create_round_state(RoundStartInfo round_start)
     {
-        round = new RoundState(round_start, player_index, game.round_wind, game.dealer_index);
+        round = new RoundState(round_start, player_index, game.round_wind, game.dealer_index, game.can_riichi());
         round.send_message.connect(connection.send_message);
         round.set_chii_state.connect(menu.set_chii);
         round.set_pon_state.connect(menu.set_pon);
@@ -92,6 +92,7 @@ public class GameController
         round.set_continue_state.connect(menu.set_continue);
         round.set_tile_select_state.connect(renderer.set_active);
         round.set_tile_select_groups.connect(renderer.set_tile_select_groups);
+        round.declare_riichi.connect(game.declare_riichi);
 
         renderer.tile_selected.connect(round.client_tile_selected);
 

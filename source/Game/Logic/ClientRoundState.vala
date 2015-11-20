@@ -13,7 +13,7 @@ public class ClientRoundState
     private int turn_counter = -52; // TODO: seperate out initial tile draw
     private bool rinshan = false;
 
-    public ClientRoundState(int player_index, Wind round_wind, int dealer)
+    public ClientRoundState(int player_index, Wind round_wind, int dealer, bool[] can_riichi)
     {
         this.player_index = player_index;
         this.round_wind = round_wind;
@@ -21,7 +21,7 @@ public class ClientRoundState
         discard_tile = null;
 
         for (int i = 0; i < players.length; i++)
-            players[i] = new ClientRoundStatePlayer(i, i == dealer, (Wind)((i - dealer + 4) % 4));
+            players[i] = new ClientRoundStatePlayer(i, i == dealer, (Wind)((i - dealer + 4) % 4), can_riichi[i]);
 
         for (int i = 0; i < tiles.length; i++)
             tiles[i] = new Tile(i, TileType.BLANK, false);
@@ -220,12 +220,15 @@ public class ClientRoundStatePlayer
     private Wind wind;
     private bool tiles_called_on = false;
     private bool temporary_furiten = false;
+    private bool _can_riichi;
 
-    public ClientRoundStatePlayer(int seat, bool dealer, Wind wind)
+    public ClientRoundStatePlayer(int seat, bool dealer, Wind wind, bool can_riichi)
     {
         this.seat = seat;
         this.dealer = dealer;
         this.wind = wind;
+        _can_riichi = can_riichi;
+
         hand = new ArrayList<Tile>();
         pond = new ArrayList<Tile>();
         calls = new ArrayList<RoundStateCall>();
@@ -408,7 +411,7 @@ public class ClientRoundStatePlayer
 
     public bool can_riichi()
     {
-        if (in_riichi)
+        if (!_can_riichi || in_riichi)
             return false;
 
         foreach (RoundStateCall call in calls)

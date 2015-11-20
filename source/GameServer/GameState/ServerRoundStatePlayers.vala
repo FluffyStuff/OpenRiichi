@@ -6,14 +6,14 @@ namespace GameServer
     {
         private int current_player;
 
-        public ServerRoundStatePlayers(int dealer)
+        public ServerRoundStatePlayers(int dealer, bool[] can_riichi)
         {
             current_player = dealer;
 
             players = new ServerRoundStatePlayer[4];
 
             for (int i = 0; i < players.length; i++)
-                players[i] = new ServerRoundStatePlayer(i, (Wind)((4 - dealer + i) % 4), i == dealer);
+                players[i] = new ServerRoundStatePlayer(i, (Wind)((4 - dealer + i) % 4), i == dealer, can_riichi[i]);
         }
 
         public ArrayList<ServerRoundStatePlayer> get_call_players(ServerRoundStatePlayer caller, RoundStateContext context)

@@ -27,7 +27,6 @@ cleanLinux:
 WindowsDebug:
 	$(eval SHELL = C:/Windows/System32/cmd.exe)
 	$(VALAC) $(DEBUG) $(O) $(DIRS) $(PKGS) $(WLIBS) $(VAPI) $(OTHER)
-	-RCEDIT /I bin\$(NAME).exe Icon.ico
 
 WindowsRelease:
 	$(eval SHELL = C:/Windows/System32/cmd.exe)

@@ -8,22 +8,25 @@ namespace GameServer
 
         private Wind wind;
         private bool dealer;
+        private bool _can_riichi;
         private bool double_riichi = false;
         private bool can_double_riichi = true;
         private bool ippatsu = false;
         private bool tiles_called_on = false;
         private bool temporary_furiten = false; // Temporary/Permanent temporary furiten
 
-        public ServerRoundStatePlayer(int index, Wind wind, bool dealer)
+        public ServerRoundStatePlayer(int index, Wind wind, bool dealer, bool can_riichi)
         {
             this.index = index;
+            this.wind = wind;
+            this.dealer = dealer;
+            _can_riichi = can_riichi;
+
             call_decision = null;
             state = PlayerState.DONE;
             hand = new ArrayList<Tile>();
             calls = new ArrayList<RoundStateCall>();
             in_riichi = false;
-            this.wind = wind;
-            this.dealer = dealer;
             last_drawn_tile = null;
         }
 
@@ -116,7 +119,7 @@ namespace GameServer
 
         public bool can_riichi()
         {
-            if (in_riichi)
+            if (!_can_riichi || in_riichi)
                 return false;
 
             foreach (RoundStateCall call in calls)
@@ -128,7 +131,7 @@ namespace GameServer
 
         /*public bool can_open_kan(Tile tile)
         {
-            return TileRules.can_open_kan(hand, tile);
+            return !in_riichi && TileRules.can_open_kan(hand, tile);
         }*/
 
         public bool can_pon(Tile tile)

@@ -176,16 +176,26 @@ public class GameState
         return add_round_score_state(result);
     }
 
-    public bool declare_riichi(int player_index)
+    public bool[] can_riichi()
+    {
+        bool[] can_riichi = new bool[players.length];
+
+        for (int i = 0; i < players.length; i++)
+            can_riichi[i] = players[i].points >= 1000;
+
+        return can_riichi;
+    }
+
+    public void declare_riichi(int player_index)
     {
         if (game_is_finished || round_is_finished)
-            return false;
+            return;
 
-        if (players[player_index].points + players[player_index].transfer < 1000)
-            return false;
+        if (players[player_index].points < 1000)
+            return;
 
         players[player_index].transfer -= 1000;
-        return true;
+        riichi_count++;
     }
 
     private void calculate_score()

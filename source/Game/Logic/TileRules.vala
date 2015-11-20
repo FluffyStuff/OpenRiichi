@@ -284,7 +284,7 @@ public class TileRules
 
             tiles.add(tile);
 
-            if (winning_hand(hand))
+            if (winning_hand(tiles))
                 return true;
 
             tiles.remove(tile);

@@ -24,9 +24,11 @@ public class RoundState
     public bool finished { get; private set; }
     public RoundFinishResult result { get; private set; }
 
-    public RoundState(RoundStartInfo info, int player_index, Wind round_wind, int dealer_index)
+    public signal void declare_riichi(int player_index);
+
+    public RoundState(RoundStartInfo info, int player_index, Wind round_wind, int dealer_index, bool[] can_riichi)
     {
-        state = new ClientRoundState(player_index, round_wind, dealer_index);
+        state = new ClientRoundState(player_index, round_wind, dealer_index, can_riichi);
         action_state = State.DONE;
 
         parser.connect(server_turn_decision, typeof(ServerMessageTurnDecision));
@@ -484,6 +486,8 @@ public class RoundState
     {
         ServerMessageRiichi riichi = (ServerMessageRiichi)message;
         state.riichi(riichi.player_index);
+
+        declare_riichi(riichi.player_index);
     }
 
     private void server_late_kan(ServerMessage message)

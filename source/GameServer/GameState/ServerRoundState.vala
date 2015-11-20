@@ -35,11 +35,11 @@ namespace GameServer
         private int turn_counter = 0;
         private bool rinshan = false;
 
-        public ServerRoundState(Wind round_wind, int dealer, int wall_index, Rand rnd)
+        public ServerRoundState(Wind round_wind, int dealer, int wall_index, Rand rnd, bool[] can_riichi)
         {
             this.round_wind = round_wind;
             tiles = new ServerRoundStateWall(dealer, wall_index, rnd);
-            players = new ServerRoundStatePlayers(dealer);
+            players = new ServerRoundStatePlayers(dealer, can_riichi);
         }
 
         public void start()

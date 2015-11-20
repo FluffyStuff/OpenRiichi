@@ -23,7 +23,7 @@ public abstract class Bot : Object
             mutex.lock();
 
         game_state.start_round(info);
-        round_state = new ClientRoundState(player_index, game_state.round_wind, game_state.dealer_index);
+        round_state = new ClientRoundState(player_index, game_state.round_wind, game_state.dealer_index, game_state.can_riichi());
 
         if (use_lock)
             mutex.unlock();
@@ -112,6 +112,7 @@ public abstract class Bot : Object
     public void riichi(int player_index)
     {
         round_state.riichi(player_index);
+        game_state.declare_riichi(player_index);
     }
 
     public void turn_decision()
