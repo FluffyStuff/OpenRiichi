@@ -7,21 +7,21 @@ uniform int light_count;
 uniform float light_multiplier;
 uniform vec4 diffuse_color;
 
-in vec2 frag_texture_coord;
-in vec3 frag_normal;
-in vec3 frag_camera_normal;
+varying vec2 frag_texture_coord;
+varying vec3 frag_normal;
+varying vec3 frag_camera_normal;
 
-in vec3 light_normals[MAX_LIGHTS];
-in float light_intensity[MAX_LIGHTS];
-in vec3 light_colors[MAX_LIGHTS];
+varying vec3 light_normals[MAX_LIGHTS];
+varying float light_intensity[MAX_LIGHTS];
+varying vec3 light_colors[MAX_LIGHTS];
 
-varying out vec4 out_color;
+//varying out vec4 out_color;
 
 void main()
 {
 	vec3 normal = normalize(frag_normal);
 	
-	out_color = texture2D(tex, frag_texture_coord);
+	vec4 out_color = texture2D(tex, frag_texture_coord);
 	out_color.xyz += diffuse_color.xyz;
 	
 	vec3 diffuse = out_color.xyz * 0.02;
@@ -77,4 +77,6 @@ void main()
 	
 	out_color.xyz /= max(pow(length(frag_camera_normal) / 5, 1.0) / 10, 1);
 	out_color.a = diffuse_color.a;
+	
+	gl_FragColor = out_color;
 }

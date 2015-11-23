@@ -5,8 +5,8 @@ uniform sampler2D texture;
 uniform bool use_texture;
 uniform vec4 diffuse_color;
 
-in vec2 frag_texture_coord;
-varying out vec4 out_color;
+varying vec2 frag_texture_coord;
+//varying out vec4 out_color;
 
 void main(void)
 {
@@ -18,5 +18,5 @@ void main(void)
 	color.xyz += diffuse_color.xyz;
 	color.a *= diffuse_color.a;
 	
-	out_color = color;
+	gl_FragColor = color;
 }
