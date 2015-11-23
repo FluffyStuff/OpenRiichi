@@ -1,4 +1,4 @@
-#version 130
+#version 120
 #define MAX_LIGHTS 2
 //#define PI 3.1415926535897932384626433832795
 
@@ -15,13 +15,13 @@ in vec3 light_normals[MAX_LIGHTS];
 in float light_intensity[MAX_LIGHTS];
 in vec3 light_colors[MAX_LIGHTS];
 
-out vec4 out_color;
+varying out vec4 out_color;
 
 void main()
 {
 	vec3 normal = normalize(frag_normal);
 	
-	out_color = texture(tex, frag_texture_coord);
+	out_color = texture2D(tex, frag_texture_coord);
 	out_color.xyz += diffuse_color.xyz;
 	
 	vec3 diffuse = out_color.xyz * 0.02;

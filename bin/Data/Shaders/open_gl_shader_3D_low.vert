@@ -1,4 +1,4 @@
-#version 130
+#version 120
 #define MAX_LIGHTS 2
 
 struct lightSourceParameters 
@@ -25,9 +25,9 @@ in vec4 position;
 in vec3 texture_coord;
 in vec3 normal;
 
-out vec2 frag_texture_coord;
-out vec3 light_color_original;
-out vec3 light_color_additive;
+varying out vec2 frag_texture_coord;
+varying out vec3 light_color_original;
+varying out vec3 light_color_additive;
 
 void main()
 {

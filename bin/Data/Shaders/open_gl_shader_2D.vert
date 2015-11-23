@@ -1,9 +1,9 @@
-#version 130
+#version 120
 
 uniform mat3 model_transform;
 
 in vec2 position;
-out vec2 frag_texture_coord;
+varying out vec2 frag_texture_coord;
 
 void main(void)
 {

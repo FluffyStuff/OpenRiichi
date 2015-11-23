@@ -1,4 +1,4 @@
-#version 130
+#version 120
 
 uniform sampler2D texture;
 
@@ -6,7 +6,7 @@ uniform bool use_texture;
 uniform vec4 diffuse_color;
 
 in vec2 frag_texture_coord;
-out vec4 out_color;
+varying out vec4 out_color;
 
 void main(void)
 {
