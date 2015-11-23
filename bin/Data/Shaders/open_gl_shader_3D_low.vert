@@ -21,13 +21,13 @@ uniform vec4 diffuse_color;
 uniform int light_count;
 uniform lightSourceParameters light_source[MAX_LIGHTS];
 
-in vec4 position;
-in vec3 texture_coord;
-in vec3 normal;
+attribute vec4 position;
+attribute vec3 texture_coord;
+attribute vec3 normal;
 
-varying out vec2 frag_texture_coord;
-varying out vec3 light_color_original;
-varying out vec3 light_color_additive;
+varying vec2 frag_texture_coord;
+varying vec3 light_color_original;
+varying vec3 light_color_additive;
 
 void main()
 {

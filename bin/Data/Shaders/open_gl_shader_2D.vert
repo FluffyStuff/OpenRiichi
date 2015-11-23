@@ -2,8 +2,8 @@
 
 uniform mat3 model_transform;
 
-in vec2 position;
-varying out vec2 frag_texture_coord;
+attribute vec2 position;
+varying vec2 frag_texture_coord;
 
 void main(void)
 {

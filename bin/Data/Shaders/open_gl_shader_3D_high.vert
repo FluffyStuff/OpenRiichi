@@ -18,13 +18,13 @@ uniform mat4 un_model_transform;
 uniform int light_count;
 uniform lightSourceParameters light_source[MAX_LIGHTS];
 
-in vec4 position;
-in vec3 texture_coord;
-in vec3 normal;
+attribute vec4 position;
+attribute vec3 texture_coord;
+attribute vec3 normal;
 
-varying out vec2 frag_texture_coord;
-varying out vec3 frag_normal;
-varying out vec3 frag_camera_normal;
+varying vec2 frag_texture_coord;
+varying vec3 frag_normal;
+varying vec3 frag_camera_normal;
 
 varying out vec3 light_normals[MAX_LIGHTS];
 varying out float light_intensity[MAX_LIGHTS];
