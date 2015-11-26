@@ -26,9 +26,9 @@ varying vec2 frag_texture_coord;
 varying vec3 frag_normal;
 varying vec3 frag_camera_normal;
 
-varying out vec3 light_normals[MAX_LIGHTS];
-varying out float light_intensity[MAX_LIGHTS];
-varying out vec3 light_colors[MAX_LIGHTS];
+varying vec3 light_normals[MAX_LIGHTS];
+varying float light_intensity[MAX_LIGHTS];
+varying vec3 light_colors[MAX_LIGHTS];
 
 void main()
 {

@@ -58,7 +58,7 @@ public class OpenGLShaderProgram3D
         glBindAttribLocation(program, vert_position_attribute, "position");
         glBindAttribLocation(program, vert_texture_attribute, "texture_coord");
         glBindAttribLocation(program, vert_normal_attribute, "normal");
-        glBindFragDataLocation(program, 0, "out_color");
+        //glBindFragDataLocation(program, 0, "gl_FragColor");
 
         glLinkProgram(program);
 

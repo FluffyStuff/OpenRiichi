@@ -38,7 +38,7 @@ class OpenGLShaderProgram2D
 		//bloom_attrib = glGetUniformLocation(post_processing_shader_program,"bloom");
 		//vertical_attrib = glGetUniformLocation(post_processing_shader_program,"vertical");
 
-        glBindFragDataLocation(program, 0, "out_color");
+        //glBindFragDataLocation(program, 0, "gl_FragColor");
         glBindAttribLocation(program, vert_position_attribute, "position");
 
         glLinkProgram(program);

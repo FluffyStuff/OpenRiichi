@@ -4,4 +4,7 @@ namespace GLEW {
 	//[CCode (cname = "glewInit")]
 	[CCode (cheader_filename = "GL/glew.h", cname = "glewInit")]
 	public bool init();
+
+	[CCode (cheader_filename = "GL/glew.h", cname = "glewExperimental")]
+	public static bool experimental;
 }

@@ -49,9 +49,10 @@ public class OpenGLRenderer : RenderTarget
         if ((context = SDL.GL.create_context(sdl_window)) == null)
             return false;
 
-        SDL.GL.set_attribute(GLattr.CONTEXT_MAJOR_VERSION, 4);
-        SDL.GL.set_attribute(GLattr.CONTEXT_MINOR_VERSION, 0);
+        SDL.GL.set_attribute(GLattr.CONTEXT_MAJOR_VERSION, 2);
+        SDL.GL.set_attribute(GLattr.CONTEXT_MINOR_VERSION, 1);
         SDL.GL.set_attribute(GLattr.CONTEXT_PROFILE_MASK, 1); // Core Profile
+        GLEW.experimental = true;
         GLEW.init();
 
         glEnable(GL_CULL_FACE);
