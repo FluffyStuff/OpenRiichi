@@ -471,19 +471,17 @@ public class TileRules
                 }
             }
 
-            // Last option is to find a pair, and see if we are waiting for our last combination (this can only be if we have 4 tiles left in the hand)
+            // Last option is to find a pair, and see if we are waiting for our last combination (this can only be if we have 4 tiles left in the hand, and are tenpai only)
             if (hand.size == 4)
             {
-                // Can only happen if we are tenpai_only
-                hand.remove_at(i);
-
+                int s = hand.size;
                 Tile? t = null;
-                if (hand[0].tile_type == hand[1].tile_type)
-                    t = hand[2];
-                else if (hand[0].tile_type == hand[2].tile_type)
-                    t = hand[1];
-                else if (hand[1].tile_type == hand[2].tile_type)
-                    t = hand[0];
+                if (hand[(i+1)%s].tile_type == hand[(i+2)%s].tile_type)
+                    t = hand[(i+3)%s];
+                else if (hand[(i+1)%s].tile_type == hand[(i+3)%s].tile_type)
+                    t = hand[(i+2)%s];
+                else if (hand[(i+2)%s].tile_type == hand[(i+3)%s].tile_type)
+                    t = hand[(i+1)%s];
 
                 if (t != null)
                 {
@@ -494,8 +492,6 @@ public class TileRules
                         return readings;
                     }
                 }
-
-                hand.insert(i, tile);
             }
         }
 
