@@ -7,6 +7,7 @@ public abstract class View : Object, IControl
     private Size2 _relative_size = Size2(1, 1);
     private Rectangle _rect;
     private ResizeStyle _resize_style = ResizeStyle.RELATIVE;
+    private bool _visible = true;
 
     private Gee.ArrayList<View> child_views = new Gee.ArrayList<View>();
     protected weak RenderWindow parent_window;
@@ -55,6 +56,9 @@ public abstract class View : Object, IControl
 
     public void render(RenderState state)
     {
+        if (!visible)
+            return;
+
         do_render(state);
 
         foreach (View view in child_views)
@@ -232,6 +236,8 @@ public abstract class View : Object, IControl
             resize();
         }
     }
+
+    public bool visible { get { return _visible; } set { _visible = value; } }
 }
 
 public enum ResizeStyle

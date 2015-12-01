@@ -3,6 +3,7 @@ using GameServer;
 
 class MainMenuView : View2D
 {
+    private MainMenuBackgroundView background_view = new MainMenuBackgroundView();
     private ServerMenuView server_view;
     private ServerOptionsView server_options_view;
     private JoinMenuView join_view;
@@ -44,6 +45,7 @@ class MainMenuView : View2D
         join_game_button.visible = false;
         options_button.visible = false;
         quit_button.visible = false;
+        //background_view.visible = false;
     }
 
     private void show_main_menu()
@@ -52,6 +54,7 @@ class MainMenuView : View2D
         join_game_button.visible = true;
         options_button.visible = true;
         quit_button.visible = true;
+        background_view.visible = true;
     }
 
     private void press_host()
@@ -77,6 +80,7 @@ class MainMenuView : View2D
     private void press_options()
     {
         clear_all();
+        background_view.visible = false;
 
         options_view = new OptionsMenuView();
         options_view.apply_clicked.connect(options_apply);
@@ -153,6 +157,10 @@ class MainMenuView : View2D
 
     public override void added()
     {
+        add_child(background_view);
+        background_view.inner_anchor = Vec2(0, 0.5f);
+        background_view.outer_anchor = Vec2(0, 0.5f);
+
         host_game_button = new GameMenuButton(store, "CreateServer");
         join_game_button = new GameMenuButton(store, "Join");
         options_button = new GameMenuButton(store, "Options");
@@ -187,5 +195,10 @@ class MainMenuView : View2D
     public override void do_render_2D(RenderState state, RenderScene2D scene)
     {
         state.back_color = Color.black();
+    }
+
+    public override void on_resized()
+    {
+        background_view.size = Size2(size.width / 3, size.height / 3);
     }
 }
