@@ -143,8 +143,8 @@ public class ClientRoundState
         action_state = State.CALL;
 
         bool can_chii = state.can_chii(state.self);
-        bool can_pon = TileRules.can_pon(state.self.hand, tile);
-        bool can_kan = TileRules.can_open_kan(state.self.hand, tile);
+        bool can_pon = state.can_pon(state.self);
+        bool can_kan = state.can_open_kan(state.self);
         bool can_ron = state.can_ron(state.self);
 
         set_chii_state(can_chii);
