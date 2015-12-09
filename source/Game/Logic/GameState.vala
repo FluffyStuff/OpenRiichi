@@ -1,6 +1,6 @@
 using Gee;
 
-public class GameState
+public class GameState : Object
 {
     private GameScorePlayer[] players;
     private int starting_score;

@@ -1,7 +1,7 @@
 public class GameController
 {
     private GameState game;
-    private RoundState round;
+    private ClientRoundState round;
     private GameRenderView? renderer = null;
     private GameMenuView? menu = null;
 
@@ -50,8 +50,6 @@ public class GameController
         ServerMessage? message = null;
         while ((message = connection.dequeue_message()) != null)
         {
-            if (renderer != null)
-                renderer.receive_message(message);
             if (!game.round_is_finished)
                 round.receive_message(message);
 
@@ -69,19 +67,19 @@ public class GameController
                 var result = game.round_finished(round.result);
                 menu.display_score(result, player_index, start_info.round_wait_time, start_info.hanchan_wait_time, start_info.game_wait_time);
 
-                if (result.result.result != RoundFinishResult.RoundResultEnum.DRAW)
+                /*if (result.result.result != RoundFinishResult.RoundResultEnum.DRAW)
                 {
                     print("----Client----\n");
                     print(result.result.score.round.to_string() + "\n");
                     print(result.result.score.player.to_string() + "\n");
-                }
+                }*/
             }
         }
     }
 
     private void create_round_state(RoundStartInfo round_start)
     {
-        round = new RoundState(round_start, player_index, game.round_wind, game.dealer_index, game.can_riichi());
+        round = new ClientRoundState(round_start, player_index, game.round_wind, game.dealer_index, game.can_riichi());
         round.send_message.connect(connection.send_message);
         round.set_chii_state.connect(menu.set_chii);
         round.set_pon_state.connect(menu.set_pon);
@@ -92,7 +90,21 @@ public class GameController
         round.set_continue_state.connect(menu.set_continue);
         round.set_tile_select_state.connect(renderer.set_active);
         round.set_tile_select_groups.connect(renderer.set_tile_select_groups);
-        round.declare_riichi.connect(game.declare_riichi);
+        round.game_riichi.connect(game.declare_riichi);
+
+        round.game_tile_assignment.connect(renderer.tile_assignment);
+        round.game_tile_draw.connect(renderer.tile_draw);
+        round.game_tile_discard.connect(renderer.tile_discard);
+        round.game_flip_dora.connect(renderer.flip_dora);
+        round.game_ron.connect(renderer.ron);
+        round.game_tsumo.connect(renderer.tsumo);
+        round.game_riichi.connect(renderer.riichi);
+        round.game_late_kan.connect(renderer.late_kan);
+        round.game_closed_kan.connect(renderer.closed_kan);
+        round.game_open_kan.connect(renderer.open_kan);
+        round.game_pon.connect(renderer.pon);
+        round.game_chii.connect(renderer.chii);
+        round.game_draw.connect(renderer.draw);
 
         renderer.tile_selected.connect(round.client_tile_selected);
 

@@ -1,14 +1,18 @@
 public interface IGameRenderer : Object
 {
     public signal void tile_selected(Tile tile);
-    /*public signal void ron();
-    public signal void tsumo();
-    public signal void riichi();
-    public signal void kan();
-    public signal void pon();
-    public signal void chii();*/
-
     public abstract void set_active(bool active);
-    //public void set_selectable_tiles(int[] tiles);
-    public abstract void receive_message(ServerMessage message);
+    public abstract void tile_assignment(Tile tile);
+    public abstract void tile_draw(int player_index);
+    public abstract void tile_discard(int player_index, int tile_ID);
+    public abstract void flip_dora();
+    public abstract void ron(int player_index, int discard_player_index, int tile_ID);
+    public abstract void tsumo(int player_index);
+    public abstract void riichi(int player_index);
+    public abstract void late_kan(int player_index, int tile_ID);
+    public abstract void closed_kan(int player_index, TileType type);
+    public abstract void open_kan(int player_index, int discard_player_index, int tile_ID, int tile_1_ID, int tile_2_ID, int tile_3_ID);
+    public abstract void pon(int player_index, int discard_player_index, int tile_ID, int tile_1_ID, int tile_2_ID);
+    public abstract void chii(int player_index, int discard_player_index, int tile_ID, int tile_1_ID, int tile_2_ID);
+    public abstract void draw(int[] tenpai_indices);
 }

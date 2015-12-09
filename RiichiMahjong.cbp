@@ -92,8 +92,7 @@
 		<Unit filename="source/GameServer/Bots/NullBot.vala" />
 		<Unit filename="source/GameServer/GameState/ServerRoundState.vala" />
 		<Unit filename="source/GameServer/GameState/ServerRoundStatePlayer.vala" />
-		<Unit filename="source/GameServer/GameState/ServerRoundStatePlayers.vala" />
-		<Unit filename="source/GameServer/GameState/ServerRoundStateWall.vala" />
+		<Unit filename="source/GameServer/GameState/ServerRoundStateValidator.vala" />
 		<Unit filename="source/GameServer/Server/Server.vala" />
 		<Unit filename="source/GameServer/Server/ServerController.vala" />
 		<Unit filename="source/GameServer/Server/ServerGameRound.vala" />
@@ -125,6 +124,7 @@
 		<Unit filename="source/Game/Rendering/Menu/ScoringPointsView.vala" />
 		<Unit filename="source/Game/Rendering/Menu/ScoringView.vala" />
 		<Unit filename="source/Game/Rendering/Menu/TextInputView.vala" />
+		<Unit filename="source/Game/Rendering/RenderAction.vala" />
 		<Unit filename="source/Game/Rendering/RenderPlayer.vala" />
 		<Unit filename="source/Game/Rendering/RenderSceneManager.vala" />
 		<Unit filename="source/Game/Rendering/RenderTable.vala" />

@@ -60,10 +60,7 @@ public class ServerMessageParser
     }
 }
 
-public abstract class ServerMessage : Serializable
-{
-
-}
+public abstract class ServerMessage : Serializable {}
 
 public class ServerMessageGameStart : ServerMessage
 {
@@ -106,93 +103,25 @@ public class ServerMessageTileAssignment : ServerMessage
     public bool dora { get; protected set; }
 }
 
-public class ServerMessageTileDraw : ServerMessage
-{
-    public ServerMessageTileDraw(int player_index, int tile_ID, bool dead_wall)
-    {
-        this.player_index = player_index;
-        this.tile_ID = tile_ID;
-        this.dead_wall = dead_wall;
-    }
-
-    public int player_index { get; protected set; }
-    public int tile_ID { get; protected set; }
-    public bool dead_wall { get; protected set; }
-}
+public class ServerMessageTileDraw : ServerMessage {}
 
 public class ServerMessageTileDiscard : ServerMessage
 {
-    public ServerMessageTileDiscard(int player_index, int tile_ID)
+    public ServerMessageTileDiscard(int tile_ID)
     {
-        this.player_index = player_index;
         this.tile_ID = tile_ID;
     }
 
-    public int player_index { get; protected set; }
     public int tile_ID { get; protected set; }
 }
 
-public class ServerMessageCallDecision : ServerMessage
-{
-    public ServerMessageCallDecision(int player_index, int tile_ID)
-    {
-        this.player_index = player_index;
-        this.tile_ID = tile_ID;
-    }
-
-    public int player_index { get; protected set; }
-    public int tile_ID { get; protected set; }
-}
+public class ServerMessageCallDecision : ServerMessage {}
 
 public class ServerMessageTurnDecision : ServerMessage {}
 
-public class ServerMessageFlipDora : ServerMessage
-{
-    public ServerMessageFlipDora(int tile_ID)
-    {
-        this.tile_ID = tile_ID;
-    }
-
-    public int tile_ID { get; protected set; }
-}
-
-public class ServerMessageFlipUraDora : ServerMessage
-{
-    public ServerMessageFlipUraDora(int tile_ID)
-    {
-        this.tile_ID = tile_ID;
-    }
-
-    public int tile_ID { get; protected set; }
-}
-
-public class ServerMessageDeadTileAdd : ServerMessage
-{
-    public ServerMessageDeadTileAdd(int tile_ID)
-    {
-        this.tile_ID = tile_ID;
-    }
-
-    public int tile_ID { get; protected set; }
-}
-
 public class ServerMessageRon : ServerMessage
 {
-    public ServerMessageRon(int player_index, int discard_player_index, int tile_ID)
-    {
-        this.player_index = player_index;
-        this.discard_player_index = discard_player_index;
-        this.tile_ID = tile_ID;
-    }
-
-    public int player_index { get; protected set; }
-    public int discard_player_index { get; protected set; }
-    public int tile_ID { get; protected set; }
-}
-
-public class ServerMessageTsumo : ServerMessage
-{
-    public ServerMessageTsumo(int player_index)
+    public ServerMessageRon(int player_index)
     {
         this.player_index = player_index;
     }
@@ -200,33 +129,24 @@ public class ServerMessageTsumo : ServerMessage
     public int player_index { get; protected set; }
 }
 
-public class ServerMessageRiichi : ServerMessage
-{
-    public ServerMessageRiichi(int player_index)
-    {
-        this.player_index = player_index;
-    }
+public class ServerMessageTsumo : ServerMessage {}
 
-    public int player_index { get; protected set; }
-}
+public class ServerMessageRiichi : ServerMessage {}
 
 public class ServerMessageLateKan : ServerMessage
 {
-    public ServerMessageLateKan(int player_index, int tile_ID)
+    public ServerMessageLateKan(int tile_ID)
     {
-        this.player_index = player_index;
         this.tile_ID = tile_ID;
     }
 
-    public int player_index { get; protected set; }
     public int tile_ID { get; protected set; }
 }
 
 public class ServerMessageClosedKan : ServerMessage
 {
-    public ServerMessageClosedKan(int player_index, TileType tile_type)
+    public ServerMessageClosedKan(TileType tile_type)
     {
-        this.player_index = player_index;
         this.tile_type = (int)tile_type;
     }
 
@@ -235,25 +155,20 @@ public class ServerMessageClosedKan : ServerMessage
         return (TileType)tile_type;
     }
 
-    public int player_index { get; protected set; }
     public int tile_type { get; protected set; }
 }
 
 public class ServerMessageOpenKan : ServerMessage
 {
-    public ServerMessageOpenKan(int player_index, int discard_player_index, int tile_ID, int tile_1_ID, int tile_2_ID, int tile_3_ID)
+    public ServerMessageOpenKan(int player_index, int tile_1_ID, int tile_2_ID, int tile_3_ID)
     {
         this.player_index = player_index;
-        this.discard_player_index = discard_player_index;
-        this.tile_ID = tile_ID;
         this.tile_1_ID = tile_1_ID;
         this.tile_2_ID = tile_2_ID;
         this.tile_3_ID = tile_3_ID;
     }
 
     public int player_index { get; protected set; }
-    public int discard_player_index { get; protected set; }
-    public int tile_ID { get; protected set; }
     public int tile_1_ID { get; protected set; }
     public int tile_2_ID { get; protected set; }
     public int tile_3_ID { get; protected set; }
@@ -261,36 +176,28 @@ public class ServerMessageOpenKan : ServerMessage
 
 public class ServerMessagePon : ServerMessage
 {
-    public ServerMessagePon(int player_index, int discard_player_index, int tile_ID, int tile_1_ID, int tile_2_ID)
+    public ServerMessagePon(int player_index, int tile_1_ID, int tile_2_ID)
     {
         this.player_index = player_index;
-        this.discard_player_index = discard_player_index;
-        this.tile_ID = tile_ID;
         this.tile_1_ID = tile_1_ID;
         this.tile_2_ID = tile_2_ID;
     }
 
     public int player_index { get; protected set; }
-    public int discard_player_index { get; protected set; }
-    public int tile_ID { get; protected set; }
     public int tile_1_ID { get; protected set; }
     public int tile_2_ID { get; protected set; }
 }
 
 public class ServerMessageChii : ServerMessage
 {
-    public ServerMessageChii(int player_index, int discard_player_index, int tile_ID, int tile_1_ID, int tile_2_ID)
+    public ServerMessageChii(int player_index, int tile_1_ID, int tile_2_ID)
     {
         this.player_index = player_index;
-        this.discard_player_index = discard_player_index;
-        this.tile_ID = tile_ID;
         this.tile_1_ID = tile_1_ID;
         this.tile_2_ID = tile_2_ID;
     }
 
     public int player_index { get; protected set; }
-    public int discard_player_index { get; protected set; }
-    public int tile_ID { get; protected set; }
     public int tile_1_ID { get; protected set; }
     public int tile_2_ID { get; protected set; }
 }
@@ -299,11 +206,11 @@ public class ServerMessageDraw : ServerMessage
 {
     public ServerMessageDraw(int[] tenpai_indices)
     {
-        Obj<int>[] ints = new Obj<int>[tenpai_indices.length];
+        ObjInt[] ints = new ObjInt[tenpai_indices.length];
         for (int i = 0; i < tenpai_indices.length; i++)
-            ints[i] = new Obj<int>(tenpai_indices[i]);
+            ints[i] = new ObjInt(tenpai_indices[i]);
 
-        list = new SerializableList<Obj<int>>(ints);
+        list = new SerializableList<ObjInt>(ints);
     }
 
     public int[] get_tenpai_indices()
@@ -312,12 +219,12 @@ public class ServerMessageDraw : ServerMessage
 
         int[] ints = new int[objs.length];
         for (int i = 0; i < objs.length; i++)
-            ints[i] = objs[i].obj;
+            ints[i] = objs[i].value;
 
         return ints;
     }
 
-    public SerializableList<Obj<int>> list { get; protected set; }
+    protected SerializableList<ObjInt> list { get; protected set; }
 }
 
 public class ServerMessageAcceptJoin : ServerMessage {}

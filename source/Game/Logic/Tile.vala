@@ -138,6 +138,11 @@ public class Tile
         return TileType.BLANK;
     }
 
+    public string to_string()
+    {
+        return "(" + ID.to_string() + ") " + tile_type.to_string() + (dora ? " dora" : " nodora");
+    }
+
     public int ID { get; set; }
     public TileType tile_type { get; set; }
     public bool dora { get; set; }

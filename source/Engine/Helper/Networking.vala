@@ -593,3 +593,13 @@ public class SerializableListItem : Serializable
     public Serializable item { get; protected set; }
     public SerializableListItem? next { get; set; }
 }
+
+public class ObjInt : Serializable
+{
+    public ObjInt(int value)
+    {
+        this.value = value;
+    }
+
+    public int value { get; protected set; }
+}

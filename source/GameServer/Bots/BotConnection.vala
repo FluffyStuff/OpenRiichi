@@ -94,32 +94,29 @@ class BotConnection
 
     private void tile_draw(ServerMessage message)
     {
-        ServerMessageTileDraw tile_draw = (ServerMessageTileDraw)message;
-        bot.tile_draw(tile_draw.player_index, tile_draw.tile_ID);
+        bot.tile_draw();
     }
 
     private void tile_discard(ServerMessage message)
     {
         ServerMessageTileDiscard tile_discard = (ServerMessageTileDiscard)message;
-        bot.tile_discard(tile_discard.player_index, tile_discard.tile_ID);
+        bot.tile_discard(tile_discard.tile_ID);
     }
 
     private void ron(ServerMessage message)
     {
         ServerMessageRon ron = (ServerMessageRon)message;
-        bot.ron(ron.player_index, ron.discard_player_index, ron.tile_ID);
+        bot.ron(ron.player_index);
     }
 
     private void tsumo(ServerMessage message)
     {
-        ServerMessageTsumo tsumo = (ServerMessageTsumo)message;
-        bot.tsumo(tsumo.player_index);
+        bot.tsumo();
     }
 
     private void riichi(ServerMessage message)
     {
-        ServerMessageRiichi riichi = (ServerMessageRiichi)message;
-        bot.riichi(riichi.player_index);
+        bot.riichi();
     }
 
     private void turn_decision(ServerMessage message)
@@ -129,38 +126,37 @@ class BotConnection
 
     private void call_decision(ServerMessage message)
     {
-        ServerMessageCallDecision call_decision = (ServerMessageCallDecision)message;
-        bot.call_decision(call_decision.player_index, call_decision.tile_ID);
+        bot.call_decision();
     }
 
     private void late_kan(ServerMessage message)
     {
         ServerMessageLateKan kan = (ServerMessageLateKan)message;
-        bot.late_kan(kan.player_index, kan.tile_ID);
+        bot.late_kan(kan.tile_ID);
     }
 
     private void closed_kan(ServerMessage message)
     {
         ServerMessageClosedKan kan = (ServerMessageClosedKan)message;
-        bot.closed_kan(kan.player_index, kan.get_type_enum());
+        bot.closed_kan(kan.get_type_enum());
     }
 
     private void open_kan(ServerMessage message)
     {
         ServerMessageOpenKan kan = (ServerMessageOpenKan)message;
-        bot.open_kan(kan.player_index, kan.discard_player_index, kan.tile_ID, kan.tile_1_ID, kan.tile_2_ID, kan.tile_3_ID);
+        bot.open_kan(kan.player_index, kan.tile_1_ID, kan.tile_2_ID, kan.tile_3_ID);
     }
 
     private void pon(ServerMessage message)
     {
         ServerMessagePon pon = (ServerMessagePon)message;
-        bot.pon(pon.player_index, pon.discard_player_index, pon.tile_ID, pon.tile_1_ID, pon.tile_2_ID);
+        bot.pon(pon.player_index, pon.tile_1_ID, pon.tile_2_ID);
     }
 
     private void chii(ServerMessage message)
     {
         ServerMessageChii chii = (ServerMessageChii)message;
-        bot.chii(chii.player_index, chii.discard_player_index, chii.tile_ID, chii.tile_1_ID, chii.tile_2_ID);
+        bot.chii(chii.player_index, chii.tile_1_ID, chii.tile_2_ID);
     }
 
     private void draw(ServerMessage message)

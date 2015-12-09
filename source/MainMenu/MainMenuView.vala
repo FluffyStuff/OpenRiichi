@@ -23,12 +23,14 @@ class MainMenuView : View2D
         typeof(Serializable).class_ref();
         typeof(SerializableList).class_ref();
         typeof(SerializableListItem).class_ref();
+        typeof(ObjInt).class_ref();
         typeof(GamePlayer).class_ref();
         typeof(ServerMessage).class_ref();
         typeof(ServerMessageRoundStart).class_ref();
         typeof(ServerMessageAcceptJoin).class_ref();
         typeof(ServerMessageMenuSlotAssign).class_ref();
         typeof(ServerMessageMenuSlotClear).class_ref();
+        typeof(ServerMessageDraw).class_ref();
     }
 
     ~MainMenuView()

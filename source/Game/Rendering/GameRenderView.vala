@@ -7,28 +7,13 @@ public class GameRenderView : View, IGameRenderer
     private RenderPlayer[] players;
 
     private RenderSceneManager scene;
-    private ServerMessageParser parser = new ServerMessageParser();
     private RenderTile? mouse_down_tile;
     private ArrayList<TileSelectionGroup>? select_groups = null;
+    private int dealer_index;
 
     public GameRenderView(RoundStartInfo info, int player_index, Wind round_wind, int dealer_index, string extension)
     {
-        parser.connect(server_tile_assignment, typeof(ServerMessageTileAssignment));
-        parser.connect(server_tile_draw, typeof(ServerMessageTileDraw));
-        parser.connect(server_tile_discard, typeof(ServerMessageTileDiscard));
-        parser.connect(server_flip_dora, typeof(ServerMessageFlipDora));
-        parser.connect(server_dead_tile_add, typeof(ServerMessageDeadTileAdd));
-
-        parser.connect(server_ron, typeof(ServerMessageRon));
-        parser.connect(server_tsumo, typeof(ServerMessageTsumo));
-        parser.connect(server_riichi, typeof(ServerMessageRiichi));
-        parser.connect(server_late_kan, typeof(ServerMessageLateKan));
-        parser.connect(server_closed_kan, typeof(ServerMessageClosedKan));
-        parser.connect(server_open_kan, typeof(ServerMessageOpenKan));
-        parser.connect(server_pon, typeof(ServerMessagePon));
-        parser.connect(server_chii, typeof(ServerMessageChii));
-        parser.connect(server_draw, typeof(ServerMessageDraw));
-
+        this.dealer_index = dealer_index;
         scene = new RenderSceneManager(extension, player_index, round_wind, dealer_index, info.wall_index);
     }
 
@@ -37,11 +22,31 @@ public class GameRenderView : View, IGameRenderer
         scene.added(store);
         tiles = scene.tiles;
         players = scene.players;
+
+        buffer_action(new RenderActionDelay(0.5f));
+
+        int index = dealer_index;
+
+        for (int i = 0; i < 3; i++)
+        {
+            for (int p = 0; p < 4; p++)
+            {
+                buffer_action(new RenderActionInitialDraw(players[index % 4], 4));
+                index++;
+            }
+        }
+
+        for (int p = 0; p < 4; p++)
+        {
+            buffer_action(new RenderActionInitialDraw(players[index % 4], 1));
+            index++;
+        }
+
+        buffer_action(new RenderActionFlipDora());
     }
 
     public override void do_process(DeltaArgs delta)
     {
-        parser.dequeue();
         scene.process(delta);
     }
 
@@ -50,143 +55,134 @@ public class GameRenderView : View, IGameRenderer
         scene.render(state);
     }
 
-    private void server_tile_assignment(ServerMessage message)
+    private void tile_assignment(Tile tile)
     {
-        ServerMessageTileAssignment tile_assignment = (ServerMessageTileAssignment)message;
-        tiles[tile_assignment.tile_ID].assign_type(tile_assignment.get_tile(), store);
+        tiles[tile.ID].assign_type(tile, store);
     }
 
-    private void server_tile_draw(ServerMessage message)
+    private void tile_draw(int player_index)
     {
-        ServerMessageTileDraw tile_draw = (ServerMessageTileDraw)message;
-        RenderPlayer player = players[tile_draw.player_index];
+        RenderPlayer player = players[player_index];
+        buffer_action(new RenderActionDraw(player));
 
-        if (tile_draw.dead_wall)
+        /*if (tile_draw.dead_wall)
             player.draw_tile(scene.wall.draw_dead_wall());
         else
-            player.draw_tile(scene.wall.draw_wall());
+            player.draw_tile(scene.wall.draw_wall());*/
     }
 
-    private void server_tile_discard(ServerMessage message)
+    private void tile_discard(int player_index, int tile_ID)
     {
-        ServerMessageTileDiscard tile_discard = (ServerMessageTileDiscard)message;
-        RenderPlayer player = players[tile_discard.player_index];
-        RenderTile tile = tiles[tile_discard.tile_ID];
-        player.discard(tile);
+        RenderPlayer player = players[player_index];
+        RenderTile tile = tiles[tile_ID];
+        buffer_action(new RenderActionDiscard(player, tile));
     }
 
-    private void server_flip_dora(ServerMessage message)
+    private void flip_dora()
     {
         scene.wall.flip_dora();
     }
 
-    private void server_dead_tile_add(ServerMessage message)
+    /*private void server_dead_tile_add()
     {
         scene.wall.dead_tile_add();
-    }
+    }*/
 
-    private void server_ron(ServerMessage message)
+    private void ron(int player_index, int discard_player_index, int tile_ID)
     {
-        ServerMessageRon ron = (ServerMessageRon)message;
-        RenderPlayer player = players[ron.player_index];
-        RenderPlayer discard_player = players[ron.discard_player_index];
+        RenderPlayer player = players[player_index];
+        RenderPlayer discard_player = players[discard_player_index];
 
-        RenderTile tile = tiles[ron.tile_ID];
+        RenderTile tile = tiles[tile_ID];
         discard_player.rob_tile(tile);
 
-        scene.ron(player, tile);
+        buffer_action(new RenderActionRon(player, discard_player, tile));
     }
 
-    private void server_tsumo(ServerMessage message)
+    private void tsumo(int player_index)
     {
-        ServerMessageTsumo tsumo = (ServerMessageTsumo)message;
-        RenderPlayer player = players[tsumo.player_index];
-
-        scene.tsumo(player);
+        RenderPlayer player = players[player_index];
+        buffer_action(new RenderActionTsumo(player));
     }
 
-    private void server_riichi(ServerMessage message)
+    private void riichi(int player_index)
     {
-        ServerMessageRiichi riichi = (ServerMessageRiichi)message;
-        RenderPlayer player = players[riichi.player_index];
-
-        player.riichi();
+        RenderPlayer player = players[player_index];
+        buffer_action(new RenderActionRiichi(player));
     }
 
-    private void server_late_kan(ServerMessage message)
+    private void late_kan(int player_index, int tile_ID)
     {
-        ServerMessageLateKan kan = (ServerMessageLateKan)message;
-        RenderPlayer player = players[kan.player_index];
-        RenderTile tile = tiles[kan.tile_ID];
-        player.late_kan(tile);
+        RenderPlayer player = players[player_index];
+        RenderTile tile = tiles[tile_ID];
+        buffer_action(new RenderActionLateKan(player, tile));
     }
 
-    private void server_closed_kan(ServerMessage message)
+    private void closed_kan(int player_index, TileType type)
     {
-        ServerMessageClosedKan kan = (ServerMessageClosedKan)message;
-        RenderPlayer player = players[kan.player_index];
-        player.closed_kan(kan.get_type_enum());
+        RenderPlayer player = players[player_index];
+        buffer_action(new RenderActionClosedKan(player, type));
     }
 
-    private void server_open_kan(ServerMessage message)
+    private void open_kan(int player_index, int discard_player_index, int tile_ID, int tile_1_ID, int tile_2_ID, int tile_3_ID)
     {
-        ServerMessageOpenKan kan = (ServerMessageOpenKan)message;
-        RenderPlayer player = players[kan.player_index];
-        RenderPlayer discard_player = players[kan.discard_player_index];
+        RenderPlayer player = players[player_index];
+        RenderPlayer discard_player = players[discard_player_index];
 
-        RenderTile tile   = tiles[kan.tile_ID];
-        RenderTile tile_1 = tiles[kan.tile_1_ID];
-        RenderTile tile_2 = tiles[kan.tile_2_ID];
-        RenderTile tile_3 = tiles[kan.tile_3_ID];
+        RenderTile tile   = tiles[tile_ID];
+        RenderTile tile_1 = tiles[tile_1_ID];
+        RenderTile tile_2 = tiles[tile_2_ID];
+        RenderTile tile_3 = tiles[tile_3_ID];
 
-        discard_player.rob_tile(tile);
-        player.open_kan(discard_player, tile, tile_1, tile_2, tile_3);
+        buffer_action(new RenderActionOpenKan(player, discard_player, tile, tile_1, tile_2, tile_3));
     }
 
-    private void server_pon(ServerMessage message)
+    private void pon(int player_index, int discard_player_index, int tile_ID, int tile_1_ID, int tile_2_ID)
     {
-        ServerMessagePon pon = (ServerMessagePon)message;
-        RenderPlayer player = players[pon.player_index];
-        RenderPlayer discard_player = players[pon.discard_player_index];
+        RenderPlayer player = players[player_index];
+        RenderPlayer discard_player = players[discard_player_index];
 
-        RenderTile tile   = tiles[pon.tile_ID];
-        RenderTile tile_1 = tiles[pon.tile_1_ID];
-        RenderTile tile_2 = tiles[pon.tile_2_ID];
+        RenderTile tile   = tiles[tile_ID];
+        RenderTile tile_1 = tiles[tile_1_ID];
+        RenderTile tile_2 = tiles[tile_2_ID];
 
-        discard_player.rob_tile(tile);
-        player.pon(discard_player, tile, tile_1, tile_2);
+        buffer_action(new RenderActionPon(player, discard_player, tile, tile_1, tile_2));
     }
 
-    private void server_chii(ServerMessage message)
+    private void chii(int player_index, int discard_player_index, int tile_ID, int tile_1_ID, int tile_2_ID)
     {
-        ServerMessageChii chii = (ServerMessageChii)message;
-        RenderPlayer player = players[chii.player_index];
-        RenderPlayer discard_player = players[chii.discard_player_index];
+        RenderPlayer player = players[player_index];
+        RenderPlayer discard_player = players[discard_player_index];
 
-        RenderTile tile   = tiles[chii.tile_ID];
-        RenderTile tile_1 = tiles[chii.tile_1_ID];
-        RenderTile tile_2 = tiles[chii.tile_2_ID];
+        RenderTile tile   = tiles[tile_ID];
+        RenderTile tile_1 = tiles[tile_1_ID];
+        RenderTile tile_2 = tiles[tile_2_ID];
 
-        discard_player.rob_tile(tile);
-        player.chii(discard_player, tile, tile_1, tile_2);
+        buffer_action(new RenderActionChii(player, discard_player, tile, tile_1, tile_2));
     }
 
-    private void server_draw(ServerMessage message)
+    private void draw(int[] tenpai_indices)
     {
-        ServerMessageDraw draw = message as ServerMessageDraw;
-
         ArrayList<RenderPlayer> tenpai_players = new ArrayList<RenderPlayer>();
-        foreach (int i in draw.get_tenpai_indices())
+        foreach (int i in tenpai_indices)
             tenpai_players.add(players[i]);
 
-        scene.draw(tenpai_players);
+        buffer_action(new RenderActionGameDraw(tenpai_players));
+    }
+
+    public void set_active(bool active)
+    {
+        if (active)
+            buffer_action(new RenderActionSetActive(active));
+        else
+            scene.active = active;
     }
 
     /////////////////////
 
-    public void receive_message(ServerMessage message)
+    private void buffer_action(RenderAction action)
     {
-        parser.add(message);
+        scene.add_action(action);
     }
 
     protected override void do_mouse_move(MouseMoveArgs mouse)
@@ -195,7 +191,7 @@ public class GameRenderView : View, IGameRenderer
             tiles[i].set_hovered(false);
 
         RenderTile? tile = null;
-        if (!mouse.handled && active)
+        if (!mouse.handled && scene.active)
             tile = get_hover_tile(scene.camera, scene.observer.hand_tiles, mouse.position);
 
         bool hovered = false;
@@ -243,7 +239,7 @@ public class GameRenderView : View, IGameRenderer
 
     protected override void do_mouse_event(MouseEventArgs mouse)
     {
-        if (!active)
+        if (!scene.active)
         {
             mouse_down_tile = null;
             return;
@@ -316,15 +312,8 @@ public class GameRenderView : View, IGameRenderer
         }
     }
 
-    public void set_active(bool active)
-    {
-        this.active = active;
-    }
-
     public void set_tile_select_groups(ArrayList<TileSelectionGroup>? groups)
     {
         select_groups = groups;
     }
-
-    public bool active { get; set; }
 }

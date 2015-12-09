@@ -55,6 +55,7 @@ public class RenderWall : Object
     public void flip_ura_dora()
     {
         dead_wall.flip_ura_dora();
+        dead_tile_add();
     }
 
     public void dead_tile_add()

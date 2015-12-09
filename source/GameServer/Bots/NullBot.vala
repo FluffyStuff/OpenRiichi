@@ -8,7 +8,7 @@ class NullBot : Bot
     {
         action_delay();
 
-        if (round_state.can_tsumo(round_state.self) && round_state.self.in_riichi)
+        if (round_state.can_tsumo() && false)
         {
             do_tsumo();
         }
@@ -26,7 +26,7 @@ class NullBot : Bot
             ArrayList<Tile> tiles = TileRules.get_late_kan_tiles(round_state.self.hand, round_state.self.calls);
             do_late_kan(tiles[0]);
         }
-        else if (round_state.self.can_closed_kan())
+        else if (round_state.self.can_closed_kan() && false)
         {
             ArrayList<ArrayList<Tile>> groups = TileRules.get_closed_kan_groups(round_state.self.hand);
             do_closed_kan(groups[0][0].tile_type);
@@ -43,9 +43,9 @@ class NullBot : Bot
         }
     }
 
-    protected override void do_call_decision(ClientRoundStatePlayer discarding_player, Tile tile)
+    protected override void do_call_decision(RoundStatePlayer discarding_player, Tile tile)
     {
-        if (round_state.can_ron(round_state.self, tile) && round_state.self.in_riichi)
+        if (round_state.can_ron(round_state.self) && false)
         {
             action_delay();
             call_ron();

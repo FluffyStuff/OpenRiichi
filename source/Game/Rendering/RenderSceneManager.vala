@@ -3,7 +3,7 @@ using Gee;
 class RenderSceneManager
 {
     private string extension;
-    private int player_ID;
+    private int player_index;
     private Wind round_wind;
     private int dealer;
     private int wall_index;
@@ -16,18 +16,19 @@ class RenderSceneManager
 
     private RenderTable table;
 
-    private bool end_animation = false;
-    private bool end_animation_started = false;
-    private float end_animation_start_time;
+    private Mutex action_lock;
+    private ArrayList<RenderAction> actions = new ArrayList<RenderAction>();
+    private RenderAction? current_action = null;
+    private float action_start_time;
 
     private ArrayList<RenderPlayer> open_hands = new ArrayList<RenderPlayer>();
     private ArrayList<RenderPlayer> closed_hands = new ArrayList<RenderPlayer>();
     private bool flip_dora = false;
 
-    public RenderSceneManager(string extension, int player_ID, Wind round_wind, int dealer, int wall_index)
+    public RenderSceneManager(string extension, int player_index, Wind round_wind, int dealer, int wall_index)
     {
         this.extension = extension;
-        this.player_ID = player_ID;
+        this.player_index = player_index;
         this.round_wind = round_wind;
         this.dealer = dealer;
         this.wall_index = wall_index;
@@ -56,10 +57,10 @@ class RenderSceneManager
         wall = new RenderWall(tiles, tile_size, center, wall_offset, dealer, wall_index);
 
         for (int i = 0; i < players.length; i++)
-            players[i] = new RenderPlayer(store, center, i == dealer, i, table_length, wall_offset, tile_size, i == player_ID, round_wind);
+            players[i] = new RenderPlayer(store, center, i == dealer, i, table_length, wall_offset, tile_size, i == player_index, round_wind);
 
-        if (player_ID != -1)
-            observer = players[player_ID];
+        if (player_index != -1)
+            observer = players[player_index];
         else
             observer = players[0];
 
@@ -84,14 +85,31 @@ class RenderSceneManager
 
     public void process(DeltaArgs delta)
     {
-        if (end_animation)
-            process_end_animation(delta);
-
         for (int i = 0; i < tiles.length; i++)
             tiles[i].process(delta);
 
         for (int i = 0; i < players.length; i++)
             players[i].process(delta);
+
+
+        if (current_action != null &&
+            delta.time - action_start_time > current_action.time)
+            current_action = null;
+
+        if (current_action == null)
+        {
+            lock (action_lock)
+            {
+                if (actions.size != 0)
+                {
+                    current_action = actions[0];
+                    actions.remove_at(0);
+
+                    action_start_time = delta.time;
+                    do_action(current_action);
+                }
+            }
+        }
     }
 
     public void render(RenderState state)
@@ -113,55 +131,177 @@ class RenderSceneManager
         state.add_scene(scene);
     }
 
-    public void ron(RenderPlayer player, RenderTile tile)
+    public void add_action(RenderAction action)
     {
-        player.ron(tile);
-        open_hands.add(player);
-        flip_dora = player.in_riichi;
-        end_animation = true;
+        lock (action_lock)
+            actions.add(action);
     }
 
-    public void tsumo(RenderPlayer player)
+    private void do_action(RenderAction action)
     {
-        player.tsumo();
-        open_hands.add(player);
-        flip_dora = player.in_riichi;
-        end_animation = true;
+        if (action is RenderActionInitialDraw)
+            action_initial_draw(action as RenderActionInitialDraw);
+        else if (action is RenderActionDraw)
+            action_draw(action as RenderActionDraw);
+        else if (action is RenderActionDrawDeadWall)
+            action_draw_dead_wall(action as RenderActionDrawDeadWall);
+        else if (action is RenderActionDiscard)
+            action_discard(action as RenderActionDiscard);
+        else if (action is RenderActionRon)
+            action_ron(action as RenderActionRon);
+        else if (action is RenderActionTsumo)
+            action_tsumo(action as RenderActionTsumo);
+        else if (action is RenderActionRiichi)
+            action_riichi(action as RenderActionRiichi);
+        else if (action is RenderActionLateKan)
+            action_late_kan(action as RenderActionLateKan);
+        else if (action is RenderActionClosedKan)
+            action_closed_kan(action as RenderActionClosedKan);
+        else if (action is RenderActionOpenKan)
+            action_open_kan(action as RenderActionOpenKan);
+        else if (action is RenderActionPon)
+            action_pon(action as RenderActionPon);
+        else if (action is RenderActionChii)
+            action_chii(action as RenderActionChii);
+        else if (action is RenderActionGameDraw)
+            action_game_draw(action as RenderActionGameDraw);
+        else if (action is RenderActionHandReveal)
+            action_hand_reveal(action as RenderActionHandReveal);
+        else if (action is RenderActionFlipDora)
+            action_flip_dora(action as RenderActionFlipDora);
+        else if (action is RenderActionFlipUraDora)
+            action_flip_ura_dora(action as RenderActionFlipUraDora);
+        // TODO: Remove?
+        /*else if (action is RenderActionSetActive)
+            action_set_active(action as RenderActionSetActive);*/
     }
 
-    public void draw(ArrayList<RenderPlayer> tenpai_players)
+    private void action_initial_draw(RenderActionInitialDraw action)
+    {
+        for (int i = 0; i < action.tiles; i++)
+            action.player.draw_tile(wall.draw_wall());
+    }
+
+    private void action_draw(RenderActionDraw action)
+    {
+        action.player.draw_tile(wall.draw_wall());
+
+        if (action.player.seat == player_index)
+            active = true;
+    }
+
+    private void action_draw_dead_wall(RenderActionDrawDeadWall action)
+    {
+        action.player.draw_tile(wall.draw_dead_wall());
+
+        if (action.player.seat == player_index)
+            active = true;
+    }
+
+    private void action_discard(RenderActionDiscard action)
+    {
+        action.player.discard(action.tile);
+    }
+
+    private void action_ron(RenderActionRon action)
+    {
+        action.player.ron(action.tile);
+        add_action(new RenderActionHandReveal(action.player));
+
+        if (action.player.in_riichi)
+            add_action(new RenderActionFlipUraDora());
+    }
+
+    private void action_tsumo(RenderActionTsumo action)
+    {
+        action.player.tsumo();
+        add_action(new RenderActionHandReveal(action.player));
+
+        if (action.player.in_riichi)
+            add_action(new RenderActionFlipUraDora());
+    }
+
+    private void action_riichi(RenderActionRiichi action)
+    {
+        action.player.riichi();
+    }
+
+    private void action_late_kan(RenderActionLateKan action)
+    {
+        action.player.late_kan(action.tile);
+        kan(action.player);
+    }
+
+    private void action_closed_kan(RenderActionClosedKan action)
+    {
+        action.player.closed_kan(action.tile_type);
+        kan(action.player);
+    }
+
+    private void action_open_kan(RenderActionOpenKan action)
+    {
+        action.discarder.rob_tile(action.tile);
+        action.player.open_kan(action.discarder, action.tile, action.tile_1, action.tile_2, action.tile_3);
+        kan(action.player);
+    }
+
+    private void action_pon(RenderActionPon action)
+    {
+        action.discarder.rob_tile(action.tile);
+        action.player.pon(action.discarder, action.tile, action.tile_1, action.tile_2);
+
+        if (action.player.seat == player_index)
+            active = true;
+    }
+
+    private void action_chii(RenderActionChii action)
+    {
+        action.discarder.rob_tile(action.tile);
+        action.player.chii(action.discarder, action.tile, action.tile_1, action.tile_2);
+
+        if (action.player.seat == player_index)
+            active = true;
+    }
+
+    private void action_game_draw(RenderActionGameDraw action)
     {
         foreach (RenderPlayer player in players)
         {
-            if (tenpai_players.contains(player))
-                open_hands.add(player);
+            if (action.players.contains(player))
+                player.open_hand();
             else if (player != observer)
-                closed_hands.add(player);
+                player.close_hand();
         }
-
-        end_animation = true;
     }
 
-    private void process_end_animation(DeltaArgs delta)
+    private void action_hand_reveal(RenderActionHandReveal action)
     {
-        if (!end_animation_started)
-        {
-            end_animation_start_time = delta.time + 1.0f;
-            end_animation_started = true;
-        }
+        action.player.open_hand();
+    }
 
-        if (delta.time < end_animation_start_time)
-            return;
+    private void action_flip_dora(RenderActionFlipDora action)
+    {
+        wall.flip_dora();
+    }
 
-        end_animation = false;
+    private void action_flip_ura_dora(RenderActionFlipUraDora action)
+    {
+        wall.flip_ura_dora();
+    }
 
-        foreach (RenderPlayer player in open_hands)
-            player.open_hand();
-        foreach (RenderPlayer player in closed_hands)
-            player.close_hand();
+    private void action_set_active(RenderActionSetActive action)
+    {
+        active = action.active;
+    }
 
-        if (flip_dora)
-            wall.flip_ura_dora();
+    private void kan(RenderPlayer player)
+    {
+        wall.flip_dora();
+        wall.dead_tile_add();
+        player.draw_tile(wall.draw_dead_wall());
+
+        if (player.seat == player_index)
+            active = true;
     }
 
     private void position_lights(float rotation)
@@ -182,4 +322,5 @@ class RenderSceneManager
     public RenderWall wall { get; private set; }
     public RenderPlayer observer { get; private set; }
     public Camera camera { get; private set; }
+    public bool active { get; set; }
 }

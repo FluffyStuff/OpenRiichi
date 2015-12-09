@@ -1,5 +1,12 @@
 public static int main(string[] args)
 {
+    /*int[] t = {0, 1, 2, 3};
+    uint8[] data = new ServerMessageDraw(t).serialize();
+    ServerMessageDraw draw = Serializable.deserialize(data) as ServerMessageDraw;
+
+    foreach (int i in draw.get_tenpai_indices())
+        print("i: " + i.to_string() + "\n");
+    return 0;*/
     /*ArrayList<Tile> hand = new ArrayList<Tile>();
 
     TileType[] tile_types =

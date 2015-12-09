@@ -140,7 +140,6 @@ public class RenderPlayer
     public void late_kan(RenderTile tile)
     {
         RenderCalls.RenderCallPon pon = calls.get_pon(tile.tile_type.tile_type);
-
         ArrayList<RenderTile> tiles = new ArrayList<RenderTile>();
         tiles.add_all(pon.tiles);
         tiles.add(tile);

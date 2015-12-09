@@ -1,17 +1,16 @@
-using Gee;
+/*using Gee;
 
 namespace GameServer
 {
     class ServerRoundStateWall
     {
-        private Tile[] tiles = new Tile[136];
-
         private ArrayList<Tile> wall_tiles = new ArrayList<Tile>();
         private ArrayList<Tile> dead_wall_tiles = new ArrayList<Tile>();
         private int dora_index = 4;
 
         public ServerRoundStateWall(int dealer, int start_index, Rand rnd)
         {
+            tiles = new Tile[136];
             doras = new ArrayList<Tile>();
             ura_doras = new ArrayList<Tile>();
 
@@ -77,6 +76,14 @@ namespace GameServer
             return tile;
         }
 
+        public Tile? get_tile(int tile_ID)
+        {
+            foreach (Tile tile in tiles)
+                if (tile.ID == tile_ID)
+                    return tile;
+            return null;
+        }
+
         private static void shuffle(Tile[] tiles, Rand rnd)
         {
             for (int i = 0; i < tiles.length; i++)
@@ -91,5 +98,6 @@ namespace GameServer
         public bool empty { get { return wall_tiles.size == 0; } }
         public ArrayList<Tile> doras { get; private set; }
         public ArrayList<Tile> ura_doras { get; private set; }
+        public Tile[] tiles { get; private set; }
     }
-}
+}*/

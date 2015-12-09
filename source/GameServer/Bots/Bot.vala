@@ -7,7 +7,7 @@ public abstract class Bot : Object
     private int player_index;
 
     protected GameState game_state;
-    protected ClientRoundState? round_state;
+    protected RoundState? round_state;
 
     public void init_game(GameStartInfo info, int player_index)
     {
@@ -23,7 +23,8 @@ public abstract class Bot : Object
             mutex.lock();
 
         game_state.start_round(info);
-        round_state = new ClientRoundState(player_index, game_state.round_wind, game_state.dealer_index, game_state.can_riichi());
+        round_state = new RoundState(player_index, game_state.round_wind, game_state.dealer_index, info.wall_index, game_state.can_riichi());
+        round_state.start();
 
         if (use_lock)
             mutex.unlock();
@@ -80,39 +81,37 @@ public abstract class Bot : Object
         round_state.tile_assign(tile);
     }
 
-    public void tile_draw(int player_index, int tile_ID)
+    public void tile_draw()
     {
-        round_state.tile_draw(player_index, tile_ID);
+        round_state.tile_draw();
     }
 
-    public void tile_discard(int player_index, int tile_ID)
+    public void tile_discard(int tile_ID)
     {
-        round_state.tile_discard(player_index, tile_ID);
+        round_state.tile_discard(tile_ID);
     }
 
-    public void ron(int player_index, int discarding_player_index, int tile_ID)
+    public void ron(int player_index)
     {
-        ClientRoundStatePlayer player = round_state.get_player(player_index);
-        Tile tile = round_state.get_tile(tile_ID);
-
-        Scoring score = round_state.get_ron_score(player, tile);
-        RoundFinishResult result = new RoundFinishResult.ron(score, player_index, discarding_player_index);
+        int discarder_index = round_state.current_player.index;
+        round_state.ron(player_index);
+        Scoring score = round_state.get_ron_score();
+        RoundFinishResult result = new RoundFinishResult.ron(score, player_index, discarder_index);
         game_state.round_finished(result);
     }
 
-    public void tsumo(int player_index)
+    public void tsumo()
     {
-        ClientRoundStatePlayer player = round_state.get_player(player_index);
-
-        Scoring score = round_state.get_tsumo_score(player);
-        RoundFinishResult result = new RoundFinishResult.tsumo(score, player_index);
+        round_state.tsumo();
+        Scoring score = round_state.get_tsumo_score();
+        RoundFinishResult result = new RoundFinishResult.tsumo(score, round_state.current_player.index);
         game_state.round_finished(result);
     }
 
-    public void riichi(int player_index)
+    public void riichi()
     {
-        round_state.riichi(player_index);
-        game_state.declare_riichi(player_index);
+        game_state.declare_riichi(round_state.current_player.index);
+        round_state.riichi();
     }
 
     public void turn_decision()
@@ -120,34 +119,34 @@ public abstract class Bot : Object
         do_turn_decision();
     }
 
-    public void call_decision(int discarding_player_index, int tile_ID)
+    public void call_decision()
     {
-        do_call_decision(round_state.get_player(discarding_player_index), round_state.get_tile(tile_ID));
+        do_call_decision(round_state.current_player, round_state.discard_tile);
     }
 
-    public void late_kan(int player_index, int tile_ID)
+    public void late_kan(int tile_ID)
     {
-        round_state.late_kan(player_index, tile_ID);
+        round_state.late_kan(tile_ID);
     }
 
-    public void closed_kan(int player_index, TileType type)
+    public void closed_kan(TileType type)
     {
-        round_state.closed_kan(player_index, type);
+        round_state.closed_kan(type);
     }
 
-    public void open_kan(int player_index, int discarding_player_index, int tile_ID, int tile_1_ID, int tile_2_ID, int tile_3_ID)
+    public void open_kan(int player_index, int tile_1_ID, int tile_2_ID, int tile_3_ID)
     {
-        round_state.open_kan(player_index, discarding_player_index, tile_ID, tile_1_ID, tile_2_ID, tile_3_ID);
+        round_state.open_kan(player_index, tile_1_ID, tile_2_ID, tile_3_ID);
     }
 
-    public void pon(int player_index, int discarding_player_index, int tile_ID, int tile_1_ID, int tile_2_ID)
+    public void pon(int player_index, int tile_1_ID, int tile_2_ID)
     {
-        round_state.pon(player_index, discarding_player_index, tile_ID, tile_1_ID, tile_2_ID);
+        round_state.pon(player_index, tile_1_ID, tile_2_ID);
     }
 
-    public void chii(int player_index, int discarding_player_index, int tile_ID, int tile_1_ID, int tile_2_ID)
+    public void chii(int player_index, int tile_1_ID, int tile_2_ID)
     {
-        round_state.chii(player_index, discarding_player_index, tile_ID, tile_1_ID, tile_2_ID);
+        round_state.chii(player_index, tile_1_ID, tile_2_ID);
     }
 
     public void draw(int[] tenpai_indices)
@@ -172,7 +171,7 @@ public abstract class Bot : Object
     public signal void call_chii(Tile tile_1, Tile tile_2);
 
     protected abstract void do_turn_decision();
-    protected abstract void do_call_decision(ClientRoundStatePlayer discarding_player, Tile tile);
+    protected abstract void do_call_decision(RoundStatePlayer discarding_player, Tile tile);
     protected virtual void do_logic() {}
     public abstract string name { get; }
 }

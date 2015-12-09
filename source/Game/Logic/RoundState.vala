@@ -2,576 +2,730 @@ using Gee;
 
 public class RoundState
 {
-    private ClientRoundState state;
-    private State action_state;
-    private ServerMessageParser parser = new ServerMessageParser();
+    private int current_index;
+    private int player_index;
+    private Wind round_wind;
+    private RoundStatePlayer[] players = new RoundStatePlayer[4];
+    private RoundStateWall wall;
 
-    private ArrayList<TileSelectionGroup> selection_groups = new ArrayList<TileSelectionGroup>();
+    private bool flow_interrupted = false;
+    private int turn_counter = 0;
+    private bool rinshan = false;
 
-    public signal void send_message(ClientMessage message);
-
-    public signal void set_chii_state(bool enabled);
-    public signal void set_pon_state(bool enabled);
-    public signal void set_kan_state(bool enabled);
-    public signal void set_riichi_state(bool enabled);
-    public signal void set_tsumo_state(bool enabled);
-    public signal void set_ron_state(bool enabled);
-    public signal void set_continue_state(bool enabled);
-
-    public signal void set_tile_select_state(bool enabled);
-    public signal void set_tile_select_groups(ArrayList<TileSelectionGroup>? selection_groups);
-
-    public bool finished { get; private set; }
-    public RoundFinishResult result { get; private set; }
-
-    public signal void declare_riichi(int player_index);
-
-    public RoundState(RoundStartInfo info, int player_index, Wind round_wind, int dealer_index, bool[] can_riichi)
+    public RoundState(int player_index, Wind round_wind, int dealer, int wall_index, bool[] can_riichi)
     {
-        state = new ClientRoundState(player_index, round_wind, dealer_index, can_riichi);
-        action_state = State.DONE;
-
-        parser.connect(server_turn_decision, typeof(ServerMessageTurnDecision));
-        parser.connect(server_call_decision, typeof(ServerMessageCallDecision));
-
-        parser.connect(server_tile_assignment, typeof(ServerMessageTileAssignment));
-        parser.connect(server_tile_draw, typeof(ServerMessageTileDraw));
-        parser.connect(server_tile_discard, typeof(ServerMessageTileDiscard));
-        parser.connect(server_flip_dora, typeof(ServerMessageFlipDora));
-        parser.connect(server_flip_ura_dora, typeof(ServerMessageFlipUraDora));
-
-        parser.connect(server_draw, typeof(ServerMessageDraw));
-        parser.connect(server_ron, typeof(ServerMessageRon));
-        parser.connect(server_tsumo, typeof(ServerMessageTsumo));
-        parser.connect(server_riichi, typeof(ServerMessageRiichi));
-        parser.connect(server_late_kan, typeof(ServerMessageLateKan));
-        parser.connect(server_closed_kan, typeof(ServerMessageClosedKan));
-        parser.connect(server_open_kan, typeof(ServerMessageOpenKan));
-        parser.connect(server_pon, typeof(ServerMessagePon));
-        parser.connect(server_chii, typeof(ServerMessageChii));
+        init(false, player_index, round_wind, dealer, wall_index, null, can_riichi);
     }
 
-    public void receive_message(ServerMessage message)
+    public RoundState.server(Wind round_wind, int dealer, int wall_index, Rand rnd, bool[] can_riichi)
     {
-        parser.execute(message);
+        init(true, -1, round_wind, dealer, wall_index, rnd, can_riichi);
     }
 
-    private void decision_finished()
+    private void init(bool shuffled, int player_index, Wind round_wind, int dealer, int wall_index, Rand? rnd, bool[] can_riichi)
     {
-        action_state = State.DONE;
-
-        set_chii_state(false);
-        set_pon_state(false);
-        set_kan_state(false);
-        set_riichi_state(false);
-        set_tsumo_state(false);
-        set_ron_state(false);
-        set_continue_state(false);
-        set_tile_select_state(false);
-    }
-
-    private void do_riichi(Tile tile)
-    {
-        ClientMessageRiichi message = new ClientMessageRiichi();
-        send_message(message);
-
-        do_discard_tile(tile);
-    }
-
-    private void do_late_kan(Tile tile)
-    {
-        ClientMessageLateKan message = new ClientMessageLateKan(tile.ID);
-        send_message(message);
-    }
-
-    private void do_closed_kan(TileType type)
-    {
-        ClientMessageClosedKan message = new ClientMessageClosedKan(type);
-        send_message(message);
-    }
-
-    private void do_chii(Tile tile_1, Tile tile_2)
-    {
-        ClientMessageChii message = new ClientMessageChii(tile_1.ID, tile_2.ID);
-        send_message(message);
-    }
-
-    private void do_turn_decision()
-    {
-        action_state = State.TURN;
-
-        bool can_kan = state.self.can_closed_kan() || state.self.can_late_kan();
-        bool can_riichi = state.self.can_riichi();
-        bool can_tsumo = state.can_tsumo(state.self);
-
-        set_chii_state(false);
-        set_pon_state(false);
-        set_kan_state(can_kan);
-        set_riichi_state(can_riichi);
-        set_tsumo_state(can_tsumo);
-        set_ron_state(false);
-        set_continue_state(false);
-
-        if (state.self.in_riichi)
-        {
-            ArrayList<Tile> list = new ArrayList<Tile>();
-            list.add(state.self.last_drawn_tile);
-
-            selection_groups.clear();
-            selection_groups.add(new TileSelectionGroup(list, list, TileSelectionGroup.GroupType.RIICHI_WAIT));
-            set_tile_select_groups(selection_groups);
-        }
+        this.player_index = player_index;
+        this.round_wind = round_wind;
+        this.dealer = current_index = dealer;
+        if (shuffled)
+            wall = new RoundStateWall.shuffled(dealer, wall_index, rnd);
         else
-            set_tile_select_groups(null);
+            wall = new RoundStateWall(dealer, wall_index);
+        discard_tile = null;
 
-        set_tile_select_state(true);
+        for (int i = 0; i < players.length; i++)
+            players[i] = new RoundStatePlayer(i, i == dealer, (Wind)((i - dealer + 4) % 4), can_riichi[i]);
     }
 
-    private void do_call_decision(Tile tile, ClientRoundStatePlayer discard_player)
+    public void start()
     {
-        action_state = State.CALL;
-
-        bool can_chii = state.can_chii(tile, state.self, discard_player);
-        bool can_pon = TileRules.can_pon(state.self.hand, tile);
-        bool can_kan = TileRules.can_open_kan(state.self.hand, tile);
-        bool can_ron = state.can_ron(state.self, tile);
-
-        set_chii_state(can_chii);
-        set_pon_state(can_pon);
-        set_kan_state(can_kan);
-        set_riichi_state(false);
-        set_tsumo_state(false);
-        set_ron_state(can_ron);
-        set_continue_state(true);
-        set_tile_select_state(false);
-    }
-
-    private void do_discard_tile(Tile tile)
-    {
-        ClientMessageTileDiscard message = new ClientMessageTileDiscard(tile.ID);
-        send_message(message);
-    }
-
-    private void do_select_chii(Tile tile)
-    {
-        foreach (TileSelectionGroup group in selection_groups)
+        for (int i = 0; i < 3; i++)
         {
-            if (group.group_type != TileSelectionGroup.GroupType.CHII)
-                continue;
-
-            foreach (Tile t in group.selection_tiles)
+            for (int p = 0; p < 4; p++)
             {
-                if (t.ID == tile.ID)
+                RoundStatePlayer player = current_player;
+
+                for (int t = 0; t < 4; t++)
                 {
-                    decision_finished();
-                    do_chii(group.highlight_tiles[1], group.highlight_tiles[2]);
-                    return;
-                }
-            }
-        }
-    }
-
-    private void do_select_kan(Tile tile)
-    {
-        foreach (TileSelectionGroup group in selection_groups)
-        {
-            foreach (Tile t in group.selection_tiles)
-            {
-                if (t.ID == tile.ID)
-                {
-                    decision_finished();
-
-                    if (group.group_type == TileSelectionGroup.GroupType.LATE_KAN)
-                        do_late_kan(tile);
-                    else if (group.group_type == TileSelectionGroup.GroupType.CLOSED_KAN)
-                        do_closed_kan(tile.tile_type);
-
-                    return;
-                }
-            }
-        }
-    }
-
-    private void do_select_riichi(Tile tile)
-    {
-        foreach (TileSelectionGroup group in selection_groups)
-        {
-            if (group.group_type != TileSelectionGroup.GroupType.RIICHI)
-                continue;
-
-            foreach (Tile t in group.selection_tiles)
-            {
-                if (t.ID == tile.ID)
-                {
-                    decision_finished();
-                    do_riichi(tile);
-                    return;
-                }
-            }
-        }
-    }
-
-    private void do_select_discard_tile(Tile tile)
-    {
-        decision_finished();
-        do_discard_tile(tile);
-    }
-
-    /////////////////////////
-
-    public void client_chii()
-    {
-        if (action_state == State.CALL)
-        {
-            ArrayList<ArrayList<Tile>> groups = TileRules.get_chii_groups(state.self.hand, state.discard_tile);
-
-            if (groups.size == 1)
-            {
-                decision_finished();
-
-                Tile tile_1 = groups[0][0];
-                Tile tile_2 = groups[0][1];
-                do_chii(tile_1, tile_2);
-            }
-            else if (groups.size > 1)
-            {
-                action_state = State.SELECT_CHII;
-
-                selection_groups.clear();
-
-                foreach (ArrayList<Tile> group in groups)
-                {
-                    ArrayList<Tile> selection = new ArrayList<Tile>();
-                    selection.add_all(group);
-                    ArrayList<Tile> highlight = new ArrayList<Tile>();
-                    highlight.add(state.discard_tile);
-                    highlight.add_all(group);
-
-                    foreach (TileSelectionGroup g in selection_groups)
-                        foreach (Tile t in g.selection_tiles)
-                            selection.remove(t);
-
-                    selection_groups.add(new TileSelectionGroup(selection, highlight, TileSelectionGroup.GroupType.CHII));
+                    Tile tile = wall.draw_wall();
+                    player.draw_initial(tile);
                 }
 
-                set_pon_state(false);
-                set_kan_state(false);
-                set_ron_state(false);
-                set_continue_state(false);
-                set_tile_select_state(true);
-                set_tile_select_groups(selection_groups);
+                current_index = (current_index + 1) % players.length;
             }
         }
-        else if (action_state == State.SELECT_CHII)
+
+        for (int p = 0; p < 4; p++)
         {
-            do_call_decision(state.discard_tile, state.discard_player);
+            RoundStatePlayer player = current_player;
+            Tile tile = wall.draw_wall();
+            player.draw_initial(tile);
+
+            if (p < 3)
+                current_index = (current_index + 1) % players.length;
         }
     }
 
-    public void client_pon()
+    public void tile_assign(Tile tile)
     {
-        if (action_state != State.CALL)
-            return;
-
-        decision_finished();
-
-        ClientMessagePon message = new ClientMessagePon();
-        send_message(message);
+        Tile t = get_tile(tile.ID);
+        t.tile_type = tile.tile_type;
+        t.dora = tile.dora;
     }
 
-    public void client_kan()
+    public Tile tile_draw()
     {
-        if (action_state == State.CALL)
-        {
-            decision_finished();
+        if (discard_tile != null)
+            foreach (var player in players)
+                player.check_temporary_furiten(discard_tile);
 
-            ClientMessageOpenKan message = new ClientMessageOpenKan();
-            send_message(message);
-        }
-        else if (action_state == State.TURN)
-        {
-            ArrayList<ArrayList<Tile>> closed_kans = TileRules.get_closed_kan_groups(state.self.hand);
-            ArrayList<Tile> late_kans = TileRules.get_late_kan_tiles(state.self.hand, state.self.calls);
+        current_index = (current_index + 1) % players.length;
+        turn_counter++;
+        Tile tile = wall.draw_wall();
+        current_player.draw(tile);
 
-            if (closed_kans.size == 1 && late_kans.size == 0)
-            {
-                decision_finished();
-                do_closed_kan(closed_kans[0][0].tile_type);
-            }
-            else if (closed_kans.size == 0 && late_kans.size == 1)
-            {
-                decision_finished();
-                do_late_kan(late_kans[0]);
-            }
-            else
-            {
-                action_state = State.SELECT_KAN;
-                selection_groups.clear();
-
-                foreach (Tile tile in late_kans)
-                {
-                    ArrayList<Tile> selection = new ArrayList<Tile>();
-                    selection.add(tile);
-
-                    ArrayList<Tile> highlight = new ArrayList<Tile>();
-                    highlight.add(tile);
-                    highlight.add_all(state.self.get_late_kan_tiles(tile));
-
-                    selection_groups.add(new TileSelectionGroup(selection, highlight, TileSelectionGroup.GroupType.LATE_KAN));
-                }
-
-                foreach (ArrayList<Tile> tiles in closed_kans)
-                {
-                    ArrayList<Tile> selection = new ArrayList<Tile>();
-                    selection.add_all(tiles);
-                    ArrayList<Tile> highlight = new ArrayList<Tile>();
-                    highlight.add_all(tiles);
-
-                    selection_groups.add(new TileSelectionGroup(selection, highlight, TileSelectionGroup.GroupType.CLOSED_KAN));
-                }
-
-                set_riichi_state(false);
-                set_tsumo_state(false);
-                set_tile_select_groups(selection_groups);
-            }
-        }
-        else if (action_state == State.SELECT_KAN)
-        {
-            do_turn_decision();
-        }
+        return tile;
     }
 
-    public void client_riichi()
+    public Tile tile_draw_dead_wall()
     {
-        if (action_state == State.TURN)
-        {
-            ArrayList<Tile> tiles = state.get_tenpai_tiles(state.self);
-            if (tiles.size == 1)
-            {
-                decision_finished();
-                do_riichi(tiles[0]);
-            }
-            else if (tiles.size > 1)
-            {
-                action_state = State.SELECT_RIICHI;
-                selection_groups.clear();
+        Tile tile = wall.draw_dead_wall();
+        current_player.draw(tile);
 
-                foreach (Tile tile in tiles)
-                {
-                    ArrayList<Tile> list = new ArrayList<Tile>();
-                    list.add(tile);
-                    selection_groups.add(new TileSelectionGroup(list, list, TileSelectionGroup.GroupType.RIICHI));
-                }
-
-                set_kan_state(false);
-                set_tsumo_state(false);
-                set_tile_select_groups(selection_groups);
-            }
-        }
-        else if (action_state == State.SELECT_RIICHI)
-        {
-            do_turn_decision();
-        }
+        return tile;
     }
 
-    public void client_tsumo()
+    public bool tile_discard(int tile_ID)
     {
-        if (action_state != State.TURN)
-            return;
+        Tile tile = get_tile(tile_ID);
+        RoundStatePlayer player = current_player;
+        if (!player.discard(tile))
+            return false;
 
-        decision_finished();
+        discard_tile = tile;
+        rinshan = false;
 
-        ClientMessageTsumo message = new ClientMessageTsumo();
-        send_message(message);
+        if (wall.empty)
+            game_over = true;
+
+        return true;
     }
 
-    public void client_ron()
+    public void flip_dora()
     {
-        if (action_state != State.CALL)
-            return;
-
-        decision_finished();
-
-        ClientMessageRon message = new ClientMessageRon();
-        send_message(message);
+        wall.flip_dora();
     }
 
-    public void client_continue()
+    public void ron(int player_index)
     {
-        if (action_state != State.CALL)
-            return;
-
-        decision_finished();
-
-        ClientMessageNoCall message = new ClientMessageNoCall();
-        send_message(message);
+        game_over = true;
+        current_index = player_index;
     }
 
-    public void client_tile_selected(Tile tile)
+    public void tsumo()
     {
-        if (action_state == State.TURN)
-            do_select_discard_tile(tile);
-        else if (action_state == State.SELECT_CHII)
-            do_select_chii(tile);
-        else if (action_state == State.SELECT_KAN)
-            do_select_kan(tile);
-        else if (action_state == State.SELECT_RIICHI)
-            do_select_riichi(tile);
+        game_over = true;
     }
 
-    ////////////////////////
-
-    private void server_tile_assignment(ServerMessage message)
+    public bool riichi()
     {
-        ServerMessageTileAssignment tile = (ServerMessageTileAssignment)message;
-        state.tile_assign(tile.get_tile());
+        RoundStatePlayer player = current_player;
+        if (!player.can_riichi())
+            return false;
+
+        player.do_riichi();
+        return true;
     }
 
-    private void server_tile_draw(ServerMessage message)
+    public bool late_kan(int tile_ID)
     {
-        ServerMessageTileDraw draw = (ServerMessageTileDraw)message;
-        state.tile_draw(draw.player_index, draw.tile_ID);
+        RoundStatePlayer player = current_player;
+        if (!player.do_late_kan(get_tile(tile_ID)))
+            return false;
+
+        kan();
+        return true;
     }
 
-    private void server_tile_discard(ServerMessage message)
+    public void closed_kan(TileType tile_type)
     {
-        ServerMessageTileDiscard discard = (ServerMessageTileDiscard)message;
-        state.tile_discard(discard.player_index, discard.tile_ID);
+        RoundStatePlayer player = current_player;
+        player.do_closed_kan(tile_type);
+
+        kan();
+        //interrupt_flow(); // TODO: Find out whether this is correct
     }
 
-    private void server_flip_dora(ServerMessage message)
+    public void open_kan(int player_index, int tile_1_ID, int tile_2_ID, int tile_3_ID)
     {
-        ServerMessageFlipDora dora = (ServerMessageFlipDora)message;
-        state.flip_dora(dora.tile_ID);
+        RoundStatePlayer player = get_player(player_index);
+        RoundStatePlayer discarder = current_player;
+
+        Tile tile = discard_tile;
+        Tile tile_1 = get_tile(tile_1_ID);
+        Tile tile_2 = get_tile(tile_2_ID);
+        Tile tile_3 = get_tile(tile_3_ID);
+        discarder.rob_tile(tile);
+
+        player.do_open_kan(tile, tile_1, tile_2, tile_3);
+
+        current_index = player_index;
+        kan();
     }
 
-    private void server_flip_ura_dora(ServerMessage message)
+    public void pon(int player_index, int tile_1_ID, int tile_2_ID)
     {
-        ServerMessageFlipUraDora dora = (ServerMessageFlipUraDora)message;
-        state.flip_ura_dora(dora.tile_ID);
+        RoundStatePlayer player = get_player(player_index);
+        RoundStatePlayer discarder = current_player;
+
+        Tile tile = discard_tile;
+        Tile tile_1 = get_tile(tile_1_ID);
+        Tile tile_2 = get_tile(tile_2_ID);
+        discarder.rob_tile(tile);
+
+        player.do_pon(tile, tile_1, tile_2);
+
+        interrupt_flow();
+        current_index = player_index;
     }
 
-    private void server_draw(ServerMessage message)
+    public void chii(int player_index, int tile_1_ID, int tile_2_ID)
     {
-        ServerMessageDraw draw = (ServerMessageDraw)message;
+        RoundStatePlayer player = get_player(player_index);
+        RoundStatePlayer discarder = current_player;
 
-        finished = true;
-        result = new RoundFinishResult.draw(draw.get_tenpai_indices());
+        Tile tile = discard_tile;
+        Tile tile_1 = get_tile(tile_1_ID);
+        Tile tile_2 = get_tile(tile_2_ID);
+        discarder.rob_tile(tile);
+
+        player.do_chii(tile, tile_1, tile_2);
+
+        interrupt_flow();
+        current_index = player_index;
     }
 
-    private void server_ron(ServerMessage message)
+    public Scoring get_ron_score()
     {
-        decision_finished();
-
-        ServerMessageRon ron = (ServerMessageRon)message;
-        ClientRoundStatePlayer player = state.get_player(ron.player_index);
-        Tile tile = state.get_tile(ron.tile_ID);
-
-        finished = true;
-        Scoring score = state.get_ron_score(player, tile);
-        result = new RoundFinishResult.ron(score, ron.player_index, ron.discard_player_index);
+        RoundStatePlayer player = current_player;
+        return player.get_ron_score(create_context(true, discard_tile));
     }
 
-    private void server_tsumo(ServerMessage message)
+    public Scoring get_tsumo_score()
     {
-        ServerMessageTsumo tsumo = (ServerMessageTsumo)message;
-        ClientRoundStatePlayer player = state.get_player(tsumo.player_index);
-
-        finished = true;
-        Scoring score = state.get_tsumo_score(player);
-        result = new RoundFinishResult.tsumo(score, tsumo.player_index);
+        RoundStatePlayer player = current_player;
+        return player.get_tsumo_score(create_context(false, player.last_drawn_tile));
     }
 
-    private void server_riichi(ServerMessage message)
+    public bool can_ron(RoundStatePlayer player)
     {
-        ServerMessageRiichi riichi = (ServerMessageRiichi)message;
-        state.riichi(riichi.player_index);
-
-        declare_riichi(riichi.player_index);
+        return player != current_player && player.can_ron(create_context(true, discard_tile));
     }
 
-    private void server_late_kan(ServerMessage message)
+    public bool can_tsumo()
     {
-        ServerMessageLateKan kan = (ServerMessageLateKan)message;
-        state.late_kan(kan.player_index, kan.tile_ID);
+        RoundStatePlayer player = current_player;
+        return player.can_tsumo(create_context(false, player.last_drawn_tile));
     }
 
-    private void server_closed_kan(ServerMessage message)
+    public bool can_open_kan(RoundStatePlayer player)
     {
-        ServerMessageClosedKan kan = (ServerMessageClosedKan)message;
-        state.closed_kan(kan.player_index, kan.get_type_enum());
+        return !player.in_riichi && player != current_player && TileRules.can_open_kan(player.hand, discard_tile);
     }
 
-    private void server_open_kan(ServerMessage message)
+    public bool can_pon(RoundStatePlayer player)
     {
-        ServerMessageOpenKan kan = (ServerMessageOpenKan)message;
-        state.open_kan(kan.player_index, kan.discard_player_index, kan.tile_ID, kan.tile_1_ID, kan.tile_2_ID, kan.tile_3_ID);
-
-        decision_finished();
+        return !player.in_riichi && player != current_player && TileRules.can_pon(player.hand, discard_tile);
     }
 
-    private void server_pon(ServerMessage message)
+    public bool can_chii(RoundStatePlayer player)
     {
-        ServerMessagePon pon = (ServerMessagePon)message;
-        state.pon(pon.player_index, pon.discard_player_index, pon.tile_ID, pon.tile_1_ID, pon.tile_2_ID);
-
-        decision_finished();
+        return !player.in_riichi && ((current_player.index + 1) % 4 == player.index) && TileRules.can_chii(player.hand, discard_tile);
     }
 
-    private void server_chii(ServerMessage message)
+    public bool can_chii_with(RoundStatePlayer player, Tile tile_1, Tile tile_2)
     {
-        ServerMessageChii chii = (ServerMessageChii)message;
-        state.chii(chii.player_index, chii.discard_player_index, chii.tile_ID, chii.tile_1_ID, chii.tile_2_ID);
+        ArrayList<Tile> tiles = new ArrayList<Tile>();
+        tiles.add(tile_1);
+        tiles.add(tile_2);
+        return !player.in_riichi && ((current_player.index + 1) % 4 == player.index) && TileRules.can_chii(tiles, discard_tile);
     }
 
-    ////////////////////////
-
-    public void server_turn_decision(ServerMessage message)
+    public ArrayList<Tile> get_tenpai_tiles(RoundStatePlayer player)
     {
-        do_turn_decision();
+        return TileRules.tenpai_tiles(player.hand);
     }
 
-    public void server_call_decision(ServerMessage message)
+    public RoundStatePlayer get_player(int player_index)
     {
-        ServerMessageCallDecision call = (ServerMessageCallDecision)message;
-        ClientRoundStatePlayer player = state.get_player(call.player_index);
-        Tile tile = state.get_tile(call.tile_ID);
-
-        do_call_decision(tile, player);
+        return players[player_index];
     }
 
-    ////////////////////////
-
-    private enum State
+    public Tile get_tile(int tile_ID)
     {
-        SELECT_CHII,
-        SELECT_KAN,
-        SELECT_RIICHI,
-        CALL,
-        TURN,
-        DONE
+        return wall.get_tile(tile_ID);
     }
+
+    public ArrayList<RoundStatePlayer> get_tenpai_players()
+    {
+        ArrayList<RoundStatePlayer> players = new ArrayList<RoundStatePlayer>();
+
+        foreach (RoundStatePlayer player in this.players)
+            if (player.in_tenpai())
+                players.add(player);
+
+        return players;
+    }
+
+    public void game_draw()
+    {
+        game_over = true;
+    }
+
+    private void interrupt_flow()
+    {
+        foreach (RoundStatePlayer player in players)
+            player.flow_interrupted();
+        flow_interrupted = true;
+    }
+
+    private void kan()
+    {
+        rinshan = true;
+        wall.flip_dora();
+        tile_draw_dead_wall();
+        interrupt_flow();
+
+    }
+
+    private RoundStateContext create_context(bool ron, Tile win_tile)
+    {
+        bool last_tile = wall.empty;
+        bool chankan = false;
+
+        return new RoundStateContext
+        (
+            round_wind,
+            wall.dora,
+            wall.ura_dora,
+            ron,
+            win_tile,
+            last_tile,
+            rinshan && !ron,
+            chankan,
+            flow_interrupted,
+            turn_counter <= players.length && !flow_interrupted
+        );
+    }
+
+    public RoundStatePlayer self { get { return players[player_index]; } }
+    public Tile? discard_tile { get; private set; }
+    public RoundStatePlayer? discard_player { get; private set; }
+
+    public RoundStatePlayer current_player
+    {
+        get { return players[current_index]; }
+    }
+
+    public int dealer { get; private set; }
+    public bool game_over { get; private set; }
+    public Tile newest_dora { get { return wall.newest_dora; } }
+    public ArrayList<Tile> ura_dora { get { return wall.ura_dora; } }
+    public bool tiles_empty { get { return wall.empty; } }
 }
 
-public class TileSelectionGroup
+public class RoundStatePlayer
 {
-    public TileSelectionGroup(ArrayList<Tile> selection_tiles, ArrayList<Tile> highlight_tiles, GroupType group_type)
+    private bool double_riichi = true;
+    private bool do_riichi_discard = false;
+    private bool ippatsu = false;
+    private bool dealer;
+    private Wind wind;
+    private bool tiles_called_on = false;
+    private bool temporary_furiten = false;
+    private bool _can_riichi;
+
+    public RoundStatePlayer(int index, bool dealer, Wind wind, bool can_riichi)
     {
-        this.selection_tiles = selection_tiles;
-        this.highlight_tiles = highlight_tiles;
-        this.group_type = group_type;
+        this.index = index;
+        this.dealer = dealer;
+        this.wind = wind;
+        _can_riichi = can_riichi;
+
+        hand = new ArrayList<Tile>();
+        pond = new ArrayList<Tile>();
+        calls = new ArrayList<RoundStateCall>();
+        in_riichi = false;
     }
 
-    public ArrayList<Tile> selection_tiles { get; private set; }
-    public ArrayList<Tile> highlight_tiles { get; private set; }
-    public GroupType group_type { get; private set; }
-
-    public enum GroupType
+    public bool has_tile(Tile tile)
     {
-        CHII,
-        CLOSED_KAN,
-        LATE_KAN,
-        RIICHI,
-        RIICHI_WAIT
+        foreach (Tile t in hand)
+            if (t.ID == tile.ID)
+                return true;
+        return false;
     }
+
+    public void draw_initial(Tile tile)
+    {
+        hand.add(tile);
+        last_drawn_tile = tile;
+    }
+
+    public void draw(Tile tile)
+    {
+        hand.add(tile);
+        last_drawn_tile = tile;
+
+        if (!in_riichi)
+            temporary_furiten = false;
+    }
+
+    public bool discard(Tile tile)
+    {
+        if (!has_tile(tile) ||
+            (in_riichi && !do_riichi_discard && tile.ID != last_drawn_tile.ID))
+            return false;
+
+        hand.remove(tile);
+        pond.add(tile);
+
+        if (!in_riichi)
+            double_riichi = false;
+
+        if (do_riichi_discard)
+            do_riichi_discard = false;
+        else
+            ippatsu = false;
+
+        return true;
+    }
+
+    public void rob_tile(Tile tile)
+    {
+        //pond.remove(tile); // Don't need to do this
+        tiles_called_on = true;
+    }
+
+    public void check_temporary_furiten(Tile tile)
+    {
+        ArrayList<Tile> hand = new ArrayList<Tile>();
+        hand.add_all(this.hand);
+        hand.add(tile);
+
+        if (TileRules.winning_hand(hand))
+            temporary_furiten = true;
+    }
+
+    public void flow_interrupted()
+    {
+        if (!in_riichi)
+            double_riichi = false;
+        ippatsu = false;
+    }
+
+    public void do_riichi()
+    {
+        in_riichi = true;
+        ippatsu = true;
+        do_riichi_discard = true;
+    }
+
+    public bool do_late_kan(Tile tile)
+    {
+        hand.remove(tile);
+
+        ArrayList<Tile> tiles = new ArrayList<Tile>();
+        tiles.add(tile);
+
+        foreach (RoundStateCall call in calls)
+        {
+            if (call.call_type == RoundStateCall.CallType.PON)
+                if (call.tiles[0].tile_type == tile.tile_type)
+                {
+                    calls.remove(call);
+                    tiles.add_all(call.tiles);
+                    break;
+                }
+        }
+
+        if (tiles.size != 4)
+            return false;
+
+        calls.add(new RoundStateCall(RoundStateCall.CallType.LATE_KAN, tiles));
+        return true;
+    }
+
+    public ArrayList<Tile>? do_closed_kan(TileType type)
+    {
+        ArrayList<Tile> tiles = new ArrayList<Tile>();
+        for (int i = 0; i < hand.size; i++)
+            if (hand[i].tile_type == type)
+                tiles.add(hand.remove_at(i--));
+
+        if (tiles.size != 4)
+            return null;
+
+        calls.add(new RoundStateCall(RoundStateCall.CallType.CLOSED_KAN, tiles));
+        return tiles;
+    }
+
+    public void do_open_kan(Tile discard_tile, Tile tile_1, Tile tile_2, Tile tile_3)
+    {
+        hand.remove(tile_1);
+        hand.remove(tile_2);
+        hand.remove(tile_3);
+
+        ArrayList<Tile> tiles = new ArrayList<Tile>();
+        tiles.add(discard_tile);
+        tiles.add(tile_1);
+        tiles.add(tile_2);
+        tiles.add(tile_3);
+
+        calls.add(new RoundStateCall(RoundStateCall.CallType.OPEN_KAN, tiles));
+    }
+
+    public void do_pon(Tile discard_tile, Tile tile_1, Tile tile_2)
+    {
+        hand.remove(tile_1);
+        hand.remove(tile_2);
+
+        ArrayList<Tile> tiles = new ArrayList<Tile>();
+        tiles.add(discard_tile);
+        tiles.add(tile_1);
+        tiles.add(tile_2);
+
+        calls.add(new RoundStateCall(RoundStateCall.CallType.PON, tiles));
+    }
+
+    public void do_chii(Tile discard_tile, Tile tile_1, Tile tile_2)
+    {
+        hand.remove(tile_1);
+        hand.remove(tile_2);
+
+        ArrayList<Tile> tiles = new ArrayList<Tile>();
+        tiles.add(discard_tile);
+        tiles.add(tile_1);
+        tiles.add(tile_2);
+
+        calls.add(new RoundStateCall(RoundStateCall.CallType.CHII, tiles));
+    }
+
+    public ArrayList<Tile> get_late_kan_tiles(Tile tile)
+    {
+        ArrayList<Tile> tiles = new ArrayList<Tile>();
+
+        for (int i = 0; i < calls.size; i++)
+        {
+            RoundStateCall call = calls[i];
+
+            if (call.call_type == RoundStateCall.CallType.PON)
+            {
+                if (call.tiles[0].tile_type == tile.tile_type)
+                {
+                    tiles.add_all(call.tiles);
+                    break;
+                }
+            }
+        }
+
+        return tiles;
+    }
+
+    public Scoring get_ron_score(RoundStateContext context)
+    {
+        return TileRules.get_score(create_context(false), context);
+    }
+
+    public Scoring get_tsumo_score(RoundStateContext context)
+    {
+        return TileRules.get_score(create_context(true), context);
+    }
+
+    public bool can_ron(RoundStateContext context)
+    {
+        return !temporary_furiten && !TileRules.in_furiten(hand, pond) && TileRules.can_ron(create_context(false), context);
+    }
+
+    public bool can_tsumo(RoundStateContext context)
+    {
+        return TileRules.can_tsumo(create_context(true), context);
+    }
+
+    public bool can_riichi()
+    {
+        if (!_can_riichi || in_riichi)
+            return false;
+
+        foreach (RoundStateCall call in calls)
+            if (call.call_type != RoundStateCall.CallType.CLOSED_KAN)
+                return false;
+
+        return TileRules.tenpai_tiles(hand).size > 0;
+    }
+
+    public bool can_late_kan()
+    {
+        if (in_riichi)
+            return false;
+
+        return TileRules.can_late_kan(hand, calls);
+    }
+
+    public bool can_closed_kan()
+    {
+        // TODO: Fix
+        if (in_riichi)
+            return false;
+
+        return TileRules.can_closed_kan(hand);
+    }
+
+    public bool in_tenpai()
+    {
+        return TileRules.in_tenpai(hand);
+    }
+
+    private PlayerStateContext create_context(bool tsumo)
+    {
+        ArrayList<Tile> hand = new ArrayList<Tile>();
+        hand.add_all(this.hand);
+        if (tsumo)
+            hand.remove(last_drawn_tile);
+
+        return new PlayerStateContext
+        (
+            hand,
+            pond,
+            calls,
+            wind,
+            dealer,
+            in_riichi,
+            double_riichi,
+            ippatsu,
+            tiles_called_on
+        );
+    }
+
+    public int index { get; private set; }
+    public ArrayList<Tile> hand { get; private set; }
+    public ArrayList<Tile> pond { get; private set; }
+    public ArrayList<RoundStateCall> calls { get; private set; }
+    public bool in_riichi { get; private set; }
+    public Tile? last_drawn_tile { get; private set; }
+}
+
+class RoundStateWall
+{
+    private ArrayList<Tile> wall_tiles = new ArrayList<Tile>();
+    private ArrayList<Tile> dead_wall_tiles = new ArrayList<Tile>();
+    private int dora_index = 4;
+
+    public RoundStateWall(int dealer, int wall_index)
+    {
+        init(dealer, wall_index, null, false);
+    }
+
+    public RoundStateWall.shuffled(int dealer, int wall_index, Rand rnd)
+    {
+        init(dealer, wall_index, rnd, true);
+    }
+
+    private void init(int dealer, int wall_index, Rand? rnd, bool shuffled)
+    {
+        tiles = new Tile[136];
+        dora = new ArrayList<Tile>();
+        ura_dora = new ArrayList<Tile>();
+
+        for (int i = 0; i < tiles.length; i++)
+        {
+            TileType type = shuffled ? (TileType)((i / 4) + 1) : TileType.BLANK;
+            tiles[i] = new Tile(-1, type, false);
+        }
+
+        int start_wall = (4 - dealer) % 4;
+        int index = start_wall * 34 + wall_index * 2;
+
+        if (shuffled)
+            shuffle(tiles, rnd);
+
+        for (int i = 0; i < tiles.length; i++)
+            tiles[i].ID = i;
+
+        for (int i = 0; i < 122; i++)
+        {
+            int t = (index + i) % 136;
+            wall_tiles.add(tiles[t]);
+        }
+
+        for (int i = 0; i < 14; i++)
+        {
+            int t = (index + i + 122) % 136;
+            if (i % 2 == 0)
+                t++;
+            else
+                t--;
+
+            dead_wall_tiles.insert(0, tiles[t]);
+        }
+
+        flip_dora();
+    }
+
+    public Tile flip_dora()
+    {
+        Tile tile = dead_wall_tiles[dora_index];
+        dora.add(tile);
+        ura_dora.add(dead_wall_tiles[dora_index + 1]);
+
+        dora_index += 2;
+
+        newest_dora = tile;
+        return tile;
+    }
+
+    public Tile draw_wall()
+    {
+        return wall_tiles.remove_at(0);
+    }
+
+    public Tile draw_dead_wall()
+    {
+        Tile tile = dead_wall_tiles.remove_at(0);
+        dead_tile_add();
+        dora_index--;
+        return tile;
+    }
+
+    public Tile dead_tile_add()
+    {
+        Tile tile = wall_tiles.remove_at(wall_tiles.size - 1);
+        dead_wall_tiles.insert(dead_wall_tiles.size, tile);
+        return tile;
+    }
+
+    public Tile? get_tile(int tile_ID)
+    {
+        foreach (Tile tile in tiles)
+            if (tile.ID == tile_ID)
+                return tile;
+        return null;
+    }
+
+    private static void shuffle(Tile[] tiles, Rand rnd)
+    {
+        for (int i = 0; i < tiles.length; i++)
+        {
+            int tmp = rnd.int_range(0, tiles.length);
+            Tile t = tiles[i];
+            tiles[i] = tiles[tmp];
+            tiles[tmp] = t;
+        }
+    }
+
+    public bool empty { get { return wall_tiles.size == 0; } }
+    public Tile newest_dora { get; private set; }
+    public ArrayList<Tile> dora { get; private set; }
+    public ArrayList<Tile> ura_dora { get; private set; }
+    public Tile[] tiles { get; private set; }
 }
