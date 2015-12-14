@@ -57,4 +57,10 @@ class MenuTextButton : Control
             }
         }
     }
+
+    public float font_size
+    {
+        get { return label.font_size; }
+        set { label.font_size = value; }
+    }
 }

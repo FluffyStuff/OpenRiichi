@@ -71,6 +71,7 @@ public class GameMenuView : View2D
             button.enabled = false;
             button.inner_anchor = Vec2(0.5f, 0);
             button.outer_anchor = Vec2(0.5f, 0);
+            button.font_size = 24;
             //button.size = Size2(scale, scale);
 
             width += button.size.width / 2 * scale;
