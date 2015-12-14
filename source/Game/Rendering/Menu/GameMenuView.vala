@@ -4,15 +4,15 @@ public class GameMenuView : View2D
 {
     private ScoringView score_view;
 
-    private ArrayList<GameMenuButton> buttons = new ArrayList<GameMenuButton>();
+    private ArrayList<MenuTextButton> buttons = new ArrayList<MenuTextButton>();
 
-    private GameMenuButton chii;
-    private GameMenuButton pon;
-    private GameMenuButton kan;
-    private GameMenuButton riichi;
-    private GameMenuButton tsumo;
-    private GameMenuButton ron;
-    private GameMenuButton conti;
+    private MenuTextButton chii;
+    private MenuTextButton pon;
+    private MenuTextButton kan;
+    private MenuTextButton riichi;
+    private MenuTextButton tsumo;
+    private MenuTextButton ron;
+    private MenuTextButton conti;
 
     public signal void chii_pressed();
     public signal void pon_pressed();
@@ -38,13 +38,13 @@ public class GameMenuView : View2D
 
     public override void added()
     {
-        chii = new GameMenuButton(store, "Chii");
-        pon = new GameMenuButton(store, "Pon");
-        kan = new GameMenuButton(store, "Kan");
-        riichi = new GameMenuButton(store, "Riichi");
-        tsumo = new GameMenuButton(store, "Tsumo");
-        ron = new GameMenuButton(store, "Ron");
-        conti = new GameMenuButton(store, "Continue");
+        chii = new MenuTextButton("MenuButtonSmall", "Chii");
+        pon = new MenuTextButton("MenuButtonSmall", "Pon");
+        kan = new MenuTextButton("MenuButtonSmall", "Kan");
+        riichi = new MenuTextButton("MenuButtonSmall", "Riichi");
+        tsumo = new MenuTextButton("MenuButtonSmall", "Tsumo");
+        ron = new MenuTextButton("MenuButtonSmall", "Ron");
+        conti = new MenuTextButton("MenuButtonSmall", "Continue");
 
         chii.clicked.connect(press_chii);
         pon.clicked.connect(press_pon);
@@ -62,37 +62,27 @@ public class GameMenuView : View2D
         buttons.add(ron);
         buttons.add(conti);
 
-        float scale = 0.8f;
+        float scale = 1;
         float width = 0;
 
-        foreach (GameMenuButton button in buttons)
+        foreach (var button in buttons)
         {
-            add_control(button);
+            add_child(button);
             button.enabled = false;
             button.inner_anchor = Vec2(0.5f, 0);
             button.outer_anchor = Vec2(0.5f, 0);
-            button.scale = Size2(scale, scale);
+            //button.size = Size2(scale, scale);
 
             width += button.size.width / 2 * scale;
         }
 
         float p = 0;
-        foreach (GameMenuButton button in buttons)
+        foreach (var button in buttons)
         {
             button.position = Vec2(button.size.width / 2 * scale - width + p, 0);
             p += button.size.width * scale;
         }
     }
-
-    /*public override void do_render(RenderState state)
-    {
-        RenderScene2D scene = new RenderScene2D(state.screen_size);
-
-        foreach (GameMenuButton button in buttons)
-            button.render(scene);
-
-        state.add_scene(scene);
-    }*/
 
     protected override void do_key_press(KeyArgs key)
     {

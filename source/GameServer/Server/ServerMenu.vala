@@ -141,7 +141,6 @@ namespace GameServer
             var msg = (ClientMessageMenuAddBot)message;
             string name = typeof(Bot).name();
             name = name.substring(0, name.length - 3) + msg.name;
-            Type tn = typeof(NullBot); // TODO: Find better fix for this
             Type? type = Type.from_name(name);
 
             if (type == null || !type.is_a(typeof(Bot)))

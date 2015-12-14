@@ -248,7 +248,6 @@ namespace GameServer
 
             ServerRoundStatePlayer discarder = result.discarder;
             ServerRoundStatePlayer caller = result.caller;
-            Tile discard_tile = result.discard_tile;
 
             if (result.call_type == CallDecisionType.CHII)
             {

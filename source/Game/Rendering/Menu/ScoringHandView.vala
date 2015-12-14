@@ -1,6 +1,6 @@
 using Gee;
 
-public class ScoringHandView : View
+public class ScoringHandView : View3D
 {
     private Scoring score;
 
@@ -66,7 +66,7 @@ public class ScoringHandView : View
         light2.intensity = 15;
     }
 
-    public override void do_render(RenderState state)
+    public override void do_render_3D(RenderState state)
     {
         RenderScene3D scene = new RenderScene3D(state.screen_size, 10, rect);
 

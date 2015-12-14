@@ -21,10 +21,6 @@ class RenderSceneManager
     private RenderAction? current_action = null;
     private float action_start_time;
 
-    private ArrayList<RenderPlayer> open_hands = new ArrayList<RenderPlayer>();
-    private ArrayList<RenderPlayer> closed_hands = new ArrayList<RenderPlayer>();
-    private bool flip_dora = false;
-
     public RenderSceneManager(string extension, int player_index, Wind round_wind, int dealer, int wall_index)
     {
         this.extension = extension;
@@ -171,9 +167,8 @@ class RenderSceneManager
             action_flip_dora(action as RenderActionFlipDora);
         else if (action is RenderActionFlipUraDora)
             action_flip_ura_dora(action as RenderActionFlipUraDora);
-        // TODO: Remove?
-        /*else if (action is RenderActionSetActive)
-            action_set_active(action as RenderActionSetActive);*/
+        else if (action is RenderActionSetActive)
+            action_set_active(action as RenderActionSetActive);
     }
 
     private void action_initial_draw(RenderActionInitialDraw action)

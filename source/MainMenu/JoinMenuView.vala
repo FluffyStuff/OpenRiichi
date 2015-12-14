@@ -3,8 +3,8 @@ using GameServer;
 public class JoinMenuView : View2D
 {
     private IGameConnection? connection;
-    private GameMenuButton join_button;
-    private GameMenuButton back_button;
+    private MenuTextButton join_button;
+    private MenuTextButton back_button;
     private TextInputView server_text;
     private TextInputView name_text;
     private string name;
@@ -12,43 +12,40 @@ public class JoinMenuView : View2D
     public signal void joined(IGameConnection connection, string name);
     public signal void back();
 
-    public JoinMenuView()
-    {
-    }
-
     protected override void added()
     {
-        LabelControl label = new LabelControl(store);
+        LabelControl label = new LabelControl();
+        add_child(label);
         label.text = "Join Server";
         label.font_size = 40;
         label.outer_anchor = Vec2(0.5f, 1);
         label.inner_anchor = Vec2(0.5f, 1);
-        add_control(label);
+        label.position = Vec2(0, -60);
 
         int padding = 50;
 
-        server_text = new TextInputView(store, "Hostname");
+        server_text = new TextInputView("Hostname");
+        add_child(server_text);
         server_text.position = Vec2(0, padding);
-        add_control(server_text);
 
-        name_text = new TextInputView(store, "Player name");
+        name_text = new TextInputView("Player name");
+        add_child(name_text);
         name_text.position = Vec2(0, -padding);
-        add_control(name_text);
 
-        join_button = new GameMenuButton(store, "Join");
+        join_button = new MenuTextButton("MenuButton", "Join");
+        add_child(join_button);
         join_button.outer_anchor = Vec2(0.5f, 0);
         join_button.inner_anchor = Vec2(1, 0);
         join_button.position = Vec2(-padding, padding);
         join_button.clicked.connect(join_clicked);
         join_button.enabled = false;
-        add_control(join_button);
 
-        back_button = new GameMenuButton(store, "Back");
+        back_button = new MenuTextButton("MenuButton", "Back");
+        add_child(back_button);
         back_button.outer_anchor = Vec2(0.5f, 0);
         back_button.inner_anchor = Vec2(0, 0);
         back_button.position = Vec2(padding, padding);
         back_button.clicked.connect(back_clicked);
-        add_control(back_button);
 
         name_text.text_changed.connect(name_changed);
     }

@@ -140,7 +140,7 @@ public class Tile
 
     public string to_string()
     {
-        return "(" + ID.to_string() + ") " + tile_type.to_string() + (dora ? " dora" : " nodora");
+        return "(" + ID.to_string() + ") " + tile_type.to_string() + (dora ? " dora" : " not dora");
     }
 
     public int ID { get; set; }

@@ -9,29 +9,13 @@ class MainMenuView : View2D
     private JoinMenuView join_view;
     private OptionsMenuView options_view;
 
-    private GameMenuButton host_game_button;
-    private GameMenuButton join_game_button;
-    private GameMenuButton options_button;
-    private GameMenuButton quit_button;
+    private MenuTextButton host_game_button;
+    private MenuTextButton join_game_button;
+    private MenuTextButton options_button;
+    private MenuTextButton quit_button;
 
     public signal void game_start(GameStartInfo info, IGameConnection connection, int player_index);
     public signal void quit();
-
-    public MainMenuView()
-    {
-        // TODO: Fix class reflection bug...
-        typeof(Serializable).class_ref();
-        typeof(SerializableList).class_ref();
-        typeof(SerializableListItem).class_ref();
-        typeof(ObjInt).class_ref();
-        typeof(GamePlayer).class_ref();
-        typeof(ServerMessage).class_ref();
-        typeof(ServerMessageRoundStart).class_ref();
-        typeof(ServerMessageAcceptJoin).class_ref();
-        typeof(ServerMessageMenuSlotAssign).class_ref();
-        typeof(ServerMessageMenuSlotClear).class_ref();
-        typeof(ServerMessageDraw).class_ref();
-    }
 
     ~MainMenuView()
     {
@@ -82,7 +66,7 @@ class MainMenuView : View2D
     private void press_options()
     {
         clear_all();
-        background_view.visible = false;
+        //background_view.visible = false;
 
         options_view = new OptionsMenuView();
         options_view.apply_clicked.connect(options_apply);
@@ -160,23 +144,21 @@ class MainMenuView : View2D
     public override void added()
     {
         add_child(background_view);
-        background_view.inner_anchor = Vec2(0, 0.5f);
-        background_view.outer_anchor = Vec2(0, 0.5f);
 
-        host_game_button = new GameMenuButton(store, "CreateServer");
-        join_game_button = new GameMenuButton(store, "Join");
-        options_button = new GameMenuButton(store, "Options");
-        quit_button = new GameMenuButton(store, "Quit");
+        host_game_button = new MenuTextButton("MenuButton", "Create Server");
+        join_game_button = new MenuTextButton("MenuButton", "Join Server");
+        options_button = new MenuTextButton("MenuButton", "Options");
+        quit_button = new MenuTextButton("MenuButton", "Quit");
 
-        ArrayList<GameMenuButton> buttons = new ArrayList<GameMenuButton>();
+        ArrayList<MenuTextButton> buttons = new ArrayList<MenuTextButton>();
 
         buttons.add(host_game_button);
         buttons.add(join_game_button);
         buttons.add(options_button);
         buttons.add(quit_button);
 
-        foreach (GameMenuButton button in buttons)
-            add_control(button);
+        foreach (MenuTextButton button in buttons)
+            add_child(button);
 
         int padding = 30;
         float height = host_game_button.size.height + padding;
@@ -192,15 +174,5 @@ class MainMenuView : View2D
         quit_button.clicked.connect(press_quit);
 
         show_main_menu();
-    }
-
-    public override void do_render_2D(RenderState state, RenderScene2D scene)
-    {
-        state.back_color = Color.black();
-    }
-
-    public override void on_resized()
-    {
-        background_view.size = Size2(size.width / 3, size.height / 3);
     }
 }

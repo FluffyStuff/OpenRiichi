@@ -214,14 +214,15 @@ public class RenderPlayer
         ArrayList<RenderTile> tiles = new ArrayList<RenderTile>();
         tiles.add_all(list);
 
-        CompareDataFunc<RenderTile> cmp = (t1, t2) =>
-        {
-            int a = (int)t1.tile_type.tile_type;
-            int b = (int)t2.tile_type.tile_type;
-            return (int) (a > b) - (int) (a < b);
-        };
-
-        tiles.sort(cmp);
+        tiles.sort
+        (
+            (t1, t2) =>
+            {
+                int a = (int)t1.tile_type.tile_type;
+                int b = (int)t2.tile_type.tile_type;
+                return (int) (a > b) - (int) (a < b);
+            }
+        );
 
         return tiles;
     }

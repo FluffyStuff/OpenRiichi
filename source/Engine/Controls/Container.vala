@@ -1,4 +1,4 @@
-public abstract class View : Object, IControl
+public abstract class Container : Object
 {
     private Vec2 _position = Vec2(0, 0);
     private Size2 _size = Size2(1, 1);
@@ -9,94 +9,99 @@ public abstract class View : Object, IControl
     private ResizeStyle _resize_style = ResizeStyle.RELATIVE;
     private bool _visible = true;
 
-    private Gee.ArrayList<View> child_views = new Gee.ArrayList<View>();
-    protected weak RenderWindow parent_window;
-    private weak View parent;
+    protected Gee.ArrayList<Container> children = new Gee.ArrayList<Container>();
+    protected weak RenderWindow? parent_window;
+    private weak Container? parent;
 
-    public void add_child(View child)
+    public void add_child(Container child)
     {
         child.set_parent(this);
         child.added();
-        child_views.add(child);
+        child.resize();
+        children.add(child);
     }
 
-    public void add_child_back(View child)
+    public void add_child_back(Container child)
     {
         child.set_parent(this);
         child.added();
-        child_views.insert(0, child);
+        child.resize();
+        children.insert(0, child);
     }
 
-    public void remove_child(View child)
+    public void remove_child(Container child)
     {
-        child_views.remove(child);
+        children.remove(child);
+        child.removed();
         child.set_parent(null);
     }
 
-    private void set_parent(View? parent)
+    private void set_parent(Container? parent)
     {
         this.parent = parent;
 
         if (parent == null)
             parent_window = null;
         else
-        {
             parent_window = parent.parent_window;
-            resize();
-        }
     }
 
     public void process(DeltaArgs delta)
     {
+        foreach (Container child in children)
+            child.process(delta);
         do_process(delta);
-
-        foreach (View view in child_views)
-            view.process(delta);
     }
 
-    public void render(RenderState state)
+    public virtual void render(RenderState state, RenderScene2D scene)
     {
         if (!visible)
             return;
 
-        do_render(state);
+        // TODO: Find better solution for this
+        RenderScene2D new_scene = new RenderScene2D(rect);
 
-        foreach (View view in child_views)
-            view.render(state);
+        do_render(state, new_scene);
+
+        foreach (Container child in children)
+            child.render(state, new_scene);
+
+        state.add_scene(new_scene);
     }
+
 
     public void mouse_event(MouseEventArgs mouse)
     {
-        for (int i = child_views.size - 1; i >= 0; i--)
-            child_views[i].mouse_event(mouse);
+        for (int i = children.size - 1; i >= 0; i--)
+            children[i].mouse_event(mouse);
         do_mouse_event(mouse);
     }
 
     public void mouse_move(MouseMoveArgs mouse)
     {
-        for (int i = child_views.size - 1; i >= 0; i--)
-            child_views[i].mouse_move(mouse);
+        for (int i = children.size - 1; i >= 0; i--)
+            children[i].mouse_move(mouse);
         do_mouse_move(mouse);
     }
 
     public void key_press(KeyArgs key)
     {
-        for (int i = child_views.size - 1; i >= 0; i--)
-            child_views[i].key_press(key);
+        for (int i = children.size - 1; i >= 0; i--)
+            children[i].key_press(key);
         do_key_press(key);
     }
 
     public void text_input(TextInputArgs text)
     {
-        for (int i = child_views.size - 1; i >= 0; i--)
-            child_views[i].text_input(text);
+        for (int i = children.size - 1; i >= 0; i--)
+            children[i].text_input(text);
         do_text_input(text);
     }
 
     public void text_edit(TextEditArgs text)
     {
-        for (int i = child_views.size - 1; i >= 0; i--)
-            child_views[i].text_edit(text);
+        for (int i = children.size - 1; i >= 0; i--)
+            children[i].text_edit(text);
         do_text_edit(text);
     }
 
@@ -115,7 +120,7 @@ public abstract class View : Object, IControl
 
         _rect = Rectangle(pos.x, pos.y, size.width, size.height);
 
-        foreach (View child in child_views)
+        foreach (Container child in children)
             child.resize();
 
         resized();
@@ -143,8 +148,9 @@ public abstract class View : Object, IControl
 
     public RenderWindow window { get { return parent_window; } }
     protected virtual void added() {}
+    protected virtual void removed() {}
     protected virtual void resized() {}
-    protected virtual void do_render(RenderState state) {}
+    protected virtual void do_render(RenderState state, RenderScene2D scene) {}
     protected virtual void do_process(DeltaArgs delta) {}
     protected virtual void do_mouse_event(MouseEventArgs mouse) { }
     protected virtual void do_mouse_move(MouseMoveArgs mouse) { }

@@ -1,13 +1,14 @@
 using GL;
 
 // TODO: Error handling
-class OpenGLRenderBuffer
+// TODO: Insert into rendering pipeline
+/*class OpenGLRenderBuffer
 {
     public OpenGLRenderBuffer()
     {
         /*handle = 0;
         width = 0;
-        height = 0;*/
+        height = 0;* /
     }
 
     public void init(int width, int height)
@@ -37,4 +38,4 @@ class OpenGLRenderBuffer
     public uint handle { get; private set; }
     public int width { get; private set; }
     public int height { get; private set; }
-}
+}*/

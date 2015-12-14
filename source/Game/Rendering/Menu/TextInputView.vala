@@ -1,10 +1,8 @@
 public class TextInputView : Control
 {
-    private IResourceStore store;
     private LabelControl label;
     private string _text = "";
     private string back_text;
-    private Size2 _size = Size2(400, 40);
 
     private RectangleControl selection;
     private RectangleControl caret;
@@ -22,42 +20,42 @@ public class TextInputView : Control
 
     public signal void text_changed();
 
-    public TextInputView(IResourceStore store, string back_text)
+    public TextInputView(string back_text)
     {
         base();
-        this.store = store;
         this.back_text = back_text;
         selectable = true;
         cursor_type = CursorType.CARET;
         resize_style = ResizeStyle.ABSOLUTE;
+        size = Size2(400, 40);
         timer.set_time(0.55f);
     }
 
-    protected override void on_added()
+    protected override void added()
     {
         RectangleControl border = new RectangleControl();
-        border.color = Color(0.05f, 0, 0.4f, 1);
-        border.set_size(Size2(size.width + 6, size.height + 6));
+        add_child(border);
+        border.color = Color(0.3f, 0.01f, 0.01f, 1);
+        border.size = Size2(size.width + 6, size.height + 6);
 
         RectangleControl rect = new RectangleControl();
-        rect.color = Color(0.1f, 0, 0.8f, 1);
-        rect.set_size(size);
-        add_control(border);
-        add_control(rect);
+        add_child(rect);
+        rect.color = Color(0.6f, 0.02f, 0.02f, 1);
+        rect.size = size;
 
-        label = new LabelControl(store);
+        label = new LabelControl();
+        add_child(label);
         label.inner_anchor = Vec2(0, 0.5f);
         label.outer_anchor = Vec2(0, 0.5f);
         label.position = Vec2(10, 0);
-        add_control(label);
 
         ime_rect = new RectangleControl();
+        add_child(ime_rect);
         ime_rect.inner_anchor = Vec2(0, 0.5f);
         ime_rect.outer_anchor = Vec2(0, 0.5f);
         ime_rect.color = rect.color;
-        ime_rect.set_size(Size2(0, size.height));
+        ime_rect.size = Size2(0, size.height);
         ime_rect.visible = false;
-        add_control(ime_rect);
 
         /*ime_caret = new RectangleControl();
         ime_caret.outer_anchor = Vec2(0, 0);
@@ -67,25 +65,25 @@ public class TextInputView : Control
         ime_caret.visible = false;
         add_control(ime_caret);*/
 
-        ime_label = new LabelControl(store);
+        ime_label = new LabelControl();
+        add_child(ime_label);
         ime_label.inner_anchor = Vec2(0, 0.5f);
         ime_label.outer_anchor = Vec2(0, 0.5f);
         ime_label.color = Color(1, 0, 0, 1);
-        add_control(ime_label);
 
         selection = new RectangleControl();
+        add_child(selection);
         selection.inner_anchor = Vec2(0, 0.5f);
         selection.outer_anchor = Vec2(0, 0.5f);
-        selection.set_size(Size2(0, label.size.height));
+        selection.size = Size2(0, label.size.height);
         selection.color = Color(1, 1, 1, 0.2f);
-        add_control(selection);
 
         caret = new RectangleControl();
+        add_child(caret);
         caret.outer_anchor = Vec2(0, 0.5f);
-        caret.set_size(Size2(1, label.size.height));
+        caret.size = Size2(1, label.size.height);
         caret.color = Color(1, 1, 1, 0.2f);
         caret.visible = false;
-        add_control(caret);
 
         update_text();
         update_caret();
@@ -259,7 +257,7 @@ public class TextInputView : Control
         ime_label.text = t.text;
         ime_label.position = caret.position;
         ime_rect.position = ime_label.position;
-        ime_rect.set_size(Size2(ime_label.size.width, ime_rect.size.height));
+        ime_rect.size = Size2(ime_label.size.width, ime_rect.size.height);
 
         /* The length in the SDL message is broken, can't use this
         string start_text = t.text.substring(0, t.text.index_of_nth_char(t.start));
@@ -329,14 +327,8 @@ public class TextInputView : Control
         info = LabelLoader.get_label_info_static(label.font_type, label.font_size, t);
         float end = info.size.width + label.position.x;
 
-        selection.set_size(Size2(end - start, selection.size.height));
+        selection.size = Size2(end - start, selection.size.height);
         selection.position = Vec2(start, 0);
-    }
-
-    public void set_size(Size2 size)
-    {
-        _size = size;
-        resize();
     }
 
     public override void do_process(DeltaArgs delta)
@@ -356,9 +348,6 @@ public class TextInputView : Control
         }
     }
 
-    public override void do_render(RenderScene2D scene) {}
-    public override void do_resize(Vec2 new_position, Size2 new_scale) {}
-
     public string text
     {
         get { return _text; }
@@ -368,6 +357,4 @@ public class TextInputView : Control
             update_text();
         }
     }
-
-    public override Size2 size { get { return _size; } }
 }

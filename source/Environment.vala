@@ -20,6 +20,8 @@ public class Environment : Object
             SDL.GL.set_attribute(SDL.GLattr.MULTISAMPLESAMPLES, s);
         }
 
+        bugfix();
+
         initialized = true;
         return true;
     }
@@ -38,5 +40,22 @@ public class Environment : Object
             SDL.quit();
             initialized = false;
         }
+    }
+
+    // TODO: Fix class reflection bug...
+    private void bugfix()
+    {
+        typeof(Serializable).class_ref();
+        typeof(SerializableList).class_ref();
+        typeof(SerializableListItem).class_ref();
+        typeof(ObjInt).class_ref();
+        typeof(GamePlayer).class_ref();
+        typeof(ServerMessage).class_ref();
+        typeof(ServerMessageRoundStart).class_ref();
+        typeof(ServerMessageAcceptJoin).class_ref();
+        typeof(ServerMessageMenuSlotAssign).class_ref();
+        typeof(ServerMessageMenuSlotClear).class_ref();
+        typeof(ServerMessageDraw).class_ref();
+        typeof(NullBot).class_ref();
     }
 }

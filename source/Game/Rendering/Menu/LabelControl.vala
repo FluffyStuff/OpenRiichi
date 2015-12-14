@@ -1,11 +1,9 @@
-public class LabelControl : Control
+public class LabelControl : EndControl
 {
     private RenderLabel2D label;
 
-    public LabelControl(IResourceStore store)
+    public override void on_added()
     {
-        base();
-
         label = store.create_label();
         label.text = "";
         label.font_size = 30;
@@ -13,18 +11,6 @@ public class LabelControl : Control
         color = Color.white();
     }
 
-    public override void do_resize(Vec2 new_position, Size2 new_scale)
-    {
-        label.position = new_position;
-        label.scale = new_scale;
-    }
-
-    public override void do_render(RenderScene2D scene)
-    {
-        scene.add_object(label);
-    }
-
-    public override Size2 size { get { return label.info.size.to_size2(); } }
     public Color color
     {
         get
@@ -44,7 +30,8 @@ public class LabelControl : Control
         set
         {
             label.font_type = value;
-            resize();
+            size = end_size;
+            //resize();
         }
     }
 
@@ -54,7 +41,8 @@ public class LabelControl : Control
         set
         {
             label.font_size = value; // Pixels
-            resize();
+            size = end_size;
+            //resize();
         }
     }
 
@@ -64,7 +52,21 @@ public class LabelControl : Control
         set
         {
             label.text = value;
-            resize();
+            size = end_size;
+            //resize();
         }
     }
+
+    public override void set_end_rect(Rectangle rect)
+    {
+        label.position = rect.position;
+        label.scale = rect.size;
+    }
+
+    public override void render_end(RenderScene2D scene)
+    {
+        scene.add_object(label);
+    }
+
+    public override Size2 end_size { get { return label.info.size.to_size2(); } }
 }

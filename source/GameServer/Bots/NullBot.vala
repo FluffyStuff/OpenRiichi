@@ -6,9 +6,9 @@ class NullBot : Bot
 
     protected override void do_turn_decision()
     {
-        action_delay();
+        turn_delay();
 
-        if (round_state.can_tsumo() && false)
+        if (round_state.can_tsumo())
         {
             do_tsumo();
         }
@@ -21,12 +21,12 @@ class NullBot : Bot
 
             do_discard(tile);
         }
-        else if (round_state.self.can_late_kan())
+        else if (round_state.can_late_kan())
         {
             ArrayList<Tile> tiles = TileRules.get_late_kan_tiles(round_state.self.hand, round_state.self.calls);
             do_late_kan(tiles[0]);
         }
-        else if (round_state.self.can_closed_kan() && false)
+        else if (round_state.can_closed_kan())
         {
             ArrayList<ArrayList<Tile>> groups = TileRules.get_closed_kan_groups(round_state.self.hand);
             do_closed_kan(groups[0][0].tile_type);
@@ -45,9 +45,9 @@ class NullBot : Bot
 
     protected override void do_call_decision(RoundStatePlayer discarding_player, Tile tile)
     {
-        if (round_state.can_ron(round_state.self) && false)
+        if (round_state.can_ron(round_state.self))
         {
-            action_delay();
+            call_delay();
             call_ron();
         }
         /*else if (TileRules.can_open_kan(round_state.self.hand, tile))
@@ -75,9 +75,14 @@ class NullBot : Bot
         }
     }
 
-    private void action_delay()
+    private void turn_delay()
     {
-        Thread.usleep(1 * 1000000);
+        Thread.usleep(1 * 1000 * 1000);
+    }
+
+    private void call_delay()
+    {
+        Thread.usleep(500 * 1000);
     }
 
     public override string name { get { return "NullBot"; } }

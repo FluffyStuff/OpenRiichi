@@ -12,7 +12,10 @@ public class MainWindow : RenderWindow
     {
         base(window, renderer);
         back_color = Color(0, 0.01f, 0.02f, 1);
+    }
 
+    protected override void shown()
+    {
         create_main_menu();
     }
 
@@ -49,25 +52,5 @@ public class MainWindow : RenderWindow
     {
         if (game_running && game_controller != null)
             game_controller.process();
-    }
-
-    protected override bool key_press(KeyArgs key)
-    {
-        return false;
-
-        switch (key.key)
-        {
-            case 27 :
-            case 'q':
-                finish();
-                break;
-            case 'f':
-                fullscreen = !fullscreen;
-                break;
-            default:
-                return false;
-        }
-
-        return true;
     }
 }

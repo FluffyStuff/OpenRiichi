@@ -40,7 +40,7 @@ public class Threading
     private class Thread0 : Thread
     {
         private Thread? self;
-        private Threading.Del0Arg func;
+        private unowned Threading.Del0Arg func;
 
         public Thread0(Del0Arg func)
         {
@@ -59,7 +59,7 @@ public class Threading
     private class Thread1 : Thread
     {
         private Thread? self;
-        private Threading.Del1Arg func;
+        private unowned Threading.Del1Arg func;
         private Object arg1;
 
         public Thread1(Del1Arg func, Object arg1)
@@ -80,7 +80,7 @@ public class Threading
     private class Thread2 : Thread
     {
         private Thread? self;
-        private Threading.Del2Arg func;
+        private unowned Threading.Del2Arg func;
         private Object arg1;
         private Object arg2;
 
@@ -103,7 +103,7 @@ public class Threading
     private class Thread3 : Thread
     {
         private Thread? self;
-        private Threading.Del3Arg func;
+        private unowned Threading.Del3Arg func;
         private Object arg1;
         private Object arg2;
         private Object arg3;

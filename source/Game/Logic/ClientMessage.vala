@@ -52,13 +52,8 @@ public class ClientMessageParser
     {
         Type type = message.get_type();
         foreach (Dispatcher d in dispatchers)
-        {
             if (d.param_type == type)
-            {
-                ClientMessageDelegate method = d.method;
-                method(player, message);
-            }
-        }
+                d.method(player, message);
     }
 
     public class ClientMessageTuple : Object
@@ -82,7 +77,7 @@ public class ClientMessageParser
             param_type = type;
         }
 
-        public ClientMessageDelegate method { get; private set; }
+        public unowned ClientMessageDelegate method { get; private set; }
         public Type param_type { get; private set; }
     }
 }

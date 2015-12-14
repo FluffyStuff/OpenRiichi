@@ -1,7 +1,8 @@
 using GL;
 
 // TODO: Error checking
-class OpenGLFrameBuffer
+// TODO: Insert into rendering pipeline
+/*class OpenGLFrameBuffer
 {
     private uint texture;
 
@@ -48,3 +49,4 @@ class OpenGLFrameBuffer
     public int width { get; private set; }
     public int height { get; private set; }
 }
+*/

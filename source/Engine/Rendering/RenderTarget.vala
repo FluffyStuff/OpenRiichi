@@ -163,26 +163,12 @@ public abstract class RenderTarget : Object, IRenderTarget
         }
     }
 
-    int counter = 0;
-    double last_time = 0;
-    int frms = 100;
-    Timer timer = new Timer();
     private void render_cycle(RenderState state)
     {
         load_resources();
         check_settings();
         prepare_state_internal(state);
         render(state);
-
-        if ((counter++ % frms) == 0)
-        {
-            double time = timer.elapsed();
-            double diff = (time - last_time) / frms;
-
-            //print("(R) Average frame time over %d frames: %fms (%ffps)\n", frms, diff * 1000, 1 / diff);
-
-            last_time = time;
-        }
     }
 
     private void load_resources()

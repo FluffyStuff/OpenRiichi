@@ -1,25 +1,35 @@
-class ImageControl : Control
+class ImageControl : EndControl
 {
     private RenderImage2D image;
+    private string name;
 
-    public ImageControl(IResourceStore store, string name)
+    public ImageControl(string name)
     {
-        base();
+        this.name = name;
+    }
 
+    public override void on_added()
+    {
         RenderTexture texture = store.load_texture(name, false);
         image = new RenderImage2D(texture);
     }
 
-    public override void do_resize(Vec2 new_position, Size2 new_scale)
+    public Color diffuse_color
     {
-        image.position = new_position;
-        image.scale = new_scale;
+        get { return image.diffuse_color; }
+        set { image.diffuse_color = value; }
     }
 
-    public override void do_render(RenderScene2D scene)
+    public override void set_end_rect(Rectangle rect)
+    {
+        image.position = rect.position;
+        image.scale = rect.size;
+    }
+
+    protected override void render_end(RenderScene2D scene)
     {
         scene.add_object(image);
     }
 
-    public override Size2 size { get { return Size2(image.texture.size.width, image.texture.size.height); } }
+    public override Size2 end_size { get { return Size2(image.texture.size.width, image.texture.size.height); } }
 }

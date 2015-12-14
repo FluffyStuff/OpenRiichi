@@ -1,7 +1,7 @@
 using GL;
 using Gee;
 
-public class GameRenderView : View, IGameRenderer
+public class GameRenderView : View3D, IGameRenderer
 {
     private RenderTile[] tiles;
     private RenderPlayer[] players;
@@ -50,7 +50,7 @@ public class GameRenderView : View, IGameRenderer
         scene.process(delta);
     }
 
-    public override void do_render(RenderState state)
+    public override void do_render_3D(RenderState state)
     {
         scene.render(state);
     }
@@ -298,6 +298,11 @@ public class GameRenderView : View, IGameRenderer
         return shortest_tile;
     }
 
+    public void set_tile_select_groups(ArrayList<TileSelectionGroup>? groups)
+    {
+        select_groups = groups;
+    }
+
     protected override void do_key_press(KeyArgs key)
     {
         switch (key.key)
@@ -310,10 +315,5 @@ public class GameRenderView : View, IGameRenderer
             //print("%i\n", (int)key.key);
             break;
         }
-    }
-
-    public void set_tile_select_groups(ArrayList<TileSelectionGroup>? groups)
-    {
-        select_groups = groups;
     }
 }

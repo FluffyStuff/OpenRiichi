@@ -14,12 +14,13 @@ public class OptionsMenuView : View2D
 
     public override void added()
     {
-        LabelControl label = new LabelControl(store);
+        LabelControl label = new LabelControl();
+        add_child(label);
         label.text = "Options";
         label.font_size = 40;
         label.outer_anchor = Vec2(0.5f, 1);
         label.inner_anchor = Vec2(0.5f, 1);
-        add_control(label);
+        label.position = Vec2(0, -60);
 
         string[] quality_choices = { "Low", "High" };
         string[] on_off_choices = { "Off", "On" };
@@ -37,38 +38,37 @@ public class OptionsMenuView : View2D
         v_sync_option = new OptionItemControl("V-sync", on_off_choices, (int)options.v_sync);
         opts.add(v_sync_option);
 
-        int padding = 50;
+        int padding = 30;
 
         Size2 size = Size2(700, 70);
-        float start = label.size.height + padding;
+        float start = label.size.height - label.position.y + padding;
 
         for (int i = 0; i < opts.size; i++)
         {
             OptionItemControl option = opts.get(i);
+            add_child(option);
             option.size = size;
             option.outer_anchor = Vec2(0.5f, 1);
             option.inner_anchor = Vec2(0.5f, 1);
             option.position = Vec2(0, -(start + size.height * i));
-
-            add_child(option);
         }
 
-        GameMenuButton apply_button = new GameMenuButton(store, "Apply");
+        MenuTextButton apply_button = new MenuTextButton("MenuButton", "Apply");
+        add_child(apply_button);
         apply_button.outer_anchor = Vec2(0.5f, 0);
         apply_button.inner_anchor = Vec2(1, 0);
         apply_button.position = Vec2(-padding, padding);
         apply_button.clicked.connect(apply);
-        add_control(apply_button);
 
-        GameMenuButton back_button = new GameMenuButton(store, "Back");
+        MenuTextButton back_button = new MenuTextButton("MenuButton", "Back");
+        add_child(back_button);
         back_button.outer_anchor = Vec2(0.5f, 0);
         back_button.inner_anchor = Vec2(0, 0);
         back_button.position = Vec2(padding, padding);
         back_button.clicked.connect(back);
-        add_control(back_button);
     }
 
-    public override void do_render_2D(RenderState state, RenderScene2D scene)
+    public override void do_render(RenderState state, RenderScene2D scene)
     {
         state.back_color = Color.black();
     }

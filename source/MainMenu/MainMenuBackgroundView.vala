@@ -1,25 +1,49 @@
-class MainMenuBackgroundView : View
+class MainMenuBackgroundView : View2D
 {
-    private Scoring score;
+    private MainMenuBackgroundTileView tile_view = new MainMenuBackgroundTileView();
+    private ImageControl background;
+    private ImageControl text;
 
+    public override void added()
+    {
+        background = new ImageControl("field_high");
+        add_child(background);
+        background.resize_style = ResizeStyle.RELATIVE;
+
+        add_child(tile_view);
+        tile_view.inner_anchor = Vec2(0, 0.5f);
+        tile_view.outer_anchor = Vec2(0, 0.5f);
+
+        text = new ImageControl("Menu/RiichiMahjong");
+        add_child(text);
+        text.inner_anchor = Vec2(0.5f, 1);
+        text.outer_anchor = Vec2(0.5f, 1);
+    }
+
+    public override void resized()
+    {
+        tile_view.size = Size2(size.width / 3, size.height / 3);
+    }
+}
+
+class MainMenuBackgroundTileView : View3D
+{
     private RenderTile tile;
     private Camera camera = new Camera();
     private LightSource light1 = new LightSource();
     private LightSource light2 = new LightSource();
 
-    public MainMenuBackgroundView()
+    public MainMenuBackgroundTileView()
     {
         base();
-        resize_style = ResizeStyle.ABSOLUTE;
     }
 
     public override void added()
     {
-        string extension = "high";
+        resize_style = ResizeStyle.ABSOLUTE;
 
-        RenderModel model = store.load_model("tile_" + extension, true);
+        string extension = "high";
         float tile_scale = 4f;
-        Vec3 tile_size = model.size.mul_scalar(tile_scale);
 
         Tile t = new Tile(0, TileType.PIN1, false);
         tile = new RenderTile(store, extension, t, tile_scale);
@@ -45,7 +69,7 @@ class MainMenuBackgroundView : View
         tile.set_absolute_location(Vec3(0, 0, 0), Vec3(-0.2f, r * 0.1f, 0));
     }
 
-    public override void do_render(RenderState state)
+    public override void do_render_3D(RenderState state)
     {
         window.renderer.shader_3D = "open_gl_shader_3D_high";
         RenderScene3D scene = new RenderScene3D(state.screen_size, 1, rect);

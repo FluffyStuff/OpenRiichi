@@ -12,17 +12,15 @@ public abstract class RenderWindow
         this.window = window;
         this.renderer = renderer;
         store = renderer.resource_store;
-        main_view = new MainView(this);
     }
 
-    int frms = 100;
-    int counter = 0;
-    double lst_time = 0;
-    GLib.Timer timr = new GLib.Timer();
     public void show()
     {
+        main_view = new MainView(this);
         running = true;
         timer = new GLib.Timer();
+
+        shown();
 
         while (running)
         {
@@ -30,16 +28,6 @@ public abstract class RenderWindow
             renderer.set_state(render());
             window.pump_events();
             GLib.Thread.usleep(1000);
-
-            if ((counter++ % frms) == 0)
-            {
-                double time = timr.elapsed();
-                double diff = (time - lst_time) / frms;
-
-                //print("(F) Average frame time over %d frames: %fms (%ffps)\n", frms, diff * 1000, 1 / diff);
-
-                lst_time = time;
-            }
         }
     }
 
@@ -50,9 +38,9 @@ public abstract class RenderWindow
 
     private RenderState render()
     {
-        RenderState state = new RenderState(window.size);
+        RenderState state = new RenderState(size);
         state.back_color = back_color;
-        main_view.render(state);
+        main_view.start_render(state);
         return state;
     }
 
@@ -208,9 +196,10 @@ public abstract class RenderWindow
         return false;
     }
 
+    protected virtual void shown() {}
     public IRenderTarget renderer { get; private set; }
     public IResourceStore store { get; private set; }
-    public View main_view { get; private set; }
+    public MainView main_view { get; private set; }
     public bool fullscreen { get { return window.fullscreen; } set { window.fullscreen = value; } }
     public Color back_color { get; set; }
     public Size2i size { get { return window.size; } }

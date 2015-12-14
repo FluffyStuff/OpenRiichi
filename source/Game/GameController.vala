@@ -5,7 +5,7 @@ public class GameController
     private GameRenderView? renderer = null;
     private GameMenuView? menu = null;
 
-    private unowned View parent_view;
+    private unowned Container parent_view;
     private GameStartInfo start_info;
     private IGameConnection connection;
     private int player_index;
@@ -14,7 +14,7 @@ public class GameController
     private bool game_finished = false;
     public signal void finished();
 
-    public GameController(View parent_view, GameStartInfo start_info, IGameConnection connection, int player_index, Options options)
+    public GameController(Container parent_view, GameStartInfo start_info, IGameConnection connection, int player_index, Options options)
     {
         this.parent_view = parent_view;
         this.start_info = start_info;
@@ -67,12 +67,12 @@ public class GameController
                 var result = game.round_finished(round.result);
                 menu.display_score(result, player_index, start_info.round_wait_time, start_info.hanchan_wait_time, start_info.game_wait_time);
 
-                /*if (result.result.result != RoundFinishResult.RoundResultEnum.DRAW)
+                if (result.result.result != RoundFinishResult.RoundResultEnum.DRAW)
                 {
                     print("----Client----\n");
                     print(result.result.score.round.to_string() + "\n");
                     print(result.result.score.player.to_string() + "\n");
-                }*/
+                }
             }
         }
     }

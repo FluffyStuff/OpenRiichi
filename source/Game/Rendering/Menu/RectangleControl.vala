@@ -1,37 +1,29 @@
-public class RectangleControl : Control
+public class RectangleControl : EndControl
 {
     private RenderRectangle2D rectangle;
-    private Size2 _size = Size2(100, 100);
 
     public RectangleControl()
     {
         base();
-
         rectangle = new RenderRectangle2D();
     }
-
-    public override void do_render(RenderScene2D scene)
-    {
-        scene.add_object(rectangle);
-    }
-
-    public override void do_resize(Vec2 new_position, Size2 new_scale)
-    {
-        rectangle.position = new_position;
-        rectangle.scale = new_scale;
-    }
-
-    public void set_size(Size2 size)
-    {
-        _size = size;
-        resize();
-    }
-
-    public override Size2 size { get { return _size; } }
 
     public Color color
     {
         get { return rectangle.diffuse_color; }
         set { rectangle.diffuse_color = value; }
     }
+
+    public override void render_end(RenderScene2D scene)
+    {
+        scene.add_object(rectangle);
+    }
+
+    public override void set_end_rect(Rectangle rect)
+    {
+        rectangle.position = rect.position;
+        rectangle.scale = rect.size;
+    }
+
+    public override Size2 end_size { get { return Size2(100, 100); } }
 }

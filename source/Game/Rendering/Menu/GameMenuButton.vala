@@ -1,23 +1,26 @@
 class GameMenuButton : Control
 {
-    private RenderImage2D button;
+    private ImageControl button;
+    private string name;
 
-    public GameMenuButton(IResourceStore store, string name)
+    public GameMenuButton(string name)
     {
         base();
-
-        RenderTexture texture = store.load_texture("Buttons/" + name, false);
-        button = new RenderImage2D(texture);
+        this.name = name;
         selectable = true;
     }
 
-    public override void do_resize(Vec2 new_position, Size2 new_scale)
+    public override void added()
     {
-        button.position = new_position;
-        button.scale = new_scale;
+        resize_style = ResizeStyle.ABSOLUTE;
+
+        button = new ImageControl("Buttons/" + name);
+        add_child(button);
+        button.resize_style = ResizeStyle.RELATIVE;
+        size = button.end_size;
     }
 
-    public override void do_render(RenderScene2D scene)
+    public override void do_render(RenderState state, RenderScene2D scene)
     {
         if (!enabled)
         {
@@ -35,9 +38,5 @@ class GameMenuButton : Control
             else
                 button.diffuse_color = Color.with_alpha(1);
         }
-
-        scene.add_object(button);
     }
-
-    public override Size2 size { get { return Size2(button.texture.size.width, button.texture.size.height); } }
 }

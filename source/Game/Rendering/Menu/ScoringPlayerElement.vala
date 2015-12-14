@@ -19,9 +19,10 @@ class ScoringPlayerElement : View2D
 
     public override void added()
     {
-        ImageControl background = new ImageControl(store, "Menu/score_background");
-        add_control(background);
-        size = background.size;
+        resize_style = ResizeStyle.ABSOLUTE;
+        ImageControl background = new ImageControl("Menu/score_background");
+        add_child(background);
+        size = background.end_size;
 
         string w;
         switch (wind)
@@ -42,34 +43,35 @@ class ScoringPlayerElement : View2D
         }
 
         int padding = 10;
-        LabelControl wind_label = new LabelControl(store);
+        LabelControl wind_label = new LabelControl();
+        add_child(wind_label);
         wind_label.text = w;
         wind_label.inner_anchor = Vec2(0, 0.5f);
         wind_label.outer_anchor = Vec2(0, 0.5f);
         wind_label.font_size = 50;
         wind_label.position = Vec2(padding, 0);
         wind_label.color = Color(0.0f, 0.0f, 0.4f, 1);
-        add_control(wind_label);
 
-        LabelControl name_label = new LabelControl(store);
+        LabelControl name_label = new LabelControl();
+        add_child(name_label);
         name_label.text = player_name;
         name_label.font_size = 40;
         name_label.color = Color(0.0f, 0.0f, 0.6f, 1);
         name_label.inner_anchor = Vec2(0, 0);
         name_label.outer_anchor = Vec2(0, 0.5f);
         name_label.position = Vec2(wind_label.size.width + padding * 2, 0);
-        add_control(name_label);
 
-        LabelControl points_label = new LabelControl(store);
+        LabelControl points_label = new LabelControl();
+        add_child(points_label);
         points_label.text = points.to_string();
         points_label.font_size = 20;
         points_label.inner_anchor = Vec2(0, 1);
         points_label.outer_anchor = Vec2(0, 0.5f);
         points_label.position = Vec2(wind_label.size.width + padding * 2, 0);
         points_label.color = Color.white();
-        add_control(points_label);
 
-        LabelControl transfer_label = new LabelControl(store);
+        LabelControl transfer_label = new LabelControl();
+        add_child(transfer_label);
         transfer_label.inner_anchor = Vec2(0, 1);
         transfer_label.outer_anchor = Vec2(0, 0.5f);
         transfer_label.position = Vec2(wind_label.size.width + padding * 2 + points_label.size.width, 0);
@@ -86,13 +88,13 @@ class ScoringPlayerElement : View2D
         }
         else
             transfer_label.visible = false;
-        add_control(transfer_label);
 
         string score_text = score.to_string();
         if (score > 0)
             score_text = "+" + score_text;
 
-        score_label = new LabelControl(store);
+        score_label = new LabelControl();
+        add_child(score_label);
         score_label.text = score_text;
         score_label.font_size = 40;
         score_label.inner_anchor = Vec2(1, 0.5f);
@@ -103,7 +105,6 @@ class ScoringPlayerElement : View2D
             score_label.color = Color.white();
         else
             score_label.color = Color.red();
-        add_control(score_label);
     }
 
     public bool show_score

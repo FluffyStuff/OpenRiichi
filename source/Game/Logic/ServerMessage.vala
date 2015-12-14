@@ -37,13 +37,8 @@ public class ServerMessageParser
     {
         Type type = message.get_type();
         foreach (Dispatcher d in dispatchers)
-        {
             if (d.param_type == type)
-            {
-                ServerMessageDelegate method = d.method;
-                method(message);
-            }
-        }
+                d.method(message);
     }
 
     public delegate void ServerMessageDelegate(ServerMessage message);
@@ -55,7 +50,7 @@ public class ServerMessageParser
             param_type = type;
         }
 
-        public ServerMessageDelegate method { get; private set; }
+        public unowned ServerMessageDelegate method { get; private set; }
         public Type param_type { get; private set; }
     }
 }

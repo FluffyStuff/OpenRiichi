@@ -42,14 +42,14 @@
 			<Add directory="C:/vala-0.12.0/lib/gtk-2.0/include" />
 		</Compiler>
 		<Unit filename="Makefile" />
+		<Unit filename="source/Engine/Controls/Container.vala" />
 		<Unit filename="source/Engine/Controls/Control.vala" />
-		<Unit filename="source/Engine/Controls/IControl.vala" />
 		<Unit filename="source/Engine/Controls/IWindowTarget.vala" />
 		<Unit filename="source/Engine/Controls/MainView.vala" />
 		<Unit filename="source/Engine/Controls/RenderWindow.vala" />
 		<Unit filename="source/Engine/Controls/SDLWindowTarget.vala" />
-		<Unit filename="source/Engine/Controls/View.vala" />
 		<Unit filename="source/Engine/Controls/View2D.vala" />
+		<Unit filename="source/Engine/Controls/View3D.vala" />
 		<Unit filename="source/Engine/Files/FileLoader.vala" />
 		<Unit filename="source/Engine/Files/ObjParser.vala" />
 		<Unit filename="source/Engine/Helper/Calculations.vala" />
@@ -118,6 +118,7 @@
 		<Unit filename="source/Game/Rendering/Menu/GameMenuView.vala" />
 		<Unit filename="source/Game/Rendering/Menu/ImageControl.vala" />
 		<Unit filename="source/Game/Rendering/Menu/LabelControl.vala" />
+		<Unit filename="source/Game/Rendering/Menu/MenuTextButton.vala" />
 		<Unit filename="source/Game/Rendering/Menu/RectangleControl.vala" />
 		<Unit filename="source/Game/Rendering/Menu/ScoringHandView.vala" />
 		<Unit filename="source/Game/Rendering/Menu/ScoringPlayerElement.vala" />
@@ -131,6 +132,7 @@
 		<Unit filename="source/Game/Rendering/RenderTile.vala" />
 		<Unit filename="source/Game/Rendering/RenderWall.vala" />
 		<Unit filename="source/MainMenu/JoinMenuView.vala" />
+		<Unit filename="source/MainMenu/MainMenuBackgroundView.vala" />
 		<Unit filename="source/MainMenu/MainMenuView.vala" />
 		<Unit filename="source/MainMenu/OptionItemControl.vala" />
 		<Unit filename="source/MainMenu/OptionsMenuView.vala" />

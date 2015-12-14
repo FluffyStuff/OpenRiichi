@@ -10,6 +10,8 @@ public class OptionItemControl : View2D
 
     public OptionItemControl(string name, string[] options, int index)
     {
+        base();
+
         this.name = name;
         this.options = options;
         this.index = index;
@@ -21,34 +23,34 @@ public class OptionItemControl : View2D
     public override void added()
     {
         int width = 350;
-        prev_button = new GameMenuButton(store, "Prev");
-        next_button = new GameMenuButton(store, "Next");
+        prev_button = new GameMenuButton("Prev");
+        next_button = new GameMenuButton("Next");
 
-        name_label = new LabelControl(store);
+        name_label = new LabelControl();
+        add_child(name_label);
         name_label.text = name;
         name_label.inner_anchor = Vec2(0, 0.5f);
         name_label.outer_anchor = Vec2(0, 0.5f);
-        add_control(name_label);
 
+        add_child(prev_button);
         prev_button.inner_anchor = Vec2(0, 0.5f);
         prev_button.outer_anchor = Vec2(1, 0.5f);
         prev_button.position = Vec2(-width, 0);
         prev_button.selectable = true;
         prev_button.clicked.connect(prev);
-        add_control(prev_button);
 
-        text_label = new LabelControl(store);
+        text_label = new LabelControl();
+        add_child(text_label);
         text_label.text = "";
         text_label.inner_anchor = Vec2(0.5f, 0.5f);
         text_label.outer_anchor = Vec2(1, 0.5f);
         text_label.position = Vec2(-width / 2, 0);
-        add_control(text_label);
 
+        add_child(next_button);
         next_button.inner_anchor = Vec2(1, 0.5f);
         next_button.outer_anchor = Vec2(1, 0.5f);
         next_button.selectable = true;
         next_button.clicked.connect(next);
-        add_control(next_button);
 
         set_options();
     }

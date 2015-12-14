@@ -21,7 +21,7 @@ public class ClientRoundState
     public signal void set_tile_select_state(bool enabled);
     public signal void set_tile_select_groups(ArrayList<TileSelectionGroup>? selection_groups);
 
-    public bool finished { get { return state.game_over; } }
+    public bool finished { get; private set; }
     public RoundFinishResult result { get; private set; }
 
     public signal void game_tile_assignment(Tile tile);
@@ -111,7 +111,7 @@ public class ClientRoundState
     {
         action_state = State.TURN;
 
-        bool can_kan = state.self.can_closed_kan() || state.self.can_late_kan();
+        bool can_kan = state.can_closed_kan() || state.can_late_kan();
         bool can_riichi = state.self.can_riichi();
         bool can_tsumo = state.can_tsumo();
 
@@ -135,7 +135,7 @@ public class ClientRoundState
         else
             set_tile_select_groups(null);
 
-        set_tile_select_state(true);
+        //set_tile_select_state(true);
     }
 
     private void do_call_decision(Tile tile, RoundStatePlayer discard_player)
@@ -275,7 +275,7 @@ public class ClientRoundState
         }
         else if (action_state == State.SELECT_CHII)
         {
-            do_call_decision(state.discard_tile, state.discard_player);
+            do_call_decision(state.discard_tile, state.current_player);
         }
     }
 
@@ -459,11 +459,13 @@ public class ClientRoundState
         state.game_draw();
         int[] tenpai = draw.get_tenpai_indices();
         result = new RoundFinishResult.draw(tenpai);
+        finished = true;
         game_draw(tenpai);
     }
 
     private void server_ron(ServerMessage message)
     {
+        finished = true;
         decision_finished();
 
         ServerMessageRon ron = (ServerMessageRon)message;
@@ -471,6 +473,7 @@ public class ClientRoundState
         state.ron(ron.player_index);
         Scoring score = state.get_ron_score();
         result = new RoundFinishResult.ron(score, ron.player_index, discard_index);
+        finished = true;
         game_ron(state.current_player.index, discard_index, state.discard_tile.ID);
     }
 
@@ -479,6 +482,7 @@ public class ClientRoundState
         state.tsumo();
         Scoring score = state.get_tsumo_score();
         result = new RoundFinishResult.tsumo(score, state.current_player.index);
+        finished = true;
         game_tsumo(state.current_player.index);
     }
 

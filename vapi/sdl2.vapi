@@ -92,39 +92,39 @@ namespace SDL {
 	///
 	/// Video requires
 	///
-	[CCode (cprefix="SDL_ALPHA_", cheader="SDL2/SDL_pixels.h")]
+	[CCode (cprefix="SDL_ALPHA_", cheader_filename="SDL2/SDL_pixels.h")]
 	public enum Alpha {
 		OPAQUE,
 		TRANSPARENT
 	}// Alpha
 	
-	[CCode (cprefix="SDL_PIXELTYPE_", cheader="SDL2/SDL_pixels.h")]
+	[CCode (cprefix="SDL_PIXELTYPE_", cheader_filename="SDL2/SDL_pixels.h")]
 	public enum PixelType {
 		UNKNOWN,
 		INDEX1, INDEX4, INDEX8, PACKED8, PACKED16, PACKED32,
 		ARRAYU8, ARRAYU16, ARRAYU32, ARRAYF16, ARRAYF32
 	}// PixelType
 	
-	[CCode (cprefix="SDL_BITMAPORDER", cheader="SDL2/SDL_pixels.h")]
+	[CCode (cprefix="SDL_BITMAPORDER", cheader_filename="SDL2/SDL_pixels.h")]
 	public enum BitmapOrder {
 		[CCode (cname="SDL_BITMAPORDER_NONE")]
 		NONE, 
 		_4321,  _1234
 	}// BitmapOrder
 	
-	[CCode (cprefix="SDL_PACKEDORDER_", cheader="SDL2/SDL_pixels.h")]
+	[CCode (cprefix="SDL_PACKEDORDER_", cheader_filename="SDL2/SDL_pixels.h")]
 	public enum PackedOrder {
 		NONE, XRGB, RGBX, ARGB, RGBA,
 		XBGR, BGRX, ABGR, BGRA
 	}// PackedOrder
 	
-	[CCode (cprefix="SDL_ARRAYORDER_", cheader="SDL2/SDL_pixels.h")]
+	[CCode (cprefix="SDL_ARRAYORDER_", cheader_filename="SDL2/SDL_pixels.h")]
 	public enum ArrayOrder {
 		NONE, RGB, RGBA,
 		ARGB, BGR, BGRA, ABGR
 	}// ArrayOrder
 	
-	[CCode (cprefix="SDL_PACKEDLAYOUT", cheader="SDL2/SDL_pixels.h")]
+	[CCode (cprefix="SDL_PACKEDLAYOUT", cheader_filename="SDL2/SDL_pixels.h")]
 	public enum PackedLayout {
 		[CCode (cname="SDL_PACKEDLAYOUT_NONE")]
 		NONE,
@@ -132,7 +132,7 @@ namespace SDL {
 		_565, _8888, _2101010, _1010102
 	}// PackedLayout
 	
-	[CCode (cname="Uint32", cheader="SDL2/SDL_pixels.h")]
+	[CCode (cname="Uint32", cheader_filename="SDL2/SDL_pixels.h")]
 	[Compact]
 	public class PixelRAWFormat {
 		[CCode (cname="SDL_DEFINE_PIXELFOURCC")]
@@ -165,7 +165,7 @@ namespace SDL {
 		[CCode (cname="SDL_ISPIXELFORMAT_ALPHA")]
 		public bool is_alpha();
 		
-		[CCode (cname="Uint32", cprefix="SDL_PIXELFORMAT_", cheader="SDL2/SDL_pixels.h")]
+		[CCode (cname="Uint32", cprefix="SDL_PIXELFORMAT_", cheader_filename="SDL2/SDL_pixels.h")]
 		public enum Standards {
 			UNKNOWN, INDEX1LSB, INDEX1MSB, INDEX4LSB, INDEX4MSB,
 			INDEX8, RGB332, RGB444, RGB555, ARGB4444, RGBA4444,
@@ -1071,19 +1071,19 @@ namespace SDL {
 	[Compact]
 	public struct QuitEvent : GenericEvent {}// QuitEvent
 	
-	[CCode (cname="SDL_TouchID", cheader="SDL2/SDL_touch.h")]
+	[CCode (cname="SDL_TouchID", cheader_filename="SDL2/SDL_touch.h")]
 	public struct TouchID {}// TouchID
 	
-	[CCode (cname="SDL_FingerID", cheader="SDL2/SDL_touch.h")]
+	[CCode (cname="SDL_FingerID", cheader_filename="SDL2/SDL_touch.h")]
 	public struct FingerID {}// FingerID
 	
-	[CCode (cname="SDL_GestureID", cheader="SDL2/SDL_gesture.h")]
+	[CCode (cname="SDL_GestureID", cheader_filename="SDL2/SDL_gesture.h")]
 	public struct GestureID {}// GestureID
 	
-	[CCode (cname="SDL_JoystickID", cheader="SDL2/SDL_joystick.h")]
+	[CCode (cname="SDL_JoystickID", cheader_filename="SDL2/SDL_joystick.h")]
 	public struct JoystickID {}// JoystickID
 	
-	[CCode (cname="SDL_SysWMmsg", cheader="SDL2/SDL_syswm.h")]
+	[CCode (cname="SDL_SysWMmsg", cheader_filename="SDL2/SDL_syswm.h")]
 	public struct SysWMmsg {}// SysWMmsg
 
 	[CCode (cname="SDL_SysWMEvent", type_id="SDL_SysWMEvent", cheader_filename="SDL2/SDL_events.h")]
@@ -1195,7 +1195,7 @@ namespace SDL {
 		RELEASED, PRESSED
 	}// ButtonState
 	
-	[CCode (cname="SDL_Keycode", cprefix="SDLK_", cheader="SDL2/SDL_keycode.h")]
+	[CCode (cname="SDL_Keycode", cprefix="SDLK_", cheader_filename="SDL2/SDL_keycode.h")]
 	public enum Keycode {
 		UNKNOWN, RETURN, ESCAPE, BACKSPACE, TAB, SPACE, EXCLAIM,
 		QUOTEDBL, HASH, PERCENT, DOLLAR, AMPERSAND, QUOTE,
@@ -1232,14 +1232,14 @@ namespace SDL {
 		KBDILLUMTOGGLE, KBDILLUMDOWN, KBDILLUMUP, EJECT, SLEEP
 	}// Keycode
 	
-	[CCode (cname="SDL_Keymod", cprefix="KMOD_", cheader="SDL2/SDL_keycode.h")]
+	[CCode (cname="SDL_Keymod", cprefix="KMOD_", cheader_filename="SDL2/SDL_keycode.h")]
 	public enum Keymod {
 		NONE, LSHIFT, RSHIFT, LCTRL, RCTRL, LALT, RALT,
 		LGUI, RGUI, NUM, CAPS, MODE, RESERVED,
 		CTRL, SHIFT, ALT, GUI
 	}// Keymod
 		
-	[CCode (cname="SDL_Scancode", cprefix="SDL_SCANCODE_", cheader="SDL2/SDL_scancode.h")]
+	[CCode (cname="SDL_Scancode", cprefix="SDL_SCANCODE_", cheader_filename="SDL2/SDL_scancode.h")]
 	public enum Scancode {
 		UNKNOWN, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R,
 		S, T, U, V, W, X, Y, Z,
@@ -1285,7 +1285,7 @@ namespace SDL {
 		KBDILLUMTOGGLE, KBDILLUMDOWN, KBDILLUMUP, EJECT, SLEEP, APP1, APP2
 	}// Scancode
 	
-	[CCode (cname="SDL_Keysym", cheader="SDL2/SDL_keyboard.h")]
+	[CCode (cname="SDL_Keysym", cheader_filename="SDL2/SDL_keyboard.h")]
 	[SimpleType]
 	public struct Key {
 		SDL.Scancode scancode;
@@ -1294,7 +1294,7 @@ namespace SDL {
 		uint32 unicode;
 	}// Key
 	
-	[CCode (cheader="SDL2/SDL_keyboard.h")]
+	[CCode (cheader_filename="SDL2/SDL_keyboard.h")]
 	public class Keyboard {
 		[CCode (cname="SDL_GetKeyboardFocus")]
 		public static SDL.Window get_focus();
@@ -1327,7 +1327,7 @@ namespace SDL {
 		public static SDL.Keycode keycode_fromname(string name);
 	}// Keyboard
 	
-	[CCode (cheader="SDL2/SDL_keyboard.h")]
+	[CCode (cheader_filename="SDL2/SDL_keyboard.h")]
 	public class TextInput {
 		[CCode (cname="SDL_StartTextInput")]
 		public static void start();
@@ -1342,7 +1342,7 @@ namespace SDL {
 		public static void set_rect(SDL.Rect rect);
 	}// TextInput
 	
-	[CCode (cheader="SDL2/SDL_keyboard.h")]
+	[CCode (cheader_filename="SDL2/SDL_keyboard.h")]
 	public class ScreenKeyboard {
 		[CCode (cname="SDL_HasScreenKeyboardSupport")]
 		public static bool has_support();
@@ -1351,7 +1351,7 @@ namespace SDL {
 		public static bool is_shown(SDL.Window window);
 	}
 	
-	[CCode (cname="SDL_SystemCursor", cprefix="SDL_SYSTEM_CURSOR_", cheader="SDL2/SDL_mouse.h")]
+	[CCode (cname="SDL_SystemCursor", cprefix="SDL_SYSTEM_CURSOR_", cheader_filename="SDL2/SDL_mouse.h")]
 	public enum SystemCursor {
 		ARROW, IBEAM, WAIT, CROSSHAIR, WAITARROW, SIZENWSE,
 		SIZENESW, SIZEWE, SIZENS, SIZEALL, NO, HAND,
@@ -1366,7 +1366,7 @@ namespace SDL {
 		X1MASK,  X2MASK
 	}// Buttons
 	
-	[CCode (type_id="SDL_Cursor", free_function="SDL_FreeCursor", cheader="SDL2/SDL_mouse.h")]
+	[CCode (type_id="SDL_Cursor", free_function="SDL_FreeCursor", cheader_filename="SDL2/SDL_mouse.h")]
 	[Compact]
 	public class Cursor {
 		[CCode (cname="SDL_GetMouseFocus")]
@@ -1410,12 +1410,12 @@ namespace SDL {
 		public static int show(int toggle);
 	}// Cursor
 	
-	[CCode (cname="SDL_JoystickGUID", cheader="SDL2/SDL_joystick.h")]
+	[CCode (cname="SDL_JoystickGUID", cheader_filename="SDL2/SDL_joystick.h")]
 	public struct JoystickGUID{
 		uint8 data[16];
 	}
 
-	[CCode (cname="SDL_Joystick", free_function="SDL_JoystickClose", cheader="SDL2/SDL_joystick.h")]
+	[CCode (cname="SDL_Joystick", free_function="SDL_JoystickClose", cheader_filename="SDL2/SDL_joystick.h")]
 	[Compact]
 	public class Joystick {
 		[CCode (cname="SDL_NumJoysticks")]
@@ -1476,7 +1476,7 @@ namespace SDL {
 		public SDL.ButtonState get_button(int button);
 	}// Joystick
 	
-	[CCode (cname="SDL_Finger", type_id="SDL_Finger", cheader="SDL2/SDL_touch.h")]
+	[CCode (cname="SDL_Finger", type_id="SDL_Finger", cheader_filename="SDL2/SDL_touch.h")]
 	public class Finger {
 		SDL.FingerID id;
 		float x;
@@ -1503,7 +1503,7 @@ namespace SDL {
 	///
 	/// Audio
 	///
-	[CCode (cname="Uint16", cprefix="AUDIO_", cheader="SDL2/SDL_audio.h")]
+	[CCode (cname="Uint16", cprefix="AUDIO_", cheader_filename="SDL2/SDL_audio.h")]
 	public enum AudioFormat {
 		U8, S8, U16LSB, S16LSB, U16MSB, S16MSB, U16, S16,
 		S32LSB, S32MSB, S32, F32LSB, F32MSB, F32,
@@ -1515,7 +1515,7 @@ namespace SDL {
 		STOPPED, PLAYING, PAUSED
 	}// AudioStatus
 	
-	[CCode (cname="int", cprefix="SDL_AUDIO_ALLOW_", cheader="SDL2/SDL_audio.h")]
+	[CCode (cname="int", cprefix="SDL_AUDIO_ALLOW_", cheader_filename="SDL2/SDL_audio.h")]
 	public enum AudioAllowFlags {
 		FREQUENCY_CHANGE,
 		FORMAT_CHANGE,
@@ -1523,10 +1523,10 @@ namespace SDL {
 		ANY_CHANGE
 	}// AudioAllowFlags
 
-	[CCode (cname="SDL_AudioCallback", instance_pos = 0.1, cheader="SDL2/SDL_audio.h")]
+	[CCode (cname="SDL_AudioCallback", instance_pos = 0.1, cheader_filename="SDL2/SDL_audio.h")]
 	public delegate void AudioCallback(void *userdata, uint8[] stream, int len);
 
-	[CCode (cname="SDL_AudioSpec", cheader="SDL2/SDL_audio.h")]
+	[CCode (cname="SDL_AudioSpec", cheader_filename="SDL2/SDL_audio.h")]
 	public struct AudioSpec {
 		public int freq;
 		public SDL.AudioFormat format;
@@ -1539,10 +1539,10 @@ namespace SDL {
 		public unowned SDL.AudioCallback callback;
 	}// AudioSpec
 	
-	[CCode (cname="SDL_AudioFilter", instance_pos = 0.1, cheader="SDL2/SDL_audio.h")]
+	[CCode (cname="SDL_AudioFilter", instance_pos = 0.1, cheader_filename="SDL2/SDL_audio.h")]
 	public delegate void AudioFilter(AudioConverter cvt, AudioFormat format);
 
-	[CCode (cname="SDL_AudioCVT", cheader="SDL2/SDL_audio.h")]
+	[CCode (cname="SDL_AudioCVT", cheader_filename="SDL2/SDL_audio.h")]
 	[Compact]
 	public class AudioConverter {
 		public int needed;
@@ -1567,10 +1567,10 @@ namespace SDL {
 		public int convert();
 	}// AudioConverter
 	
-	[CCode (cname="SDL_AudioDeviceID", cheader="SDL2/SDL_audio.h")]
+	[CCode (cname="SDL_AudioDeviceID", cheader_filename="SDL2/SDL_audio.h")]
 	public struct AudioDeviceID {}// AudioDeviceID
 
-	[CCode (cheader="SDL2/SDL_audio.h")]
+	[CCode (cheader_filename="SDL2/SDL_audio.h")]
 	[Compact]
 	public class Audio {
 		[CCode (cname="SDL_GetNumAudioDrivers")]
@@ -1657,10 +1657,10 @@ namespace SDL {
 	///
 	/// Timers
 	///
-	[CCode (cname="SDL_TimerCallback", cheader="SDL2/SDL_timer.h")]
+	[CCode (cname="SDL_TimerCallback", cheader_filename="SDL2/SDL_timer.h")]
 	public delegate uint32 TimerCallback(uint32 interval,  void *param);
 
-	[CCode (cname="SDL_TimerID", ref_function="", unref_function="", cheader="SDL2/SDL_timer.h")]
+	[CCode (cname="SDL_TimerID", ref_function="", unref_function="", cheader_filename="SDL2/SDL_timer.h")]
 	[Compact]
 	public class Timer {
 		[CCode (cname="SDL_GetTicks")]
@@ -1686,7 +1686,7 @@ namespace SDL {
 	///
 	/// Render
 	///
-	[CCode (cname="SDL_RendererFlags", cprefix="SDL_RENDERER_", cheader="SDL2/SDL_render.h")]
+	[CCode (cname="SDL_RendererFlags", cprefix="SDL_RENDERER_", cheader_filename="SDL2/SDL_render.h")]
 	public enum RendererFlags {
 		SOFTWARE, ACCELERATED,
 		PRESENTVSYNC, TARGETTEXTURE

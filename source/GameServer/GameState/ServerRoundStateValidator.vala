@@ -33,21 +33,6 @@ namespace GameServer
             return state.tile_discard(tile_ID);
         }
 
-        public ArrayList<ServerRoundStatePlayer> get_call_players()
-        {
-            ArrayList<ServerRoundStatePlayer> players = new ArrayList<ServerRoundStatePlayer>();
-
-            foreach (ServerRoundStatePlayer player in this.players)
-            {
-                if (state.can_ron(player.player) ||
-                    state.can_pon(player.player) ||
-                    state.can_chii(player.player))
-                    players.add(player);
-            }
-
-            return players;
-        }
-
         public ArrayList<ServerRoundStatePlayer> get_tenpai_players()
         {
             ArrayList<ServerRoundStatePlayer> players = new ArrayList<ServerRoundStatePlayer>();
@@ -84,10 +69,12 @@ namespace GameServer
         public ArrayList<ServerRoundStatePlayer> do_player_calls()
         {
             ArrayList<ServerRoundStatePlayer> players = new ArrayList<ServerRoundStatePlayer>();
-            Tile tile = state.discard_tile;
 
             foreach (ServerRoundStatePlayer player in this.players)
             {
+                if (player.index == state.current_player.index)
+                    continue;
+
                 if (state.can_ron(player.player) ||
                     state.can_pon(player.player) ||
                     state.can_chii(player.player))
@@ -158,18 +145,12 @@ namespace GameServer
 
         public ArrayList<Tile>? do_closed_kan(TileType type)
         {
-            ArrayList<Tile> tiles = state.current_player.do_closed_kan(type);
-            if (tiles == null)
-                return tiles;
-
-            state.closed_kan(type);
-
-            return tiles;
+            return state.closed_kan(type);
         }
 
         public bool do_late_kan(int tile_ID)
         {
-            return state.late_kan(tile_ID);
+            return state.late_kan(tile_ID) != null;
         }
 
         public bool decide_open_kan(int player_index)
@@ -229,9 +210,9 @@ namespace GameServer
         {
             CallResult? result = null;
 
-            for (int i = 0; i < players.length; i++)
+            for (int i = 0; i < players.length - 1; i++)
             {
-                int index = (state.dealer + i) % 4;
+                int index = (state.current_player.index + 1 + i) % 4;
                 ServerRoundStatePlayer player = get_player(index);
 
                 if (player.call_decision != null)

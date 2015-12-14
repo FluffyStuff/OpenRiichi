@@ -1,9 +1,15 @@
-public class MainView : View
+public class MainView : Container
 {
     public MainView(RenderWindow window)
     {
+        base();
         parent_window = window;
         resize();
+    }
+
+    public void start_render(RenderState state)
+    {
+        render(state, new RenderScene2D(rect));
     }
 }
 

@@ -9,13 +9,13 @@ public class ScoringPointsView : View2D
     public ScoringPointsView(RoundScoreState score)
     {
         base();
-
         this.score = score;
-        resize_style = ResizeStyle.ABSOLUTE;
     }
 
     public override void added()
     {
+        resize_style = ResizeStyle.ABSOLUTE;
+
         bool draw = false;
         string score_text;
 
@@ -39,18 +39,20 @@ public class ScoringPointsView : View2D
 
         Scoring scoring = score.result.score;
 
-        LabelControl score_label = new LabelControl(store);
-        score_label.text = score_text;
-        score_label.position = Vec2(0, 0);
+        LabelControl score_label = new LabelControl();
+        add_child(score_label);
 
         if (draw)
         {
+            score_label.text = score_text;
+            score_label.position = Vec2(0, 0);
             score_label.inner_anchor = Vec2(0.5f, 0.5f);
             score_label.outer_anchor = Vec2(0.5f, 0.5f);
-            add_control(score_label);
             return;
         }
 
+        score_label.text = score_text;
+        score_label.position = Vec2(0, 0);
         score_label.inner_anchor = Vec2(0.5f, 1);
         score_label.outer_anchor = Vec2(0.5f, 1);
         labels.add(score_label);
@@ -78,7 +80,8 @@ public class ScoringPointsView : View2D
             if (yakuman > 0 && yaku.yakuman == 0)
                 continue;
 
-            LabelControl name = new LabelControl(store);
+            LabelControl name = new LabelControl();
+            add_child(name);
             name.text = yaku_to_string(yaku);
             name.inner_anchor = Vec2(0, 1);
             name.outer_anchor = Vec2(0, 1);
@@ -92,7 +95,8 @@ public class ScoringPointsView : View2D
             else
                 str = yaku.han.to_string() + " han";
 
-            LabelControl num = new LabelControl(store);
+            LabelControl num = new LabelControl();
+            add_child(num);
             num.text = str;
             num.inner_anchor = Vec2(1, 1);
             num.outer_anchor = Vec2(1, 1);
@@ -151,14 +155,15 @@ public class ScoringPointsView : View2D
             name += " - ";
         }
 
-        LabelControl points_label = new LabelControl(store);
+        LabelControl points_label = new LabelControl();
+        add_child(points_label);
         points_label.text = name + points + " points";
         points_label.inner_anchor = Vec2(0.5f, 0);
         points_label.outer_anchor = Vec2(0.5f, 0);
         labels.add(points_label);
 
-        foreach (LabelControl label in labels)
-            add_control(label);
+        //foreach (LabelControl label in labels)
+        //    add_control(label);
     }
 
     private string yaku_to_string(Yaku yaku)

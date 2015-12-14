@@ -137,23 +137,28 @@ public class RoundState
         return true;
     }
 
-    public bool late_kan(int tile_ID)
+    public ArrayList<Tile>? late_kan(int tile_ID)
     {
-        RoundStatePlayer player = current_player;
-        if (!player.do_late_kan(get_tile(tile_ID)))
-            return false;
+        if (!can_late_kan_with(tile_ID))
+            return null;
 
+        Tile tile = get_tile(tile_ID);
+
+        var kan_tiles = current_player.do_late_kan(tile);
         kan();
-        return true;
+        return kan_tiles;
     }
 
-    public void closed_kan(TileType tile_type)
+    public ArrayList<Tile>? closed_kan(TileType tile_type)
     {
-        RoundStatePlayer player = current_player;
-        player.do_closed_kan(tile_type);
+        if (!can_closed_kan_with(tile_type))
+            return null;
 
+        var tiles = current_player.do_closed_kan(tile_type);
         kan();
         //interrupt_flow(); // TODO: Find out whether this is correct
+
+        return tiles;
     }
 
     public void open_kan(int player_index, int tile_1_ID, int tile_2_ID, int tile_3_ID)
@@ -228,9 +233,29 @@ public class RoundState
         return player.can_tsumo(create_context(false, player.last_drawn_tile));
     }
 
+    public bool can_late_kan_with(int tile_ID)
+    {
+        return wall.can_kan && current_player.can_late_kan_with(get_tile(tile_ID));
+    }
+
+    public bool can_closed_kan_with(TileType type)
+    {
+        return wall.can_kan && current_player.can_closed_kan_with(type);
+    }
+
+    public bool can_late_kan()
+    {
+        return wall.can_kan && current_player.can_late_kan();
+    }
+
+    public bool can_closed_kan()
+    {
+        return wall.can_kan && current_player.can_closed_kan();
+    }
+
     public bool can_open_kan(RoundStatePlayer player)
     {
-        return !player.in_riichi && player != current_player && TileRules.can_open_kan(player.hand, discard_tile);
+        return wall.can_kan && !player.in_riichi && player != current_player && TileRules.can_open_kan(player.hand, discard_tile);
     }
 
     public bool can_pon(RoundStatePlayer player)
@@ -320,7 +345,6 @@ public class RoundState
 
     public RoundStatePlayer self { get { return players[player_index]; } }
     public Tile? discard_tile { get; private set; }
-    public RoundStatePlayer? discard_player { get; private set; }
 
     public RoundStatePlayer current_player
     {
@@ -431,8 +455,11 @@ public class RoundStatePlayer
         do_riichi_discard = true;
     }
 
-    public bool do_late_kan(Tile tile)
+    public ArrayList<Tile>? do_late_kan(Tile tile)
     {
+        if (!can_late_kan_with(tile))
+            return null;
+
         hand.remove(tile);
 
         ArrayList<Tile> tiles = new ArrayList<Tile>();
@@ -449,22 +476,19 @@ public class RoundStatePlayer
                 }
         }
 
-        if (tiles.size != 4)
-            return false;
-
         calls.add(new RoundStateCall(RoundStateCall.CallType.LATE_KAN, tiles));
-        return true;
+        return tiles;
     }
 
     public ArrayList<Tile>? do_closed_kan(TileType type)
     {
-        ArrayList<Tile> tiles = new ArrayList<Tile>();
-        for (int i = 0; i < hand.size; i++)
-            if (hand[i].tile_type == type)
-                tiles.add(hand.remove_at(i--));
-
-        if (tiles.size != 4)
+        if (!can_closed_kan_with(type))
             return null;
+
+        ArrayList<Tile> tiles = get_closed_kan_tiles(type);
+
+        foreach (Tile tile in tiles)
+            hand.remove(tile);
 
         calls.add(new RoundStateCall(RoundStateCall.CallType.CLOSED_KAN, tiles));
         return tiles;
@@ -532,6 +556,18 @@ public class RoundStatePlayer
         return tiles;
     }
 
+    public ArrayList<Tile>? get_closed_kan_tiles(TileType type)
+    {
+        ArrayList<Tile> tiles = new ArrayList<Tile>();
+        foreach (Tile tile in hand)
+            if (tile.tile_type == type)
+                tiles.add(tile);
+
+        if (tiles.size != 4)
+            return null;
+        return tiles;
+    }
+
     public Scoring get_ron_score(RoundStateContext context)
     {
         return TileRules.get_score(create_context(false), context);
@@ -572,6 +608,11 @@ public class RoundStatePlayer
         return TileRules.can_late_kan(hand, calls);
     }
 
+    public bool can_late_kan_with(Tile tile)
+    {
+        return can_late_kan() && get_late_kan_tiles(tile).size > 0;
+    }
+
     public bool can_closed_kan()
     {
         // TODO: Fix
@@ -579,6 +620,11 @@ public class RoundStatePlayer
             return false;
 
         return TileRules.can_closed_kan(hand);
+    }
+
+    public bool can_closed_kan_with(TileType type)
+    {
+        return can_closed_kan() && get_closed_kan_tiles(type).size > 0;
     }
 
     public bool in_tenpai()
@@ -724,6 +770,7 @@ class RoundStateWall
     }
 
     public bool empty { get { return wall_tiles.size == 0; } }
+    public bool can_kan { get { return dora.size < 5; } }
     public Tile newest_dora { get; private set; }
     public ArrayList<Tile> dora { get; private set; }
     public ArrayList<Tile> ura_dora { get; private set; }

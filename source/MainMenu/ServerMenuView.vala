@@ -8,7 +8,7 @@ public class ServerMenuView : View2D
     private bool host = false;
 
     private ServerPlayerFieldView[] players = new ServerPlayerFieldView[4];
-    private GameMenuButton start_button;
+    private MenuTextButton start_button;
 
     public signal void start(GameStartInfo info, IGameConnection connection, int player_index);
     public signal void back();
@@ -53,41 +53,42 @@ public class ServerMenuView : View2D
 
     protected override void added()
     {
-        LabelControl label = new LabelControl(store);
+        LabelControl label = new LabelControl();
+        add_child(label);
         label.text = "Server";
         label.font_size = 40;
         label.outer_anchor = Vec2(0.5f, 1);
         label.inner_anchor = Vec2(0.5f, 1);
-        add_control(label);
+        label.position = Vec2(0, -60);
 
         int padding = 50;
 
         if (host)
         {
-            start_button = new GameMenuButton(store, "Start");
+            start_button = new MenuTextButton("MenuButton", "Start");
+            add_child(start_button);
             start_button.outer_anchor = Vec2(0.5f, 0);
             start_button.inner_anchor = Vec2(1, 0);
             start_button.position = Vec2(-padding, padding);
             start_button.clicked.connect(start_clicked);
             start_button.enabled = false;
-            add_control(start_button);
         }
 
-        GameMenuButton back_button = new GameMenuButton(store, "Back");
+        MenuTextButton back_button = new MenuTextButton("MenuButton", "Back");
+        add_child(back_button);
         back_button.outer_anchor = Vec2(0.5f, 0);
         back_button.inner_anchor = Vec2(0, 0);
         back_button.position = Vec2(padding, padding);
         back_button.clicked.connect(back_clicked);
-        add_control(back_button);
 
         for (int i = 3; i >= 0; i--)
         {
-            ServerPlayerFieldView player = new ServerPlayerFieldView(store, host, i);
-            player.set_size(Size2(300, 40));
+            ServerPlayerFieldView player = new ServerPlayerFieldView(host, i);
+            add_child(player);
+            player.size = Size2(300, 40);
             player.position = Vec2(0, -(i - 1.5f) * 60);
             player.kick.connect(kick_slot);
             player.add_bot.connect(add_bot);
-            add_control(player);
             players[i] = player;
         }
 
