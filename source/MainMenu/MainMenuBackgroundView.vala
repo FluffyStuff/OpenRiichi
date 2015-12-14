@@ -1,14 +1,11 @@
 class MainMenuBackgroundView : View2D
 {
     private MainMenuBackgroundTileView tile_view = new MainMenuBackgroundTileView();
-    private ImageControl background;
     private ImageControl text;
 
     public override void added()
     {
-        background = new ImageControl("field_high");
-        add_child(background);
-        background.resize_style = ResizeStyle.RELATIVE;
+        add_child(new MainMenuBackgroundImageView());
 
         add_child(tile_view);
         tile_view.inner_anchor = Vec2(0, 0.5f);
@@ -23,6 +20,16 @@ class MainMenuBackgroundView : View2D
     public override void resized()
     {
         tile_view.size = Size2(size.width / 3, size.height / 3);
+    }
+}
+
+class MainMenuBackgroundImageView : View2D
+{
+    public override void added()
+    {
+        ImageControl background = new ImageControl("field_high");
+        add_child(background);
+        background.resize_style = ResizeStyle.RELATIVE;
     }
 }
 

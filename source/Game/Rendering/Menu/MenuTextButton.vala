@@ -13,12 +13,14 @@ class MenuTextButton : Control
 
     public override void added()
     {
+        View2D container = new View2D();
+        add_child(container);
         button = new ImageControl("Buttons/" + name);
-        add_child(button);
+        container.add_child(button);
         button.resize_style = ResizeStyle.RELATIVE;
 
         label = new LabelControl();
-        add_child(label);
+        container.add_child(label);
         label.text = text;
         selectable = true;
 

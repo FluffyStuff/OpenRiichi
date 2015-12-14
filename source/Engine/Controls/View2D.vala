@@ -1,4 +1,4 @@
-public abstract class View2D : Container
+public class View2D : Container
 {
     public override void render(RenderState state, RenderScene2D scene)
     {

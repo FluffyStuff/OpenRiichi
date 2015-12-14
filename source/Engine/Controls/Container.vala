@@ -58,15 +58,12 @@ public abstract class Container : Object
         if (!visible)
             return;
 
-        // TODO: Find better solution for this
-        RenderScene2D new_scene = new RenderScene2D(rect);
-
-        do_render(state, new_scene);
+        do_render(state, scene);
 
         foreach (Container child in children)
-            child.render(state, new_scene);
+            child.render(state, scene);
 
-        state.add_scene(new_scene);
+        state.add_scene(scene);
     }
 
 
