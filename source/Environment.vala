@@ -57,5 +57,6 @@ public class Environment : Object
         typeof(ServerMessageMenuSlotClear).class_ref();
         typeof(ServerMessageDraw).class_ref();
         typeof(NullBot).class_ref();
+        typeof(SimpleBot).class_ref();
     }
 }

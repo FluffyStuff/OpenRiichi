@@ -2,6 +2,8 @@ using Gee;
 
 public class ServerPlayerFieldView : Control
 {
+    private const string[] BOTS = { "NullBot", "SimpleBot" };
+
     private bool editable;
     private int slot;
     private LabelControl name_label;
@@ -49,9 +51,12 @@ public class ServerPlayerFieldView : Control
             control.clicked.connect(kick_clicked);
             texts.add(control);
 
-            control = new TextClickControl("NullBot");
-            control.clicked.connect(add_bot_clicked);
-            texts.add(control);
+            foreach (string bot in BOTS)
+            {
+                control = new TextClickControl(bot);
+                control.clicked.connect(add_bot_clicked);
+                texts.add(control);
+            }
 
             for (int i = 0; i < texts.size; i++)
             {
@@ -115,9 +120,10 @@ public class ServerPlayerFieldView : Control
         menu_toggle(false);
     }
 
-    private void add_bot_clicked()
+    private void add_bot_clicked(Control control, Vec2 position)
     {
-        add_bot("NullBot", slot);
+        var text = control as TextClickControl;
+        add_bot(text.text, slot);
         menu_toggle(false);
     }
 
@@ -137,7 +143,6 @@ public class ServerPlayerFieldView : Control
 
     private class TextClickControl : Control
     {
-        private string text;
         private RectangleControl background = new RectangleControl();
         private LabelControl label;
 
@@ -173,5 +178,7 @@ public class ServerPlayerFieldView : Control
             else
                 background.color = Color(0.6f, 0.02f, 0.02f, 1);
         }
+
+        public string text { get; private set; }
     }
 }

@@ -102,6 +102,28 @@ public class Tile
         return 0;
     }
 
+    public bool is_neighbour(Tile tile)
+    {
+        if (!is_suit_tile() || !tile.is_suit_tile() || !is_same_sort(tile))
+            return false;
+
+        int type1 = (int)tile_type;
+        int type2 = (int)tile.tile_type;
+
+        return (type1 - type2).abs() == 1;
+    }
+
+    public bool is_second_neighbour(Tile tile)
+    {
+        if (!is_suit_tile() || !tile.is_suit_tile() || !is_same_sort(tile))
+            return false;
+
+        int type1 = (int)tile_type;
+        int type2 = (int)tile.tile_type;
+
+        return (type1 - type2).abs() == 2;
+    }
+
     public TileType dora_indicator()
     {
         int type = (int)tile_type;

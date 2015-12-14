@@ -4,7 +4,6 @@ public class RoundState
 {
     private int current_index;
     private int player_index;
-    private Wind round_wind;
     private RoundStatePlayer[] players = new RoundStatePlayer[4];
     private RoundStateWall wall;
 
@@ -352,6 +351,7 @@ public class RoundState
     }
 
     public int dealer { get; private set; }
+    public Wind round_wind { get; private set; }
     public bool game_over { get; private set; }
     public Tile newest_dora { get { return wall.newest_dora; } }
     public ArrayList<Tile> ura_dora { get { return wall.ura_dora; } }
@@ -364,7 +364,6 @@ public class RoundStatePlayer
     private bool do_riichi_discard = false;
     private bool ippatsu = false;
     private bool dealer;
-    private Wind wind;
     private bool tiles_called_on = false;
     private bool temporary_furiten = false;
     private bool _can_riichi;
@@ -654,6 +653,7 @@ public class RoundStatePlayer
     }
 
     public int index { get; private set; }
+    public Wind wind { get; private set; }
     public ArrayList<Tile> hand { get; private set; }
     public ArrayList<Tile> pond { get; private set; }
     public ArrayList<RoundStateCall> calls { get; private set; }

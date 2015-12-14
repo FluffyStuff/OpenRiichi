@@ -12,7 +12,7 @@ public abstract class Control : Container
     protected virtual void on_key_press(KeyArgs key) {}
     protected virtual void on_text_input(TextInputArgs text) {}
     protected virtual void on_text_edit(TextEditArgs text) {}
-    public signal void clicked(Vec2 position);
+    public signal void clicked(Control control, Vec2 position);
 
     protected Control()
     {
@@ -122,7 +122,7 @@ public abstract class Control : Container
     private void click(Vec2 position)
     {
         on_click(position);
-        clicked(position);
+        clicked(this, position);
     }
 
     private void do_mouse_down(Vec2 position)
