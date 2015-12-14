@@ -32,10 +32,12 @@ public class ScoringView : View2D
 
     public override void added()
     {
+        View2D container = new View2D();
+        add_child(container);
         rectangle = new RectangleControl();
-        add_child(rectangle);
+        container.add_child(rectangle);
         rectangle.resize_style = ResizeStyle.RELATIVE;
-        rectangle.color = Color.with_alpha(0.8f);
+        rectangle.color = Color.with_alpha(0.5f);
 
         time_label = new LabelControl();
         add_child(time_label);

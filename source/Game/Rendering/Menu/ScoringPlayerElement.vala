@@ -1,4 +1,4 @@
-class ScoringPlayerElement : View2D
+class ScoringPlayerElement : Control
 {
     private Wind wind;
     private string player_name;
@@ -20,8 +20,11 @@ class ScoringPlayerElement : View2D
     public override void added()
     {
         resize_style = ResizeStyle.ABSOLUTE;
+
+        View2D container = new View2D();
+        add_child(container);
         ImageControl background = new ImageControl("Menu/score_background");
-        add_child(background);
+        container.add_child(background);
         size = background.end_size;
 
         string w;
