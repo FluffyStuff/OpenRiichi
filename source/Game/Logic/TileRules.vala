@@ -43,14 +43,9 @@ public class TileRules
                 call_melds.add(new TileMeld.kan(call.tiles[0], call.tiles[1], call.tiles[2], call.tiles[3], true));
         }
 
-        Scoring? top = null;
-
-        foreach (HandReading reading in readings)
+        if (round.ron)
         {
             foreach (TileMeld meld in call_melds)
-                reading.add_meld(meld);
-
-            foreach (TileMeld meld in reading.melds)
             {
                 if (meld.tile_1.ID == round.win_tile.ID ||
                     meld.tile_2.ID == round.win_tile.ID ||
@@ -58,6 +53,14 @@ public class TileRules
                     (meld.tile_4 != null && meld.tile_4.ID == round.win_tile.ID))
                     meld.is_closed = false;
             }
+        }
+
+        Scoring? top = null;
+
+        foreach (HandReading reading in readings)
+        {
+            foreach (TileMeld meld in call_melds)
+                reading.add_meld(meld);
 
             ArrayList<Yaku> yaku = Yaku.get_yaku(player, round, reading);
             Scoring score = new Scoring(round, player, reading, yaku);
