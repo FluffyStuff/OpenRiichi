@@ -24,7 +24,7 @@ class GameMenuButton : Control
     {
         if (!enabled)
         {
-            button.diffuse_color = Color.with_alpha(0.05f);
+            button.diffuse_color = Color.with_alpha(0.02f);
         }
         else
         {

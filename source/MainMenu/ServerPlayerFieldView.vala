@@ -7,6 +7,7 @@ public class ServerPlayerFieldView : Control
     private LabelControl name_label;
     private RectangleControl border;
     private RectangleControl background;
+    private GameMenuButton expand_button;
     private ArrayList<TextClickControl> texts = new ArrayList<TextClickControl>();
 
     public signal void kick(int slot);
@@ -38,7 +39,7 @@ public class ServerPlayerFieldView : Control
 
         if (editable)
         {
-            GameMenuButton expand_button = new GameMenuButton("Expand");
+            expand_button = new GameMenuButton("Expand");
             add_child(expand_button);
             expand_button.inner_anchor = Vec2(1, 0.5f);
             expand_button.outer_anchor = Vec2(1, 0.5f);
@@ -65,6 +66,27 @@ public class ServerPlayerFieldView : Control
         resize_style = ResizeStyle.ABSOLUTE;
     }
 
+    protected override void do_mouse_event(MouseEventArgs mouse)
+    {
+        base.do_mouse_event(mouse);
+
+        if (!expand_button.focused)
+        {
+            bool focus = false;
+            foreach (TextClickControl control in texts)
+            {
+                if (control.focused)
+                {
+                    focus = true;
+                    break;
+                }
+            }
+
+            if (!focus)
+                menu_toggle(false);
+        }
+    }
+
     protected override void resized()
     {
         border.size = Size2(size.width + 6, size.height + 6);
@@ -86,11 +108,6 @@ public class ServerPlayerFieldView : Control
         foreach (TextClickControl text in texts)
             text.visible = open;
     }
-
-    /*protected override void on_child_focus_lost()
-    {
-        menu_toggle(false);
-    }*/
 
     private void kick_clicked()
     {
