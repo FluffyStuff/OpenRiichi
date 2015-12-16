@@ -164,7 +164,7 @@ public class RenderActionPon : RenderAction
 {
     public RenderActionPon(RenderPlayer player, RenderPlayer discarder, RenderTile tile, RenderTile tile_1, RenderTile tile_2)
     {
-        base(0.2f);
+        base(0.5f);
 
         this.player = player;
         this.discarder = discarder;
@@ -184,7 +184,7 @@ public class RenderActionChii : RenderAction
 {
     public RenderActionChii(RenderPlayer player, RenderPlayer discarder, RenderTile tile, RenderTile tile_1, RenderTile tile_2)
     {
-        base(0.2f);
+        base(0.5f);
 
         this.player = player;
         this.discarder = discarder;
