@@ -346,7 +346,10 @@ public class ModelData
         Vec3 min = Vec3.empty(), max = Vec3.empty();
 
         if (points.length > 0)
-            min = max = Vec3(points[0].vertex.x, points[0].vertex.y, points[0].vertex.z);
+        {
+            min = Vec3(points[0].vertex.x, points[0].vertex.y, points[0].vertex.z);
+            max = min;
+        }
 
         for (int i = 1; i < points.length; i++)
         {
