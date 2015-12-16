@@ -90,6 +90,19 @@ class SimpleBot : Bot
             copy.clear();
         }
 
+        ArrayList<Tile> backup = new ArrayList<Tile>();
+        backup.add_all(tiles);
+
+        for (int i = 0; i < tiles.size; i++)
+        {
+            Tile tile = tiles[i];
+            if (count(tile) >= 3)
+                tiles.remove_at(i--);
+        }
+
+        if (tiles.size == 0)
+            return random(backup);
+
         foreach (Tile tile in tiles)
         {
             if (tile.is_wind_tile() || tile.is_dragon_tile())
@@ -101,7 +114,7 @@ class SimpleBot : Bot
             }
         }
 
-        ArrayList<Tile> backup = new ArrayList<Tile>();
+        backup.clear();
         backup.add_all(tiles);
 
         for (int i = 0; i < tiles.size; i++)
@@ -133,7 +146,7 @@ class SimpleBot : Bot
         for (int i = 0; i < tiles.size; i++)
         {
             Tile tile = tiles[i];
-            if (count(tile) > 1)
+            if (count(tile) >= 2)
                 tiles.remove_at(i--);
         }
 

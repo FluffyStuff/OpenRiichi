@@ -2,7 +2,7 @@ using Gee;
 
 namespace GameServer
 {
-    class ServerMenu
+    class ServerMenu : Object
     {
         private Mutex mutex = Mutex();
 

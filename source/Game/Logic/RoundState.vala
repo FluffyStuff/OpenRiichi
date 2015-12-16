@@ -1,6 +1,6 @@
 using Gee;
 
-public class RoundState
+public class RoundState : Object
 {
     private int current_index;
     private int player_index;

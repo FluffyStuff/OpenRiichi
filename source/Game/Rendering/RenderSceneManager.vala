@@ -1,6 +1,6 @@
 using Gee;
 
-class RenderSceneManager
+class RenderSceneManager : Object
 {
     private string extension;
     private int player_index;

@@ -1,6 +1,6 @@
 using Gee;
 
-public class ClientRoundState
+public class ClientRoundState : Object
 {
     private RoundState state;
     private State action_state;

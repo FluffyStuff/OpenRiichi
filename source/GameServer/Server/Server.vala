@@ -2,7 +2,7 @@ using Gee;
 
 namespace GameServer
 {
-    public class Server
+    public class Server : Object
     {
         private GameState state;
         private GameStartInfo start_info;
@@ -48,13 +48,6 @@ namespace GameServer
                 {
                     RoundFinishResult result = round.result;
                     state.round_finished(result);
-
-                    if (result.result != RoundFinishResult.RoundResultEnum.DRAW)
-                    {
-                        print("----Server----\n");
-                        print(result.score.round.to_string() + "\n");
-                        print(result.score.player.to_string() + "\n");
-                    }
 
                     if (state.game_is_finished)
                     {

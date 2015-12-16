@@ -435,9 +435,12 @@ public class TileRules
             if (meld.size == 3)
             {
                 TileMeld m = new TileMeld(meld[0], meld[1], meld[2], true);
-                melds.add(m);
-                readings.add_all(hand_reading_recursion(copy, melds, tenpai_only, early_return));
-                melds.remove(m);
+
+                ArrayList<TileMeld> new_melds = new ArrayList<TileMeld>();
+                new_melds.add_all(melds);
+                new_melds.add(m);
+
+                readings.add_all(hand_reading_recursion(copy, new_melds, tenpai_only, early_return));
 
                 if (early_return && readings.size > 0)
                     return readings;
@@ -465,9 +468,12 @@ public class TileRules
                 if (one_more != null && two_more != null)
                 {
                     TileMeld m = new TileMeld(tile, one_more, two_more, true);
-                    melds.add(m);
-                    readings.add_all(hand_reading_recursion(copy, melds, tenpai_only, early_return));
-                    melds.remove(m);
+
+                    ArrayList<TileMeld> new_melds = new ArrayList<TileMeld>();
+                    new_melds.add_all(melds);
+                    new_melds.add(m);
+
+                    readings.add_all(hand_reading_recursion(copy, new_melds, tenpai_only, early_return));
 
                     if (early_return && readings.size > 0)
                         return readings;
@@ -540,7 +546,7 @@ public class TileRules
     }
 }
 
-public class RoundStateCall
+public class RoundStateCall : Object
 {
     public RoundStateCall(CallType type, ArrayList<Tile> tiles)
     {
@@ -561,7 +567,7 @@ public class RoundStateCall
     }
 }
 
-public class RoundStateContext
+public class RoundStateContext : Object
 {
     public RoundStateContext
     (
@@ -624,7 +630,7 @@ public class RoundStateContext
     public bool first_turn { get; private set; }
 }
 
-public class PlayerStateContext
+public class PlayerStateContext : Object
 {
     public PlayerStateContext
     (
@@ -682,7 +688,7 @@ public class PlayerStateContext
     public bool tiles_called_on { get; private set; }
 }
 
-public class HandReading
+public class HandReading : Object
 {
     public HandReading
     (
@@ -698,8 +704,8 @@ public class HandReading
             add_meld(meld);
 
         pairs.add(pair);
-        tiles.add(pair[0]);
-        tiles.add(pair[1]);
+        tiles.add(pair.tile_1);
+        tiles.add(pair.tile_2);
 
         is_kokushi = false;
     }
@@ -712,8 +718,8 @@ public class HandReading
 
         foreach (TilePair pair in pairs)
         {
-            tiles.add(pair[0]);
-            tiles.add(pair[1]);
+            tiles.add(pair.tile_1);
+            tiles.add(pair.tile_2);
         }
 
         this.pairs.add_all(pairs);
@@ -722,7 +728,9 @@ public class HandReading
 
     public HandReading.kokushi(ArrayList<Tile> tiles)
     {
-        this.tiles = tiles;
+        this.tiles = new ArrayList<Tile>();
+        this.tiles.add_all(tiles);
+
         melds = new ArrayList<TileMeld>();
         pairs = new ArrayList<TilePair>();
         is_kokushi = true;
@@ -739,9 +747,12 @@ public class HandReading
     public void add_meld(TileMeld meld)
     {
         melds.add(meld);
-        tiles.add(meld[0]);
-        tiles.add(meld[1]);
-        tiles.add(meld[2]);
+        tiles.add(meld.tile_1);
+        tiles.add(meld.tile_2);
+        tiles.add(meld.tile_3);
+
+        if (meld.is_kan)
+            tiles.add(meld.tile_4);
     }
 
     public ArrayList<Tile> tiles { get; private set; }
@@ -750,7 +761,7 @@ public class HandReading
     public bool is_kokushi { get; private set; }
 }
 
-public class TileMeld
+public class TileMeld : Object
 {
     public TileMeld(Tile tile_1, Tile tile_2, Tile tile_3, bool is_closed)
     {
@@ -784,7 +795,7 @@ public class TileMeld
     public bool is_kan { get; private set; }
     public bool is_closed { get; set; }
 
-    public Tile? get(int i)
+    /*public new Tile? get(int i)
     {
         if (i == 0)
             return tile_1;
@@ -796,10 +807,10 @@ public class TileMeld
             return tile_4;
         else
             return null;
-    }
+    }*/
 }
 
-public class TilePair
+public class TilePair : Object
 {
     public TilePair(Tile tile_1, Tile tile_2)
     {
@@ -810,7 +821,7 @@ public class TilePair
     public Tile tile_1 { get; private set; }
     public Tile tile_2 { get; private set; }
 
-    public Tile? get(int i)
+    /*public new Tile? get(int i)
     {
         if (i == 0)
             return tile_1;
@@ -818,10 +829,10 @@ public class TilePair
             return tile_2;
         else
             return null;
-    }
+    }*/
 }
 
-public class Scoring
+public class Scoring : Object
 {
     public Scoring(RoundStateContext round, PlayerStateContext player, HandReading hand, ArrayList<Yaku> yaku)
     {
@@ -859,12 +870,12 @@ public class Scoring
         foreach (TileMeld meld in hand.melds)
         {
             foreach (Tile d in round.dora)
-                if (meld.is_kan && meld[0].tile_type == d.dora_indicator())
+                if (meld.is_kan && meld.tile_1.tile_type == d.dora_indicator())
                     dora++;
             if (riichi)
             {
                 foreach (Tile d in round.ura_dora)
-                    if (meld.is_kan && meld[0].tile_type == d.dora_indicator())
+                    if (meld.is_kan && meld.tile_1.tile_type == d.dora_indicator())
                         ura_dora++;
             }
         }
@@ -1031,22 +1042,22 @@ public class Scoring
                     f *= 2;
                 if (meld.is_kan)
                     f *= 4;
-                if (meld[0].is_dragon_tile() || meld[0].is_wind(round.round_wind) || meld[0].is_wind(player.wind))
+                if (meld.tile_1.is_dragon_tile() || meld.tile_1.is_wind(round.round_wind) || meld.tile_1.is_wind(player.wind))
                     f *= 2;
 
                 fu += f;
             }
 
-            if (wait != WaitType.AMBIGUOUS && (meld[0].tile_type == win_tile.tile_type || meld[1].tile_type == win_tile.tile_type || meld[2].tile_type == win_tile.tile_type))
+            if (wait != WaitType.AMBIGUOUS && (meld.tile_1.tile_type == win_tile.tile_type || meld.tile_1.tile_type == win_tile.tile_type || meld.tile_3.tile_type == win_tile.tile_type))
             {
                 WaitType w;
                 if (meld.is_triplet)
                     w = WaitType.CLOSED;
-                else if (meld[1].tile_type == win_tile.tile_type)
+                else if (meld.tile_2.tile_type == win_tile.tile_type)
                     w = WaitType.CLOSED;
-                else if (meld[0].tile_type == win_tile.tile_type && meld[2].is_terminal_tile())
+                else if (meld.tile_1.tile_type == win_tile.tile_type && meld.tile_3.is_terminal_tile())
                     w = WaitType.CLOSED;
-                else if (meld[2].tile_type == win_tile.tile_type && meld[0].is_terminal_tile())
+                else if (meld.tile_3.tile_type == win_tile.tile_type && meld.tile_1.is_terminal_tile())
                     w = WaitType.CLOSED;
                 else
                     w = WaitType.OPEN;
@@ -1062,7 +1073,7 @@ public class Scoring
         if (wait == WaitType.CLOSED || wait == WaitType.NONE) // None would mean a pair wait
             fu += 2;
 
-        Tile pair_tile = hand.pairs[0][0];
+        Tile pair_tile = hand.pairs[0].tile_1;
         if (pair_tile.is_dragon_tile() || pair_tile.is_wind(round.round_wind) || pair_tile.is_wind(player.wind))
             fu += 2;
 
@@ -1130,7 +1141,7 @@ public class Scoring
     }
 }
 
-public class Yaku
+public class Yaku : Object
 {
     public Yaku(YakuType yaku_type, int han, int yakuman)
     {
@@ -1273,9 +1284,9 @@ public class Yaku
                     if (m2.is_triplet)
                         continue;
 
-                    if (m1[0].tile_type == m2[0].tile_type &&
-                        m1[1].tile_type == m2[1].tile_type &&
-                        m1[2].tile_type == m2[2].tile_type)
+                    if (m1.tile_1.tile_type == m2.tile_1.tile_type &&
+                        m1.tile_2.tile_type == m2.tile_2.tile_type &&
+                        m1.tile_3.tile_type == m2.tile_3.tile_type)
                     {
                         melds.remove(m1);
                         melds.remove(m2);
@@ -1295,9 +1306,9 @@ public class Yaku
                     TileMeld m1 = melds[0];
                     TileMeld m2 = melds[1];
 
-                    if (m1[0].tile_type == m2[0].tile_type &&
-                        m1[1].tile_type == m2[1].tile_type &&
-                        m1[2].tile_type == m2[2].tile_type)
+                    if (m1.tile_1.tile_type == m2.tile_1.tile_type &&
+                        m1.tile_2.tile_type == m2.tile_2.tile_type &&
+                        m1.tile_3.tile_type == m2.tile_3.tile_type)
                         count++;
                 }
 
@@ -1314,16 +1325,16 @@ public class Yaku
 
             foreach (TileMeld meld in hand.melds)
             {
-                if (!meld.is_triplet || !meld[0].is_honor_tile())
+                if (!meld.is_triplet || !meld.tile_1.is_honor_tile())
                     continue;
 
-                if (meld[0].is_dragon_tile())
+                if (meld.tile_1.is_dragon_tile())
                     count++;
                 else // Wind tile
                 {
-                    if (meld[0].is_wind(player.wind))
+                    if (meld.tile_1.is_wind(player.wind))
                         count++;
-                    if (meld[0].is_wind(round.round_wind))
+                    if (meld.tile_1.is_wind(round.round_wind))
                         count++;
                 }
             }
@@ -1344,9 +1355,9 @@ public class Yaku
                 if (m1.is_triplet || m2.is_triplet || m3.is_triplet)
                     continue;
 
-                Tile t1 = m1[0];
-                Tile t2 = m2[0];
-                Tile t3 = m3[0];
+                Tile t1 = m1.tile_1;
+                Tile t2 = m2.tile_1;
+                Tile t3 = m3.tile_1;
 
                 if (t1.is_suit_tile() && t2.is_suit_tile() && t3.is_suit_tile() &&
                     t1.get_number_index() == t2.get_number_index() && t2.get_number_index() == t3.get_number_index() &&
@@ -1370,19 +1381,19 @@ public class Yaku
                 if (m1.is_triplet || m2.is_triplet || m3.is_triplet)
                     continue;
 
-                Tile t1 = m1[0];
-                Tile t2 = m2[0];
-                Tile t3 = m3[0];
+                Tile t1 = m1.tile_1;
+                Tile t2 = m2.tile_1;
+                Tile t3 = m3.tile_1;
 
                 if (!t1.is_suit_tile() || !t2.is_suit_tile() || !t3.is_suit_tile() ||
                     !t1.is_same_sort(t2) || !t1.is_same_sort(t3))
                     continue;
 
-                bool[] l = new bool[7];
+                bool[] l = new bool[9];
 
-                l[t1.tile_type - t1.get_number_index()] = true;
-                l[t2.tile_type - t1.get_number_index()] = true;
-                l[t3.tile_type - t1.get_number_index()] = true;
+                l[t1.get_number_index()] = true;
+                l[t2.get_number_index()] = true;
+                l[t3.get_number_index()] = true;
 
                 if (l[0] && l[3] && l[6])
                 {
@@ -1403,8 +1414,8 @@ public class Yaku
                 if (!honroutou && !junchan && !chanta)
                     break;
 
-                Tile low = meld[0];
-                Tile high = meld[2];
+                Tile low = meld.tile_1;
+                Tile high = meld.tile_3;
 
                 if (!low.is_honor_tile() && !low.is_terminal_tile())
                     honroutou = false;
@@ -1424,7 +1435,7 @@ public class Yaku
                 if (!honroutou && !junchan && !chanta)
                     break;
 
-                Tile tile = pair[0];
+                Tile tile = pair.tile_1;
 
                 if (!tile.is_honor_tile() && !tile.is_terminal_tile())
                     honroutou = false;
@@ -1496,9 +1507,9 @@ public class Yaku
                 if (!m1.is_triplet || !m2.is_triplet || !m3.is_triplet)
                     continue;
 
-                Tile t1 = m1[0];
-                Tile t2 = m2[0];
-                Tile t3 = m3[0];
+                Tile t1 = m1.tile_1;
+                Tile t2 = m2.tile_1;
+                Tile t3 = m3.tile_1;
 
                 // Don't need to check for unique sorts, since there can only be a single triplet of a suit number
                 if (t1.is_suit_tile() && t2.is_suit_tile() && t3.is_suit_tile() &&
@@ -1519,12 +1530,12 @@ public class Yaku
             int count = 0;
 
             foreach (TileMeld meld in hand.melds)
-                if (meld[0].is_dragon_tile())
+                if (meld.tile_1.is_dragon_tile())
                     count++;
 
             if (count == 3)
                 yaku.add(new Yaku(YakuType.DAI_SANGEN, 0, 1));
-            else if (count == 2 && hand.pairs[0][0].is_dragon_tile())
+            else if (count == 2 && hand.pairs[0].tile_1.is_dragon_tile())
                 yaku.add(new Yaku(YakuType.SHOU_SANGEN, 2, 0));
         }
 
@@ -1572,14 +1583,14 @@ public class Yaku
             int count = 0;
 
             foreach (TileMeld meld in hand.melds)
-                if (meld[0].is_wind_tile())
+                if (meld.tile_1.is_wind_tile())
                     count++;
 
             if (count == 4)
                 yaku.add(new Yaku(YakuType.DAI_SUUSHII, 0, 2));
             else if (count == 3)
             {
-                if (hand.pairs[0][0].is_wind_tile())
+                if (hand.pairs[0].tile_1.is_wind_tile())
                     yaku.add(new Yaku(YakuType.SHOU_SUUSHII, 0, 1));
             }
         }

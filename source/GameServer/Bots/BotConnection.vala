@@ -1,4 +1,4 @@
-class BotConnection
+class BotConnection : Object
 {
     private Bot bot;
     private IGameConnection connection;
