@@ -13,6 +13,12 @@ public class Environment : Object
         if (SDL.init(SDL.InitFlag.EVERYTHING) < 0)
         	return false;
 
+        if (SDLMixer.open(44100, 0x8010, 2, 1024) > 0)
+        {
+            print("Environment: Could not initialize SDLMixer!\n");
+            return false;
+        }
+
         if (multisampling > 0)
         {
             int s = (int)Math.pow(2, multisampling);

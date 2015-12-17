@@ -9,16 +9,26 @@ public class GameRenderView : View3D, IGameRenderer
     private RenderSceneManager scene;
     private RenderTile? mouse_down_tile;
     private ArrayList<TileSelectionGroup>? select_groups = null;
+
+    private RoundStartInfo info;
+    private int player_index;
+    private Wind round_wind;
     private int dealer_index;
+    private string extension;
 
     public GameRenderView(RoundStartInfo info, int player_index, Wind round_wind, int dealer_index, string extension)
     {
+        this.info = info;
+        this.player_index = player_index;
+        this.round_wind = round_wind;
         this.dealer_index = dealer_index;
-        scene = new RenderSceneManager(extension, player_index, round_wind, dealer_index, info.wall_index);
+        this.extension = extension;
     }
 
     public override void added()
     {
+        scene = new RenderSceneManager(extension, player_index, round_wind, dealer_index, info.wall_index, store.audio_player);
+
         scene.added(store);
         tiles = scene.tiles;
         players = scene.players;

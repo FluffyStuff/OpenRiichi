@@ -6,6 +6,8 @@ public class GameMenuView : View2D
 
     private ArrayList<MenuTextButton> buttons = new ArrayList<MenuTextButton>();
 
+    private Sound hint_sound;
+
     private MenuTextButton chii;
     private MenuTextButton pon;
     private MenuTextButton kan;
@@ -38,6 +40,8 @@ public class GameMenuView : View2D
 
     public override void added()
     {
+        hint_sound = store.audio_player.load_sound("hint");
+
         chii = new MenuTextButton("MenuButtonSmall", "Chii");
         pon = new MenuTextButton("MenuButtonSmall", "Pon");
         kan = new MenuTextButton("MenuButtonSmall", "Kan");
@@ -135,6 +139,8 @@ public class GameMenuView : View2D
 
     public void set_continue(bool enabled)
     {
+        if (enabled)
+            hint_sound.play();
         conti.enabled = enabled;
     }
 

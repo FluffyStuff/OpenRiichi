@@ -20,10 +20,7 @@ public class FileLoader
             while ((line = dis.read_line (null)) != null)
                 lines.add(line);
         }
-        catch (Error e)
-        {
-            return null;
-        }
+        catch {}
 
         string[] l = new string[lines.size];
         for (int i = 0; i < lines.size; i++)
@@ -61,6 +58,31 @@ public class FileLoader
     public static bool exists(string name)
     {
         return File.new_for_path(name).query_exists();
+    }
+
+    public static string[] get_files_in_dir(string name)
+    {
+        ArrayList<string> files = new ArrayList<string>();
+
+        try
+        {
+            FileEnumerator enumerator = File.new_for_path(name).enumerate_children
+            (
+                "standard::*",
+                FileQueryInfoFlags.NOFOLLOW_SYMLINKS,
+                null
+            );
+
+            FileInfo info = null;
+            while ((info = enumerator.next_file(null)) != null)
+            {
+                if (info.get_file_type() == FileType.REGULAR)
+                    files.add(info.get_name());
+            }
+        }
+        catch {}
+
+        return files.to_array();
     }
 
     public static string get_user_dir()

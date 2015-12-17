@@ -93,7 +93,7 @@ namespace SDLMixer {
 		public static void hook_mixer(/*MixFunction?*/void* f, void* arg);
 
 		[CCode (cname="Mix_HookMusicFinished")]
-		public static void hook_finished(MusicFinishedCallback cb);
+		public static void hook_finished(/*MusicFinishedCallback*/void* cb);
 
 		[CCode (cname="Mix_FadeOutMusic")]
 		public static int fade_out(int ms);

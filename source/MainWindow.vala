@@ -7,6 +7,7 @@ public class MainWindow : RenderWindow
     private MainMenuView? menu;
     private GameController? game_controller = null;
     private bool game_running = false;
+    private MusicPlayer music;
 
     public MainWindow(IWindowTarget window, IRenderTarget renderer)
     {
@@ -17,6 +18,9 @@ public class MainWindow : RenderWindow
     protected override void shown()
     {
         create_main_menu();
+
+        music = new MusicPlayer(store.audio_player);
+        music.start();
     }
 
     private void create_main_menu()

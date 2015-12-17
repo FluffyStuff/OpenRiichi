@@ -8,9 +8,9 @@ LL64  = -X /usr/lib/x86_64-linux-gnu/libSDL2_image.so -X /usr/lib/x86_64-linux-g
 LL32  = -X /usr/local/lib/libSDL2_image.a -X /usr/local/lib/libSDL2_mixer.a
 VAPI  = --vapidir=vapi
 #-w = Supress C warnings (Since they stem from the vala code gen)
-OTHER = -X -w
+OTHER = -X -w -X -DGLEW_STATIC
 O     = -o bin/$(NAME)
-DEBUG = --save-temps --enable-checking -g -D DEBUG
+DEBUG = --save-temps --enable-checking -g
 
 all: debug
 

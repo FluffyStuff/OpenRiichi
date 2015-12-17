@@ -5,6 +5,9 @@ class MenuTextButton : Control
     private string name;
     private string text;
 
+    private Sound click_sound;
+    private Sound hover_sound;
+
     public MenuTextButton(string name, string text)
     {
         this.name = name;
@@ -13,6 +16,9 @@ class MenuTextButton : Control
 
     public override void added()
     {
+        click_sound = store.audio_player.load_sound("click");
+        hover_sound = store.audio_player.load_sound("mouse_over");
+
         View2D container = new View2D();
         add_child(container);
         button = new ImageControl("Buttons/" + name);
@@ -56,6 +62,16 @@ class MenuTextButton : Control
                 label.color = Color(1, 1, 1, 1);
             }
         }
+    }
+
+    protected override void on_mouse_over()
+    {
+        hover_sound.play();
+    }
+
+    protected override void on_click(Vec2 position)
+    {
+        click_sound.play();
     }
 
     public float font_size

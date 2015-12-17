@@ -7,6 +7,7 @@ public abstract class Control : Container
     protected virtual void on_click(Vec2 position) {}
     protected virtual void on_mouse_down(Vec2 position) {}
     protected virtual void on_mouse_up(Vec2 position) {}
+    protected virtual void on_mouse_over() {}
     protected virtual void on_focus_lost() {}
     protected virtual void on_child_focus_lost() {}
     protected virtual void on_key_press(KeyArgs key) {}
@@ -43,6 +44,9 @@ public abstract class Control : Container
         }
 
         mouse.cursor_type = cursor_type;
+
+        if (!hovering)
+            on_mouse_over();
         hovering = true;
 
         on_mouse_move(Vec2(mouse.position.x - rect.x, mouse.position.y - rect.y));

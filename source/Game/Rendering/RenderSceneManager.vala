@@ -8,6 +8,16 @@ class RenderSceneManager : Object
     private int dealer;
     private int wall_index;
 
+    private AudioPlayer audio;
+    private Sound discard_sound;
+    private Sound draw_sound;
+    private Sound ron_sound;
+    private Sound tsumo_sound;
+    private Sound riichi_sound;
+    private Sound kan_sound;
+    private Sound pon_sound;
+    private Sound chii_sound;
+
     private float table_length;
     private Vec3 center;
     private Vec3 tile_size;
@@ -21,13 +31,14 @@ class RenderSceneManager : Object
     private RenderAction? current_action = null;
     private float action_start_time;
 
-    public RenderSceneManager(string extension, int player_index, Wind round_wind, int dealer, int wall_index)
+    public RenderSceneManager(string extension, int player_index, Wind round_wind, int dealer, int wall_index, AudioPlayer audio)
     {
         this.extension = extension;
         this.player_index = player_index;
         this.round_wind = round_wind;
         this.dealer = dealer;
         this.wall_index = wall_index;
+        this.audio = audio;
 
         players = new RenderPlayer[4];
         tiles = new RenderTile[136];
@@ -36,6 +47,15 @@ class RenderSceneManager : Object
 
     public void added(IResourceStore store)
     {
+        discard_sound = audio.load_sound("discard");
+        draw_sound = audio.load_sound("draw");
+        ron_sound = audio.load_sound("ron");
+        tsumo_sound = audio.load_sound("tsumo");
+        riichi_sound = audio.load_sound("riichi");
+        kan_sound = audio.load_sound("kan");
+        pon_sound = audio.load_sound("pon");
+        chii_sound = audio.load_sound("chii");
+
         float tile_scale = 1.6f;
 
         RenderModel tile = store.load_model("tile_" + extension, true);
@@ -173,12 +193,14 @@ class RenderSceneManager : Object
 
     private void action_initial_draw(RenderActionInitialDraw action)
     {
+        draw_sound.play();
         for (int i = 0; i < action.tiles; i++)
             action.player.draw_tile(wall.draw_wall());
     }
 
     private void action_draw(RenderActionDraw action)
     {
+        draw_sound.play();
         action.player.draw_tile(wall.draw_wall());
 
         if (action.player.seat == player_index)
@@ -187,6 +209,7 @@ class RenderSceneManager : Object
 
     private void action_draw_dead_wall(RenderActionDrawDeadWall action)
     {
+        draw_sound.play();
         action.player.draw_tile(wall.draw_dead_wall());
 
         if (action.player.seat == player_index)
@@ -195,11 +218,13 @@ class RenderSceneManager : Object
 
     private void action_discard(RenderActionDiscard action)
     {
+        discard_sound.play();
         action.player.discard(action.tile);
     }
 
     private void action_ron(RenderActionRon action)
     {
+        ron_sound.play();
         action.player.ron(action.tile);
         add_action(new RenderActionHandReveal(action.player));
 
@@ -209,6 +234,7 @@ class RenderSceneManager : Object
 
     private void action_tsumo(RenderActionTsumo action)
     {
+        tsumo_sound.play();
         action.player.tsumo();
         add_action(new RenderActionHandReveal(action.player));
 
@@ -218,6 +244,7 @@ class RenderSceneManager : Object
 
     private void action_riichi(RenderActionRiichi action)
     {
+        riichi_sound.play();
         action.player.riichi();
     }
 
@@ -242,6 +269,7 @@ class RenderSceneManager : Object
 
     private void action_pon(RenderActionPon action)
     {
+        pon_sound.play();
         action.discarder.rob_tile(action.tile);
         action.player.pon(action.discarder, action.tile, action.tile_1, action.tile_2);
 
@@ -251,6 +279,7 @@ class RenderSceneManager : Object
 
     private void action_chii(RenderActionChii action)
     {
+        chii_sound.play();
         action.discarder.rob_tile(action.tile);
         action.player.chii(action.discarder, action.tile, action.tile_1, action.tile_2);
 
@@ -291,6 +320,7 @@ class RenderSceneManager : Object
 
     private void kan(RenderPlayer player)
     {
+        kan_sound.play();
         wall.flip_dora();
         wall.dead_tile_add();
         player.draw_tile(wall.draw_dead_wall());

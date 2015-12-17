@@ -42,6 +42,7 @@
 			<Add directory="C:/vala-0.12.0/lib/gtk-2.0/include" />
 		</Compiler>
 		<Unit filename="Makefile" />
+		<Unit filename="source/Engine/Audio/AudioPlayer.vala" />
 		<Unit filename="source/Engine/Controls/Container.vala" />
 		<Unit filename="source/Engine/Controls/Control.vala" />
 		<Unit filename="source/Engine/Controls/IWindowTarget.vala" />
@@ -90,6 +91,7 @@
 		<Unit filename="source/GameServer/Bots/Bot.vala" />
 		<Unit filename="source/GameServer/Bots/BotConnection.vala" />
 		<Unit filename="source/GameServer/Bots/NullBot.vala" />
+		<Unit filename="source/GameServer/Bots/SimpleBot.vala" />
 		<Unit filename="source/GameServer/GameState/ServerRoundState.vala" />
 		<Unit filename="source/GameServer/GameState/ServerRoundStatePlayer.vala" />
 		<Unit filename="source/GameServer/GameState/ServerRoundStateValidator.vala" />
@@ -111,6 +113,7 @@
 		<Unit filename="source/Game/Logic/ServerMessage.vala" />
 		<Unit filename="source/Game/Logic/Tile.vala" />
 		<Unit filename="source/Game/Logic/TileRules.vala" />
+		<Unit filename="source/Game/MusicPlayer.vala" />
 		<Unit filename="source/Game/Options.vala" />
 		<Unit filename="source/Game/Rendering/GameRenderView.vala" />
 		<Unit filename="source/Game/Rendering/IGameRenderer.vala" />
