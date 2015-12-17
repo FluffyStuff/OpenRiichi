@@ -1603,7 +1603,7 @@ public class Yaku : Object
 
             for (int i = 1; i < hand.tiles.size; i++)
             {
-                Tile t = hand.tiles[1];
+                Tile t = hand.tiles[i];
 
                 if (!t.is_suit_tile() || !tile.is_same_sort(t))
                 {
@@ -1630,8 +1630,12 @@ public class Yaku : Object
 
                 if (chuuren)
                 {
-                    bool pair_wait = counts[round.win_tile.get_number_index()] > 0;
-                    yaku.add(new Yaku(YakuType.CHUUREN_POUTOU, 0, pair_wait ? 2 : 1));
+                    int index = round.win_tile.get_number_index();
+                    bool nine_wait =
+                        (index > 0 && index < 8 && counts[index] == 2) ||
+                        ((index == 0 || index == 8) && counts[index] == 4);
+
+                    yaku.add(new Yaku(YakuType.CHUUREN_POUTOU, 0, nine_wait ? 2 : 1));
                 }
             }
         }
