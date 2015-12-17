@@ -9,10 +9,14 @@ public class RenderWall : Object
     private DeadWall dead_wall;
     private int active_wall;
     private int last_wall;
+    private int dealer;
+    private int split;
 
     public RenderWall(RenderTile[] tiles, Vec3 tile_size, Vec3 center, float offset, int dealer, int split)
     {
         this.tile_size = tile_size;
+        this.dealer = dealer;
+        this.split = split;
         int start_wall = (4 - dealer) % 4;
         active_wall = last_wall = start_wall;
 
@@ -27,6 +31,11 @@ public class RenderWall : Object
             walls[i] = new WallPart(wt, tile_size, pos, i);
             walls[i].next_wall.connect(next_wall);
         }
+    }
+
+    public void split_dead_wall()
+    {
+        int start_wall = (4 - dealer) % 4;
 
         ArrayList<RenderTile> left = walls[start_wall].dead_split(split, true);
         ArrayList<RenderTile> right = walls[(start_wall + 3) % 4].dead_split(split, false);

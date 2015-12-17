@@ -10,6 +10,8 @@ public class GameRenderView : View3D, IGameRenderer
     private RenderTile? mouse_down_tile;
     private ArrayList<TileSelectionGroup>? select_groups = null;
 
+    private Sound hover_sound;
+
     private RoundStartInfo info;
     private int player_index;
     private Wind round_wind;
@@ -33,7 +35,10 @@ public class GameRenderView : View3D, IGameRenderer
         tiles = scene.tiles;
         players = scene.players;
 
+        hover_sound = store.audio_player.load_sound("mouse_over");
+
         buffer_action(new RenderActionDelay(0.5f));
+        buffer_action(new RenderActionSplitDeadWall());
 
         int index = dealer_index;
 
@@ -197,9 +202,6 @@ public class GameRenderView : View3D, IGameRenderer
 
     protected override void do_mouse_move(MouseMoveArgs mouse)
     {
-        for (int i = 0; i < tiles.length; i++)
-            tiles[i].set_hovered(false);
-
         RenderTile? tile = null;
         if (!mouse.handled && scene.active)
             tile = get_hover_tile(scene.camera, scene.observer.hand_tiles, mouse.position);
@@ -210,7 +212,13 @@ public class GameRenderView : View3D, IGameRenderer
         {
             if (select_groups == null)
             {
-                tile.set_hovered(true);
+                if (!tile.hovered)
+                    hover_sound.play();
+
+                foreach (RenderTile t in tiles)
+                    t.hovered = false;
+
+                tile.hovered = true;
                 hovered = true;
             }
             else
@@ -219,13 +227,23 @@ public class GameRenderView : View3D, IGameRenderer
 
                 if (group != null)
                 {
+                    if (!tile.hovered)
+                        hover_sound.play();
+                    foreach (RenderTile t in tiles)
+                        t.hovered = false;
                     foreach (Tile t in group.highlight_tiles)
-                        tiles[t.ID].set_hovered(true);
+                        tiles[t.ID].hovered = true;
 
                     hovered = true;
                 }
+                else
+                    foreach (RenderTile t in tiles)
+                        t.hovered = false;
             }
         }
+        else
+            foreach (RenderTile t in tiles)
+                t.hovered = false;
 
         if (hovered)
         {

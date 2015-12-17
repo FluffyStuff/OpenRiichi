@@ -9,6 +9,8 @@ class RenderSceneManager : Object
     private int wall_index;
 
     private AudioPlayer audio;
+    private Sound slide_sound;
+    private Sound flip_sound;
     private Sound discard_sound;
     private Sound draw_sound;
     private Sound ron_sound;
@@ -17,6 +19,7 @@ class RenderSceneManager : Object
     private Sound kan_sound;
     private Sound pon_sound;
     private Sound chii_sound;
+    private Sound reveal_sound;
 
     private float table_length;
     private Vec3 center;
@@ -47,6 +50,8 @@ class RenderSceneManager : Object
 
     public void added(IResourceStore store)
     {
+        slide_sound = audio.load_sound("slide");
+        flip_sound = audio.load_sound("flip");
         discard_sound = audio.load_sound("discard");
         draw_sound = audio.load_sound("draw");
         ron_sound = audio.load_sound("ron");
@@ -55,6 +60,7 @@ class RenderSceneManager : Object
         kan_sound = audio.load_sound("kan");
         pon_sound = audio.load_sound("pon");
         chii_sound = audio.load_sound("chii");
+        reveal_sound = audio.load_sound("reveal");
 
         float tile_scale = 1.6f;
 
@@ -155,7 +161,9 @@ class RenderSceneManager : Object
 
     private void do_action(RenderAction action)
     {
-        if (action is RenderActionInitialDraw)
+        if (action is RenderActionSplitDeadWall)
+            action_split_dead_wall(action as RenderActionSplitDeadWall);
+        else if (action is RenderActionInitialDraw)
             action_initial_draw(action as RenderActionInitialDraw);
         else if (action is RenderActionDraw)
             action_draw(action as RenderActionDraw);
@@ -189,6 +197,12 @@ class RenderSceneManager : Object
             action_flip_ura_dora(action as RenderActionFlipUraDora);
         else if (action is RenderActionSetActive)
             action_set_active(action as RenderActionSetActive);
+    }
+
+    private void action_split_dead_wall(RenderActionSplitDeadWall action)
+    {
+        slide_sound.play();
+        wall.split_dead_wall();
     }
 
     private void action_initial_draw(RenderActionInitialDraw action)
@@ -289,6 +303,8 @@ class RenderSceneManager : Object
 
     private void action_game_draw(RenderActionGameDraw action)
     {
+        reveal_sound.play();
+
         foreach (RenderPlayer player in players)
         {
             if (action.players.contains(player))
@@ -300,16 +316,19 @@ class RenderSceneManager : Object
 
     private void action_hand_reveal(RenderActionHandReveal action)
     {
+        reveal_sound.play();
         action.player.open_hand();
     }
 
     private void action_flip_dora(RenderActionFlipDora action)
     {
+        flip_sound.play();
         wall.flip_dora();
     }
 
     private void action_flip_ura_dora(RenderActionFlipUraDora action)
     {
+        flip_sound.play();
         wall.flip_ura_dora();
     }
 

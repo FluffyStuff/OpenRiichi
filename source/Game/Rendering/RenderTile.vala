@@ -3,6 +3,7 @@ public class RenderTile
     // TODO: Use multi texturing
 
     private string extension;
+    private bool _hovered = false;
 
     private bool animation_set_time = false;
     private float animation_time = 0;
@@ -123,26 +124,6 @@ public class RenderTile
         scene.add_object(tile);
     }
 
-    public void set_hovered(bool hovered)
-    {
-        float strength = 0.4f;
-        if (hovered)
-            tile.diffuse_color = Color
-            (
-                strength * 1.5f,
-                strength * 1.5f,
-                strength,
-                1
-            );
-        else
-        {
-            if (tile_type.dora)
-                tile.diffuse_color = Color(0.2f, 0.2f, -0.4f, 1);
-            else
-                tile.diffuse_color = Color.with_alpha(1);
-        }
-    }
-
     public Vec3 position
     {
         get { return animation_end_position; }
@@ -155,4 +136,28 @@ public class RenderTile
 
     public RenderObject3D tile { get; private set; }
     public Tile tile_type { get; private set; }
+    public bool hovered
+    {
+        get { return _hovered; }
+        set
+        {
+            _hovered = value;
+            float strength = 0.4f;
+            if (value)
+                tile.diffuse_color = Color
+                (
+                    strength * 1.5f,
+                    strength * 1.5f,
+                    strength,
+                    1
+                );
+            else
+            {
+                if (tile_type.dora)
+                    tile.diffuse_color = Color(0.2f, 0.2f, -0.4f, 1);
+                else
+                    tile.diffuse_color = Color.with_alpha(1);
+            }
+        }
+    }
 }

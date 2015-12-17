@@ -18,6 +18,14 @@ public class RenderActionDelay : RenderAction
     }
 }
 
+public class RenderActionSplitDeadWall : RenderAction
+{
+    public RenderActionSplitDeadWall()
+    {
+        base(0.5f);
+    }
+}
+
 public class RenderActionInitialDraw : RenderAction
 {
     public RenderActionInitialDraw(RenderPlayer player, int tiles)

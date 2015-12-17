@@ -146,6 +146,9 @@ public class ServerPlayerFieldView : Control
         private RectangleControl background = new RectangleControl();
         private LabelControl label;
 
+        private Sound click_sound;
+        private Sound hover_sound;
+
         public TextClickControl(string text)
         {
             this.text = text;
@@ -154,6 +157,9 @@ public class ServerPlayerFieldView : Control
 
         protected override void added()
         {
+            click_sound = store.audio_player.load_sound("click");
+            hover_sound = store.audio_player.load_sound("mouse_over");
+
             add_child(background);
             background.color = Color(0.6f, 0.02f, 0.02f, 1);
             background.resize_style = ResizeStyle.RELATIVE;
@@ -177,6 +183,16 @@ public class ServerPlayerFieldView : Control
             }
             else
                 background.color = Color(0.6f, 0.02f, 0.02f, 1);
+        }
+
+        protected override void on_mouse_over()
+        {
+            hover_sound.play();
+        }
+
+        protected override void on_click(Vec2 position)
+        {
+            click_sound.play();
         }
 
         public string text { get; private set; }

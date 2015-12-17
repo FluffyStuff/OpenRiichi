@@ -3,6 +3,9 @@ class GameMenuButton : Control
     private ImageControl button;
     private string name;
 
+    private Sound click_sound;
+    private Sound hover_sound;
+
     public GameMenuButton(string name)
     {
         base();
@@ -12,6 +15,9 @@ class GameMenuButton : Control
 
     public override void added()
     {
+        click_sound = store.audio_player.load_sound("click");
+        hover_sound = store.audio_player.load_sound("mouse_over");
+
         resize_style = ResizeStyle.ABSOLUTE;
 
         button = new ImageControl("Buttons/" + name);
@@ -38,5 +44,15 @@ class GameMenuButton : Control
             else
                 button.diffuse_color = Color.with_alpha(1);
         }
+    }
+
+    protected override void on_mouse_over()
+    {
+        hover_sound.play();
+    }
+
+    protected override void on_click(Vec2 position)
+    {
+        click_sound.play();
     }
 }
