@@ -4,8 +4,8 @@ DIRS  = source/*.vala source/Engine/Audio/*.vala source/Engine/Controls/*.vala s
 PKGS  = --thread --target-glib 2.32 --pkg gio-2.0 --pkg glew --pkg gee-0.8 --pkg gl --pkg sdl2-mixer --pkg sdl2-image --pkg sdl2 --pkg SOIL --pkg aubio --pkg pango --pkg cairo --pkg pangocairo --pkg sfml-audio-2 --pkg sfml-system-2
 WLIBS = -X lib/SOIL/libSOIL.a -X lib/SDL/SDL2_net.lib -X lib/SDL/SDL2_image.lib -X lib/SDL/SDL2.lib -X lib/GLEW/libglew32.a -X lib/GL/libopengl32.a -X lib/GEE/libgee.dll.a -X lib/SFML/libcsfml-audio.a -X lib/SFML/libcsfml-system.a
 LLIBS = -X /usr/lib/libSOIL.so -X lib/SDL/SDL2.lib -X lib/GLEW/glew32s.lib -X lib/GL/libopengl32.a -X -lm
-LL64  = -X /usr/lib/x86_64-linux-gnu/libSDL2_image.so -X /usr/lib/x86_64-linux-gnu/libSDL2_mixer.so
-LL32  = -X /usr/local/lib/libSDL2_image.a -X /usr/local/lib/libSDL2_mixer.a
+LL64  = -X /usr/lib/x86_64-linux-gnu/libSDL2_image.so -X /usr/lib/x86_64-linux-gnu/libcsfml-audio.so -X /usr/lib/x86_64-linux-gnu/libcsfml-system.so -X /usr/lib/x86_64-linux-gnu/libsfml-audio.so -X /usr/lib/x86_64-linux-gnu/libsfml-system.so
+LL32  = -X /usr/local/lib/libSDL2_image.a -X lib/SFML/linux32/libcsfml-audio.so -X lib/SFML/linux32/libcsfml-system.so
 VAPI  = --vapidir=vapi
 #-w = Supress C warnings (Since they stem from the vala code gen)
 OTHER = -X -w -X -DGLEW_STATIC -X -Iinclude
