@@ -28,6 +28,7 @@ class OpenGLShader
         }
 
         string[] source = FileLoader.load(file);
+
         handle = glCreateShader(type);
 
         for (int i = 0; i < source.length; i++)

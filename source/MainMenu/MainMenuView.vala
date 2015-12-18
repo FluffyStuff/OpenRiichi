@@ -15,6 +15,7 @@ class MainMenuView : View2D
     private MenuTextButton quit_button;
 
     public signal void game_start(GameStartInfo info, IGameConnection connection, int player_index);
+    public signal void restart();
     public signal void quit();
 
     ~MainMenuView()
@@ -104,7 +105,8 @@ class MainMenuView : View2D
     {
         remove_child(options_view);
 
-        show_main_menu();
+        //show_main_menu();
+        restart();
     }
 
     private void options_back()

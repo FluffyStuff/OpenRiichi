@@ -1,8 +1,10 @@
 using Gee;
+using SFML.Audio;
 
 public class AudioPlayer
 {
     private ArrayList<Sound> sounds = new ArrayList<Sound>();
+    private bool _muted = false;
 
     public Sound load_sound(string name)
     {
@@ -11,6 +13,7 @@ public class AudioPlayer
                 return sound;
 
         Sound sound = new Sound("Data/Audio/Sounds/" + name + ".wav");
+        sound.muted = muted;
         sounds.add(sound);
 
         return sound;
@@ -20,54 +23,83 @@ public class AudioPlayer
     {
         return new Music("Data/Audio/Music/" + name);
     }
+
+    public bool muted
+    {
+        get
+        {
+            return _muted;
+        }
+        set
+        {
+            _muted = value;
+
+            foreach (Sound sound in sounds)
+                sound.muted = value;
+        }
+    }
 }
 
 public class Sound
 {
-    private SDLMixer.Chunk chunk;
+    SFML.Audio.Sound sound;
+    SoundBuffer buffer;
 
     public Sound(string name)
     {
         this.name = name;
-        chunk = new SDLMixer.Chunk.WAV(name);
+
+        buffer = new SoundBuffer(name);
+        sound = new SFML.Audio.Sound();
+        sound.set_buffer(buffer);
     }
 
     public void play()
     {
-        SDLMixer.Channel.play_channel(SDLMixer.DEFAULT_CHANNEL, chunk, 0);
+        if (!muted)
+            sound.play();
     }
 
     public string name { get; private set; }
+    public bool muted { get; set; }
 }
 
-public class Music
+public class Music : Object
 {
-    private static Music callback_music;
-
-    private SDLMixer.Music music;
-
     public signal void music_finished(Music music);
+
+    private SFML.Audio.Music music;
+    private bool stopped = false;
 
     public Music(string name)
     {
-        music = new SDLMixer.Music(name);
+        music = new SFML.Audio.Music(name);
+    }
+
+    ~Music()
+    {
+        stop();
     }
 
     public void play()
     {
-        callback_music = this;
-        SDLMixer.Music.hook_finished((void*)finished);
-        music.fade_in(1, 100);
+        ref();
+        Threading.start0(worker);
     }
 
     public void stop()
     {
-        SDLMixer.Music.halt();
+        music.stop();
+        stopped = true;
     }
 
-    private static void finished()
+    private void worker()
     {
-        SDLMixer.Music.hook_finished(null);
-        callback_music.music_finished(callback_music);
+        music.play();
+        Thread.usleep((ulong)music.get_duration().microseconds);
+
+        if (!stopped)
+            music_finished(this);
+        unref();
     }
 }

@@ -154,6 +154,11 @@ public abstract class RenderWindow
             set_cursor_type(mouse.cursor_type);
     }
 
+    public void set_icon(string icon)
+    {
+        window.set_icon(icon);
+    }
+
     public void set_cursor_type(CursorType type)
     {
         window.set_cursor_type(type);

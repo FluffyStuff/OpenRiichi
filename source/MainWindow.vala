@@ -17,16 +17,28 @@ public class MainWindow : RenderWindow
 
     protected override void shown()
     {
+        set_icon("./Data/Icon.png");
+
+        Options options = new Options.from_disk();
+
+        renderer.anisotropic_filtering = options.anisotropic_filtering == Options.OnOffEnum.ON;
+        renderer.v_sync = options.v_sync == Options.OnOffEnum.ON;
+        store.audio_player.muted = options.sounds == Options.OnOffEnum.OFF;
+
         create_main_menu();
 
-        music = new MusicPlayer(store.audio_player);
-        music.start();
+        if (options.music == Options.OnOffEnum.ON)
+        {
+            music = new MusicPlayer(store.audio_player);
+            music.start();
+        }
     }
 
     private void create_main_menu()
     {
         menu = new MainMenuView();
         menu.game_start.connect(game_start);
+        menu.restart.connect(restart);
         menu.quit.connect(quit);
         main_view.add_child(menu);
     }
@@ -47,6 +59,12 @@ public class MainWindow : RenderWindow
         create_main_menu();
     }
 
+    private void restart()
+    {
+        do_restart = true;
+        finish();
+    }
+
     private void quit()
     {
         finish();
@@ -57,4 +75,6 @@ public class MainWindow : RenderWindow
         if (game_running && game_controller != null)
             game_controller.process();
     }
+
+    public bool do_restart { get; private set; }
 }

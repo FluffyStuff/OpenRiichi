@@ -33,7 +33,13 @@ public abstract class RenderTarget : Object, IRenderTarget
     public RenderTarget(IWindowTarget window)
     {
         this.window = window;
+        anisotropic_filtering = true;
         v_sync = saved_v_sync;
+    }
+
+    ~RenderTarget()
+    {
+        stop();
     }
 
     public void set_state(RenderState state)
@@ -49,7 +55,7 @@ public abstract class RenderTarget : Object, IRenderTarget
     public bool start()
     {
         if (SINGLE_THREADED)
-            return init(window.size);
+            return init();
 
         Threading.start0(render_thread);
 
@@ -134,7 +140,7 @@ public abstract class RenderTarget : Object, IRenderTarget
 
     private void render_thread()
     {
-        init_status = init(window.size);
+        init_status = init();
         init_mutex.lock();
         initialized = true;
         init_mutex.unlock();
@@ -169,6 +175,7 @@ public abstract class RenderTarget : Object, IRenderTarget
         check_settings();
         prepare_state_internal(state);
         render(state);
+        window.swap();
     }
 
     private void load_resources()
@@ -276,7 +283,7 @@ public abstract class RenderTarget : Object, IRenderTarget
 
     public abstract void render(RenderState state);
 
-    protected abstract bool init(Size2i size);
+    protected abstract bool init();
     protected abstract IModelResourceHandle do_load_model(ResourceModel model);
     protected abstract ITextureResourceHandle do_load_texture(ResourceTexture texture);
     protected abstract void do_load_label(ILabelResourceHandle handle, LabelBitmap bitmap);
@@ -287,6 +294,7 @@ public abstract class RenderTarget : Object, IRenderTarget
 
     public IResourceStore resource_store { get { return store; } }
     public bool v_sync { get; set; }
+    public bool anisotropic_filtering { get; set; }
     public string shader_3D { get; set; }
     public string shader_2D { get; set; }
 }

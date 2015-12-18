@@ -8,9 +8,12 @@ public class Options
     {
         shader_quality = QualityEnum.HIGH;
         model_quality = QualityEnum.HIGH;
+        fullscreen = OnOffEnum.ON;
         anisotropic_filtering = OnOffEnum.ON;
         anti_aliasing = OnOffEnum.ON;
         v_sync = OnOffEnum.OFF;
+        music = OnOffEnum.ON;
+        sounds = OnOffEnum.ON;
     }
 
     public Options.from_disk()
@@ -46,9 +49,12 @@ public class Options
 
         options.add("shader_quality = " + quality_enum_to_string(shader_quality));
         options.add("model_quality = " + quality_enum_to_string(model_quality));
+        options.add("fullscreen = " + on_off_enum_to_string(fullscreen));
         options.add("anisotropic_filtering = " + on_off_enum_to_string(anisotropic_filtering));
         options.add("anti_aliasing = " + on_off_enum_to_string(anti_aliasing));
         options.add("v_sync = " + on_off_enum_to_string(v_sync));
+        options.add("music = " + on_off_enum_to_string(music));
+        options.add("sounds = " + on_off_enum_to_string(sounds));
 
         FileLoader.save(dir, options.to_array());
     }
@@ -63,6 +69,9 @@ public class Options
         case "model_quality":
             model_quality = parse_quality_enum(value);
             break;
+        case "fullscreen":
+            fullscreen = parse_on_off_enum(value);
+            break;
         case "anisotropic_filtering":
             anisotropic_filtering = parse_on_off_enum(value);
             break;
@@ -71,6 +80,12 @@ public class Options
             break;
         case "v_sync":
             v_sync = parse_on_off_enum(value);
+            break;
+        case "music":
+            music = parse_on_off_enum(value);
+            break;
+        case "sounds":
+            sounds = parse_on_off_enum(value);
             break;
         }
     }
@@ -125,9 +140,12 @@ public class Options
 
     public QualityEnum shader_quality { get; set; }
     public QualityEnum model_quality { get; set; }
+    public OnOffEnum fullscreen { get; set; }
     public OnOffEnum anisotropic_filtering { get; set; }
     public OnOffEnum anti_aliasing { get; set; }
     public OnOffEnum v_sync { get; set; }
+    public OnOffEnum music { get; set; }
+    public OnOffEnum sounds { get; set; }
 
     public enum QualityEnum
     {

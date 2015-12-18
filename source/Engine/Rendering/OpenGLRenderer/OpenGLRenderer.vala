@@ -1,5 +1,4 @@
 using GL;
-using SDL;
 using Gee;
 
 public class OpenGLRenderer : RenderTarget
@@ -23,45 +22,19 @@ public class OpenGLRenderer : RenderTarget
 
     //private const int samplers[2] = {0, 1};
 
-    private GLContext context;
-    private unowned Window sdl_window;
-
     private Size2i view_size;
 
-    public OpenGLRenderer(SDLWindowTarget window)
+    public OpenGLRenderer(IWindowTarget window)
     {
         base(window);
-        sdl_window = window.sdl_window;
         store = new OpenGLResourceStore(this);
-
     }
 
-    ~OpenGLRenderer()
+    protected override bool init()
     {
-        if (context != null)
+        if (glCreateShader == null)
         {
-            SDL.GL.delete_context(context);
-        }
-    }
-
-    protected override bool init(Size2i size)
-    {
-        if ((context = SDL.GL.create_context(sdl_window)) == null)
-            return false;
-
-        SDL.GL.set_attribute(GLattr.CONTEXT_MAJOR_VERSION, 2);
-        SDL.GL.set_attribute(GLattr.CONTEXT_MINOR_VERSION, 1);
-        SDL.GL.set_attribute(GLattr.CONTEXT_PROFILE_MASK, 1); // Core Profile
-        GLEW.experimental = true;
-
-        if (GLEW.init())
-        {
-            print("OpenGLRenderer: Could not init GLEW!\n");
-            return false;
-        }
-        else if (glCreateShader == null)
-        {
-            print("OpenGLRenderer: GLEW instruction binding failed!\n");
+            print("OpenGLRenderer: Invalid GL context!\n");
             return false;
         }
 
@@ -78,10 +51,6 @@ public class OpenGLRenderer : RenderTarget
         shader_3D = "open_gl_shader_3D_low";
         shader_2D = "open_gl_shader_2D";
         change_v_sync(v_sync);
-
-        // TODO: Put this somewhere
-        sdl_window.set_icon(SDLImage.load("./Data/Icon.png"));
-        sdl_window.set_size(size.width, size.height);
 
         program_3D = new OpenGLShaderProgram3D("./Data/Shaders/" + shader_3D, MAX_LIGHTS, POSITION_ATTRIBUTE, TEXTURE_ATTRIBUTE, NORMAL_ATTRIBUTE);
         if (!program_3D.init())
@@ -129,8 +98,6 @@ public class OpenGLRenderer : RenderTarget
 
             //post_process_draw(scene);
         }
-
-        window.swap();
     }
 
     private void render_scene_3D(RenderScene3D scene)
@@ -288,7 +255,8 @@ public class OpenGLRenderer : RenderTarget
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        if (anisotropic > 0)
+
+        if (anisotropic_filtering && anisotropic > 0)
             glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, anisotropic);
 
         return new OpenGLTextureResourceHandle(tex[0]);

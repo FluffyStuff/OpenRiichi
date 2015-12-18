@@ -5,9 +5,12 @@ public class OptionsMenuView : View2D
     private Options options = new Options.from_disk();
     private OptionItemControl shader_option;
     private OptionItemControl model_option;
+    private OptionItemControl fullscreen_option;
     private OptionItemControl aniso_option;
     private OptionItemControl aliasing_option;
     private OptionItemControl v_sync_option;
+    private OptionItemControl music_option;
+    private OptionItemControl sounds_option;
 
     public signal void apply_clicked();
     public signal void back_clicked();
@@ -31,16 +34,22 @@ public class OptionsMenuView : View2D
         opts.add(shader_option);
         model_option = new OptionItemControl("Model quality", quality_choices, (int)options.model_quality);
         opts.add(model_option);
+        fullscreen_option = new OptionItemControl("Fullscreen", on_off_choices, (int)options.fullscreen);
+        opts.add(fullscreen_option);
         aniso_option = new OptionItemControl("Anisotropic filtering", on_off_choices, (int)options.anisotropic_filtering);
         opts.add(aniso_option);
         aliasing_option = new OptionItemControl("Anti aliasing", on_off_choices, (int)options.anti_aliasing);
         opts.add(aliasing_option);
         v_sync_option = new OptionItemControl("V-sync", on_off_choices, (int)options.v_sync);
         opts.add(v_sync_option);
+        music_option = new OptionItemControl("Music", on_off_choices, (int)options.music);
+        opts.add(music_option);
+        sounds_option = new OptionItemControl("Sound effects", on_off_choices, (int)options.sounds);
+        opts.add(sounds_option);
 
         int padding = 30;
 
-        Size2 size = Size2(700, 70);
+        Size2 size = Size2(600, 55);
         float start = label.size.height - label.position.y + padding;
 
         for (int i = 0; i < opts.size; i++)
@@ -77,9 +86,12 @@ public class OptionsMenuView : View2D
     {
         options.shader_quality = (Options.QualityEnum)shader_option.index;
         options.model_quality = (Options.QualityEnum)model_option.index;
+        options.fullscreen = (Options.OnOffEnum)fullscreen_option.index;
         options.anisotropic_filtering = (Options.OnOffEnum)aniso_option.index;
         options.anti_aliasing = (Options.OnOffEnum)aliasing_option.index;
         options.v_sync = (Options.OnOffEnum)v_sync_option.index;
+        options.music = (Options.OnOffEnum)music_option.index;
+        options.sounds = (Options.OnOffEnum)sounds_option.index;
         options.save();
 
         apply_clicked();

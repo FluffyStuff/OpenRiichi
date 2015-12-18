@@ -11,6 +11,7 @@ public interface IRenderTarget : Object
     public abstract uint load_texture(ResourceTexture texture);
     public abstract IResourceStore resource_store { get; }
     public abstract bool v_sync { get; set; }
+    public abstract bool anisotropic_filtering { get; set; }
     public abstract string shader_3D { get; set; }
     public abstract string shader_2D { get; set; }
 }

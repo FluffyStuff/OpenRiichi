@@ -1,94 +1,40 @@
 public static int main(string[] args)
 {
-    /*int[] t = {0, 1, 2, 3};
-    uint8[] data = new ServerMessageDraw(t).serialize();
-    ServerMessageDraw draw = Serializable.deserialize(data) as ServerMessageDraw;
-
-    foreach (int i in draw.get_tenpai_indices())
-        print("i: " + i.to_string() + "\n");
-    return 0;*/
-    /*ArrayList<Tile> hand = new ArrayList<Tile>();
-
-    TileType[] tile_types =
-    {
-
-        TileType.PIN6,
-        TileType.PIN7,
-        TileType.PIN8,
-
-        TileType.MAN2,
-        TileType.MAN1,
-        TileType.MAN3,
-
-        TileType.SHAA,
-        TileType.SHAA,
-        TileType.SHAA,
-
-        TileType.MAN3,
-        TileType.MAN1,
-        TileType.MAN2,
-
-        TileType.HAKU,
-    };
-
-    for (int i = 0; i < tile_types.length; i++)
-        hand.add(new Tile(i, tile_types[i], false));
-
-    ArrayList<Tile> pond = new ArrayList<Tile>();
-    ArrayList<RoundStateCall> calls = new ArrayList<RoundStateCall>();
-    Wind wind = Wind.NORTH;
-    bool dealer = false;
-    bool in_riichi = false;
-    bool double_riichi = false;
-    bool ippatsu = false;
-    bool tiles_called_on = true;
-
-    Wind round_wind = Wind.EAST;
-    ArrayList<Tile> dora = new ArrayList<Tile>();
-    ArrayList<Tile> ura_dora = new ArrayList<Tile>();
-    bool ron = true;
-    Tile win_tile = new Tile(14, TileType.HAKU, false);
-    bool last_tile = false;
-    bool rinshan = false;
-    bool chankan = false;
-    bool flow_interrupted = true;
-    bool first_turn = false;
-
-    PlayerStateContext player = new PlayerStateContext(hand, pond, calls, wind, dealer, in_riichi, double_riichi, ippatsu, tiles_called_on);
-    RoundStateContext round = new RoundStateContext(round_wind, dora, ura_dora, ron, win_tile, last_tile, rinshan, chankan, flow_interrupted, first_turn);
-
-    Scoring score = TileRules.get_score(player, round);
-
-    foreach (Yaku yaku in score.yaku)
-    {
-        print(yaku.yaku_type.to_string() + "\n");
-    }
-
-    return 0;*/
-
     Environment environment = new Environment();
-    if (!environment.init(2))
+    if (!environment.init())
         return -1;
 
-    //Threading.start1(start_game, environment);
-    start_game(environment);
+    while (true)
+    {
+        Options options = new Options.from_disk();
+        environment.set_multisampling(options.anti_aliasing == Options.OnOffEnum.ON ? 2 : 0);
+
+        var wnd = environment.createWindow("RiichiMahjong", 1280, 720, options.fullscreen == Options.OnOffEnum.ON);
+        if (wnd == null)
+        {
+            print("main: Could not create window!\n");
+            return -1;
+        }
+
+        var context = environment.create_context(wnd);
+        if (context == null)
+        {
+            print("main: Could not create graphics context!\n");
+            return -1;
+        }
+
+        SDLWindowTarget sdlWindow = new SDLWindowTarget((owned)wnd, (owned)context);
+        OpenGLRenderer renderer = new OpenGLRenderer(sdlWindow);
+        MainWindow window = new MainWindow(sdlWindow, renderer);
+
+        if (!renderer.start())
+            return -1;
+
+        window.show();
+
+        if (!window.do_restart)
+            break;
+    }
 
     return 0;
-}
-
-private static void start_game(Object env)
-{
-    Environment environment = (Environment)env;
-
-    SDL.Window wnd = environment.createWindow("RiichiMahjong", 1280, 720);
-    SDLWindowTarget sdlWindow = new SDLWindowTarget(wnd);
-    OpenGLRenderer renderer = new OpenGLRenderer(sdlWindow);
-    MainWindow window = new MainWindow(sdlWindow, renderer);
-
-    if (!renderer.start())
-        return;
-
-    window.show();
-
-    renderer.stop();
 }

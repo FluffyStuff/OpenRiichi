@@ -3,15 +3,17 @@ using SDL;
 public class SDLWindowTarget : Object, IWindowTarget
 {
     private bool is_fullscreen = false;
-    private unowned Window window;
+    private Window window;
+    private GLContext context;
 
     private Cursor normal_cursor;
     private Cursor hover_cursor;
     private Cursor caret_cursor;
 
-    public SDLWindowTarget(Window window)
+    public SDLWindowTarget(owned Window window, owned GLContext context)
     {
-        this.window = window;
+        this.window = (owned)window;
+        this.context = (owned)context;
 
         normal_cursor = new Cursor.from_system(SystemCursor.ARROW);
         hover_cursor = new Cursor.from_system(SystemCursor.HAND);
@@ -22,6 +24,12 @@ public class SDLWindowTarget : Object, IWindowTarget
     public void pump_events()
     {
         Event.pump();
+    }
+
+    public void set_icon(string icon)
+    {
+        var img = SDLImage.load(icon);
+        window.set_icon(img);
     }
 
     public bool fullscreen
@@ -37,6 +45,10 @@ public class SDLWindowTarget : Object, IWindowTarget
             int width, height;
             window.get_size(out width, out height);
             return Size2i(width, height);
+        }
+        set
+        {
+            window.set_size(value.width, value.height);
         }
     }
 

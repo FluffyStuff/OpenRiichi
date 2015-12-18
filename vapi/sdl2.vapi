@@ -515,7 +515,7 @@ namespace SDL {
 		public static SDL.DisplayMode get_closest_mode(int index, SDL.DisplayMode mode, out SDL.DisplayMode closest);
 	}// Dysplay
 	
-	[CCode (cprefix="SDL_", cname = "SDL_Window", destroy_function = ""/*"SDL_DestroyWindow"*/, cheader_filename="SDL2/SDL_video.h")]
+	[CCode (cprefix="SDL_", cname = "SDL_Window", free_function = "SDL_DestroyWindow", cheader_filename="SDL2/SDL_video.h")]
 	[Compact]
 	public class Window {
 		[CCode (cname="SDL_WINDOWPOS_UNDEFINED_MASK")]
@@ -661,7 +661,8 @@ namespace SDL {
 		SHARE_WITH_CURRENT_CONTEXT
 	}// GLattr
 
-	[CCode (type_id="SDL_GLContext", cname="SDL_GLContext", cheader_filename="SDL2/SDL_video.h", unref_function="")]
+	[CCode (type_id="SDL_GLContext", cname="SDL_GLContext", cheader_filename="SDL2/SDL_video.h", free_function="SDL_GL_DeleteContext")]
+	[Compact]
 	public class GLContext{
 		// Private type
 	}// GLContext
