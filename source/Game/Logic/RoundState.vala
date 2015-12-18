@@ -128,11 +128,10 @@ public class RoundState : Object
 
     public bool riichi()
     {
-        RoundStatePlayer player = current_player;
-        if (!player.can_riichi())
+        if (!can_riichi())
             return false;
 
-        player.do_riichi();
+        current_player.do_riichi();
         return true;
     }
 
@@ -230,6 +229,11 @@ public class RoundState : Object
     {
         RoundStatePlayer player = current_player;
         return player.can_tsumo(create_context(false, player.last_drawn_tile));
+    }
+
+    public bool can_riichi()
+    {
+        return wall.can_riichi && current_player.can_riichi();
     }
 
     public bool can_late_kan_with(int tile_ID)
@@ -772,6 +776,7 @@ class RoundStateWall
     public bool empty { get { return wall_tiles.size == 0; } }
     public bool can_kan { get { return dora.size < 5; } }
     public bool can_call { get { return wall_tiles.size > 0; } }
+    public bool can_riichi { get { return wall_tiles.size >= 4; } }
     public Tile newest_dora { get; private set; }
     public ArrayList<Tile> dora { get; private set; }
     public ArrayList<Tile> ura_dora { get; private set; }

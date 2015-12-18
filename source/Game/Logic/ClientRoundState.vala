@@ -112,7 +112,7 @@ public class ClientRoundState : Object
         action_state = State.TURN;
 
         bool can_kan = state.can_closed_kan() || state.can_late_kan();
-        bool can_riichi = state.self.can_riichi();
+        bool can_riichi = state.can_riichi();
         bool can_tsumo = state.can_tsumo();
 
         set_chii_state(false);

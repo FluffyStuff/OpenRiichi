@@ -12,7 +12,7 @@ class NullBot : Bot
         {
             do_tsumo();
         }
-        else if(round_state.self.can_riichi())
+        else if(round_state.can_riichi())
         {
             do_riichi();
 
