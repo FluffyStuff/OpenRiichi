@@ -234,37 +234,37 @@ public class RoundState : Object
 
     public bool can_late_kan_with(int tile_ID)
     {
-        return wall.can_kan && current_player.can_late_kan_with(get_tile(tile_ID));
+        return wall.can_call && wall.can_kan && current_player.can_late_kan_with(get_tile(tile_ID));
     }
 
     public bool can_closed_kan_with(TileType type)
     {
-        return wall.can_kan && current_player.can_closed_kan_with(type);
+        return wall.can_call && wall.can_kan && current_player.can_closed_kan_with(type);
     }
 
     public bool can_late_kan()
     {
-        return wall.can_kan && current_player.can_late_kan();
+        return wall.can_call && wall.can_kan && current_player.can_late_kan();
     }
 
     public bool can_closed_kan()
     {
-        return wall.can_kan && current_player.can_closed_kan();
+        return wall.can_call && wall.can_kan && current_player.can_closed_kan();
     }
 
     public bool can_open_kan(RoundStatePlayer player)
     {
-        return wall.can_kan && !player.in_riichi && player != current_player && TileRules.can_open_kan(player.hand, discard_tile);
+        return wall.can_call && wall.can_kan && !player.in_riichi && player != current_player && TileRules.can_open_kan(player.hand, discard_tile);
     }
 
     public bool can_pon(RoundStatePlayer player)
     {
-        return !player.in_riichi && player != current_player && TileRules.can_pon(player.hand, discard_tile);
+        return wall.can_call && !player.in_riichi && player != current_player && TileRules.can_pon(player.hand, discard_tile);
     }
 
     public bool can_chii(RoundStatePlayer player)
     {
-        return !player.in_riichi && ((current_player.index + 1) % 4 == player.index) && TileRules.can_chii(player.hand, discard_tile);
+        return wall.can_call && !player.in_riichi && ((current_player.index + 1) % 4 == player.index) && TileRules.can_chii(player.hand, discard_tile);
     }
 
     public bool can_chii_with(RoundStatePlayer player, Tile tile_1, Tile tile_2)
@@ -771,6 +771,7 @@ class RoundStateWall
 
     public bool empty { get { return wall_tiles.size == 0; } }
     public bool can_kan { get { return dora.size < 5; } }
+    public bool can_call { get { return wall_tiles.size > 0; } }
     public Tile newest_dora { get; private set; }
     public ArrayList<Tile> dora { get; private set; }
     public ArrayList<Tile> ura_dora { get; private set; }
