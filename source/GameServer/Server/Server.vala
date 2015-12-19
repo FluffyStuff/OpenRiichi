@@ -32,7 +32,7 @@ namespace GameServer
 
             state = new GameState(start_info);
 
-            start_round();
+            start_round(0);
         }
 
         public void process(float time)
@@ -71,7 +71,7 @@ namespace GameServer
                 if (!timer.active(time))
                     return;
 
-                start_round();
+                start_round(time);
             }
             else if (action_state == State.GAME_FINISHED)
             {
@@ -88,7 +88,7 @@ namespace GameServer
                 round.message_received(player, message);
         }
 
-        private void start_round()
+        private void start_round(float time)
         {
             action_state = State.ACTIVE;
 
@@ -98,7 +98,7 @@ namespace GameServer
 
             round = new ServerGameRound(info, players, spectators, state.round_wind, state.dealer_index, rnd, state.can_riichi(), start_info.decision_time);
             round.declare_riichi.connect(state.declare_riichi);
-            round.start();
+            round.start(time);
         }
 
         public bool finished { get; private set; }

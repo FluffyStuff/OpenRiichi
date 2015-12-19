@@ -62,7 +62,7 @@ namespace GameServer
             }*/
         }
 
-        public void start()
+        public void start(float time)
         {
             for (int i = 0; i < this.players.size; i++)
             {
@@ -72,7 +72,7 @@ namespace GameServer
 
             Thread.usleep(5 * 100 * 1000); // TODO: Find fix for slow loading
 
-            round.start();
+            round.start(time);
         }
 
         public void process(float time)

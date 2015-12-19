@@ -177,6 +177,9 @@ public class GameMenuView : View2D
             return;
 
         int t = int.max((int)(start_time + decision_time - delta.time), 0);
+        if (t == decision_time)
+            t--;
+
         timer.color = t < 3 ? Color.red() : Color.white();
 
         string str = t.to_string();

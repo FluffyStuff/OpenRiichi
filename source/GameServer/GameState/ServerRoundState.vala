@@ -46,8 +46,10 @@ namespace GameServer
             default_action();
         }
 
-        public void start()
+        public void start(float time)
         {
+            current_time = time;
+
             validator.start();
             initial_draw();
             game_flip_dora(validator.newest_dora);
