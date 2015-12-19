@@ -35,7 +35,7 @@ class NullBot : Bot
         {
             Tile tile;
             if (round_state.self.in_riichi)
-                tile = round_state.self.last_drawn_tile;
+                tile = round_state.self.newest_tile;
             else
                 tile = round_state.self.hand[rnd.int_range(0, round_state.self.hand.size)];
 

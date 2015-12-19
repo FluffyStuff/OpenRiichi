@@ -96,7 +96,7 @@ namespace GameServer
             RoundStartInfo info = new RoundStartInfo(wall_index);
             state.start_round(info);
 
-            round = new ServerGameRound(info, players, spectators, state.round_wind, state.dealer_index, rnd, state.can_riichi());
+            round = new ServerGameRound(info, players, spectators, state.round_wind, state.dealer_index, rnd, state.can_riichi(), start_info.decision_time);
             round.declare_riichi.connect(state.declare_riichi);
             round.start();
         }

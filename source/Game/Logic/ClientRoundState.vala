@@ -126,7 +126,7 @@ public class ClientRoundState : Object
         if (state.self.in_riichi)
         {
             ArrayList<Tile> list = new ArrayList<Tile>();
-            list.add(state.self.last_drawn_tile);
+            list.add(state.self.newest_tile);
 
             selection_groups.clear();
             selection_groups.add(new TileSelectionGroup(list, list, TileSelectionGroup.GroupType.RIICHI_WAIT));

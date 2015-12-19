@@ -90,6 +90,22 @@ namespace GameServer
             return players;
         }
 
+        public void default_call_decisions()
+        {
+            foreach (ServerRoundStatePlayer player in players)
+                if (player.state == PlayerState.WAITING_CALL)
+                    no_call(player.index);
+        }
+
+        public Tile default_tile_discard()
+        {
+            ServerRoundStatePlayer player = get_current_player();
+            Tile tile = player.newest_tile;
+
+            discard_tile(tile.ID);
+            return tile;
+        }
+
         public bool can_call(int player_index)
         {
             return

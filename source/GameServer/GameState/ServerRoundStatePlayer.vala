@@ -46,7 +46,7 @@ namespace GameServer
         public RoundStatePlayer player { get; private set; }
         public int index { get { return player.index; } }
         public bool in_riichi { get { return player.in_riichi; } }
-        public Tile last_drawn_tile { get { return player.last_drawn_tile; } }
+        public Tile newest_tile { owned get { return player.newest_tile; } }
         public ArrayList<Tile> hand { get { return player.hand; } }
     }
 

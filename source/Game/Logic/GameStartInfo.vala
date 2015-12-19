@@ -9,6 +9,7 @@ public class GameStartInfo : Serializable
         int starting_score,
         int round_count,
         int hanchan_count,
+        int decision_time,
         int round_wait_time,
         int hanchan_wait_time,
         int game_wait_time,
@@ -21,6 +22,7 @@ public class GameStartInfo : Serializable
         this.starting_score = starting_score;
         this.round_count = round_count;
         this.hanchan_count = hanchan_count;
+        this.decision_time = decision_time;
         this.round_wait_time = round_wait_time;
         this.hanchan_wait_time = hanchan_wait_time;
         this.game_wait_time = game_wait_time;
@@ -37,6 +39,7 @@ public class GameStartInfo : Serializable
     public int starting_score { get; protected set; }
     public int round_count { get; protected set; }
     public int hanchan_count { get; protected set; }
+    public int decision_time { get; protected set; }
     public int round_wait_time { get; protected set; }
     public int hanchan_wait_time { get; protected set; }
     public int game_wait_time { get; protected set; }

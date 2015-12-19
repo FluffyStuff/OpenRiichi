@@ -217,7 +217,7 @@ public class RoundState : Object
     public Scoring get_tsumo_score()
     {
         RoundStatePlayer player = current_player;
-        return player.get_tsumo_score(create_context(false, player.last_drawn_tile));
+        return player.get_tsumo_score(create_context(false, player.newest_tile));
     }
 
     public bool can_ron(RoundStatePlayer player)
@@ -228,7 +228,7 @@ public class RoundState : Object
     public bool can_tsumo()
     {
         RoundStatePlayer player = current_player;
-        return player.can_tsumo(create_context(false, player.last_drawn_tile));
+        return player.can_tsumo(create_context(false, player.newest_tile));
     }
 
     public bool can_riichi()
@@ -396,13 +396,11 @@ public class RoundStatePlayer
     public void draw_initial(Tile tile)
     {
         hand.add(tile);
-        last_drawn_tile = tile;
     }
 
     public void draw(Tile tile)
     {
         hand.add(tile);
-        last_drawn_tile = tile;
 
         if (!in_riichi)
             temporary_furiten = false;
@@ -411,7 +409,7 @@ public class RoundStatePlayer
     public bool discard(Tile tile)
     {
         if (!has_tile(tile) ||
-            (in_riichi && !do_riichi_discard && tile.ID != last_drawn_tile.ID))
+            (in_riichi && !do_riichi_discard && tile.ID != newest_tile.ID))
             return false;
 
         hand.remove(tile);
@@ -640,7 +638,7 @@ public class RoundStatePlayer
         ArrayList<Tile> hand = new ArrayList<Tile>();
         hand.add_all(this.hand);
         if (tsumo)
-            hand.remove(last_drawn_tile);
+            hand.remove(newest_tile);
 
         return new PlayerStateContext
         (
@@ -662,7 +660,7 @@ public class RoundStatePlayer
     public ArrayList<Tile> pond { get; private set; }
     public ArrayList<RoundStateCall> calls { get; private set; }
     public bool in_riichi { get; private set; }
-    public Tile? last_drawn_tile { get; private set; }
+    public Tile newest_tile { owned get { return hand[hand.size - 1]; } }
 }
 
 class RoundStateWall

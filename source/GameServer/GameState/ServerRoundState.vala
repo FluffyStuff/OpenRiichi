@@ -20,15 +20,30 @@ namespace GameServer
         public signal void game_pon(int player_index, ArrayList<Tile> tiles);
         public signal void game_chii(int player_index, ArrayList<Tile> tiles);
 
-        public signal void game_get_call_decision(int receivers);
+        public signal void game_get_call_decision(int receiver);
         public signal void game_get_turn_decision(int player_index);
         public signal void game_draw(int[] tenpai_indices, ArrayList<Tile> all_tiles);
 
         private ServerRoundStateValidator validator;
+        private int decision_time;
+        private float timeout;
+        private float current_time;
 
-        public ServerRoundState(Wind round_wind, int dealer, int wall_index, Rand rnd, bool[] can_riichi)
+        public ServerRoundState(Wind round_wind, int dealer, int wall_index, Rand rnd, bool[] can_riichi, int decision_time)
         {
             validator = new ServerRoundStateValidator(dealer, wall_index, rnd, round_wind, can_riichi);
+            this.decision_time = decision_time;
+        }
+
+        public void process(float time)
+        {
+            current_time = time;
+
+            if (timeout == 0 || decision_time == 0 || current_time < timeout)
+                return;
+
+            timeout = 0;
+            default_action();
         }
 
         public void start()
@@ -53,20 +68,7 @@ namespace GameServer
                 return false;
             }
 
-            Tile tile = validator.get_tile(tile_ID);
-            game_discard_tile(tile);
-
-            var call_players = validator.do_player_calls();
-
-            if (call_players.size == 0)
-            {
-                next_turn();
-                return true;
-            }
-
-            foreach (var p in call_players)
-                game_get_call_decision(p.index);
-
+            tile_discard(validator.get_tile(tile_ID));
             return true;
         }
 
@@ -118,6 +120,7 @@ namespace GameServer
             if (player.in_riichi)
                 game_flip_ura_dora(validator.ura_dora);
             game_tsumo(player.index, player.hand, validator.get_tsumo_score());
+            game_over();
             return true;
         }
 
@@ -157,6 +160,7 @@ namespace GameServer
 
             game_late_kan(tile);
             kan(player_index);
+            turn_decision(player_index);
 
             return true;
         }
@@ -179,6 +183,7 @@ namespace GameServer
 
             game_closed_kan(tiles);
             kan(player_index);
+            turn_decision(player_index);
 
             return true;
         }
@@ -233,6 +238,21 @@ namespace GameServer
 
         /////////////////////
 
+        private void tile_discard(Tile tile)
+        {
+            game_discard_tile(tile);
+
+            var call_players = validator.do_player_calls();
+
+            if (call_players.size == 0)
+            {
+                next_turn();
+                return;
+            }
+
+            call_decision(call_players);
+        }
+
         private void check_calls_done()
         {
             if (!validator.calls_finished)
@@ -268,10 +288,24 @@ namespace GameServer
                 if (caller.in_riichi)
                     game_flip_ura_dora(validator.ura_dora);
                 game_ron(caller.index, caller.hand, discarder.index, validator.get_ron_score());
+                game_over();
                 return;
             }
 
-            game_get_turn_decision(caller.index);
+            turn_decision(caller.index);
+        }
+
+        private void turn_decision(int player_index)
+        {
+            game_get_turn_decision(player_index);
+            reset_timeout();
+        }
+
+        private void call_decision(ArrayList<ServerRoundStatePlayer> players)
+        {
+            foreach (var player in players)
+                game_get_call_decision(player.index);
+            reset_timeout();
         }
 
         private void kan(int player_index)
@@ -279,8 +313,27 @@ namespace GameServer
             ServerRoundStatePlayer player = validator.get_player(player_index);
 
             game_flip_dora(validator.newest_dora);
-            game_draw_dead_tile(player_index, player.last_drawn_tile);
-            game_get_turn_decision(player_index);
+            game_draw_dead_tile(player_index, player.newest_tile);
+        }
+
+        private void reset_timeout()
+        {
+            timeout = current_time + decision_time;
+        }
+
+        private void default_action()
+        {
+            // Waiting for call decisions
+            if (!validator.calls_finished)
+            {
+                validator.default_call_decisions();
+                check_calls_done();
+            }
+            else // Waiting for turn decision
+            {
+                Tile tile = validator.default_tile_discard();
+                tile_discard(tile);
+            }
         }
 
         private void next_turn()
@@ -288,17 +341,18 @@ namespace GameServer
             // Game over
             if (validator.tiles_empty)
             {
-                game_end();
+                game_tiles_empty();
                 return;
             }
 
             Tile tile = validator.draw_wall();
             ServerRoundStatePlayer player = validator.get_current_player();
             game_draw_tile(player.index, tile);
-            game_get_turn_decision(player.index);
+            turn_decision(player.index);
+
         }
 
-        private void game_end()
+        private void game_tiles_empty()
         {
             ArrayList<ServerRoundStatePlayer> tenpai_players = validator.get_tenpai_players();
             ArrayList<Tile> tiles = new ArrayList<Tile>();
@@ -312,12 +366,18 @@ namespace GameServer
 
             validator.game_draw();
             game_draw(tenpai_indices, tiles);
+            game_over();
         }
 
         private void initial_draw()
         {
             foreach (ServerRoundStatePlayer player in validator.players)
                 game_initial_draw(player.index, player.hand);
+        }
+
+        private void game_over()
+        {
+            timeout = 0;
         }
     }
 }

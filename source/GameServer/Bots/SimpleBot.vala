@@ -35,7 +35,7 @@ class SimpleBot : Bot
         {
             Tile tile;
             if (round_state.self.in_riichi)
-                tile = round_state.self.last_drawn_tile;
+                tile = round_state.self.newest_tile;
             else
                 tile = get_discard_tile();
 

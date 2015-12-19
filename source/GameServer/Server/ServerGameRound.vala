@@ -15,7 +15,7 @@ namespace GameServer
 
         public signal void declare_riichi(int player_index);
 
-        public ServerGameRound(RoundStartInfo info, ArrayList<ServerPlayer> players, ArrayList<ServerPlayer> spectators, Wind round_wind, int dealer, Rand rnd, bool[] can_riichi)
+        public ServerGameRound(RoundStartInfo info, ArrayList<ServerPlayer> players, ArrayList<ServerPlayer> spectators, Wind round_wind, int dealer, Rand rnd, bool[] can_riichi, int decision_time)
         {
             this.info = info;
 
@@ -30,7 +30,7 @@ namespace GameServer
             parser.connect(client_pon, typeof(ClientMessagePon));
             parser.connect(client_chii, typeof(ClientMessageChii));
 
-            round = new ServerRoundState(round_wind, dealer, info.wall_index, rnd, can_riichi);
+            round = new ServerRoundState(round_wind, dealer, info.wall_index, rnd, can_riichi, decision_time);
             round.game_initial_draw.connect(game_initial_draw);
             round.game_draw_tile.connect(game_draw_tile);
             round.game_discard_tile.connect(game_discard_tile);
@@ -78,6 +78,7 @@ namespace GameServer
         public void process(float time)
         {
             parser.execute_all();
+            round.process(time);
         }
 
         public void message_received(ServerPlayer player, ClientMessage message)

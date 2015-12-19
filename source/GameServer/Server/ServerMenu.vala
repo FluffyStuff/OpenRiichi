@@ -120,12 +120,29 @@ namespace GameServer
 
             int starting_dealer = 0;
             int starting_score = 25000;
+            int decision_time = 10;
+            int round_wait_time = 15;
+            int hanchan_wait_time = 30;
+            int game_wait_time = 60;
             int round_count = 8;
             int hanchan_count = 2;
             int uma_higher = 20;
             int uma_lower = 10;
 
-            GameStartInfo info = new GameStartInfo(players, starting_dealer, starting_score, round_count, hanchan_count, 15, 30, 60, uma_higher, uma_lower);
+            GameStartInfo info = new GameStartInfo
+            (
+                players,
+                starting_dealer,
+                starting_score,
+                round_count,
+                hanchan_count,
+                decision_time,
+                round_wait_time,
+                hanchan_wait_time,
+                game_wait_time,
+                uma_higher,
+                uma_lower
+            );
 
             mutex.unlock();
             game_start(info);
