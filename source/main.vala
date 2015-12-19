@@ -9,7 +9,8 @@ public static int main(string[] args)
         Options options = new Options.from_disk();
         environment.set_multisampling(options.anti_aliasing == Options.OnOffEnum.ON ? 2 : 0);
 
-        var wnd = environment.createWindow("RiichiMahjong", 1280, 720, options.fullscreen == Options.OnOffEnum.ON);
+        bool fullscreen = options.fullscreen == Options.OnOffEnum.ON;
+        var wnd = environment.createWindow("RiichiMahjong", 1280, 720, fullscreen);
         if (wnd == null)
         {
             print("main: Could not create window!\n");
@@ -23,7 +24,7 @@ public static int main(string[] args)
             return -1;
         }
 
-        SDLWindowTarget sdlWindow = new SDLWindowTarget((owned)wnd, (owned)context);
+        SDLWindowTarget sdlWindow = new SDLWindowTarget((owned)wnd, (owned)context, fullscreen);
         OpenGLRenderer renderer = new OpenGLRenderer(sdlWindow);
         MainWindow window = new MainWindow(sdlWindow, renderer);
 

@@ -76,5 +76,16 @@ public class MainWindow : RenderWindow
             game_controller.process();
     }
 
+    protected override bool key_press(KeyArgs key)
+    {
+        if (key.scancode == ScanCode.F12)
+        {
+            fullscreen = !fullscreen;
+            return true;
+        }
+
+        return false;
+    }
+
     public bool do_restart { get; private set; }
 }
