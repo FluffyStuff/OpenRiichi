@@ -41,9 +41,10 @@ public class ScoringView : View2D
 
         time_label = new LabelControl();
         add_child(time_label);
-        time_label.inner_anchor = Vec2(0, 0);
-        time_label.outer_anchor = Vec2(0, 0);
-        time_label.position = Vec2(padding, padding);
+        time_label.inner_anchor = Vec2(1, 0);
+        time_label.outer_anchor = Vec2(1, 0);
+        time_label.position = Vec2(-padding, padding);
+        time_label.font_size = 60;
 
         /*next_button = new GameMenuButton("Next");
         next_button.selectable = true;
@@ -92,7 +93,7 @@ public class ScoringView : View2D
         left.show_score = score.hanchan_is_finished;
     }
 
-    public override void do_process(DeltaArgs delta)
+    protected override void do_process(DeltaArgs delta)
     {
         if (start_time == 0)
             start_time = delta.time;

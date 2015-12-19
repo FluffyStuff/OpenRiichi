@@ -80,6 +80,7 @@ public class GameController : Object
         round.set_riichi_state.connect(menu.set_riichi);
         round.set_tsumo_state.connect(menu.set_tsumo);
         round.set_ron_state.connect(menu.set_ron);
+        round.set_timer_state.connect(menu.set_timer);
         round.set_continue_state.connect(menu.set_continue);
         round.set_tile_select_state.connect(renderer.set_active);
         round.set_tile_select_groups.connect(renderer.set_tile_select_groups);
@@ -134,7 +135,7 @@ public class GameController : Object
         }
 
         game.start_round(info);
-        menu = new GameMenuView();
+        menu = new GameMenuView(start_info.decision_time);
         menu.quit.connect(finish_game);
 
         renderer = new GameRenderView(info, player_index, game.round_wind, game.dealer_index, extension);

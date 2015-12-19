@@ -16,6 +16,7 @@ public class ClientRoundState : Object
     public signal void set_riichi_state(bool enabled);
     public signal void set_tsumo_state(bool enabled);
     public signal void set_ron_state(bool enabled);
+    public signal void set_timer_state(bool enabled);
     public signal void set_continue_state(bool enabled);
 
     public signal void set_tile_select_state(bool enabled);
@@ -78,6 +79,7 @@ public class ClientRoundState : Object
         set_tsumo_state(false);
         set_ron_state(false);
         set_continue_state(false);
+        set_timer_state(false);
         set_tile_select_state(false);
     }
 
@@ -122,6 +124,7 @@ public class ClientRoundState : Object
         set_tsumo_state(can_tsumo);
         set_ron_state(false);
         set_continue_state(false);
+        set_timer_state(true);
 
         if (state.self.in_riichi)
         {
@@ -154,6 +157,7 @@ public class ClientRoundState : Object
         set_tsumo_state(false);
         set_ron_state(can_ron);
         set_continue_state(true);
+        set_timer_state(true);
         set_tile_select_state(false);
     }
 
@@ -442,12 +446,16 @@ public class ClientRoundState : Object
 
     private void server_tile_draw(ServerMessage message)
     {
+        decision_finished();
+
         state.tile_draw();
         game_tile_draw(state.current_player.index);
     }
 
     private void server_tile_discard(ServerMessage message)
     {
+        decision_finished();
+
         ServerMessageTileDiscard discard = (ServerMessageTileDiscard)message;
         state.tile_discard(discard.tile_ID);
         game_tile_discard(state.current_player.index, discard.tile_ID);
@@ -455,6 +463,8 @@ public class ClientRoundState : Object
 
     private void server_draw(ServerMessage message)
     {
+        decision_finished();
+
         ServerMessageDraw draw = (ServerMessageDraw)message;
         state.game_draw();
         int[] tenpai = draw.get_tenpai_indices();
@@ -509,31 +519,34 @@ public class ClientRoundState : Object
 
     private void server_open_kan(ServerMessage message)
     {
+        decision_finished();
+
         ServerMessageOpenKan kan = (ServerMessageOpenKan)message;
         int discard_index = state.current_player.index;
         state.open_kan(kan.player_index, kan.tile_1_ID, kan.tile_2_ID, kan.tile_3_ID);
 
-        decision_finished();
         game_open_kan(state.current_player.index, discard_index, state.discard_tile.ID, kan.tile_1_ID, kan.tile_2_ID, kan.tile_3_ID);
     }
 
     private void server_pon(ServerMessage message)
     {
+        decision_finished();
+
         ServerMessagePon pon = (ServerMessagePon)message;
         int discard_index = state.current_player.index;
         state.pon(pon.player_index, pon.tile_1_ID, pon.tile_2_ID);
 
-        decision_finished();
         game_pon(state.current_player.index, discard_index, state.discard_tile.ID, pon.tile_1_ID, pon.tile_2_ID);
     }
 
     private void server_chii(ServerMessage message)
     {
+        decision_finished();
+
         ServerMessageChii chii = (ServerMessageChii)message;
         int discard_index = state.current_player.index;
         state.chii(chii.player_index, chii.tile_1_ID, chii.tile_2_ID);
 
-        decision_finished();
         game_chii(state.current_player.index, discard_index, state.discard_tile.ID, chii.tile_1_ID, chii.tile_2_ID);
     }
 

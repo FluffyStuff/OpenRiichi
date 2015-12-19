@@ -39,7 +39,7 @@ namespace GameServer
         {
             current_time = time;
 
-            if (timeout == 0 || decision_time == 0 || current_time < timeout)
+            if (timeout == 0 || decision_time <= 0 || current_time < timeout)
                 return;
 
             timeout = 0;

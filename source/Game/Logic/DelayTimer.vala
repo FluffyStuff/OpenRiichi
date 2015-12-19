@@ -37,7 +37,6 @@ public class DelayTimer
         get { return _delay; }
         set
         {
-            _delay = value;
             set_time(delay);
         }
     }

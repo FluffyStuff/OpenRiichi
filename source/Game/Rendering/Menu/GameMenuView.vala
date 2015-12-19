@@ -7,6 +7,9 @@ public class GameMenuView : View2D
     private ArrayList<MenuTextButton> buttons = new ArrayList<MenuTextButton>();
 
     private Sound hint_sound;
+    private int decision_time;
+    private float start_time;
+    private LabelControl timer;
 
     private MenuTextButton chii;
     private MenuTextButton pon;
@@ -33,14 +36,23 @@ public class GameMenuView : View2D
     private void press_ron() { ron_pressed(); }
     private void press_continue() { continue_pressed(); }
 
-    public GameMenuView()
+    public GameMenuView(int decision_time)
     {
-
+        this.decision_time = decision_time;
     }
 
     public override void added()
     {
         hint_sound = store.audio_player.load_sound("hint");
+
+        int padding = 30;
+        timer = new LabelControl();
+        add_child(timer);
+        timer.inner_anchor = Vec2(1, 0);
+        timer.outer_anchor = Vec2(1, 0);
+        timer.position = Vec2(-padding, padding);
+        timer.font_size = 60;
+        timer.visible = false;
 
         chii = new MenuTextButton("MenuButtonSmall", "Chii");
         pon = new MenuTextButton("MenuButtonSmall", "Pon");
@@ -144,9 +156,32 @@ public class GameMenuView : View2D
         conti.enabled = enabled;
     }
 
+    public void set_timer(bool enabled)
+    {
+        start_time = 0;
+        timer.visible = enabled;
+    }
+
     public void display_score(RoundScoreState score, int player_index, int round_time, int hanchan_time, int game_time)
     {
         score_view = new ScoringView(score, player_index, round_time, hanchan_time, game_time);
         add_child(score_view);
+    }
+
+    protected override void do_process(DeltaArgs delta)
+    {
+        if (start_time == 0)
+            start_time = delta.time;
+
+        if (!timer.visible)
+            return;
+
+        int t = int.max((int)(start_time + decision_time - delta.time), 0);
+        timer.color = t < 3 ? Color.red() : Color.white();
+
+        string str = t.to_string();
+
+        if (str != timer.text)
+            timer.text = str;
     }
 }

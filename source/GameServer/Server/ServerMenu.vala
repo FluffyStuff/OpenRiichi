@@ -120,7 +120,7 @@ namespace GameServer
 
             int starting_dealer = 0;
             int starting_score = 25000;
-            int decision_time = 10;
+            int decision_time = 10 + 1; // Add a second so the indicator counts down to 0
             int round_wait_time = 15;
             int hanchan_wait_time = 30;
             int game_wait_time = 60;
