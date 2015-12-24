@@ -67,7 +67,7 @@ class RenderSceneManager : Object
         RenderModel tile = store.load_model("tile_" + extension, true);
         tile_size = tile.size.mul_scalar(tile_scale);
 
-        table = new RenderTable(store, extension, tile_size);
+        table = new RenderTable(store, extension, tile_size, -(float)player_index / 2);
 
         table_length = table.player_offset;
         center = table.center;

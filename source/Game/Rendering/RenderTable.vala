@@ -3,7 +3,7 @@ public class RenderTable
     private RenderObject3D table;
     private RenderObject3D field;
 
-    public RenderTable(IResourceStore store, string extension, Vec3 tile_size)
+    public RenderTable(IResourceStore store, string extension, Vec3 tile_size, float field_rotation)
     {
         table = store.load_object_3D("table_" + extension);
 
@@ -27,6 +27,7 @@ public class RenderTable
         table.scale = Vec3(10, 10, 10);
         field.position = Vec3(0, 0, 0);
         field.scale = Vec3(9.6f, 1, 9.6f);
+        field.rotation = Vec3(0, field_rotation, 0);
 
         center = Vec3(0, field.position.y, 0);
         player_offset = field.scale.z - 1.0f - (tile_size.x + tile_size.z) / 2;
