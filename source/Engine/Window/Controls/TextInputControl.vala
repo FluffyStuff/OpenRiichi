@@ -1,4 +1,4 @@
-public class TextInputView : Control
+public class TextInputControl : Control
 {
     private LabelControl label;
     private string _text = "";
@@ -20,7 +20,7 @@ public class TextInputView : Control
 
     public signal void text_changed();
 
-    public TextInputView(string back_text)
+    public TextInputControl(string back_text)
     {
         base();
         this.back_text = back_text;

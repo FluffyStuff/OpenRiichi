@@ -81,12 +81,28 @@ public class Environment : Object
         typeof(SerializableListItem).class_ref();
         typeof(ObjInt).class_ref();
         typeof(GamePlayer).class_ref();
+
         typeof(ServerMessage).class_ref();
         typeof(ServerMessageRoundStart).class_ref();
         typeof(ServerMessageAcceptJoin).class_ref();
         typeof(ServerMessageMenuSlotAssign).class_ref();
         typeof(ServerMessageMenuSlotClear).class_ref();
         typeof(ServerMessageDraw).class_ref();
+
+        typeof(Lobby.LobbyInformation).class_ref();
+        typeof(Lobby.ServerLobbyMessage).class_ref();
+        typeof(Lobby.ServerLobbyMessageAuthenticationResult).class_ref();
+        typeof(Lobby.ServerLobbyMessageLobbyEnumerationResult).class_ref();
+        typeof(Lobby.ServerLobbyMessageEnterLobbyResult).class_ref();
+        typeof(Lobby.ServerLobbyMessageEnterGameResult).class_ref();
+        typeof(Lobby.ServerLobbyMessageLeaveGameResult).class_ref();
+        typeof(Lobby.ServerLobbyMessageUserEnteredLobby).class_ref();
+        typeof(Lobby.ServerLobbyMessageUserLeftLobby).class_ref();
+        typeof(Lobby.ServerLobbyMessageCreateGameResult).class_ref();
+        typeof(Lobby.ServerLobbyMessageGameAdded).class_ref();
+        typeof(Lobby.ServerLobbyMessageUserEnteredGame).class_ref();
+        typeof(Lobby.ServerLobbyMessageUserLeftGame).class_ref();
+
         typeof(NullBot).class_ref();
         typeof(SimpleBot).class_ref();
     }

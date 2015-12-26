@@ -168,6 +168,26 @@ namespace GameServer
         }
     }
 
+    public class ServerPlayerTunneledConnection : ServerPlayerConnection
+    {
+        public signal void send_message_request(ServerPlayerTunneledConnection connection, ServerMessage message);
+        public signal void close_connection_request(ServerPlayerTunneledConnection connection);
+
+        public ServerPlayerTunneledConnection()
+        {
+        }
+
+        public override void send_message(ServerMessage message)
+        {
+            send_message_request(this, message);
+        }
+
+        public override void close()
+        {
+            close_connection_request(this);
+        }
+    }
+
     public class ServerPlayerLocalConnection : ServerPlayerConnection
     {
         private GameLocalConnection? connection;

@@ -90,8 +90,8 @@ public class Networking : Object
 
         mutex.unlock();
 
-        c.start();
         connected(c);
+        c.start();
     }
 
     private void host_worker()
@@ -165,6 +165,18 @@ public class Networking : Object
             return null;
         }
     }
+
+    public static uint8[] int_to_data(uint32 n)
+    {
+        // Don't do this, so we maintain consistency over network
+        //int bytes = (int)sizeof(int);
+        int bytes = 4;
+
+        uint8[] buffer = new uint8[bytes];
+        for (int i = 0; i < bytes; i++)
+            buffer[i] = (uint8)(n >> ((bytes - i - 1) * 8));
+        return buffer;
+    }
 }
 
 public class MessageSignal
@@ -191,7 +203,7 @@ public class Connection : Object
     {
         try
         {
-            connection.output_stream.write(Calculations.int_to_data(message.data.length));
+            connection.output_stream.write(Networking.int_to_data(message.data.length));
             connection.output_stream.write(message.data);
         }
         catch { } // Won't close here, because the thread will do it for us
@@ -304,7 +316,7 @@ class UIntData
 
     public static uint8[] serialize_int(int i)
     {
-        return Calculations.int_to_data(i);
+        return Networking.int_to_data(i);
     }
 
     private class UInt
@@ -500,7 +512,11 @@ public abstract class Serializable : Object
                 get_property(p.get_name(), ref val);
                 string str = val.get_string();
 
-                uint8[] str_data = UIntData.serialize_string(str);
+                uint8[] str_data;
+                if (str == null)
+                    str_data = new uint8[0];
+                else
+                    str_data = UIntData.serialize_string(str);
 
                 data.add_data(UIntData.serialize_int(type));
                 data.add_data(UIntData.serialize_int(str_data.length));

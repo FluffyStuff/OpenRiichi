@@ -75,21 +75,21 @@ public class ServerPlayerFieldView : Control
     {
         base.do_mouse_event(mouse);
 
-        if (!expand_button.focused)
-        {
-            bool focus = false;
-            foreach (TextClickControl control in texts)
-            {
-                if (control.focused)
-                {
-                    focus = true;
-                    break;
-                }
-            }
+        if (!editable || expand_button.focused)
+            return;
 
-            if (!focus)
-                menu_toggle(false);
+        bool focus = false;
+        foreach (TextClickControl control in texts)
+        {
+            if (control.focused)
+            {
+                focus = true;
+                break;
+            }
         }
+
+        if (!focus)
+            menu_toggle(false);
     }
 
     protected override void resized()

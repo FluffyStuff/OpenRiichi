@@ -69,6 +69,9 @@ public abstract class Container : Object
 
     public void mouse_event(MouseEventArgs mouse)
     {
+        if (!visible)
+            return;
+
         for (int i = children.size - 1; i >= 0; i--)
             children[i].mouse_event(mouse);
         do_mouse_event(mouse);
@@ -76,6 +79,9 @@ public abstract class Container : Object
 
     public void mouse_move(MouseMoveArgs mouse)
     {
+        if (!visible)
+            return;
+
         for (int i = children.size - 1; i >= 0; i--)
             children[i].mouse_move(mouse);
         do_mouse_move(mouse);
@@ -83,6 +89,9 @@ public abstract class Container : Object
 
     public void key_press(KeyArgs key)
     {
+        if (!visible)
+            return;
+
         for (int i = children.size - 1; i >= 0; i--)
             children[i].key_press(key);
         do_key_press(key);
@@ -90,6 +99,9 @@ public abstract class Container : Object
 
     public void text_input(TextInputArgs text)
     {
+        if (!visible)
+            return;
+
         for (int i = children.size - 1; i >= 0; i--)
             children[i].text_input(text);
         do_text_input(text);
@@ -97,6 +109,9 @@ public abstract class Container : Object
 
     public void text_edit(TextEditArgs text)
     {
+        if (!visible)
+            return;
+
         for (int i = children.size - 1; i >= 0; i--)
             children[i].text_edit(text);
         do_text_edit(text);

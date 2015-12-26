@@ -63,8 +63,9 @@ namespace GameServer
             for (int i = 0; i < slots.length; i++)
                 if (slots[i] == player)
                 {
+                    mutex.unlock();
                     kick_slot(i);
-                    break;
+                    return;
                 }
 
             mutex.unlock();
@@ -161,11 +162,17 @@ namespace GameServer
             Type? type = Type.from_name(name);
 
             if (type == null || !type.is_a(typeof(Bot)))
+            {
+                mutex.lock();
                 return;
+            }
 
             Object? obj = Object.newv(type, new Parameter[0]);
             if (obj == null)
+            {
+                mutex.lock();
                 return;
+            }
 
             Bot bot = (Bot)obj;
             int slot = msg.slot;

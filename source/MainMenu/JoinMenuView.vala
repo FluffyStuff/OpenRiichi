@@ -5,8 +5,8 @@ public class JoinMenuView : View2D
     private IGameConnection? connection;
     private MenuTextButton join_button;
     private MenuTextButton back_button;
-    private TextInputView server_text;
-    private TextInputView name_text;
+    private TextInputControl server_text;
+    private TextInputControl name_text;
     private string name;
 
     public signal void joined(IGameConnection connection, string name);
@@ -24,11 +24,11 @@ public class JoinMenuView : View2D
 
         int padding = 50;
 
-        server_text = new TextInputView("Hostname");
+        server_text = new TextInputControl("Hostname");
         add_child(server_text);
         server_text.position = Vec2(0, padding);
 
-        name_text = new TextInputView("Player name");
+        name_text = new TextInputControl("Player name");
         add_child(name_text);
         name_text.position = Vec2(0, -padding);
 

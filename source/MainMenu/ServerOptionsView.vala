@@ -2,7 +2,7 @@ public class ServerOptionsView : View2D
 {
     private MenuTextButton create_button;
     private MenuTextButton back_button;
-    private TextInputView name_text;
+    private TextInputControl name_text;
 
     public signal void finished(string name);
     public signal void back();
@@ -19,7 +19,7 @@ public class ServerOptionsView : View2D
 
         int padding = 50;
 
-        name_text = new TextInputView("Player name");
+        name_text = new TextInputControl("Player name");
         add_child(name_text);
         name_text.position = Vec2(0, 0);
 

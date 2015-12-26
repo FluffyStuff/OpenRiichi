@@ -158,3 +158,31 @@ public class GameLocalConnection : IGameConnection
 
     public override bool authoritative { get; private set; }
 }
+
+public class TunneledGameConnection : IGameConnection
+{
+    public signal void request_send_message(TunneledGameConnection connection, ClientMessage message);
+    public signal void request_close(TunneledGameConnection connection);
+
+    public TunneledGameConnection()
+    {
+        authoritative = false;
+    }
+
+    public void do_receive_message(ServerMessage message)
+    {
+        receive_message(message);
+    }
+
+    public override void send_message(ClientMessage message)
+    {
+        request_send_message(this, message);
+    }
+
+    public override void close()
+    {
+        request_close(this);
+    }
+
+    public override bool authoritative { get; private set; }
+}

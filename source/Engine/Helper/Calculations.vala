@@ -2,19 +2,6 @@ public class Calculations
 {
     private Calculations(){}
 
-    public static uint8[] int_to_data(uint32 n)
-    {
-        // Don't do this, so we maintain consistency over network
-        //int bytes = (int)sizeof(int);
-        int bytes = 4;
-
-        uint8[] buffer = new uint8[bytes];
-        for (int i = 0; i < bytes; i++)
-            buffer[i] = (uint8)(n >> ((bytes - i - 1) * 8));
-        return buffer;
-    }
-
-
     public static Vec3 rotate(Vec3 origin, Vec3 rotation, Vec3 offset)
     {
         Vec3 point = offset;

@@ -45,8 +45,9 @@ public class MainWindow : RenderWindow
 
     private void game_start(GameStartInfo info, IGameConnection connection, int player_index)
     {
-        main_view.remove_child(menu);
-        menu = null;
+        /*main_view.remove_child(menu);
+        menu = null;*/
+        menu.visible = false;
         game_controller = new GameController(main_view, info, connection, player_index, new Options.from_disk());
         game_controller.finished.connect(game_finished);
         game_running = true;
@@ -56,7 +57,8 @@ public class MainWindow : RenderWindow
     {
         game_running = false;
         game_controller = null;
-        create_main_menu();
+        menu.visible = true;
+        //create_main_menu();
     }
 
     private void restart()

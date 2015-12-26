@@ -4,8 +4,10 @@ public class ServerMenuView : View2D
 {
     private ServerController? server = null;
     private IGameConnection? connection = null;
+    private Mutex mutex = Mutex();
     private string name;
     private bool host = false;
+    private bool can_control;
 
     private ServerPlayerFieldView[] players = new ServerPlayerFieldView[4];
     private MenuTextButton start_button;
@@ -17,13 +19,15 @@ public class ServerMenuView : View2D
     {
         host = true;
         this.name = name;
+        can_control = true;
     }
 
-    public ServerMenuView.join_server(IGameConnection? connection)
+    public ServerMenuView.join_server(IGameConnection? connection, bool can_control)
     {
         this.connection = connection;
         this.connection.disconnected.connect(disconnected);
         this.connection.received_message.connect(received_message);
+        this.can_control = can_control;
     }
 
     ~ServerMenuView()
@@ -63,7 +67,7 @@ public class ServerMenuView : View2D
 
         int padding = 50;
 
-        if (host)
+        if (can_control)
         {
             start_button = new MenuTextButton("MenuButton", "Start");
             add_child(start_button);
@@ -83,7 +87,7 @@ public class ServerMenuView : View2D
 
         for (int i = 3; i >= 0; i--)
         {
-            ServerPlayerFieldView player = new ServerPlayerFieldView(host, i);
+            ServerPlayerFieldView player = new ServerPlayerFieldView(can_control, i);
             add_child(player);
             player.size = Size2(300, 40);
             player.position = Vec2(0, -(i - 1.5f) * 60);
@@ -123,16 +127,21 @@ public class ServerMenuView : View2D
         back();
     }
 
-    private void received_message()
+    public void received_message()
     {
-        ServerMessage? message = connection.dequeue_message();
+        mutex.lock();
+        ServerMessage? message;
 
-        if (message is ServerMessageGameStart)
-            start_message(message as ServerMessageGameStart);
-        else if (message is ServerMessageMenuSlotAssign)
-            assign_message(message as ServerMessageMenuSlotAssign);
-        else if (message is ServerMessageMenuSlotClear)
-            clear_message(message as ServerMessageMenuSlotClear);
+        while ((message = connection.dequeue_message()) != null)
+        {
+            if (message is ServerMessageGameStart)
+                start_message(message as ServerMessageGameStart);
+            else if (message is ServerMessageMenuSlotAssign)
+                assign_message(message as ServerMessageMenuSlotAssign);
+            else if (message is ServerMessageMenuSlotClear)
+                clear_message(message as ServerMessageMenuSlotClear);
+        }
+        mutex.unlock();
     }
 
     private void start_message(ServerMessageGameStart message)
@@ -155,7 +164,7 @@ public class ServerMenuView : View2D
 
     private void check_can_start()
     {
-        if (!host)
+        if (!can_control)
             return;
 
         for (int i = 0; i < players.length; i++)

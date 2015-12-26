@@ -74,7 +74,7 @@ class OpenGLShaderProgram2D
         uint err = glGetError();
         if (err != 0 && err != 0x500)
         {
-            print("GL shader program linkage failure!\n");
+            print("OpenGLShaderProgram3D: GL shader program linkage failure!\n");
             return false;
         }
 
