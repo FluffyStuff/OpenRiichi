@@ -17,12 +17,17 @@ public class LobbyConnection
     {
         this.connection = connection;
         connection.message_received.connect(received_message);
+        connection.closed.connect(on_disconnected);
         tunneled_connection = new TunneledGameConnection();
-        tunneled_connection.request_send_message.connect(tunnel_send);
+        tunneled_connection.request_send_message.connect(request_tunnel_send);
+        tunneled_connection.request_close.connect(request_tunnel_close);
     }
 
     ~LobbyConnection()
     {
+        tunneled_connection.request_send_message.disconnect(request_tunnel_send);
+        tunneled_connection.request_close.disconnect(request_tunnel_close);
+        connection.closed.disconnect(on_disconnected);
         connection.message_received.disconnect(received_message);
         connection.close();
     }
@@ -77,11 +82,22 @@ public class LobbyConnection
         send_message(new ClientLobbyMessageLeaveGame());
     }
 
-    private void tunnel_send(TunneledGameConnection connection, ClientMessage message)
+    private void request_tunnel_send(TunneledGameConnection connection, ClientMessage message)
     {
         mutex.lock();
         this.connection.send(new Message(message.serialize()));
         mutex.unlock();
+    }
+
+    private void request_tunnel_close()
+    {
+        send_message(new ClientLobbyMessageCloseTunnel());
+    }
+
+    private void on_disconnected(Connection connection)
+    {
+        tunneled_connection.disconnected();
+        disconnected(this);
     }
 
     private void received_message(Connection connection, Message msg)
@@ -102,7 +118,9 @@ public class LobbyConnection
 
         ServerLobbyMessage? message = m as ServerLobbyMessage;
 
-        if (message is ServerLobbyMessageAuthenticationResult)
+        if (message is ServerLobbyMessageCloseTunnel)
+            do_close_tunnel(message as ServerLobbyMessageCloseTunnel);
+        else if (message is ServerLobbyMessageAuthenticationResult)
             do_authentication_result(message as ServerLobbyMessageAuthenticationResult);
         else if (message is ServerLobbyMessageLobbyEnumerationResult)
             do_lobby_enumeration_result(message as ServerLobbyMessageLobbyEnumerationResult);
@@ -124,6 +142,11 @@ public class LobbyConnection
             do_user_entered_game(message as ServerLobbyMessageUserEnteredGame);
         else if (message is ServerLobbyMessageUserLeftGame)
             do_user_left_game(message as ServerLobbyMessageUserLeftGame);
+    }
+
+    private void do_close_tunnel(ServerLobbyMessageCloseTunnel mesasge)
+    {
+        tunneled_connection.disconnected();
     }
 
     private void do_authentication_result(ServerLobbyMessageAuthenticationResult result)

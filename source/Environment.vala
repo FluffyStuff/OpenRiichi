@@ -91,6 +91,7 @@ public class Environment : Object
 
         typeof(Lobby.LobbyInformation).class_ref();
         typeof(Lobby.ServerLobbyMessage).class_ref();
+        typeof(Lobby.ServerLobbyMessageCloseTunnel).class_ref();
         typeof(Lobby.ServerLobbyMessageAuthenticationResult).class_ref();
         typeof(Lobby.ServerLobbyMessageLobbyEnumerationResult).class_ref();
         typeof(Lobby.ServerLobbyMessageEnterLobbyResult).class_ref();

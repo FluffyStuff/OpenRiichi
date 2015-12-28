@@ -2,6 +2,8 @@ namespace Lobby
 {
     public abstract class ClientLobbyMessage : Serializable {}
 
+    public class ClientLobbyMessageCloseTunnel : ClientLobbyMessage {}
+
     public class ClientLobbyMessageGetLobbies : ClientLobbyMessage {}
 
     public class ClientLobbyMessageAuthenticate : ClientLobbyMessage
@@ -41,6 +43,8 @@ namespace Lobby
     public class ClientLobbyMessageLeaveGame : ClientLobbyMessage {}
 
     public class ServerLobbyMessage : Serializable {}
+
+    public class ServerLobbyMessageCloseTunnel : ServerLobbyMessage {}
 
     public class ServerLobbyMessageAuthenticationResult : ServerLobbyMessage
     {

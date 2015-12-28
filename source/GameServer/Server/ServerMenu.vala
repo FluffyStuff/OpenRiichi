@@ -23,7 +23,7 @@ namespace GameServer
             parser.connect(client_kick_player, typeof(ClientMessageMenuKickPlayer));
         }
 
-        public void player_connected(ServerPlayer player)
+        public bool player_connected(ServerPlayer player)
         {
             mutex.lock();
 
@@ -47,13 +47,14 @@ namespace GameServer
                     send_assign(i, player);
 
                     mutex.unlock();
-                    return;
+                    return true;
                 }
             }
 
             mutex.unlock();
 
             player.close();
+            return false;
         }
 
         public void player_disconnected(ServerPlayer player)

@@ -154,24 +154,14 @@ public class LobbyView : View2D
 
     private void enter_game_result(LobbyConnection connection, bool success)
     {
-        if (!success) // Should never happen, something bad must have happened
-        {
-            back();
-            return;
-        }
-
-        do_enter_game = true;
+        if (success)
+            do_enter_game = true;
     }
 
     private void create_game_result(LobbyConnection connection, bool success)
     {
-        if (!success) // Should never happen, something bad must have happened
-        {
-            back();
-            return;
-        }
-
-        do_create_game = true;
+        if (success)
+            do_create_game = true;
     }
 
     private void do_start_game(GameStartInfo info, IGameConnection connection, int player_index)

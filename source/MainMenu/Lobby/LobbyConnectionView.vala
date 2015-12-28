@@ -35,7 +35,7 @@ public class LobbyConnectionView : View2D
         message_label.text = "Connecting to lobby...";
         message_label.font_size = 50;
 
-        Threading.start2(try_join, new Obj<string>("server.fluffy.is"), new Obj<int>(1337));
+        Threading.start2(try_join, new Obj<string>("riichi.fluffy.is"), new Obj<int>(1337));
     }
 
     private void try_join(Object host_obj, Object port_obj)
@@ -99,6 +99,7 @@ public class LobbyConnectionView : View2D
             lobby_info.selected_index_changed.connect(lobby_index_changed);
             resized();
 
+            connection.disconnected.connect(on_disconnected);
             connection.lobby_enumeration_result.connect(lobby_enumeration_result);
             connection.enter_lobby_result.connect(enter_lobby_result);
             connection.get_lobby_information();
@@ -140,6 +141,11 @@ public class LobbyConnectionView : View2D
         back();
     }
 
+    private void on_disconnected()
+    {
+        back();
+    }
+
     private void lobby_enumeration_result(LobbyConnection connection, bool success)
     {
         if (!success) // Should never happen, something bad must have happened
@@ -173,8 +179,6 @@ public class LobbyConnectionView : View2D
 
     private void do_start_game(GameStartInfo info, IGameConnection connection, int player_index)
     {
-        lobby_view.start_game.disconnect(do_start_game);
-        lobby_view.back.disconnect(lobby_back_clicked);
         start_game(info, connection, player_index);
     }
 
