@@ -40,12 +40,12 @@ public class LobbyGameListControl : ListControl
         return game.users.size.to_string();
     }
 
-    protected override ListCellStyle get_column_style(int column)
+    protected override ListColumnInfo get_column_info(int column)
     {
         if (column == 0)
-            return new ListCellStyle(ResizeStyle.RELATIVE, 1);
+            return new ListColumnInfo("Game", new ListCellStyle(ResizeStyle.RELATIVE, 1));
         else
-            return new ListCellStyle(ResizeStyle.ABSOLUTE, 100);
+            return new ListColumnInfo("Players", new ListCellStyle(ResizeStyle.ABSOLUTE, 100));
     }
 
     protected override int row_count

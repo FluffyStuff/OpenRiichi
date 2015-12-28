@@ -1,6 +1,7 @@
 public abstract class ListControl : Control
 {
     private RectangleControl background;
+    private ListItemControl? header;
     private ListItemControl[]? items;
     private bool row_selectable;
 
@@ -29,20 +30,31 @@ public abstract class ListControl : Control
 
     protected void refresh_data()
     {
+        if (header != null)
+            remove_child(header);
+
         if (items != null)
             foreach (ListItemControl item in items)
                 remove_child(item);
 
-        ListCellStyle[] styles = new ListCellStyle[column_count];
-        for (int i = 0; i < styles.length; i++)
-            styles[i] = get_column_style(i);
+        ListColumnInfo[] columns = new ListColumnInfo[column_count];
+        for (int i = 0; i < columns.length; i++)
+            columns[i] = get_column_info(i);
+
+        ListCell[] header_cells = new ListCell[column_count];
+        for (int i = 0; i < column_count; i++)
+            header_cells[i] = new ListCell(columns[i].name, columns[i].style, font_size);
+        header = new ListItemControl.header(header_cells);
+        add_child(header);
+        header.inner_anchor = Vec2(0, 1);
+        header.outer_anchor = Vec2(0, 1);
 
         items = new ListItemControl[row_count];
         for (int i = 0; i < items.length; i++)
         {
             ListCell[] cells = new ListCell[column_count];
             for (int j = 0; j < column_count; j++)
-                cells[j] = new ListCell(get_cell_data(i, j), styles[j], font_size);
+                cells[j] = new ListCell(get_cell_data(i, j), columns[j].style, font_size);
 
             ListItemControl item = new ListItemControl(cells, i);
             items[i] = item;
@@ -59,6 +71,9 @@ public abstract class ListControl : Control
 
     protected override void resized()
     {
+        if (header != null)
+            header.size = Size2(size.width, row_height);
+
         if (items == null)
             return;
 
@@ -66,7 +81,7 @@ public abstract class ListControl : Control
         {
             ListItemControl item = items[i];
             item.size = Size2(size.width, row_height);
-            item.position = Vec2(0, -i * row_height);
+            item.position = Vec2(0, -(i + 1) * row_height);
         }
     }
 
@@ -108,7 +123,7 @@ public abstract class ListControl : Control
 
     protected virtual void on_added() {}
     protected abstract string get_cell_data(int row, int column);
-    protected abstract ListCellStyle get_column_style(int column);
+    protected abstract ListColumnInfo get_column_info(int column);
 
     public float row_height { get; set; }
     public float font_size { get; set; }
@@ -120,6 +135,7 @@ public abstract class ListControl : Control
     {
         private RectangleControl background;
         private ListCell[]? cells;
+        private bool is_header;
 
         public signal void selected(ListItemControl control);
 
@@ -127,6 +143,14 @@ public abstract class ListControl : Control
         {
             this.cells = cells;
             this.index = index;
+            is_header = false;
+        }
+
+        public ListItemControl.header(ListCell[] cells)
+        {
+            this.cells = cells;
+            index = -1;
+            is_header = true;
         }
 
         public override void added()
@@ -136,12 +160,17 @@ public abstract class ListControl : Control
             background = new RectangleControl();
             add_child(background);
             background.resize_style = ResizeStyle.RELATIVE;
-            background.color = Color(0.8f, 0, 0, 0.6f);
+
+            if (is_header)
+                background.color = Color(0.9f, 0.03f, 0.03f, 1);
+            else
+            {
+                background.color = Color(0.8f, 0, 0, 0.6f);
+                selectable = true;
+            }
 
             foreach (ListCell cell in cells)
                 add_child(cell);
-
-            selectable = true;
         }
 
         protected override void resized()
@@ -177,6 +206,9 @@ public abstract class ListControl : Control
 
         protected override void do_render(RenderState state, RenderScene2D scene)
         {
+            if (is_header)
+                return;
+
             if (is_selected)
             {
                 if (hovering)
@@ -199,7 +231,7 @@ public abstract class ListControl : Control
                         background.color = Color(0.9f, 0.03f, 0.03f, 1);
                 }
                 else
-                    background.color = Color(0.6f, 0.02f, 0.02f, 1);
+                    background.color = Color(0.2f, 0.005f, 0.005f, 1);
             }
         }
 
@@ -243,14 +275,26 @@ public abstract class ListControl : Control
     }
 }
 
-    public class ListCellStyle
+public class ListColumnInfo
+{
+    public ListColumnInfo(string name, ListCellStyle style)
     {
-        public ListCellStyle(ResizeStyle resize_style, float width)
-        {
-            this.resize_style = resize_style;
-            this.width = width;
-        }
-
-        public ResizeStyle resize_style { get; private set; }
-        public float width { get; private set; }
+        this.name = name;
+        this.style = style;
     }
+
+    public string name { get; private set; }
+    public ListCellStyle style { get; private set; }
+}
+
+public class ListCellStyle
+{
+    public ListCellStyle(ResizeStyle resize_style, float width)
+    {
+        this.resize_style = resize_style;
+        this.width = width;
+    }
+
+    public ResizeStyle resize_style { get; private set; }
+    public float width { get; private set; }
+}

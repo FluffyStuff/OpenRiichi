@@ -34,12 +34,12 @@ public class LobbyInformationListControl : ListControl
         return lobby.users.to_string();
     }
 
-    protected override ListCellStyle get_column_style(int column)
+    protected override ListColumnInfo get_column_info(int column)
     {
         if (column == 0)
-            return new ListCellStyle(ResizeStyle.RELATIVE, 1);
+            return new ListColumnInfo("Lobby", new ListCellStyle(ResizeStyle.RELATIVE, 1));
         else
-            return new ListCellStyle(ResizeStyle.ABSOLUTE, 150);
+            return new ListColumnInfo("Users", new ListCellStyle(ResizeStyle.ABSOLUTE, 150));
     }
 
     protected override int row_count

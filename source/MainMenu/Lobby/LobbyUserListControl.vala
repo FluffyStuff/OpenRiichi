@@ -31,9 +31,9 @@ public class LobbyUserListControl : ListControl
         return user.name;
     }
 
-    protected override ListCellStyle get_column_style(int column)
+    protected override ListColumnInfo get_column_info(int column)
     {
-        return new ListCellStyle(ResizeStyle.RELATIVE, 1);
+        return new ListColumnInfo("Users", new ListCellStyle(ResizeStyle.RELATIVE, 1));
     }
 
     protected override int row_count
