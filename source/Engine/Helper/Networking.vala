@@ -186,6 +186,8 @@ public class MessageSignal
 
 public class Connection : Object
 {
+    private const uint32 MAX_MESSAGE_LEN = 1 * 1024 * 1024 * 1024; // 1 MiB
+
     public signal void message_received(Connection connection, Message message);
     public signal void closed(Connection connection);
 
@@ -246,6 +248,12 @@ public class Connection : Object
                 mutex.unlock();
 
                 uint32 length = input.read_uint32();
+                if (length > MAX_MESSAGE_LEN)
+                {
+                    print("Networking: Message length exceeds maximum, dropping connection");
+                    break;
+                }
+
                 uint8[] buffer = new uint8[length];
                 size_t read;
 
@@ -336,8 +344,11 @@ class DataUInt
         this.data = data;
     }
 
-    public int get_int()
+    public int get_int() throws DataLengthError
     {
+        if (index + 4 > data.length)
+            throw new DataLengthError.OUT_OF_RANGE("DataUInt: get_int doesn't have enough bytes left");
+
         // Don't do this, so we maintain consistency over network
         //int bytes = (int)sizeof(int);
         int bytes = 4;
@@ -349,8 +360,13 @@ class DataUInt
         return ret;
     }
 
-    public string get_string(int length)
+    public string get_string(int length) throws DataLengthError
     {
+        if (index + length > data.length)
+            throw new DataLengthError.OUT_OF_RANGE("DataUInt: get_string doesn't have enough bytes left");
+        else if (length < 0)
+            throw new DataLengthError.NEGATIVE_LENGTH("DataUInt: get_string length is negative");
+
         uint8[] str = new uint8[length + 1];
         str[length] = 0;
         for (int i = 0; i < length; i++)
@@ -360,8 +376,13 @@ class DataUInt
         return ret;
     }
 
-    public uint8[] get_data(int length)
+    public uint8[] get_data(int length) throws DataLengthError
     {
+        if (index + length > data.length)
+            throw new DataLengthError.OUT_OF_RANGE("DataUInt: get_data doesn't have enough bytes left");
+        else if (length < 0)
+            throw new DataLengthError.NEGATIVE_LENGTH("DataUInt: get_data length is negative");
+
         uint8[] new_data = new uint8[length];
         for (int i = 0; i < length; i++)
             new_data[i] = data[index++];
@@ -372,95 +393,115 @@ class DataUInt
 
 public abstract class Serializable : Object
 {
-    // TODO: Secure against arbitrary code injections...
+    private const int MAX_PARAMS = 128;
+
     public static Serializable? deserialize(uint8[] bytes)
     {
-        DataUInt data = new DataUInt(bytes);
-
-        int type_name_len = data.get_int();
-        string type_name = data.get_string(type_name_len);
-        int param_count = data.get_int();
-
-        Type? type = Type.from_name(type_name);
-        if (!type.is_a(typeof(Serializable)))
-            return null;
-
-        Parameter?[] params = new Parameter?[param_count];
-        string[] names = new string[param_count];
-
-        for (int i = 0; i < params.length; i++)
+        try
         {
-            int name_len = data.get_int();
-            string name = data.get_string(name_len);
-            names[i] = name;
+            DataUInt data = new DataUInt(bytes);
 
-            bool has_value = true;
-            Value val = Value(typeof(int));
-            int t = data.get_int();
-            DataType data_type = (DataType)t;
+            int type_name_len = data.get_int();
+            string type_name = data.get_string(type_name_len);
+            int param_count = data.get_int();
+            if (param_count > MAX_PARAMS)
+            {
+                print("Serializable: Param count exceeds maximum, dropping message");
+                return null;
+            }
 
-            if (data_type == DataType.INT)
+            if (param_count < 0)
             {
-                val = Value(typeof(int));
-                int v = data.get_int();
-                val.set_int(v);
+                print("Serializable: Param count is negative, dropping message");
+                return null;
             }
-            else if (data_type == DataType.BOOL)
-            {
-                val = Value(typeof(bool));
-                bool b = (bool)data.get_int();
-                val.set_boolean(b);
-            }
-            else if (data_type == DataType.STRING)
-            {
-                val = Value(typeof(string));
-                int len = data.get_int();
-                string str = data.get_string(len);
-                val.set_string(str);
-            }
-            else if (data_type == DataType.SERIALIZABLE)
-            {
-                val = Value(typeof(Serializable));
-                int len = data.get_int();
 
-                if (len != 0)
+            Type? type = Type.from_name(type_name);
+            if (!type.is_a(typeof(Serializable)))
+                return null;
+
+            Parameter?[] params = new Parameter?[param_count];
+            string[] names = new string[param_count];
+
+            for (int i = 0; i < params.length; i++)
+            {
+                int name_len = data.get_int();
+                string name = data.get_string(name_len);
+                names[i] = name;
+
+                bool has_value = true;
+                Value val = Value(typeof(int));
+                int t = data.get_int();
+                DataType data_type = (DataType)t;
+
+                if (data_type == DataType.INT)
                 {
-                    uint8[] sub_data = data.get_data(len);
-                    Serializable sub_obj = deserialize(sub_data);
-                    val.set_object(sub_obj);
+                    val = Value(typeof(int));
+                    int v = data.get_int();
+                    val.set_int(v);
+                }
+                else if (data_type == DataType.BOOL)
+                {
+                    val = Value(typeof(bool));
+                    bool b = (bool)data.get_int();
+                    val.set_boolean(b);
+                }
+                else if (data_type == DataType.STRING)
+                {
+                    val = Value(typeof(string));
+                    int len = data.get_int();
+                    string str = data.get_string(len);
+                    val.set_string(str);
+                }
+                else if (data_type == DataType.SERIALIZABLE)
+                {
+                    val = Value(typeof(Serializable));
+                    int len = data.get_int();
+
+                    if (len != 0)
+                    {
+                        uint8[] sub_data = data.get_data(len);
+                        Serializable? sub_obj = deserialize(sub_data);
+                        val.set_object(sub_obj);
+                    }
+                    else
+                    {
+                        Object? obj = null;
+                        val.set_object(obj);
+                    }
                 }
                 else
+                    has_value = false;
+
+                if (has_value)
                 {
-                    Object? obj = null;
-                    val.set_object(obj);
+                    params[i] = Parameter();
+                    params[i].name = names[i];
+                    params[i].value = val;
                 }
+                else
+                    params[i] = null;
             }
-            else
-                has_value = false;
 
-            if (has_value)
-            {
-                params[i] = Parameter();
-                params[i].name = names[i];
-                params[i].value = val;
-            }
-            else
-                params[i] = null;
+            int count = 0;
+            for (int i = 0; i < params.length; i++)
+                if (params[i] != null)
+                    count++;
+            Parameter[] p = new Parameter[count];
+            count = 0;
+            for (int i = 0; i < params.length; i++)
+                if (params[i] != null)
+                    p[count++] = params[i];
+
+            Object obj = Object.newv(type, p);
+
+            return (Serializable)obj;
         }
-
-        int count = 0;
-        for (int i = 0; i < params.length; i++)
-            if (params[i] != null)
-                count++;
-        Parameter[] p = new Parameter[count];
-        count = 0;
-        for (int i = 0; i < params.length; i++)
-            if (params[i] != null)
-                p[count++] = params[i];
-
-        Object obj = Object.newv(type, p);
-
-        return (Serializable)obj;
+        catch (Error e)
+        {
+            print("Serializable: Error parsing message: " + e.message + "\n");
+            return null;
+        }
     }
 
     public uint8[] serialize()
@@ -619,3 +660,5 @@ public class ObjInt : Serializable
 
     public int value { get; protected set; }
 }
+
+errordomain DataLengthError { OUT_OF_RANGE, NEGATIVE_LENGTH }
