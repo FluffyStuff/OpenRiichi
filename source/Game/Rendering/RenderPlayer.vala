@@ -947,6 +947,7 @@ class RenderRiichi
             animation_start_time = args.time;
             animation_end_time = args.time + animation_time;
             animation_set_time = false;
+            visible = true;
         }
 
         if (args.time >= animation_end_time)
@@ -977,7 +978,6 @@ class RenderRiichi
         if (animation_started)
             return;
 
-        visible = true;
         animation_set_time = true;
         animation_started = true;
     }
