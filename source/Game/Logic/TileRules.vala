@@ -98,22 +98,9 @@ public class TileRules
         return false;
     }
 
-    public static bool can_closed_kan(ArrayList<Tile> hand)
+    public static bool can_closed_kan(ArrayList<Tile> hand, bool in_riichi)
     {
-        for (int i = 0; i < hand.size; i++)
-        {
-            int same = 0;
-            for (int j = 0; j < hand.size; j++)
-            {
-                if (hand[i].tile_type == hand[j].tile_type)
-                    same++;
-            }
-
-            if (same == 4)
-                return true;
-        }
-
-        return false;
+        return get_closed_kan_groups(hand, in_riichi).size > 0;
     }
 
     public static bool can_open_kan(ArrayList<Tile> hand, Tile tile)
@@ -157,7 +144,7 @@ public class TileRules
         return tiles;
     }
 
-    public static ArrayList<ArrayList<Tile>> get_closed_kan_groups(ArrayList<Tile> hand_in)
+    public static ArrayList<ArrayList<Tile>> get_closed_kan_groups(ArrayList<Tile> hand_in, bool in_riichi)
     {
         ArrayList<ArrayList<Tile>> list = new ArrayList<ArrayList<Tile>>();
 
@@ -166,19 +153,65 @@ public class TileRules
 
         while (hand.size > 0)
         {
-            int i = 0;
-
             ArrayList<Tile> tiles = new ArrayList<Tile>();
             for (int j = 0; j < hand.size; j++)
             {
-                if (hand[i].tile_type == hand[j].tile_type)
+                if (hand[0].tile_type == hand[j].tile_type)
                     tiles.add(hand[j]);
             }
 
             if (tiles.size == 4)
                 list.add(tiles);
 
-            hand.remove_at(i);
+            hand.remove_at(0);
+        }
+
+        if (in_riichi && list.size > 0)
+        {
+            for (int i = 0; i < list.size; i++)
+            {
+                hand.clear();
+                hand.add_all(hand_in);
+                hand.remove(list[i][0]);
+                ArrayList<HandReading> readings = hand_readings(hand, true, false);
+
+                if (readings.size == 0)
+                    list.remove_at(i--);
+
+                foreach (HandReading reading in readings)
+                {
+                    TileType type = list[i][0].tile_type;
+                    bool found = false;
+
+                    if (!reading.is_kokushi && reading.pairs.size == 1)
+                    {
+                        foreach (TileMeld meld in reading.melds)
+                        {
+                            if (!meld.is_triplet &&
+                            (
+                                meld.tile_1.tile_type == type ||
+                                meld.tile_2.tile_type == type ||
+                                meld.tile_3.tile_type == type)
+                            )
+                            {
+                                found = true;
+                                break;
+                            }
+                        }
+
+                        if (reading.pairs[0].tile_1.tile_type == type)
+                            found = true;
+                    }
+                    else
+                        found = true;
+
+                    if (found)
+                    {
+                        list.remove_at(i--);
+                        break;
+                    }
+                }
+            }
         }
 
         return list;
@@ -323,7 +356,9 @@ public class TileRules
             return readings;
         else if (hand.size == 1) // If there is a single tile left then we are in a single tile pair wait
         {
-            readings.add(new HandReading.empty());
+            Tile t = hand[0];
+            TilePair pair = new TilePair(t, new Tile(-1, t.tile_type, false));
+            readings.add(new HandReading(melds, pair));
             return readings;
         }
         else if (hand.size == 2) // If we have a winning hand, then our last two tiles must be the same
@@ -393,18 +428,31 @@ public class TileRules
                     }
                 if (same)
                 {
-                    if (tenpai_only || early_return)
+                    if (early_return)
                     {
                         readings.add(new HandReading.empty());
+                        return readings;
+                    }
+                    else if (tenpai_only)
+                    {
+                        ArrayList<TilePair> p = new ArrayList<TilePair>();
+                        for (int i = 0; i < 13; i += 2)
+                        {
+                            if (i != 12 && hand[i].tile_type == hand[i+1].tile_type)
+                                p.add(new TilePair(hand[i], hand[i+1]));
+                            else
+                            {
+                                p.add(new TilePair(hand[i], new Tile(-1, hand[i].tile_type, false)));
+                                i--;
+                            }
+                        }
 
-                        if (early_return)
-                            return readings;
+                        readings.add(new HandReading.chiitoi(p));
                     }
                     else
                     {
                         ArrayList<TilePair> p = new ArrayList<TilePair>();
-
-                        for (int i = 0; i < 14; i += 2)
+                        for (int i = 0; i < 13; i += 2)
                             p.add(new TilePair(hand[i], hand[i+1]));
                         readings.add(new HandReading.chiitoi(p));
                     }
@@ -485,21 +533,88 @@ public class TileRules
             {
                 int s = hand.size;
                 Tile? t = null;
+                Tile? n1 = null, n2 = null;
                 if (hand[(i+1)%s].tile_type == hand[(i+2)%s].tile_type)
-                    t = hand[(i+3)%s];
+                {
+                    n1 = hand[(i+1)%s];
+                    n2 = hand[(i+2)%s];
+                     t = hand[(i+3)%s];
+                }
                 else if (hand[(i+1)%s].tile_type == hand[(i+3)%s].tile_type)
-                    t = hand[(i+2)%s];
+                {
+                    n1 = hand[(i+1)%s];
+                     t = hand[(i+2)%s];
+                    n2 = hand[(i+3)%s];
+                }
                 else if (hand[(i+2)%s].tile_type == hand[(i+3)%s].tile_type)
-                    t = hand[(i+1)%s];
+                {
+                     t = hand[(i+1)%s];
+                    n1 = hand[(i+2)%s];
+                    n2 = hand[(i+3)%s];
+                }
 
                 if (t != null)
                 {
-                    if ((tile.tile_type == t.tile_type) || // We have two remanining pairs
-                    (tile.is_same_sort(t) && tile.is_suit_tile() && ((int)(tile.tile_type - t.tile_type)).abs() <= 2)) // We have a pair and are waiting on the final triplet
+                    if (tile.tile_type == t.tile_type) // We have two remaining pairs
                     {
-                        readings.add(new HandReading.empty());
-                        return readings;
+                        TilePair pair = new TilePair(tile, t);
+                        ArrayList<TileMeld> new_melds = new ArrayList<TileMeld>();
+                        new_melds.add_all(melds);
+                        new_melds.add(new TileMeld(n1, n2, new Tile(-1, n1.tile_type, false), true));
+                        readings.add(new HandReading(new_melds, pair));
+
+                        pair = new TilePair(n1, n2);
+                        new_melds.clear();
+                        new_melds.add_all(melds);
+                        new_melds.add(new TileMeld(tile, t, new Tile(-1, tile.tile_type, false), true));
+                        readings.add(new HandReading(new_melds, pair));
                     }
+                    else if (tile.is_neighbour(t) || tile.is_second_neighbour(t)) // We have a pair and are waiting on the final triplet
+                    {
+                        TilePair pair = new TilePair(n1, n2);
+
+                        int v1 = (int)t.tile_type;
+                        int v2 = (int)tile.tile_type;
+
+                        Tile t1, t2;
+                        if (v1 < v2)
+                        {
+                            t1 = t;
+                            t2 = tile;
+                        }
+                        else
+                        {
+                            t1 = tile;
+                            t2 = t;
+                        }
+
+                        ArrayList<TileMeld> new_melds = new ArrayList<TileMeld>();
+                        new_melds.add_all(melds);
+
+                        if (tile.is_second_neighbour(t))
+                        {
+                            int middle = (v1 + v2) / 2; // Need a new tile in the middle
+                            new_melds.add(new TileMeld(t1, new Tile(-1, (TileType)middle, false), t2, true));
+                            readings.add(new HandReading(new_melds, pair));
+                        }
+                        else
+                        {
+                            if (!t1.is_terminal_tile())
+                            {
+                                new_melds.add(new TileMeld(new Tile(-1, (TileType)(v1 - 1), false), t1, t2, true));
+                                readings.add(new HandReading(new_melds, pair));
+                            }
+
+                            if (!t2.is_terminal_tile())
+                            {
+                                new_melds.clear();
+                                new_melds.add(new TileMeld(t1, t2, new Tile(-1, (TileType)(v2 + 1), false), true));
+                                readings.add(new HandReading(new_melds, pair));
+                            }
+                        }
+                    }
+
+                    return readings;
                 }
             }
         }

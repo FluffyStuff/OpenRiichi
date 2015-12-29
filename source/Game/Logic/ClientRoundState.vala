@@ -305,7 +305,7 @@ public class ClientRoundState : Object
         }
         else if (action_state == State.TURN)
         {
-            ArrayList<ArrayList<Tile>> closed_kans = TileRules.get_closed_kan_groups(state.self.hand);
+            ArrayList<ArrayList<Tile>> closed_kans = state.self.get_closed_kan_groups();
             ArrayList<Tile> late_kans = TileRules.get_late_kan_tiles(state.self.hand, state.self.calls);
 
             if (closed_kans.size == 1 && late_kans.size == 0)

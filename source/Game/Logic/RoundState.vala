@@ -350,12 +350,7 @@ public class RoundState : Object
 
     public RoundStatePlayer self { get { return players[player_index]; } }
     public Tile? discard_tile { get; private set; }
-
-    public RoundStatePlayer current_player
-    {
-        get { return players[current_index]; }
-    }
-
+    public RoundStatePlayer current_player { get { return players[current_index]; } }
     public int dealer { get; private set; }
     public Wind round_wind { get; private set; }
     public bool game_over { get; private set; }
@@ -664,11 +659,10 @@ public class RoundStatePlayer
 
     public bool can_closed_kan()
     {
-        // TODO: Fix
-        if (do_chii_discard || do_pon_discard || in_riichi)
+        if (do_chii_discard || do_pon_discard)
             return false;
 
-        return TileRules.can_closed_kan(hand);
+        return TileRules.can_closed_kan(hand, in_riichi);
     }
 
     public bool can_closed_kan_with(TileType type)
@@ -720,6 +714,11 @@ public class RoundStatePlayer
         }
 
         return groups;
+    }
+
+    public ArrayList<ArrayList<Tile>> get_closed_kan_groups()
+    {
+        return TileRules.get_closed_kan_groups(hand, in_riichi);
     }
 
     public Tile get_default_discard_tile()

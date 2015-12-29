@@ -28,7 +28,7 @@ class SimpleBot : Bot
         }
         else if (round_state.can_closed_kan())
         {
-            ArrayList<ArrayList<Tile>> groups = TileRules.get_closed_kan_groups(round_state.self.hand);
+            ArrayList<ArrayList<Tile>> groups = round_state.self.get_closed_kan_groups();
             do_closed_kan(groups[0][0].tile_type);
         }
         else
