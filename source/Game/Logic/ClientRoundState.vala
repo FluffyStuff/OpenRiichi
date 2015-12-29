@@ -126,17 +126,17 @@ public class ClientRoundState : Object
         set_continue_state(false);
         set_timer_state(true);
 
-        if (state.self.in_riichi)
-        {
-            ArrayList<Tile> list = new ArrayList<Tile>();
-            list.add(state.self.newest_tile);
+        selection_groups.clear();
 
-            selection_groups.clear();
-            selection_groups.add(new TileSelectionGroup(list, list, TileSelectionGroup.GroupType.RIICHI_WAIT));
-            set_tile_select_groups(selection_groups);
+        ArrayList<Tile> discard_tiles = state.current_player.get_discard_tiles();
+        foreach (Tile tile in discard_tiles)
+        {
+            ArrayList<Tile> t = new ArrayList<Tile>();
+            t.add(tile);
+            selection_groups.add(new TileSelectionGroup(t, t, TileSelectionGroup.GroupType.DISCARD));
         }
-        else
-            set_tile_select_groups(null);
+
+        set_tile_select_groups(selection_groups);
 
         //set_tile_select_state(true);
     }
@@ -238,7 +238,7 @@ public class ClientRoundState : Object
     {
         if (action_state == State.CALL)
         {
-            ArrayList<ArrayList<Tile>> groups = TileRules.get_chii_groups(state.self.hand, state.discard_tile);
+            ArrayList<ArrayList<Tile>> groups = state.get_chii_groups(state.self);
 
             if (groups.size == 1)
             {
@@ -591,10 +591,10 @@ public class TileSelectionGroup
 
     public enum GroupType
     {
+        DISCARD,
         CHII,
         CLOSED_KAN,
         LATE_KAN,
-        RIICHI,
-        RIICHI_WAIT
+        RIICHI
     }
 }

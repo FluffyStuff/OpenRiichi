@@ -47,6 +47,7 @@ namespace GameServer
         public int index { get { return player.index; } }
         public bool in_riichi { get { return player.in_riichi; } }
         public Tile newest_tile { owned get { return player.newest_tile; } }
+        public Tile default_discard_tile { owned get { return player.get_default_discard_tile(); } }
         public ArrayList<Tile> hand { get { return player.hand; } }
     }
 

@@ -268,15 +268,17 @@ public class RoundState : Object
 
     public bool can_chii(RoundStatePlayer player)
     {
-        return wall.can_call && !player.in_riichi && ((current_player.index + 1) % 4 == player.index) && TileRules.can_chii(player.hand, discard_tile);
+        return wall.can_call && ((current_player.index + 1) % 4 == player.index) && player.can_chii(discard_tile);
     }
 
     public bool can_chii_with(RoundStatePlayer player, Tile tile_1, Tile tile_2)
     {
-        ArrayList<Tile> tiles = new ArrayList<Tile>();
-        tiles.add(tile_1);
-        tiles.add(tile_2);
-        return !player.in_riichi && ((current_player.index + 1) % 4 == player.index) && TileRules.can_chii(tiles, discard_tile);
+        return ((current_player.index + 1) % 4 == player.index) && player.can_chii_with(tile_1, tile_2, discard_tile);
+    }
+
+    public ArrayList<ArrayList<Tile>> get_chii_groups(RoundStatePlayer player)
+    {
+        return player.get_chii_groups(discard_tile);
     }
 
     public ArrayList<Tile> get_tenpai_tiles(RoundStatePlayer player)
@@ -366,6 +368,8 @@ public class RoundStatePlayer
 {
     private bool double_riichi = true;
     private bool do_riichi_discard = false;
+    private bool do_chii_discard = false;
+    private bool do_pon_discard = false;
     private bool ippatsu = false;
     private bool dealer;
     private bool tiles_called_on = false;
@@ -408,8 +412,7 @@ public class RoundStatePlayer
 
     public bool discard(Tile tile)
     {
-        if (!has_tile(tile) ||
-            (in_riichi && !do_riichi_discard && tile.ID != newest_tile.ID))
+        if (!can_discard(tile))
             return false;
 
         hand.remove(tile);
@@ -423,6 +426,8 @@ public class RoundStatePlayer
         else
             ippatsu = false;
 
+        do_chii_discard = false;
+        do_pon_discard = false;
         return true;
     }
 
@@ -477,7 +482,7 @@ public class RoundStatePlayer
                 }
         }
 
-        calls.add(new RoundStateCall(RoundStateCall.CallType.LATE_KAN, tiles));
+        calls.add(new RoundStateCall(RoundStateCall.CallType.LATE_KAN, tiles, tile));
         return tiles;
     }
 
@@ -491,7 +496,7 @@ public class RoundStatePlayer
         foreach (Tile tile in tiles)
             hand.remove(tile);
 
-        calls.add(new RoundStateCall(RoundStateCall.CallType.CLOSED_KAN, tiles));
+        calls.add(new RoundStateCall(RoundStateCall.CallType.CLOSED_KAN, tiles, null));
         return tiles;
     }
 
@@ -507,7 +512,7 @@ public class RoundStatePlayer
         tiles.add(tile_2);
         tiles.add(tile_3);
 
-        calls.add(new RoundStateCall(RoundStateCall.CallType.OPEN_KAN, tiles));
+        calls.add(new RoundStateCall(RoundStateCall.CallType.OPEN_KAN, tiles, discard_tile));
     }
 
     public void do_pon(Tile discard_tile, Tile tile_1, Tile tile_2)
@@ -520,7 +525,8 @@ public class RoundStatePlayer
         tiles.add(tile_1);
         tiles.add(tile_2);
 
-        calls.add(new RoundStateCall(RoundStateCall.CallType.PON, tiles));
+        calls.add(new RoundStateCall(RoundStateCall.CallType.PON, tiles, discard_tile));
+        do_pon_discard = true;
     }
 
     public void do_chii(Tile discard_tile, Tile tile_1, Tile tile_2)
@@ -533,7 +539,24 @@ public class RoundStatePlayer
         tiles.add(tile_1);
         tiles.add(tile_2);
 
-        calls.add(new RoundStateCall(RoundStateCall.CallType.CHII, tiles));
+        calls.add(new RoundStateCall(RoundStateCall.CallType.CHII, tiles, discard_tile));
+        do_chii_discard = true;
+    }
+
+    public ArrayList<Tile> get_discard_tiles()
+    {
+        ArrayList<Tile> tiles = new ArrayList<Tile>();
+        if (in_riichi)
+        {
+            tiles.add(newest_tile);
+            return tiles;
+        }
+
+        foreach (Tile tile in hand)
+            if (can_discard(tile))
+                tiles.add(tile);
+
+        return tiles;
     }
 
     public ArrayList<Tile> get_late_kan_tiles(Tile tile)
@@ -579,6 +602,31 @@ public class RoundStatePlayer
         return TileRules.get_score(create_context(true), context);
     }
 
+    public bool can_discard(Tile tile)
+    {
+        if (!has_tile(tile) ||
+            (in_riichi && !do_riichi_discard && tile.ID != newest_tile.ID))
+            return false;
+
+        // Kuikae check
+        if (do_chii_discard)
+        {
+            ArrayList<Tile> open_tiles = new ArrayList<Tile>();
+            open_tiles.add_all(newest_call.tiles);
+            open_tiles.remove(newest_call.call_tile);
+
+            if (TileRules.can_chii(open_tiles, tile))
+                return false;
+        }
+        else if (do_pon_discard)
+        {
+            if (tile.tile_type == newest_call.tiles[0].tile_type)
+                return false;
+        }
+
+        return true;
+    }
+
     public bool can_ron(RoundStateContext context)
     {
         return !temporary_furiten && !TileRules.in_furiten(hand, pond) && TileRules.can_ron(create_context(false), context);
@@ -586,7 +634,7 @@ public class RoundStatePlayer
 
     public bool can_tsumo(RoundStateContext context)
     {
-        return TileRules.can_tsumo(create_context(true), context);
+        return !do_chii_discard && !do_pon_discard && TileRules.can_tsumo(create_context(true), context);
     }
 
     public bool can_riichi()
@@ -603,7 +651,7 @@ public class RoundStatePlayer
 
     public bool can_late_kan()
     {
-        if (in_riichi)
+        if (do_chii_discard || do_pon_discard || in_riichi)
             return false;
 
         return TileRules.can_late_kan(hand, calls);
@@ -617,7 +665,7 @@ public class RoundStatePlayer
     public bool can_closed_kan()
     {
         // TODO: Fix
-        if (in_riichi)
+        if (do_chii_discard || do_pon_discard || in_riichi)
             return false;
 
         return TileRules.can_closed_kan(hand);
@@ -626,6 +674,58 @@ public class RoundStatePlayer
     public bool can_closed_kan_with(TileType type)
     {
         return can_closed_kan() && get_closed_kan_tiles(type).size > 0;
+    }
+
+    public bool can_chii(Tile discard_tile)
+    {
+        if (in_riichi)
+            return false;
+
+        return get_chii_groups(discard_tile).size > 0;
+    }
+
+    public bool can_chii_with(Tile tile_1, Tile tile_2, Tile discard_tile)
+    {
+        if (in_riichi)
+            return false;
+
+        ArrayList<Tile> tiles = new ArrayList<Tile>();
+        tiles.add(tile_1);
+        tiles.add(tile_2);
+
+        if (!TileRules.can_chii(tiles, discard_tile))
+            return false;
+
+        foreach (Tile tile in hand)
+        {
+            if (tile == tile_1 || tile == tile_2)
+                continue;
+
+            if (!TileRules.can_chii(tiles, tile))
+                return true;
+        }
+
+        return false;
+    }
+
+    public ArrayList<ArrayList<Tile>> get_chii_groups(Tile discard_tile)
+    {
+        ArrayList<ArrayList<Tile>> groups = TileRules.get_chii_groups(hand, discard_tile);
+
+        for (int i = 0; i < groups.size; i++)
+        {
+            ArrayList<Tile> group = groups[i];
+            if (!can_chii_with(group[0], group[1], discard_tile))
+                groups.remove_at(i--);
+        }
+
+        return groups;
+    }
+
+    public Tile get_default_discard_tile()
+    {
+        ArrayList<Tile> tiles = get_discard_tiles();
+        return tiles[tiles.size - 1];
     }
 
     public bool in_tenpai()
@@ -661,6 +761,7 @@ public class RoundStatePlayer
     public ArrayList<RoundStateCall> calls { get; private set; }
     public bool in_riichi { get; private set; }
     public Tile newest_tile { owned get { return hand[hand.size - 1]; } }
+    public RoundStateCall newest_call { owned get { return calls[calls.size - 1]; } }
 }
 
 class RoundStateWall

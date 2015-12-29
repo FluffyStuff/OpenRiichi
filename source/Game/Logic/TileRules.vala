@@ -548,14 +548,16 @@ public class TileRules
 
 public class RoundStateCall : Object
 {
-    public RoundStateCall(CallType type, ArrayList<Tile> tiles)
+    public RoundStateCall(CallType type, ArrayList<Tile> tiles, Tile? call_tile)
     {
         call_type = type;
         this.tiles = tiles;
+        this.call_tile = call_tile;
     }
 
     public CallType call_type { get; private set; }
     public ArrayList<Tile> tiles { get; private set; }
+    public Tile? call_tile { get; private set; }
 
     public enum CallType
     {

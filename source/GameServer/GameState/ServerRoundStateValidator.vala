@@ -100,7 +100,7 @@ namespace GameServer
         public Tile default_tile_discard()
         {
             ServerRoundStatePlayer player = get_current_player();
-            Tile tile = player.newest_tile;
+            Tile tile = player.default_discard_tile;
 
             discard_tile(tile.ID);
             return tile;

@@ -75,8 +75,7 @@ class SimpleBot : Bot
 
     private Tile get_discard_tile()
     {
-        ArrayList<Tile> tiles = new ArrayList<Tile>();
-        tiles.add_all(round_state.self.hand);
+        ArrayList<Tile> tiles = round_state.self.get_discard_tiles();
 
         ArrayList<Tile> copy = new ArrayList<Tile>();
         foreach (Tile tile in tiles)
