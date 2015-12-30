@@ -104,11 +104,16 @@ class SimpleBot : Bot
 
         foreach (Tile tile in tiles)
         {
-            if (tile.is_wind_tile() || tile.is_dragon_tile())
+            if (tile.is_wind_tile())
             {
                 if (!tile.is_wind(round_state.self.wind) && !tile.is_wind(round_state.round_wind))
                     return tile;
                 else if (count(tile) <= 1)
+                    return tile;
+            }
+            if (tile.is_dragon_tile())
+            {
+                if(count(tile) <= 1)
                     return tile;
             }
         }
