@@ -448,6 +448,7 @@ public class ClientRoundState : Object
     {
         decision_finished();
 
+        state.calls_finished();
         state.tile_draw();
         game_tile_draw(state.current_player.index);
     }
@@ -466,7 +467,7 @@ public class ClientRoundState : Object
         decision_finished();
 
         ServerMessageDraw draw = (ServerMessageDraw)message;
-        state.game_draw();
+        state.calls_finished();
         int[] tenpai = draw.get_tenpai_indices();
         result = new RoundFinishResult.draw(tenpai);
         finished = true;

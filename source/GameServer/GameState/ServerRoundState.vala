@@ -341,9 +341,9 @@ namespace GameServer
         private void next_turn()
         {
             // Game over
-            if (validator.tiles_empty)
+            if (validator.game_draw)
             {
-                game_tiles_empty();
+                draw_situation();
                 return;
             }
 
@@ -354,7 +354,7 @@ namespace GameServer
 
         }
 
-        private void game_tiles_empty()
+        private void draw_situation()
         {
             ArrayList<ServerRoundStatePlayer> tenpai_players = validator.get_tenpai_players();
             ArrayList<Tile> tiles = new ArrayList<Tile>();
@@ -366,7 +366,6 @@ namespace GameServer
                 tiles.add_all(tenpai_players[i].hand);
             }
 
-            validator.game_draw();
             game_draw(tenpai_indices, tiles);
             game_over();
         }

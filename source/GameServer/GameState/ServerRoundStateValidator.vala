@@ -37,8 +37,14 @@ namespace GameServer
         {
             ArrayList<ServerRoundStatePlayer> players = new ArrayList<ServerRoundStatePlayer>();
 
-            foreach (var player in state.get_tenpai_players())
-                players.add(this.players[player.index]);
+            if (state.game_draw_type == GameDrawType.NONE ||
+                state.game_draw_type == GameDrawType.EMPTY_WALL ||
+                state.game_draw_type == GameDrawType.FOUR_RIICHI ||
+                state.game_draw_type == GameDrawType.TRIPLE_RON)
+            {
+                foreach (var player in state.get_tenpai_players())
+                    players.add(this.players[player.index]);
+            }
 
             return players;
         }
@@ -86,6 +92,8 @@ namespace GameServer
 
             if (players.size != 0)
                 action_state = ActionState.WAITING_CALLS;
+            else
+                state.calls_finished();
 
             return players;
         }
@@ -217,11 +225,6 @@ namespace GameServer
             return true;
         }
 
-        public void game_draw()
-        {
-            state.game_draw();
-        }
-
         public CallResult? get_call()
         {
             CallResult? result = null;
@@ -266,6 +269,7 @@ namespace GameServer
             }
 
             action_state = ron ? ActionState.FINISHED : ActionState.WAITING_TURN;
+            state.calls_finished();
             return result;
         }
 
@@ -293,6 +297,7 @@ namespace GameServer
         }
 
         public bool game_over { get { return state.game_over; } }
+        public bool game_draw { get { return state.game_draw_type != GameDrawType.NONE; } }
         public bool tiles_empty { get { return state.tiles_empty; } }
 
         private enum ActionState

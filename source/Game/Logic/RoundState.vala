@@ -34,6 +34,8 @@ public class RoundState : Object
 
         for (int i = 0; i < players.length; i++)
             players[i] = new RoundStatePlayer(i, i == dealer, (Wind)((i - dealer + 4) % 4), can_riichi[i]);
+
+        game_draw_type = GameDrawType.NONE;
     }
 
     public void start()
@@ -72,6 +74,65 @@ public class RoundState : Object
         t.dora = tile.dora;
     }
 
+    public void calls_finished()
+    {
+        if (wall.empty)
+        {
+            game_over = true;
+            game_draw_type = GameDrawType.EMPTY_WALL;
+            return;
+        }
+
+        bool four_riichi = true;
+        bool diff = false;
+        int count = 0;
+
+        foreach (RoundStatePlayer player in players)
+        {
+            if (!player.in_riichi)
+                four_riichi = false;
+
+            if ((count += player.get_kan_count()) != 4)
+                diff = true;
+        }
+
+        if (count == 4 && diff) // Four kans game draw
+        {
+            game_over = true;
+            game_draw_type = GameDrawType.FOUR_KANS;
+            return;
+        }
+
+        if (four_riichi) // Four riichi game draw
+        {
+            game_over = true;
+            game_draw_type = GameDrawType.FOUR_RIICHI;
+            return;
+        }
+
+        if (turn_counter == 4 && !flow_interrupted)
+        {
+            bool four_winds = true;
+            for (int i = 0; i < players.length; i++)
+            {
+                if (players[i].pond.size != 1 ||
+                   !players[i].pond[0].is_wind_tile() ||
+                    players[i].pond[0].tile_type != players[0].pond[0].tile_type)
+                {
+                    four_winds = false;
+                    break;
+                }
+            }
+
+            if (four_winds) // Four winds game draw
+            {
+                game_over = true;
+                game_draw_type = GameDrawType.FOUR_WINDS;
+                return;
+            }
+        }
+    }
+
     public Tile tile_draw()
     {
         if (discard_tile != null)
@@ -103,9 +164,6 @@ public class RoundState : Object
 
         discard_tile = tile;
         rinshan = false;
-
-        if (wall.empty)
-            game_over = true;
 
         return true;
     }
@@ -307,11 +365,6 @@ public class RoundState : Object
         return players;
     }
 
-    public void game_draw()
-    {
-        game_over = true;
-    }
-
     private void interrupt_flow()
     {
         foreach (RoundStatePlayer player in players)
@@ -354,6 +407,7 @@ public class RoundState : Object
     public int dealer { get; private set; }
     public Wind round_wind { get; private set; }
     public bool game_over { get; private set; }
+    public GameDrawType game_draw_type { get; private set; }
     public Tile newest_dora { get { return wall.newest_dora; } }
     public ArrayList<Tile> ura_dora { get { return wall.ura_dora; } }
     public bool tiles_empty { get { return wall.empty; } }
@@ -721,6 +775,18 @@ public class RoundStatePlayer
         return TileRules.get_closed_kan_groups(hand, in_riichi);
     }
 
+    public int get_kan_count()
+    {
+        int count = 0;
+        foreach (RoundStateCall call in calls)
+            if (call.call_type == RoundStateCall.CallType.OPEN_KAN ||
+                call.call_type == RoundStateCall.CallType.CLOSED_KAN ||
+                call.call_type == RoundStateCall.CallType.LATE_KAN)
+                count++;
+
+        return count;
+    }
+
     public Tile get_default_discard_tile()
     {
         ArrayList<Tile> tiles = get_discard_tiles();
@@ -879,4 +945,16 @@ class RoundStateWall
     public ArrayList<Tile> dora { get; private set; }
     public ArrayList<Tile> ura_dora { get; private set; }
     public Tile[] tiles { get; private set; }
+}
+
+public enum GameDrawType
+{
+    NONE,
+    EMPTY_WALL,
+    FOUR_WINDS,
+    FOUR_KANS,
+    FOUR_RIICHI,
+    VOID_HAND,
+    // TODO: Implement multiple ron
+    TRIPLE_RON
 }
