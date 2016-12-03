@@ -1,0 +1,12 @@
+rsc/archive/*
+rsc/anchive
+bin/OpenRiichi*
+*.c
+*.o
+*.exe
+*.rar
+*.DS_Store
+*.swp
+*.blend1
+*.layout
+*.depend
