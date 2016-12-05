@@ -89,7 +89,6 @@ gcc \
 libgee-0.8-dev \
 libglew-dev \
 libpango1.0-dev \
-libsoil-dev \
 libsdl2-image-dev \
 libsdl2-dev \
 libcsfml-dev \

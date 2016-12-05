@@ -4,7 +4,7 @@ public class Environment
 {
     private const int VERSION_MAJOR = 0;
     private const int VERSION_MINOR = 1;
-    private const int VERSION_PATCH = 2;
+    private const int VERSION_PATCH = 3;
     private const int VERSION_REVIS = 0;
 
     public const int MIN_NAME_LENGTH =  2;

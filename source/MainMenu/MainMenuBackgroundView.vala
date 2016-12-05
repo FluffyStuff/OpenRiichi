@@ -16,7 +16,7 @@ class MainMenuBackgroundView : View2D
         tile_view.inner_anchor = Vec2(0, 0.5f);
         tile_view.outer_anchor = Vec2(0, 0.5f);
 
-        text = new ImageControl("Menu/RiichiMahjong");
+        text = new ImageControl("Menu/OpenRiichi");
         add_child(text);
         text.inner_anchor = Vec2(0.5f, 1);
         text.outer_anchor = Vec2(0.5f, 1);
