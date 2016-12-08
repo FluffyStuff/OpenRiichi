@@ -1,7 +1,7 @@
 using Gee;
 using GameServer;
 
-class ServerMenuView : MainMenuSubView
+class ServerMenuView : MenuSubView
 {
     private ServerController? server = null;
     private IGameConnection? connection = null;

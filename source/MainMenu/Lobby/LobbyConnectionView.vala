@@ -2,7 +2,7 @@ using Gee;
 using GameServer;
 using Lobby;
 
-class LobbyConnectionView : MainMenuSubView
+class LobbyConnectionView : MenuSubView
 {
     private LabelControl message_label = new LabelControl();
     private MenuTextButton ok_button;
@@ -103,7 +103,7 @@ class LobbyConnectionView : MainMenuSubView
     protected override string get_name() { return "Online lobby"; }
 }
 
-class LobbySelectionView : MainMenuSubView
+class LobbySelectionView : MenuSubView
 {
     private LobbyInformationListControl? lobby_info;
     private LobbyInformation? selected_lobby;

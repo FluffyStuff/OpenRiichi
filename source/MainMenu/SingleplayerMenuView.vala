@@ -1,6 +1,6 @@
 using Gee;
 
-class SingleplayerMenuView : MainMenuSubView
+class SingleplayerMenuView : MenuSubView
 {
     private GameController controller;
 
@@ -51,7 +51,7 @@ class SingleplayerMenuView : MainMenuSubView
         return buttons;
     }
 
-    private void create_game(MainMenuSubView view)
+    private void create_game(MenuSubView view)
     {
         CreateServerView v = (CreateServerView)view;
         ServerMenuView s = new ServerMenuView.create_server(v.player_name, false);
@@ -59,7 +59,7 @@ class SingleplayerMenuView : MainMenuSubView
         load_sub_view(s);
     }
 
-    private void load_log(MainMenuSubView view)
+    private void load_log(MenuSubView view)
     {
         SelectGameLogMenuView v = (SelectGameLogMenuView)view;
         ServerMenuView s = new ServerMenuView.use_log(v.log);

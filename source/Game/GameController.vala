@@ -145,7 +145,7 @@ class GameController : Object
         game.start_round(info);
         menu = new GameMenuView(settings, index, start_info.decision_time, start_info.round_wait_time, start_info.hanchan_wait_time, start_info.game_wait_time);
         menu.display_score_pressed.connect(display_score_pressed);
-        menu.score_timer_expired.connect(score_timer_expired);
+        menu.score_finished.connect(menu_score_finished);
 
         renderer = new GameRenderView(info, player_index, game.round_wind, game.dealer_index, options, game.score);
         parent_view.add_child(renderer);
@@ -165,7 +165,7 @@ class GameController : Object
             menu.display_score(game.score, false, false);
     }
 
-    private void score_timer_expired()
+    private void menu_score_finished()
     {
         if (game.game_is_finished || is_disconnected)
             game_finished = true;

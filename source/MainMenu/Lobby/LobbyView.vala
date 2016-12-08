@@ -1,7 +1,7 @@
 using Gee;
 using GameServer;
 
-class LobbyView : MainMenuSubView
+class LobbyView : MenuSubView
 {
     private ClientLobby lobby;
     private LobbyConnection connection;

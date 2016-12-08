@@ -1,6 +1,6 @@
 using Gee;
 
-class ServerSettingsView : MainMenuSubView
+class ServerSettingsView : MenuSubView
 {
     private OptionItemControl riichi_option;
     private OptionItemControl aka_option;

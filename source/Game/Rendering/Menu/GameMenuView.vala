@@ -35,7 +35,7 @@ public class GameMenuView : View2D
     public signal void continue_pressed();
     public signal void void_hand_pressed();
     public signal void display_score_pressed();
-    public signal void score_timer_expired();
+    public signal void score_finished();
 
     private void press_chii() { chii_pressed(); }
     private void press_pon() { pon_pressed(); }
@@ -67,6 +67,8 @@ public class GameMenuView : View2D
         this.round_time = round_time;
         this.hanchan_time = hanchan_time;
         this.game_time = game_time;
+
+        score_view = new ScoringView(score, player_index, timer, round_time, hanchan_time, game_time, force_game_time);
     }
 
     public override void added()
@@ -232,22 +234,19 @@ public class GameMenuView : View2D
         timer.visible = enabled;
     }
 
-    public void display_score(RoundScoreState score, bool timer, bool force_game_time)
+    public void update_scores(RoundScoreState[] scores)
     {
-        if (score_view != null)
-        {
-            if (score_view.score != score)
-                remove_child(score_view);
-            else
-            {
-                score_view.visible = true;
-                return;
-            }
-        }
+        if ()
+        score_view.timer_expired.connect(do_score_finished);
+        score_view.update_scores(scores);
+    }
 
-        score_view = new ScoringView(score, player_index, timer, round_time, hanchan_time, game_time, force_game_time);
+    public void display_score(bool timer, bool force_game_time)
+    {
+        if (score_view == null)
+            return;
+        score_view.visible = true;
         add_child(score_view);
-        score_view.timer_expired.connect(do_score_timer_expired);
     }
 
     public void hide_score()
@@ -275,9 +274,9 @@ public class GameMenuView : View2D
         remove_child(view);
     }
 
-    private void do_score_timer_expired()
+    private void do_score_finished()
     {
-        score_timer_expired();
+        score_finished();
     }
 
     protected override void do_process(DeltaArgs delta)

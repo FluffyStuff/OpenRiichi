@@ -1,6 +1,6 @@
 using Gee;
 
-class MultiplayerMenuView : MainMenuSubView
+class MultiplayerMenuView : MenuSubView
 {
     private GameController controller;
 
@@ -25,7 +25,7 @@ class MultiplayerMenuView : MainMenuSubView
         load_sub_view(view);
     }
 
-    private void create_server(MainMenuSubView view)
+    private void create_server(MenuSubView view)
     {
         CreateServerView v = (CreateServerView)view;
         ServerMenuView s = new ServerMenuView.create_server(v.player_name, true);
@@ -33,7 +33,7 @@ class MultiplayerMenuView : MainMenuSubView
         load_sub_view(s);
     }
 
-    private void join_server(MainMenuSubView view)
+    private void join_server(MenuSubView view)
     {
         JoinMenuView v = (JoinMenuView)view;
         ServerMenuView s = new ServerMenuView.join_server(v.connection, false);

@@ -5,6 +5,8 @@ client written in the [Vala](https://wiki.gnome.org/Projects/Vala) programming l
 The client is cross platform, with official builds for Windows, Linux, and MacOS. It supports singleplayer and multiplayer, with or without bots.
 It features all the standard riichi rules, as well as some optional ones. It also supports game logging, so games can be viewed again.
 
+Prebuilt binaries can be found in the [release](https://github.com/FluffyStuff/OpenRiichi/releases) section.
+
 <div style="text-align:center">
 <img src ="https://raw.githubusercontent.com/FluffyStuff/riichi-data/master/screenshots/screenshot1.png" />
 <img src ="https://raw.githubusercontent.com/FluffyStuff/riichi-data/master/screenshots/screenshot5.png" />

@@ -1,13 +1,13 @@
 using Gee;
 
-abstract class MainMenuSubView : View2D
+abstract class MenuSubView : View2D
 {
     private const int padding = 30;
 
-    private signal void _finish(MainMenuSubView view);
-    private signal void _back(MainMenuSubView view);
-    public signal void finish(MainMenuSubView view);
-    public signal void back(MainMenuSubView view);
+    private signal void _finish(MenuSubView view);
+    private signal void _back(MenuSubView view);
+    public signal void finish(MenuSubView view);
+    public signal void back(MenuSubView view);
 
     protected virtual void load() {}
     protected virtual void load_finished() {}
@@ -71,7 +71,7 @@ abstract class MainMenuSubView : View2D
         load_finished();
     }
 
-    public void load_sub_view(MainMenuSubView view)
+    public void load_sub_view(MenuSubView view)
     {
         view._finish.connect(sub_finished);
         view._back.connect(sub_finished);
@@ -79,7 +79,7 @@ abstract class MainMenuSubView : View2D
         add_child(view);
     }
 
-    private void sub_finished(MainMenuSubView view)
+    private void sub_finished(MenuSubView view)
     {
         view._finish.disconnect(sub_finished);
         view._back.disconnect(sub_finished);

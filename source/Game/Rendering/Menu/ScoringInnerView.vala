@@ -1,11 +1,8 @@
 using Gee;
 
-public class ScoringView : View2D
+public class ScoringInnerView : View2D
 {
     private int player_index;
-    private LabelControl time_label;
-    private RectangleControl rectangle;
-    //private GameMenuButton next_button;
     private ScoringPointsView? view = null;
     private ScoringPlayerElement bottom;
     private ScoringPlayerElement right;
@@ -14,62 +11,23 @@ public class ScoringView : View2D
     private ScoringStickNumberView riichi_view;
     private ScoringStickNumberView renchan_view;
     private int padding = 10;
-    private bool display_timer;
-    private float time;
-    private float start_time = 0;
 
     public signal void timer_expired();
 
-    public ScoringView(RoundScoreState[] scores, int player_index, int round_time, int hanchan_time, int game_time, bool force_game_time)
+    public ScoringInnerView(RoundScoreState score, int player_index, float total_time)
     {
         this.score = score;
-        display_timer = timer;
         this.player_index = player_index;
-        relative_size = Size2(0.9f, 0.9f);
-
-        if (score.game_is_finished || force_game_time)
-            time = game_time;
-        else if (score.hanchan_is_finished)
-            time = hanchan_time;
-        else
-            time = round_time;
     }
 
     public override void added()
     {
-        ResetContainer reset = new ResetContainer();
-        add_child(reset);
-        rectangle = new RectangleControl();
-        reset.add_child(rectangle);
-        rectangle.resize_style = ResizeStyle.RELATIVE;
-        rectangle.color = Color.with_alpha(0.7f);
-        rectangle.selectable = true;
-        rectangle.cursor_type = CursorType.NORMAL;
-
-        if (display_timer)
-        {
-            time_label = new LabelControl();
-            add_child(time_label);
-            time_label.inner_anchor = Vec2(1, 0);
-            time_label.outer_anchor = Vec2(1, 0);
-            time_label.position = Vec2(-padding, padding);
-            time_label.font_size = 60;
-        }
-
-        /*next_button = new GameMenuButton("Next");
-        next_button.selectable = true;
-        next_button.inner_anchor = Vec2(1, 0);
-        next_button.outer_anchor = Vec2(1, 0);
-        next_button.position = Vec2(-padding, padding);
-        add_control(next_button);*/
-
         var player = score.players[player_index];
         bottom = new ScoringPlayerElement(player.index, player.wind, player.name, player.points, player.transfer, player.score);
         add_child(bottom);
         bottom.resize_style = ResizeStyle.ABSOLUTE;
         bottom.inner_anchor = Vec2(0.5f, 0);
         bottom.outer_anchor = Vec2(0.5f, 0);
-        bottom.position = Vec2(0, padding);
         bottom.show_score = score.hanchan_is_finished;
 
         player = score.players[(player_index + 1) % 4];
@@ -78,7 +36,6 @@ public class ScoringView : View2D
         right.resize_style = ResizeStyle.ABSOLUTE;
         right.inner_anchor = Vec2(1, 0.5f);
         right.outer_anchor = Vec2(1, 0.5f);
-        right.position = Vec2(-padding, 0);
         right.show_score = score.hanchan_is_finished;
 
         player = score.players[(player_index + 2) % 4];
@@ -87,7 +44,6 @@ public class ScoringView : View2D
         top.resize_style = ResizeStyle.ABSOLUTE;
         top.inner_anchor = Vec2(0.5f, 1);
         top.outer_anchor = Vec2(0.5f, 1);
-        top.position = Vec2(0, -padding);
         top.show_score = score.hanchan_is_finished;
 
         player = score.players[(player_index + 3) % 4];
@@ -96,7 +52,6 @@ public class ScoringView : View2D
         left.resize_style = ResizeStyle.ABSOLUTE;
         left.inner_anchor = Vec2(0, 0.5f);
         left.outer_anchor = Vec2(0, 0.5f);
-        left.position = Vec2(padding, 0);
         left.show_score = score.hanchan_is_finished;
 
         riichi_view = new ScoringStickNumberView("1000", true);

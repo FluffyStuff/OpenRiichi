@@ -1,6 +1,6 @@
 using Gee;
 
-private class OptionsMenuView : MainMenuSubView
+private class OptionsMenuView : MenuSubView
 {
     private ArrayList<SubOptionsMenuView> menus = new ArrayList<SubOptionsMenuView>();
 
@@ -106,7 +106,7 @@ private class MenuOptionsButton : MenuTextButton
     public SubOptionsMenuView menu { get; private set; }
 }
 
-private abstract class SubOptionsMenuView : MainMenuSubView
+private abstract class SubOptionsMenuView : MenuSubView
 {
     protected Options options;
     protected string apply_text;

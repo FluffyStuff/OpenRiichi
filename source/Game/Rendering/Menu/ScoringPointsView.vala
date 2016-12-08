@@ -163,7 +163,7 @@ public class ScoringPointsView : View2D
 
     protected override void do_process(DeltaArgs args)
     {
-        if (switches <= 0)
+        if (switches <= 0 || delay <= 0)
             return;
 
         if (timer.active(args.time))

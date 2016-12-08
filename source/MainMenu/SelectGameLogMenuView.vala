@@ -1,6 +1,6 @@
 using Gee;
 
-class SelectGameLogMenuView : MainMenuSubView
+class SelectGameLogMenuView : MenuSubView
 {
     private GameLogsListControl log_list;
     private MenuTextButton load_button;

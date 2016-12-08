@@ -68,12 +68,12 @@ macDebug:
 mac:
 	$(VALAC) $(O) $(DIRS) $(PKGS) $(MAC) $(VAPI) $(OTHER) -D MAC
 
-winowsDebug:
+windowsDebug:
 	$(VALAC) $(O) $(DIRS) $(PKGS) $(WINDOWS) $(VAPI) $(OTHER) $(DEBUG) -D WINDOWS
 
 windows:
 	$(VALAC) $(O) $(DIRS) $(PKGS) $(WINDOWS) $(VAPI) $(OTHER) -D WINDOWS -X -mwindows
 
 clean:
-	rm bin/$(NAME)*
+	rm -f bin/$(NAME)*
 	find . -type f -name '*.c' -exec rm {} +

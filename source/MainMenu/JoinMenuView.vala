@@ -1,7 +1,7 @@
 using Gee;
 using GameServer;
 
-class JoinMenuView : MainMenuSubView
+class JoinMenuView : MenuSubView
 {
     private MenuTextButton join_button;
     private LabelControl info_label;
