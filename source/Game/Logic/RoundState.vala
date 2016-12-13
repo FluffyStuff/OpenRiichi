@@ -902,7 +902,7 @@ public class RoundStatePlayer
             if (call.call_type != RoundStateCall.CallType.CLOSED_KAN)
                 return false;
 
-        return TileRules.tenpai_tiles(hand, calls).size > 0;
+        return !revealed || TileRules.tenpai_tiles(hand, calls).size > 0;
     }
 
     public bool can_late_kan()
