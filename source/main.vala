@@ -6,6 +6,8 @@ private static bool debug =
 #endif
 ;
 
+private static bool multithread_rendering = true;
+
 private static void parse_args(string[] args)
 {
     for (int i = 0; i < args.length; i++)
@@ -19,6 +21,10 @@ private static void parse_args(string[] args)
             debug = true;
         else if (arg == "-no-debug")
             debug = false;
+        else if (arg == "-multithread-rendering")
+            multithread_rendering = true;
+        else if (arg == "-no-multithread-rendering")
+            multithread_rendering = false;
     }
 }
 
@@ -28,44 +34,25 @@ public static int main(string[] args)
 
     Environment.init(debug);
 
-    Engine engine = new Engine();
-    if (!engine.init())
-    {
-        Environment.log(LogType.ERROR, "Main", "Could not init engine");
-        return -1;
-    }
-
     while (true)
     {
         Options options = new Options.from_disk();
-        engine.set_multisampling(options.anti_aliasing == Options.OnOffEnum.ON ? 2 : 0);
-
+        int multisamples = options.anti_aliasing == Options.OnOffEnum.ON ? 2 : 0;
         bool fullscreen = options.fullscreen == Options.OnOffEnum.ON;
-        var wnd = engine.create_window("OpenRiichi", 1280, 720, fullscreen);
-        if (wnd == null)
+        string window_name = "OpenRiichi";
+        int window_width = 1280, window_height = 720;
+
+        SDLGLEngine engine = new SDLGLEngine(multithread_rendering);
+        if (!engine.init(window_name, window_width, window_height, multisamples, fullscreen))
         {
-            Environment.log(LogType.ERROR, "Main", "Could not create window");
+            Environment.log(LogType.ERROR, "Main", "Could not init engine");
             return -1;
         }
 
-        var context = engine.create_context(wnd);
-        if (context == null)
-        {
-            Environment.log(LogType.ERROR, "Main", "Could not create graphics context");
-            return -1;
-        }
-
-        SDLWindowTarget sdlWindow = new SDLWindowTarget((owned)wnd, (owned)context, fullscreen);
-        OpenGLRenderer renderer = new OpenGLRenderer(sdlWindow);
-        MainWindow window = new MainWindow(sdlWindow, renderer);
-
-        if (!renderer.start())
-        {
-            Environment.log(LogType.ERROR, "Main", "Could not start renderer");
-            return -1;
-        }
+        MainWindow window = new MainWindow(engine.window, engine.renderer);
 
         window.show();
+        engine.stop();
 
         if (!window.do_restart)
             break;
