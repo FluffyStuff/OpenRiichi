@@ -28,16 +28,19 @@ uniform float alpha;
 
 vec4 base_color_blend(vec4 color, vec4 texture_color, float material_multiplier, int type)
 {
-	if (type == BLEND_COLOR)
+	switch (type)
+	{
+	case BLEND_COLOR:
 		return color;
-	else if (type == BLEND_TEXTURE)
+	case BLEND_TEXTURE:
 		return texture_color;
-	else if (type == BLEND_WITH_MATERIAL_MULTIPLIER)
+	case BLEND_WITH_MATERIAL_MULTIPLIER:
 		return color * color.a * (1.0 - texture_color.a * material_multiplier) + texture_color * texture_color.a * material_multiplier;
-	else if (type == BLEND_WITHOUT_MATERIAL_MULTIPLIER)
+	case BLEND_WITHOUT_MATERIAL_MULTIPLIER:
 		return color * color.a * (1.0 - texture_color.a)                       + texture_color * texture_color.a * material_multiplier;
-	else
+	default:
 		return vec4(0);
+	}
 }
 
 void main()
@@ -57,11 +60,5 @@ void main()
 	diffuse  *= diffuse_strength;
 	specular *= specular_strength;
 	
-	vec4 out_color = ambient + diffuse + specular;
-	if (out_color.a <= 0)
-		discard;
-	
-	out_color.a = alpha;
-	
-	gl_FragColor = out_color;
+	gl_FragColor = vec4(ambient.xyz + diffuse.xyz + specular.xyz, alpha);
 }
