@@ -1,5 +1,3 @@
-using SDL;
-using GL;
 using GameServer;
 
 public class MainWindow : RenderWindow

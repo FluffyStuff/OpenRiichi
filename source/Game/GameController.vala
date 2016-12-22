@@ -59,6 +59,8 @@ class GameController : Object
             {
                 ServerMessageRoundStart start = message as ServerMessageRoundStart;
                 create_round(start.info);
+                if (menu != null)
+                    menu.update_scores(game.scores.to_array());
             }
             else if (message is ServerMessagePlayerLeft && !game.game_is_finished)
             {
@@ -71,8 +73,9 @@ class GameController : Object
         {
             if (round.finished)
             {
-                var result = game.round_finished(round.result);
-                menu.display_score(result, true, false);
+                game.round_finished(round.result);
+                menu.update_scores(game.scores.to_array());
+                menu.round_finished();
             }
         }
     }
@@ -97,7 +100,7 @@ class GameController : Object
         round.set_riichi_state.connect(menu.set_riichi);
         round.set_tsumo_state.connect(menu.set_tsumo);
         round.set_ron_state.connect(menu.set_ron);
-        round.set_timer_state.connect(menu.set_timer);
+        round.set_timer_state.connect(menu.set_move_timer);
         round.set_continue_state.connect(menu.set_continue);
         round.set_void_hand_state.connect(menu.set_void_hand);
         round.set_furiten_state.connect(menu.set_furiten);
@@ -143,8 +146,7 @@ class GameController : Object
         int index = player_index == -1 ? 0 : player_index;
 
         game.start_round(info);
-        menu = new GameMenuView(settings, index, start_info.decision_time, start_info.round_wait_time, start_info.hanchan_wait_time, start_info.game_wait_time);
-        menu.display_score_pressed.connect(display_score_pressed);
+        menu = new GameMenuView(settings, index, start_info.timings);
         menu.score_finished.connect(menu_score_finished);
 
         renderer = new GameRenderView(info, player_index, game.round_wind, game.dealer_index, options, game.score);
@@ -157,12 +159,6 @@ class GameController : Object
     private void declared_riichi(int player_index, bool open)
     {
         game.declare_riichi(player_index);
-    }
-
-    private void display_score_pressed()
-    {
-        if (menu != null)
-            menu.display_score(game.score, false, false);
     }
 
     private void menu_score_finished()
@@ -179,7 +175,7 @@ class GameController : Object
         {
             if (round != null)
                 round.disconnected();
-            menu.display_score(game.score, true, true);
+            menu.game_over();
             menu.display_disconnected();
         }
     }

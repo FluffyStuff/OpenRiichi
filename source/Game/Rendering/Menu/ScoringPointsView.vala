@@ -1,8 +1,9 @@
 using Gee;
 
-public class ScoringPointsView : View2D
+class ScoringPointsView : View2D
 {
     private RoundScoreState score;
+    private AnimationTimings delays;
     private LabelControl score_label;
     private GameMenuButton next_button;
     private GameMenuButton prev_button;
@@ -19,10 +20,13 @@ public class ScoringPointsView : View2D
 
     public signal void score_selected(int player_index);
 
-    public ScoringPointsView(RoundScoreState score, float total_time)
+    public ScoringPointsView(RoundScoreState score, AnimationTimings delays, bool animate)
     {
         this.score = score;
-        this.total_time = total_time;
+        this.delays = delays;
+
+        if (animate)
+            total_time = delays.get_animation_round_end_delay(score);
     }
 
     public override void added()

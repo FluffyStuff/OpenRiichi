@@ -83,23 +83,16 @@ namespace GameServer
                 if (round.finished)
                 {
                     RoundFinishResult result = round.result;
-                    state.round_finished(result);
+                    var score = state.round_finished(result);
+
+                    timer.set_time(start_info.timings.get_animation_round_end_delay(score));
 
                     if (state.game_is_finished)
-                    {
                         action_state = State.GAME_FINISHED;
-                        timer.set_time(start_info.game_wait_time);
-                    }
                     else if (state.hanchan_is_finished)
-                    {
                         action_state = State.HANCHAN_FINISHED;
-                        timer.set_time(start_info.hanchan_wait_time);
-                    }
                     else if (state.round_is_finished)
-                    {
                         action_state = State.ROUND_FINISHED;
-                        timer.set_time(start_info.round_wait_time);
-                    }
                 }
             }
             else if (action_state == State.ROUND_FINISHED || action_state == State.HANCHAN_FINISHED)
@@ -158,7 +151,7 @@ namespace GameServer
             action_state = State.ACTIVE;
             state.start_round(info.info);
 
-            round = new ServerGameRound(info.info, settings, players, spectators, state.round_wind, state.dealer_index, rnd, state.can_riichi(), start_info.decision_time, info.tiles, reveal);
+            round = new ServerGameRound(info.info, settings, players, spectators, state.round_wind, state.dealer_index, rnd, state.can_riichi(), start_info.timings, info.tiles, reveal);
             log_round(info.info, round.tiles);
 
             round.declare_riichi.connect(state.declare_riichi);

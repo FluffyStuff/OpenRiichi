@@ -5,14 +5,22 @@
 		<Option title="OpenRiichi" />
 		<Option makefile_is_custom="1" />
 		<Option pch_mode="2" />
-		<Option compiler="vala_compiler" />
+		<Option compiler="gcc" />
+		<MakeCommands>
+			<Build command="" />
+			<CompileFile command="" />
+			<Clean command="" />
+			<DistClean command="" />
+			<AskRebuildNeeded command="" />
+			<SilentBuild command=" &gt; $(CMD_NULL)" />
+		</MakeCommands>
 		<Build>
 			<Target title="windowsDebug">
 				<Option output="bin/OpenRiichi" prefix_auto="1" extension_auto="1" />
 				<Option working_dir="bin/" />
 				<Option object_output="obj/Debug/" />
 				<Option type="1" />
-				<Option compiler="mingw64" />
+				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-g" />
 				</Compiler>
@@ -22,7 +30,7 @@
 				<Option working_dir="bin/" />
 				<Option object_output="obj/Release/" />
 				<Option type="1" />
-				<Option compiler="mingw64" />
+				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-O2" />
 				</Compiler>
@@ -30,32 +38,28 @@
 					<Add option="-s" />
 				</Linker>
 			</Target>
-			<Target title="Linux">
+			<Target title="debug">
 				<Option output="bin/OpenRiichi" prefix_auto="1" extension_auto="1" />
 				<Option working_dir="bin/" />
 				<Option type="1" />
-				<Option compiler="vala_compiler" />
+				<Option compiler="gcc" />
 			</Target>
 		</Build>
-		<Compiler>
-			<Add option="-Wall" />
-			<Add directory="C:/vala-0.12.0/lib/gtk-2.0/include" />
-		</Compiler>
 		<Unit filename="../Engine/Audio/AudioPlayer.vala" />
+		<Unit filename="../Engine/Context.vala" />
 		<Unit filename="../Engine/Engine.vala" />
 		<Unit filename="../Engine/EngineLog.vala" />
 		<Unit filename="../Engine/Files/FileLoader.vala" />
 		<Unit filename="../Engine/Files/ObjParser.vala" />
 		<Unit filename="../Engine/Helper/Calculations.vala" />
-		<Unit filename="../Engine/Helper/DelayTimer.vala" />
 		<Unit filename="../Engine/Helper/Helper.vala" />
+		<Unit filename="../Engine/Helper/ImageLoadWrap.vala" />
 		<Unit filename="../Engine/Helper/ImageLoader.vala" />
 		<Unit filename="../Engine/Helper/Keys.vala" />
 		<Unit filename="../Engine/Helper/LabelLoader.vala" />
 		<Unit filename="../Engine/Helper/Networking.vala" />
-		<Unit filename="../Engine/Helper/SoilWrap.vala" />
-		<Unit filename="../Engine/Helper/StepTimer.vala" />
 		<Unit filename="../Engine/Helper/Threading.vala" />
+		<Unit filename="../Engine/Helper/Timers.vala" />
 		<Unit filename="../Engine/Properties/Color.vala" />
 		<Unit filename="../Engine/Properties/Mat3.vala" />
 		<Unit filename="../Engine/Properties/Mat4.vala" />
@@ -109,22 +113,8 @@
 		<Unit filename="../Engine/Window/View3D.vala" />
 		<Unit filename="Makefile" />
 		<Unit filename="source/Environment.vala" />
-		<Unit filename="source/GameServer/Bots/Bot.vala" />
-		<Unit filename="source/GameServer/Bots/BotConnection.vala" />
-		<Unit filename="source/GameServer/Bots/NullBot.vala" />
-		<Unit filename="source/GameServer/Bots/SimpleBot.vala" />
-		<Unit filename="source/GameServer/GameState/ServerRoundState.vala" />
-		<Unit filename="source/GameServer/GameState/ServerRoundStatePlayer.vala" />
-		<Unit filename="source/GameServer/GameState/ServerRoundStateValidator.vala" />
-		<Unit filename="source/GameServer/Server/LogGameController.vala" />
-		<Unit filename="source/GameServer/Server/Server.vala" />
-		<Unit filename="source/GameServer/Server/ServerController.vala" />
-		<Unit filename="source/GameServer/Server/ServerGameRound.vala" />
-		<Unit filename="source/GameServer/Server/ServerGameRoundInfoSource.vala" />
-		<Unit filename="source/GameServer/Server/ServerMenu.vala" />
-		<Unit filename="source/GameServer/Server/ServerNetworking.vala" />
-		<Unit filename="source/GameServer/Server/ServerPlayer.vala" />
 		<Unit filename="source/Game/GameController.vala" />
+		<Unit filename="source/Game/Logic/AnimationTimings.vala" />
 		<Unit filename="source/Game/Logic/ClientMessage.vala" />
 		<Unit filename="source/Game/Logic/ClientRoundState.vala" />
 		<Unit filename="source/Game/Logic/GameLog.vala" />
@@ -162,6 +152,21 @@
 		<Unit filename="source/Game/Rendering/RenderTile.vala" />
 		<Unit filename="source/Game/Rendering/RenderWall.vala" />
 		<Unit filename="source/Game/ServerSettings.vala" />
+		<Unit filename="source/GameServer/Bots/Bot.vala" />
+		<Unit filename="source/GameServer/Bots/BotConnection.vala" />
+		<Unit filename="source/GameServer/Bots/NullBot.vala" />
+		<Unit filename="source/GameServer/Bots/SimpleBot.vala" />
+		<Unit filename="source/GameServer/GameState/ServerRoundState.vala" />
+		<Unit filename="source/GameServer/GameState/ServerRoundStatePlayer.vala" />
+		<Unit filename="source/GameServer/GameState/ServerRoundStateValidator.vala" />
+		<Unit filename="source/GameServer/Server/LogGameController.vala" />
+		<Unit filename="source/GameServer/Server/Server.vala" />
+		<Unit filename="source/GameServer/Server/ServerController.vala" />
+		<Unit filename="source/GameServer/Server/ServerGameRound.vala" />
+		<Unit filename="source/GameServer/Server/ServerGameRoundInfoSource.vala" />
+		<Unit filename="source/GameServer/Server/ServerMenu.vala" />
+		<Unit filename="source/GameServer/Server/ServerNetworking.vala" />
+		<Unit filename="source/GameServer/Server/ServerPlayer.vala" />
 		<Unit filename="source/MainMenu/CreateServerView.vala" />
 		<Unit filename="source/MainMenu/InformationMenuView.vala" />
 		<Unit filename="source/MainMenu/JoinMenuView.vala" />

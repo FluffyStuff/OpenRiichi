@@ -37,23 +37,23 @@ namespace GameServer
         private ServerRoundStateValidator validator;
         private int dealer;
         private int wall_index;
-        private int decision_time;
+        private AnimationTimings timings;
         private float timeout;
         private float current_time;
 
-        public ServerRoundState(ServerSettings settings, Wind round_wind, int dealer, int wall_index, Random rnd, bool[] can_riichi, int decision_time, Tile[]? tiles)
+        public ServerRoundState(ServerSettings settings, Wind round_wind, int dealer, int wall_index, Random rnd, bool[] can_riichi, AnimationTimings timings, Tile[]? tiles)
         {
             validator = new ServerRoundStateValidator(settings, dealer, wall_index, rnd, round_wind, can_riichi, tiles);
             this.dealer = dealer;
             this.wall_index = wall_index;
-            this.decision_time = decision_time;
+            this.timings = timings;
         }
 
         public void process(float time)
         {
             current_time = time;
 
-            if (timeout == 0 || decision_time <= 0 || current_time < timeout)
+            if (timeout == 0 || timings.decision_time <= 0 || current_time < timeout)
                 return;
 
             timeout = 0;
@@ -432,7 +432,7 @@ namespace GameServer
 
         private void reset_timeout()
         {
-            timeout = current_time + decision_time;
+            timeout = current_time + timings.decision_time;
         }
 
         private void default_action()

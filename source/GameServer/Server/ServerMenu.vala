@@ -144,28 +144,36 @@ namespace GameServer
             for (int i = 0; i < players.length; i++)
                 players[i] = new GamePlayer(i, this.players[i].name);
 
+            float round_end_delay = 15 + 1;
+            float hanchan_end_delay = 30 + 1;
+            float game_end_delay = 60 + 1;
+            float decision_time = 10 + 1;
+            // Add a second so the indicator counts down to 0
+            AnimationTimings timings = new AnimationTimings
+            (
+                round_end_delay,
+                hanchan_end_delay,
+                game_end_delay,
+                decision_time,
+                0.5f,
+                3.0f
+            );
+
             int starting_dealer = 0;
             int starting_score = 25000;
-            int decision_time = 10 + 1; // Add a second so the indicator counts down to 0
-            int round_wait_time = 15;
-            int hanchan_wait_time = 30;
-            int game_wait_time = 60;
             int round_count = 8;
-            int hanchan_count = 2;
+            int hanchan_count = 1;
             int uma_higher = 20;
             int uma_lower = 10;
 
             GameStartInfo info = new GameStartInfo
             (
                 players,
+                timings,
                 starting_dealer,
                 starting_score,
                 round_count,
                 hanchan_count,
-                decision_time,
-                round_wait_time,
-                hanchan_wait_time,
-                game_wait_time,
                 uma_higher,
                 uma_lower
             );

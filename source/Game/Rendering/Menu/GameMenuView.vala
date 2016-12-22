@@ -1,15 +1,12 @@
 using Gee;
 
-public class GameMenuView : View2D
+class GameMenuView : View2D
 {
     private ScoringView? score_view = null;
     private ArrayList<MenuTextButton> buttons = new ArrayList<MenuTextButton>();
 
     private ServerSettings settings;
-    private int decision_time;
-    private int round_time;
-    private int hanchan_time;
-    private int game_time;
+	private AnimationTimings delays;
 
     private Sound hint_sound;
     private float start_time;
@@ -59,16 +56,14 @@ public class GameMenuView : View2D
     private void press_continue() { continue_pressed(); }
     private void press_void_hand() { void_hand_pressed(); }
 
-    public GameMenuView(ServerSettings settings, int player_index, int decision_time, int round_time, int hanchan_time, int game_time)
+    public GameMenuView(ServerSettings settings, int player_index, AnimationTimings delays)
     {
         this.settings = settings;
         this.player_index = player_index;
-        this.decision_time = decision_time;
-        this.round_time = round_time;
-        this.hanchan_time = hanchan_time;
-        this.game_time = game_time;
+		this.delays = delays;
 
-        score_view = new ScoringView(score, player_index, timer, round_time, hanchan_time, game_time, force_game_time);
+        score_view = new ScoringView(player_index, delays);
+        score_view.score_finished.connect(do_score_finished);
     }
 
     public override void added()
@@ -136,6 +131,8 @@ public class GameMenuView : View2D
         void_hand.visible = false;
         open_riichi.visible = settings.open_riichi == Options.OnOffEnum.ON;
         position_buttons();
+
+        add_child(score_view);
     }
 
     private void position_buttons()
@@ -167,7 +164,7 @@ public class GameMenuView : View2D
         if (key.scancode == ScanCode.TAB && !key.repeat)
         {
             if (key.down)
-                display_score_pressed();
+                display_score();
             else
                 hide_score();
         }
@@ -225,7 +222,7 @@ public class GameMenuView : View2D
         furiten.visible = enabled;
     }
 
-    public void set_timer(bool enabled)
+    public void set_move_timer(bool enabled)
     {
         if (timer.visible && enabled)
             return;
@@ -236,40 +233,44 @@ public class GameMenuView : View2D
 
     public void update_scores(RoundScoreState[] scores)
     {
-        if ()
-        score_view.timer_expired.connect(do_score_finished);
         score_view.update_scores(scores);
     }
 
-    public void display_score(bool timer, bool force_game_time)
+    public void game_over()
     {
-        if (score_view == null)
-            return;
-        score_view.visible = true;
-        add_child(score_view);
+        score_view.display(true);
+    }
+
+    public void round_finished()
+    {
+        score_view.display(true);
+    }
+
+    public void display_score()
+    {
+        score_view.display(false);
     }
 
     public void hide_score()
     {
-        if (score_view != null)
-            score_view.visible = false;
+        score_view.hide();
     }
 
     public void display_disconnected()
     {
-        DisconnectedMenuView view = new DisconnectedMenuView();
+        InformationMenuView view = new InformationMenuView("Connection to server lost");
         add_child(view);
-        view.ok_pressed.connect(menu_ok_pressed);
+        view.finish.connect(info_menu_finished);
     }
 
     public void display_player_left(string name)
     {
-        DisconnectedMenuView view = new DisconnectedMenuView.player(name);
+        InformationMenuView view = new InformationMenuView(name + " has left the game");
         add_child(view);
-        view.ok_pressed.connect(menu_ok_pressed);
+        view.finish.connect(info_menu_finished);
     }
 
-    private void menu_ok_pressed(DisconnectedMenuView view)
+    private void info_menu_finished(MenuSubView view)
     {
         remove_child(view);
     }
@@ -287,8 +288,8 @@ public class GameMenuView : View2D
         if (!timer.visible)
             return;
 
-        int t = int.max((int)(start_time + decision_time - delta.time), 0);
-        if (t == decision_time)
+        int t = int.max((int)(start_time + delays.decision_time - delta.time), 0);
+        if (t == delays.decision_time)
             t--;
 
         if (t < 0)
@@ -306,51 +307,4 @@ public class GameMenuView : View2D
     }
 
     public int player_index { get; set; }
-
-    private class DisconnectedMenuView : View2D
-    {
-        private string message;
-
-        public signal void ok_pressed(DisconnectedMenuView view);
-
-        public DisconnectedMenuView()
-        {
-            message = "Connection to server lost";
-        }
-
-        public DisconnectedMenuView.player(string name)
-        {
-            message = name + " has left the game";
-        }
-
-        public override void added()
-        {
-            RectangleControl background = new RectangleControl();
-            add_child(background);
-            background.color = Color.with_alpha(0.5f);
-            background.resize_style = ResizeStyle.RELATIVE;
-            background.selectable = true;
-            background.cursor_type = CursorType.NORMAL;
-
-            int padding = 50;
-
-            LabelControl label = new LabelControl();
-            add_child(label);
-            label.text = message;
-            label.font_size = 50;
-            label.inner_anchor = Vec2(0.5f, 0);
-            label.position = Vec2(0, padding / 2);
-
-            MenuTextButton button = new MenuTextButton("MenuButton", "OK");
-            add_child(button);
-            button.inner_anchor = Vec2(0.5f, 1);
-            button.position = Vec2(0, -padding / 2);
-            button.clicked.connect(button_pressed);
-        }
-
-        private void button_pressed()
-        {
-            ok_pressed(this);
-        }
-    }
 }

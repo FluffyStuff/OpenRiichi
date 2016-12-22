@@ -18,12 +18,12 @@ namespace GameServer
         public signal void declare_riichi(int player_index);
         public signal void log(GameLogLine line);
 
-        public ServerGameRound(RoundStartInfo info, ServerSettings settings, ArrayList<ServerPlayer> players, ArrayList<ServerPlayer> spectators, Wind round_wind, int dealer, Random rnd, bool[] can_riichi, int decision_time, Tile[]? tiles, bool reveal)
+        public ServerGameRound(RoundStartInfo info, ServerSettings settings, ArrayList<ServerPlayer> players, ArrayList<ServerPlayer> spectators, Wind round_wind, int dealer, Random rnd, bool[] can_riichi, AnimationTimings timings, Tile[]? tiles, bool reveal)
         {
             this.info = info;
             this.reveal = reveal;
 
-            round = new ServerRoundState(settings, round_wind, dealer, info.wall_index, rnd, can_riichi, decision_time, tiles);
+            round = new ServerRoundState(settings, round_wind, dealer, info.wall_index, rnd, can_riichi, timings, tiles);
 
             init();
 

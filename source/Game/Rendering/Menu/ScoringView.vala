@@ -1,38 +1,30 @@
 using Gee;
 
-public class ScoringView : View2D
+class ScoringView : View2D
 {
+	private RoundScoreState[] scores;
     private int player_index;
+    private AnimationTimings delays;
+    private int score_index;
     private LabelControl time_label;
+    private LabelControl score_label;
     private RectangleControl rectangle;
-    //private GameMenuButton next_button;
-    private ScoringPointsView? view = null;
-    private ScoringPlayerElement bottom;
-    private ScoringPlayerElement right;
-    private ScoringPlayerElement top;
-    private ScoringPlayerElement left;
-    private ScoringStickNumberView riichi_view;
-    private ScoringStickNumberView renchan_view;
+    private MenuTextButton ready_button;
+    private GameMenuButton next_score_button;
+    private GameMenuButton prev_score_button;
+    private ScoringInnerView scoring_view;
     private int padding = 10;
     private bool display_timer;
     private float time;
-    private float start_time = 0;
+    private float start_time;
 
-    public signal void timer_expired();
+    public signal void score_finished();
 
-    public ScoringView(RoundScoreState[] scores, int player_index, int round_time, int hanchan_time, int game_time, bool force_game_time)
+    public ScoringView(int player_index, AnimationTimings delays)
     {
-        this.score = score;
-        display_timer = timer;
         this.player_index = player_index;
+        this.delays = delays;
         relative_size = Size2(0.9f, 0.9f);
-
-        if (score.game_is_finished || force_game_time)
-            time = game_time;
-        else if (score.hanchan_is_finished)
-            time = hanchan_time;
-        else
-            time = round_time;
     }
 
     public override void added()
@@ -46,88 +38,54 @@ public class ScoringView : View2D
         rectangle.selectable = true;
         rectangle.cursor_type = CursorType.NORMAL;
 
-        if (display_timer)
-        {
-            time_label = new LabelControl();
-            add_child(time_label);
-            time_label.inner_anchor = Vec2(1, 0);
-            time_label.outer_anchor = Vec2(1, 0);
-            time_label.position = Vec2(-padding, padding);
-            time_label.font_size = 60;
-        }
+        time_label = new LabelControl();
+        add_child(time_label);
+        time_label.inner_anchor = Vec2(1, 0);
+        time_label.outer_anchor = Vec2(1, 0);
+        time_label.position = Vec2(-padding, padding);
+        time_label.font_size = 60;
+		time_label.visible = false;
 
-        /*next_button = new GameMenuButton("Next");
-        next_button.selectable = true;
-        next_button.inner_anchor = Vec2(1, 0);
-        next_button.outer_anchor = Vec2(1, 0);
-        next_button.position = Vec2(-padding, padding);
-        add_control(next_button);*/
+        score_label = new LabelControl();
+        add_child(score_label);
+        score_label.inner_anchor = Vec2(0.5f, 1);
+        score_label.outer_anchor = Vec2(0.5f, 1);
+        score_label.position = Vec2(0, -padding);
+        score_label.font_size = 40;
+        score_label.text = "Scores";
 
-        var player = score.players[player_index];
-        bottom = new ScoringPlayerElement(player.index, player.wind, player.name, player.points, player.transfer, player.score);
-        add_child(bottom);
-        bottom.resize_style = ResizeStyle.ABSOLUTE;
-        bottom.inner_anchor = Vec2(0.5f, 0);
-        bottom.outer_anchor = Vec2(0.5f, 0);
-        bottom.position = Vec2(0, padding);
-        bottom.show_score = score.hanchan_is_finished;
+        ready_button = new MenuTextButton("MenuButtonSmall", "Ready");
+        add_child(ready_button);
+        ready_button.clicked.connect(ready_clicked);
+        ready_button.inner_anchor = Vec2(0, 0);
+        ready_button.outer_anchor = Vec2(0, 0);
+        ready_button.position = Vec2(padding, padding);
+        ready_button.visible = false;
+        ready_button.enabled = false;
 
-        player = score.players[(player_index + 1) % 4];
-        right = new ScoringPlayerElement(player.index, player.wind, player.name, player.points, player.transfer, player.score);
-        add_child(right);
-        right.resize_style = ResizeStyle.ABSOLUTE;
-        right.inner_anchor = Vec2(1, 0.5f);
-        right.outer_anchor = Vec2(1, 0.5f);
-        right.position = Vec2(-padding, 0);
-        right.show_score = score.hanchan_is_finished;
+        next_score_button = new GameMenuButton("Next");
+        add_child(next_score_button);
+        next_score_button.clicked.connect(next_score_clicked);
+        next_score_button.inner_anchor = Vec2(0, 0.5f);
+        next_score_button.outer_anchor = Vec2(0.5f, 1);
+        next_score_button.size = Size2(score_label.size.height, score_label.size.height);
+        next_score_button.position = Vec2(score_label.size.width / 2 + padding, -(score_label.size.height / 2 + padding));
+        next_score_button.enabled = false;
 
-        player = score.players[(player_index + 2) % 4];
-        top = new ScoringPlayerElement(player.index, player.wind, player.name, player.points, player.transfer, player.score);
-        add_child(top);
-        top.resize_style = ResizeStyle.ABSOLUTE;
-        top.inner_anchor = Vec2(0.5f, 1);
-        top.outer_anchor = Vec2(0.5f, 1);
-        top.position = Vec2(0, -padding);
-        top.show_score = score.hanchan_is_finished;
+        prev_score_button = new GameMenuButton("Prev");
+        add_child(prev_score_button);
+        prev_score_button.clicked.connect(prev_score_clicked);
+        prev_score_button.inner_anchor = Vec2(1, 0.5f);
+        prev_score_button.outer_anchor = Vec2(0.5f, 1);
+        prev_score_button.size = Size2(score_label.size.height, score_label.size.height);
+        prev_score_button.position = Vec2(-(score_label.size.width / 2 + padding), -(score_label.size.height / 2 + padding));
+        prev_score_button.enabled = false;
 
-        player = score.players[(player_index + 3) % 4];
-        left = new ScoringPlayerElement(player.index, player.wind, player.name, player.points, player.transfer, player.score);
-        add_child(left);
-        left.resize_style = ResizeStyle.ABSOLUTE;
-        left.inner_anchor = Vec2(0, 0.5f);
-        left.outer_anchor = Vec2(0, 0.5f);
-        left.position = Vec2(padding, 0);
-        left.show_score = score.hanchan_is_finished;
-
-        riichi_view = new ScoringStickNumberView("1000", true);
-        add_child(riichi_view);
-        riichi_view.size = Size2(200, 20);
-        riichi_view.inner_anchor = Vec2(0, 0);
-        riichi_view.outer_anchor = Vec2(0, 0);
-        riichi_view.position = Vec2(left.size.width + left.position.x, bottom.size.height + bottom.position.y);
-        riichi_view.number = score.riichi_count;
-
-        renchan_view = new ScoringStickNumberView("100", false);
-        add_child(renchan_view);
-        renchan_view.size = riichi_view.size;
-        renchan_view.inner_anchor = Vec2(1, 0);
-        renchan_view.outer_anchor = Vec2(1, 0);
-        renchan_view.position = Vec2(-right.size.width + right.position.x, bottom.size.height + bottom.position.y);
-        renchan_view.number = score.renchan;
-
-        if (score.round_is_finished)
-        {
-            view = new ScoringPointsView(score, time);
-            view.score_selected.connect(score_selected);
-            add_child(view);
-        }
+        visible = false;
     }
 
     protected override void do_process(DeltaArgs delta)
     {
-        if (!display_timer)
-            return;
-
         if (start_time == 0)
             start_time = delta.time;
 
@@ -137,7 +95,6 @@ public class ScoringView : View2D
         {
             display_timer = false;
             time_label.visible = false;
-            timer_expired();
             return;
         }
 
@@ -149,25 +106,106 @@ public class ScoringView : View2D
 
     protected override void resized()
     {
-        if (view != null)
+        if (scoring_view == null)
+            return;
+
+        scoring_view.resize_style = ResizeStyle.ABSOLUTE;
+        scoring_view.size = Size2(size.width - padding * 2, size.height - padding * 3 - score_label.size.height);
+        scoring_view.inner_anchor = Vec2(0, 0);
+        scoring_view.outer_anchor = Vec2(0, 0);
+        scoring_view.position = Vec2(padding, padding);
+    }
+
+    public void update_scores(RoundScoreState[] scores)
+    {
+        this.scores = scores;
+        score_index = scores.length - 1;
+    }
+
+    public void display(bool round_finished)
+    {
+        if (scores == null || scores.length == 0)
+            return;
+
+        visible = true;
+        next_score_button.visible = !round_finished;
+        prev_score_button.visible = !round_finished;
+
+        if (round_finished)
         {
-            view.size = Size2(right.rect.x - (left.rect.x + left.size.width) - padding * 2, top.rect.y - (bottom.rect.y + bottom.rect.height) - riichi_view.size.height - padding * 2);
-            view.position = Vec2(0, riichi_view.size.height / 2);
+            busy = true;
+            // TODO: Use ready button
+            //ready_button.visible = true;
         }
 
-        /*if (riichi_view != null)
-            riichi_view.size = Size2((right.rect.x - (left.rect.x + left.size.width)) / 2, riichi_view.size.height);
-        if (renchan_view != null)
-            renchan_view.size = Size2((right.rect.x - (left.rect.x + left.size.width)) / 2, renchan_view.size.height);*/
+        update_score_view(round_finished);
     }
 
-    private void score_selected(int player_index)
+    private void update_score_view(bool round_finished)
     {
-        bottom.highlighted = player_index == bottom.player_index;
-        right.highlighted = player_index == right.player_index;
-        top.highlighted = player_index == top.player_index;
-        left.highlighted = player_index == left.player_index;
+        check_score_change_buttons();
+
+        var score = scores[score_index];
+        if (scoring_view != null)
+        {
+            if (scoring_view.score == score && !round_finished)
+                return;
+            remove_child(scoring_view);
+        }
+
+        start_time = 0;
+        time = delays.get_animation_round_end_delay(score);
+        time_label.visible = false;
+        scoring_view = new ScoringInnerView(score, player_index, delays, round_finished);
+        scoring_view.animation_finished.connect(animation_finished);
+        add_child(scoring_view);
+        resized();
     }
 
-    public RoundScoreState score { get; private set; }
+    private void check_score_change_buttons()
+    {
+        prev_score_button.enabled = score_index > 0;
+        next_score_button.enabled = score_index < scores.length - 1;
+    }
+
+    public void hide()
+    {
+        if (!busy)
+            visible = false;
+    }
+
+    private void animation_finished()
+    {
+        busy = false;
+        ready_button.enabled = true;
+        time_label.visible = true;
+        display_timer = true;
+        check_score_change_buttons();
+    }
+
+    private void ready_clicked()
+    {
+        score_finished();
+        ready_button.enabled = false;
+    }
+
+    private void next_score_clicked()
+    {
+        if (busy || score_index >= scores.length -1)
+            return;
+
+        score_index++;
+        update_score_view(false);
+    }
+
+    private void prev_score_clicked()
+    {
+        if (busy || score_index == 0)
+            return;
+
+        score_index--;
+        update_score_view(false);
+    }
+
+    public bool busy { get; private set; }
 }

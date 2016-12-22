@@ -1,8 +1,10 @@
 using Gee;
 
-public class ScoringInnerView : View2D
+class ScoringInnerView : View2D
 {
     private int player_index;
+    private AnimationTimings delays;
+    private bool animate;
     private ScoringPointsView? view = null;
     private ScoringPlayerElement bottom;
     private ScoringPlayerElement right;
@@ -11,19 +13,25 @@ public class ScoringInnerView : View2D
     private ScoringStickNumberView riichi_view;
     private ScoringStickNumberView renchan_view;
     private int padding = 10;
+    private EventTimer timer;
 
-    public signal void timer_expired();
+    public signal void animation_finished();
 
-    public ScoringInnerView(RoundScoreState score, int player_index, float total_time)
+    public ScoringInnerView(RoundScoreState score, int player_index, AnimationTimings delays, bool animate)
     {
         this.score = score;
         this.player_index = player_index;
+        this.delays = delays;
+        this.animate = animate;
+
+        timer = new EventTimer(delays.score_counting_delay, animate);
+        timer.elapsed.connect(counting_delay_elapsed);
     }
 
     public override void added()
     {
         var player = score.players[player_index];
-        bottom = new ScoringPlayerElement(player.index, player.wind, player.name, player.points, player.transfer, player.score);
+        bottom = new ScoringPlayerElement(player.index, player.wind, player.name, player.points, player.transfer, player.score, delays, animate);
         add_child(bottom);
         bottom.resize_style = ResizeStyle.ABSOLUTE;
         bottom.inner_anchor = Vec2(0.5f, 0);
@@ -31,7 +39,7 @@ public class ScoringInnerView : View2D
         bottom.show_score = score.hanchan_is_finished;
 
         player = score.players[(player_index + 1) % 4];
-        right = new ScoringPlayerElement(player.index, player.wind, player.name, player.points, player.transfer, player.score);
+        right = new ScoringPlayerElement(player.index, player.wind, player.name, player.points, player.transfer, player.score, delays, animate);
         add_child(right);
         right.resize_style = ResizeStyle.ABSOLUTE;
         right.inner_anchor = Vec2(1, 0.5f);
@@ -39,7 +47,7 @@ public class ScoringInnerView : View2D
         right.show_score = score.hanchan_is_finished;
 
         player = score.players[(player_index + 2) % 4];
-        top = new ScoringPlayerElement(player.index, player.wind, player.name, player.points, player.transfer, player.score);
+        top = new ScoringPlayerElement(player.index, player.wind, player.name, player.points, player.transfer, player.score, delays, animate);
         add_child(top);
         top.resize_style = ResizeStyle.ABSOLUTE;
         top.inner_anchor = Vec2(0.5f, 1);
@@ -47,7 +55,7 @@ public class ScoringInnerView : View2D
         top.show_score = score.hanchan_is_finished;
 
         player = score.players[(player_index + 3) % 4];
-        left = new ScoringPlayerElement(player.index, player.wind, player.name, player.points, player.transfer, player.score);
+        left = new ScoringPlayerElement(player.index, player.wind, player.name, player.points, player.transfer, player.score, delays, animate);
         add_child(left);
         left.resize_style = ResizeStyle.ABSOLUTE;
         left.inner_anchor = Vec2(0, 0.5f);
@@ -72,34 +80,34 @@ public class ScoringInnerView : View2D
 
         if (score.round_is_finished)
         {
-            view = new ScoringPointsView(score, time);
+            view = new ScoringPointsView(score, delays, animate);
             view.score_selected.connect(score_selected);
             add_child(view);
         }
     }
 
-    protected override void do_process(DeltaArgs delta)
+    protected override void do_process(DeltaArgs args)
     {
-        if (!display_timer)
+        if (!animate)
             return;
 
-        if (start_time == 0)
-            start_time = delta.time;
+        timer.process(args);
+    }
 
-        int t = (int)(start_time + time - delta.time);
+    private void counting_delay_elapsed()
+    {
+        bottom.animate();
+        right.animate();
+        top.animate();
+        left.animate();
 
-        if (t < 0)
-        {
-            display_timer = false;
-            time_label.visible = false;
-            timer_expired();
-            return;
-        }
+        timer = new EventTimer(delays.score_counting_time, true);
+        timer.elapsed.connect(counting_time_elapsed);
+    }
 
-        string str = t.to_string();
-
-        if (str != time_label.text)
-            time_label.text = str;
+    private void counting_time_elapsed()
+    {
+        animation_finished();
     }
 
     protected override void resized()
