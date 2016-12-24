@@ -194,6 +194,12 @@ namespace GameServer
         {
             // Nothing
         }
+
+        public override bool ready
+        {
+            get { return true; }
+            set {}
+        }
     }
 
     public class LogServerGameRoundInfoSource : ServerGameRoundInfoSource

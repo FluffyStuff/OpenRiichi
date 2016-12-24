@@ -134,8 +134,7 @@ class ScoringView : View2D
         if (round_finished)
         {
             busy = true;
-            // TODO: Use ready button
-            //ready_button.visible = true;
+            ready_button.visible = true;
         }
 
         update_score_view(round_finished);

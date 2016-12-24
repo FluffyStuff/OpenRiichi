@@ -131,6 +131,8 @@ namespace GameServer
 
             foreach (ServerPlayer player in players)
                 player.receive_message.connect(message_received);
+            foreach (ServerPlayer player in observers)
+                player.receive_message.connect(message_received);
 
             menu = null;
 

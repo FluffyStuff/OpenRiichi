@@ -155,6 +155,8 @@ public class ClientMessageMenuSettings : ClientMessage
     public ServerSettings settings { get; protected set; }
 }
 
+public class ClientMessageMenuReady : ClientMessage {}
+
 public class ClientMessageTileDiscard : ClientMessage
 {
     public ClientMessageTileDiscard(int tile_ID)

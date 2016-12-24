@@ -165,6 +165,8 @@ class GameController : Object
     {
         if (game.game_is_finished || is_disconnected)
             game_finished = true;
+        else
+            connection.send_message(new ClientMessageMenuReady());
     }
 
     private void disconnected()

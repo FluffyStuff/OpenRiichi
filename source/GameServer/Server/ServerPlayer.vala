@@ -15,7 +15,7 @@ namespace GameServer
         public abstract void close();
 
         public State state { get; protected set; }
-        public bool ready { get; protected set; }
+        public virtual bool ready { get; set; }
         public string name { get; private set; }
         public bool bot { get; private set; }
         public bool is_disconnected { get; set; }
@@ -30,13 +30,12 @@ namespace GameServer
     class ServerHumanPlayer : ServerPlayer
     {
         private ServerPlayerConnection connection;
+        private bool _ready;
 
         public ServerHumanPlayer(ServerPlayerConnection connection, string name)
         {
             base(name, false);
 
-            // TODO: Remove this
-            ready = true;
             state = State.PLAYER;
 
             this.connection = connection;
@@ -68,6 +67,12 @@ namespace GameServer
         public override void close()
         {
             connection.close();
+        }
+
+        public override bool ready
+        {
+            get { return _ready || is_disconnected; }
+            set { _ready = value; }
         }
     }
 
@@ -114,6 +119,12 @@ namespace GameServer
         public override void close()
         {
             bot_connection.stop();
+        }
+
+        public override bool ready
+        {
+            get { return true; }
+            set {}
         }
     }
 

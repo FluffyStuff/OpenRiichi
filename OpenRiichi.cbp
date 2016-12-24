@@ -46,7 +46,6 @@
 			</Target>
 		</Build>
 		<Unit filename="../Engine/Audio/AudioPlayer.vala" />
-		<Unit filename="../Engine/Context.vala" />
 		<Unit filename="../Engine/Engine.vala" />
 		<Unit filename="../Engine/EngineLog.vala" />
 		<Unit filename="../Engine/Files/FileLoader.vala" />

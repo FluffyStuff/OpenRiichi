@@ -95,26 +95,38 @@ namespace GameServer
                         action_state = State.ROUND_FINISHED;
                 }
             }
-            else if (action_state == State.ROUND_FINISHED || action_state == State.HANCHAN_FINISHED)
+            else
             {
-                if (!timer.active(time))
-                    return;
+                bool done = false;
+                if (timer.active(time))
+                    done = true;
+                else
+                {
+                    done = true;
+                    foreach (var player in players)
+                        if (!player.ready)
+                            done = false;
+                    foreach (var player in spectators)
+                        if (!player.ready)
+                            done = false;
+                }
 
-                start_round(time);
-            }
-            else if (action_state == State.GAME_FINISHED)
-            {
-                if (!timer.active(time))
-                    return;
-
-                finished = true;
+                if (done)
+                {
+                    if (action_state == State.ROUND_FINISHED || action_state == State.HANCHAN_FINISHED)
+                        start_round(time);
+                    else if (action_state == State.GAME_FINISHED)
+                        finished = true;
+                }
             }
         }
 
         public void message_received(ServerPlayer player, ClientMessage message)
         {
-            if (action_state == State.ACTIVE)
+            if (action_state == State.ACTIVE && players.contains(player))
                 round.message_received(player, message);
+            else if (message is ClientMessageMenuReady)
+                player.ready = true;
         }
 
         public void player_disconnected(ServerPlayer player)
@@ -146,6 +158,11 @@ namespace GameServer
 
         private void start_round(float time)
         {
+            foreach (var player in players)
+                player.ready = false;
+            foreach (var player in spectators)
+                player.ready = false;
+
             ServerGameRoundInfoSourceRound info = source.get_round();
 
             action_state = State.ACTIVE;
