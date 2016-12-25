@@ -86,10 +86,10 @@ class ScoringPlayerElement : Control
         add_child(score_label);
         score_label.text = score_text;
         score_label.font_size = 40;
-        score_label.inner_anchor = Vec2(1, 0.5f);
-        score_label.outer_anchor = Vec2(1, 0.5f);
+        score_label.inner_anchor = Vec2(1, 0);
+        score_label.outer_anchor = Vec2(1, 0);
         score_label.visible = false;
-        score_label.position = Vec2(-10, 0);
+        score_label.position = Vec2(-padding, padding);
         if (score >= 0)
             score_label.color = Color.white();
         else
