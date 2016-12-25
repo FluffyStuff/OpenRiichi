@@ -12,6 +12,8 @@ class ScoringInnerView : View2D
     private ScoringPlayerElement left;
     private ScoringStickNumberView riichi_view;
     private ScoringStickNumberView renchan_view;
+    private LabelControl wind_indicator;
+    private LabelControl round_indicator;
     private int padding = 10;
     private EventTimer timer;
 
@@ -77,6 +79,21 @@ class ScoringInnerView : View2D
         renchan_view.outer_anchor = Vec2(1, 0);
         renchan_view.position = Vec2(-right.size.width + right.position.x, bottom.size.height + bottom.position.y);
         renchan_view.number = score.renchan;
+
+        wind_indicator = new LabelControl();
+        add_child(wind_indicator);
+        wind_indicator.text = WIND_TO_STRING(score.round_wind);
+        wind_indicator.inner_anchor = Vec2(0, 1);
+        wind_indicator.outer_anchor = Vec2(0, 1);
+        wind_indicator.font_size = 60;
+
+        round_indicator = new LabelControl();
+        add_child(round_indicator);
+        round_indicator.text = (score.current_round % 4 + 1).to_string();
+        round_indicator.inner_anchor = Vec2(0, 1);
+        round_indicator.outer_anchor = Vec2(0, 1);
+        round_indicator.position = Vec2(wind_indicator.size.width, 0);
+        round_indicator.font_size = wind_indicator.font_size;
 
         if (score.round_is_finished)
         {
