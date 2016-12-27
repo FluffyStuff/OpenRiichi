@@ -4,6 +4,7 @@ class GameController : Object
     private ClientRoundState round;
     private GameRenderView? renderer = null;
     private GameMenuView? menu = null;
+    private EventTimer? round_over_timer = null;
 
     private unowned Container parent_view;
     private GameStartInfo start_info;
@@ -41,13 +42,16 @@ class GameController : Object
         parent_view.remove_child(menu);
     }
 
-    public void process()
+    public void process(DeltaArgs delta)
     {
         if (game_finished == true)
         {
             finished();
             return;
         }
+
+        if (round_over_timer != null)
+            round_over_timer.process(delta);
 
         ServerMessage? message = null;
         while ((message = connection.dequeue_message()) != null)
@@ -74,8 +78,8 @@ class GameController : Object
             if (round.finished)
             {
                 game.round_finished(round.result);
-                menu.update_scores(game.scores.to_array());
-                menu.round_finished();
+                round_over_timer = new EventTimer(start_info.timings.round_over_delay, true);
+                round_over_timer.elapsed.connect(round_over_timer_elapsed);
             }
         }
     }
@@ -167,6 +171,12 @@ class GameController : Object
             game_finished = true;
         else
             connection.send_message(new ClientMessageMenuReady());
+    }
+
+    private void round_over_timer_elapsed()
+    {
+        menu.update_scores(game.scores.to_array());
+        menu.round_finished();
     }
 
     private void disconnected()

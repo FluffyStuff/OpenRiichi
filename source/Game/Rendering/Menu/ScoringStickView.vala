@@ -37,6 +37,16 @@ public class ScoringStickNumberView : View2D
             stick.size = Size2(size.width - label.size.width, size.height);
     }
 
+    public float alpha
+    {
+        get { return label.alpha; }
+        set
+        {
+            label.alpha = value;
+            stick.alpha = value;
+        }
+    }
+
     public int number
     {
         get { return _number; }
@@ -53,6 +63,7 @@ public class ScoringStickView : View3D
 {
     private string stick_type;
     private RenderGeometry3D stick;
+    private RenderMaterial material;
 
     private Camera camera = new Camera();
     private LightSource light1 = new LightSource();
@@ -77,6 +88,7 @@ public class ScoringStickView : View3D
         stick = store.load_geometry_3D("stick", false);
         RenderBody3D body = ((RenderBody3D)stick.geometry[0]);
         body.texture = store.load_texture("Sticks/Stick" + stick_type);
+        material = body.material;
 
         stick.scale = Vec3(scale, scale, scale);
         Vec3 size = ((RenderBody3D)stick.geometry[0]).model.size;
@@ -110,6 +122,12 @@ public class ScoringStickView : View3D
         scene.add_object(stick);
 
         state.add_scene(scene);
+    }
+
+    public float alpha
+    {
+        get { return material.alpha; }
+        set { material.alpha = value; }
     }
 
     /*float mul = 1;

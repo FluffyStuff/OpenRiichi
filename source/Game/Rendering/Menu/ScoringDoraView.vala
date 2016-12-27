@@ -83,6 +83,15 @@ public class ScoringDoraView : View3D
         state.add_scene(scene);
     }
 
+    public float alpha
+    {
+        set
+        {
+            foreach (RenderTile tile in tiles)
+                tile.alpha = value;
+        }
+    }
+
     /*float mul = 1;
     float pitch;
     protected override void do_key_press(KeyArgs key)

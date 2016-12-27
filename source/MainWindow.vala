@@ -82,7 +82,7 @@ public class MainWindow : RenderWindow
     protected override void do_process(DeltaArgs delta)
     {
         if (game_running && game_controller != null)
-            game_controller.process();
+            game_controller.process(delta);
     }
 
     protected override bool key_press(KeyArgs key)

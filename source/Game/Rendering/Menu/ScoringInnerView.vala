@@ -16,6 +16,8 @@ class ScoringInnerView : View2D
     private LabelControl round_indicator;
     private int padding = 10;
     private EventTimer timer;
+    private bool items_animation;
+    private DeltaTimer items_timer = new DeltaTimer();
 
     public signal void animation_finished();
 
@@ -25,9 +27,6 @@ class ScoringInnerView : View2D
         this.player_index = player_index;
         this.delays = delays;
         this.animate = animate;
-
-        timer = new EventTimer(delays.score_counting_delay, animate);
-        timer.elapsed.connect(counting_delay_elapsed);
     }
 
     public override void added()
@@ -71,6 +70,7 @@ class ScoringInnerView : View2D
         riichi_view.outer_anchor = Vec2(0, 0);
         riichi_view.position = Vec2(left.size.width + left.position.x, bottom.size.height + bottom.position.y);
         riichi_view.number = score.riichi_count;
+        riichi_view.alpha = animate ? 0 : 1;
 
         renchan_view = new ScoringStickNumberView("100", false);
         add_child(renchan_view);
@@ -79,6 +79,7 @@ class ScoringInnerView : View2D
         renchan_view.outer_anchor = Vec2(1, 0);
         renchan_view.position = Vec2(-right.size.width + right.position.x, bottom.size.height + bottom.position.y);
         renchan_view.number = score.renchan;
+        renchan_view.alpha = animate ? 0 : 1;
 
         wind_indicator = new LabelControl();
         add_child(wind_indicator);
@@ -86,6 +87,7 @@ class ScoringInnerView : View2D
         wind_indicator.inner_anchor = Vec2(0, 1);
         wind_indicator.outer_anchor = Vec2(0, 1);
         wind_indicator.font_size = 60;
+        wind_indicator.alpha = animate ? 0 : 1;
 
         round_indicator = new LabelControl();
         add_child(round_indicator);
@@ -94,11 +96,14 @@ class ScoringInnerView : View2D
         round_indicator.outer_anchor = Vec2(0, 1);
         round_indicator.position = Vec2(wind_indicator.size.width, 0);
         round_indicator.font_size = wind_indicator.font_size;
+        round_indicator.alpha = animate ? 0 : 1;
 
         if (score.round_is_finished)
         {
             view = new ScoringPointsView(score, delays, animate);
             view.score_selected.connect(score_selected);
+            view.label_animation_finished.connect(label_animation_finished);
+            view.score_animation_finished.connect(score_animation_finished);
             add_child(view);
         }
     }
@@ -108,7 +113,35 @@ class ScoringInnerView : View2D
         if (!animate)
             return;
 
-        timer.process(args);
+        if (items_animation)
+        {
+            float time = items_timer.elapsed(args) / delays.menu_items_fade_time;
+
+            if (time >= 1)
+            {
+                items_animation = false;
+                time = 1;
+            }
+
+            riichi_view.alpha = time;
+            renchan_view.alpha = time;
+            wind_indicator.alpha = time;
+            round_indicator.alpha = time;
+        }
+
+        if (timer != null)
+            timer.process(args);
+    }
+
+    private void label_animation_finished()
+    {
+        items_animation = true;
+    }
+
+    private void score_animation_finished()
+    {
+        timer = new EventTimer(delays.players_score_counting_delay, true);
+        timer.elapsed.connect(counting_delay_elapsed);
     }
 
     private void counting_delay_elapsed()
@@ -118,7 +151,7 @@ class ScoringInnerView : View2D
         top.animate();
         left.animate();
 
-        timer = new EventTimer(delays.score_counting_time, true);
+        timer = new EventTimer(delays.players_score_counting_delay, true);
         timer.elapsed.connect(counting_time_elapsed);
     }
 

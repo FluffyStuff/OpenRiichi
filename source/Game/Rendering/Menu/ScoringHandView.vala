@@ -161,4 +161,13 @@ public class ScoringHandView : View3D
 
         state.add_scene(scene);
     }
+
+    public float alpha
+    {
+        set
+        {
+            foreach (RenderTile tile in tiles)
+                tile.alpha = value;
+        }
+    }
 }

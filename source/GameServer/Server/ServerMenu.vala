@@ -144,41 +144,10 @@ namespace GameServer
             for (int i = 0; i < players.length; i++)
                 players[i] = new GamePlayer(i, this.players[i].name);
 
-            float round_end_delay = 15 + 1;
-            float hanchan_end_delay = 30 + 1;
-            float game_end_delay = 60 + 1;
-            float decision_time = 10 + 1;
-            // Add a second so the indicator counts down to 0
-            AnimationTimings timings = new AnimationTimings
-            (
-                round_end_delay,
-                hanchan_end_delay,
-                game_end_delay,
-                decision_time,
-                0.5f,
-                3.0f
-            );
-
-            int starting_dealer = 0;
-            int starting_score = 25000;
-            int round_count = 8;
-            int hanchan_count = 1;
-            int uma_higher = 20;
-            int uma_lower = 10;
-
-            GameStartInfo info = new GameStartInfo
-            (
-                players,
-                timings,
-                starting_dealer,
-                starting_score,
-                round_count,
-                hanchan_count,
-                uma_higher,
-                uma_lower
-            );
-
             mutex.unlock();
+
+            GameStartInfo info = create_start_info(players);
+
             game_start(info);
         }
 
@@ -365,6 +334,79 @@ namespace GameServer
             }
 
             return seats;
+        }
+
+        private GameStartInfo create_start_info(GamePlayer[] players)
+        {
+            int starting_dealer = 0;
+            int starting_score = 25000;
+            int round_count = 8;
+            int hanchan_count = 1;
+            int uma_higher = 20;
+            int uma_lower = 10;
+
+
+            float winning_draw_animation_time = 0.5f;
+            float hand_reveal_animation_time = 0.5f;
+            float round_over_delay = 1.0f;
+
+            // Add a second so the indicator counts down from the specific second to 0
+            float round_end_delay = 15 + 1;
+            float hanchan_end_delay = 30 + 1;
+            float game_end_delay = 60 + 1;
+            float decision_time = 10 + 1;
+
+            float finish_label_delay = 1.0f;
+            float finish_label_fade_time = 1.0f;
+            float finish_label_animation_time = 0.0f;
+            float menu_items_fade_time = 1.0f;
+            float han_counting_delay = 1.0f;
+            float han_fade_delay = 0.4f;
+            float han_fade_time = 0.6f;
+            float score_counting_fade_delay = 1.0f;
+            float score_counting_fade_time = 1.0f;
+            float score_counting_delay = 1.0f;
+            float score_counting_time = 2.0f;
+            float players_score_counting_delay = 1.0f;
+            float players_score_counting_time = 2.0f;
+
+            AnimationTimings timings = new AnimationTimings
+            (
+                winning_draw_animation_time,
+                hand_reveal_animation_time,
+                round_over_delay,
+                round_end_delay,
+                hanchan_end_delay,
+                game_end_delay,
+                decision_time,
+                finish_label_delay,
+                finish_label_fade_time,
+                finish_label_animation_time,
+                menu_items_fade_time,
+                han_counting_delay,
+                han_fade_delay,
+                han_fade_time,
+                score_counting_fade_delay,
+                score_counting_fade_time,
+                score_counting_delay,
+                score_counting_time,
+                players_score_counting_delay,
+                players_score_counting_time
+            );
+
+            GameStartInfo info = new GameStartInfo
+            (
+                players,
+                timings,
+                starting_dealer,
+                starting_score,
+                round_count,
+                hanchan_count,
+                uma_higher,
+                uma_lower
+            );
+
+            return info;
         }
 
         public ServerPlayer? host { get; private set; }

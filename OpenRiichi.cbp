@@ -51,6 +51,7 @@
 		<Unit filename="../Engine/Files/FileLoader.vala" />
 		<Unit filename="../Engine/Files/ObjParser.vala" />
 		<Unit filename="../Engine/Helper/Calculations.vala" />
+		<Unit filename="../Engine/Helper/DeltaTimers.vala" />
 		<Unit filename="../Engine/Helper/Helper.vala" />
 		<Unit filename="../Engine/Helper/ImageLoadWrap.vala" />
 		<Unit filename="../Engine/Helper/ImageLoader.vala" />

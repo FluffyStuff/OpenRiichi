@@ -242,6 +242,16 @@ public class RenderTile
         }
     }
 
+    public float alpha
+    {
+        get { return front.material.alpha; }
+        set
+        {
+            front.material.alpha = value;
+            back.material.alpha = value;
+        }
+    }
+
     public Vec3 model_size { get; private set; }
     public RenderGeometry3D tile { get; private set; }
     private RenderBody3D front { get; private set; }
