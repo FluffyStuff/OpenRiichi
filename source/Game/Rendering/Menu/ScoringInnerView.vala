@@ -151,13 +151,14 @@ class ScoringInnerView : View2D
         top.animate();
         left.animate();
 
-        timer = new EventTimer(delays.players_score_counting_delay, true);
+        timer = new EventTimer(delays.players_score_counting_time, true);
         timer.elapsed.connect(counting_time_elapsed);
     }
 
     private void counting_time_elapsed()
     {
         animation_finished();
+        view.animation_finished();
     }
 
     protected override void resized()

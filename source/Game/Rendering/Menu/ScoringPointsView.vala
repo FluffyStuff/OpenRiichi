@@ -6,19 +6,18 @@ class ScoringPointsView : View2D
     private AnimationTimings delays;
     private LabelControl score_label;
     private LabelControl? draw_label;
-    private GameMenuButton next_button;
-    private GameMenuButton prev_button;
-    private ScoringScoreControl? scoring_control = null;
+    private GameMenuButton? next_button;
+    private GameMenuButton? prev_button;
+    private ScoringScoreControl? scoring_control;
     private ScoringDoraView? dora;
     private ScoringDoraView? ura;
-    private int score_index = 0;
+    private int score_index;
 
     private bool animate;
     private int padding = 20;
     private int switches;
     private float delay;
     private float total_time;
-    private DelayTimer timer;
     private EventTimer animation_timer;
     private DeltaTimer fade_timer = new DeltaTimer();
     private bool fade_label_animation;
@@ -161,8 +160,6 @@ class ScoringPointsView : View2D
         {
             switches = score.result.scores.length - 1;
             delay = total_time / (switches + 1);
-            timer = new DelayTimer();
-            timer.set_time(delay);
 
             prev_button = new GameMenuButton("Prev");
             next_button = new GameMenuButton("Next");
@@ -181,6 +178,8 @@ class ScoringPointsView : View2D
             next_button.position = Vec2( score_label.size.width / 2 + next_button.size.height / 2, -score_label.size.height / 2);
             prev_button.clicked.connect(prev_score);
             next_button.clicked.connect(next_score);
+            prev_button.visible = !animate;
+            next_button.visible = !animate;
         }
     }
 
@@ -227,18 +226,6 @@ class ScoringPointsView : View2D
             if (ura != null)
                 ura.alpha = time;
         }
-
-        if (switches <= 0 || delay <= 0)
-            return;
-
-        if (timer.active(args.time))
-        {
-            score_index = (score_index + 1) % score.result.scores.length;
-            show_score_control();
-
-            timer.set_time(delay);
-            switches--;
-        }
     }
 
     private void finish_label_delay_elapsed()
@@ -248,7 +235,31 @@ class ScoringPointsView : View2D
 
     private void scoring_control_animation_finished()
     {
-        score_animation_finished();
+        if (switches > 0)
+        {
+            animation_timer = new EventTimer(delays.multiple_ron_display_delay, true);
+            animation_timer.elapsed.connect(multiple_ron_display_delay_elapsed);
+        }
+        else
+            score_animation_finished();
+    }
+
+    private void multiple_ron_display_delay_elapsed()
+    {
+        score_index = (score_index + 1) % score.result.scores.length;
+        show_score_control();
+        switches--;
+
+        scoring_control.animate();
+    }
+
+    public void animation_finished()
+    {
+        if (prev_button != null)
+            prev_button.visible = true;
+        if (next_button != null)
+            next_button.visible = true;
+        animate = false;
     }
 
     private void show_score_control()

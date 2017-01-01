@@ -20,6 +20,7 @@ public class AnimationTimings : Serializable
         float score_counting_fade_time,
         float score_counting_delay,
         float score_counting_time,
+        float multiple_ron_display_delay,
         float players_score_counting_delay,
         float players_score_counting_time
 	)
@@ -42,6 +43,7 @@ public class AnimationTimings : Serializable
 		this.score_counting_fade_time = score_counting_fade_time;
 		this.score_counting_delay = score_counting_delay;
 		this.score_counting_time = score_counting_time;
+		this.multiple_ron_display_delay = multiple_ron_display_delay;
         this.players_score_counting_delay = players_score_counting_delay;
         this.players_score_counting_time = players_score_counting_time;
 	}
@@ -56,14 +58,15 @@ public class AnimationTimings : Serializable
 	    if (round.result.result != RoundFinishResult.RoundResultEnum.DRAW &&
             round.result.result != RoundFinishResult.RoundResultEnum.NONE)
         {
-            time += menu_items_fade_time + han_counting_delay + score_counting_fade_delay + score_counting_fade_time + score_counting_delay + score_counting_time;
+            time += multiple_ron_display_delay * (round.result.scores.length - 1);
 
-            Scoring score = round.result.scores[0];
-
-            foreach (Yaku y in score.yaku)
+            foreach (Scoring score in round.result.scores)
             {
-                if (score.yakuman == 0 || y.yakuman > 0)
-                    time += han_fade_delay + han_fade_time;
+                time += menu_items_fade_time + han_counting_delay + score_counting_fade_delay + score_counting_fade_time + score_counting_delay + score_counting_time;
+
+                foreach (Yaku y in score.yaku)
+                    if (score.yakuman == 0 || y.yakuman > 0)
+                        time += han_fade_delay + han_fade_time;
             }
         }
         else if (round.result.nagashi_indices.length != 0)
@@ -107,6 +110,7 @@ public class AnimationTimings : Serializable
 	public float score_counting_fade_time { get; protected set; }
 	public float score_counting_delay { get; protected set; }
 	public float score_counting_time { get; protected set; }
+	public float multiple_ron_display_delay { get; protected set; }
 
 	public float players_score_counting_delay { get; protected set; }
 	public float players_score_counting_time { get; protected set; }

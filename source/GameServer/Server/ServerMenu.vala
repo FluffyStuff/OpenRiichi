@@ -367,6 +367,7 @@ namespace GameServer
             float score_counting_fade_time = 1.0f;
             float score_counting_delay = 1.0f;
             float score_counting_time = 2.0f;
+            float multiple_ron_display_delay = 2.0f;
             float players_score_counting_delay = 1.0f;
             float players_score_counting_time = 2.0f;
 
@@ -390,6 +391,7 @@ namespace GameServer
                 score_counting_fade_time,
                 score_counting_delay,
                 score_counting_time,
+                multiple_ron_display_delay,
                 players_score_counting_delay,
                 players_score_counting_time
             );

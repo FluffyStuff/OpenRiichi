@@ -128,8 +128,6 @@ class ScoringView : View2D
             return;
 
         visible = true;
-        next_score_button.visible = !round_finished;
-        prev_score_button.visible = !round_finished;
 
         if (round_finished)
         {
@@ -138,6 +136,9 @@ class ScoringView : View2D
         }
 
         update_score_view(round_finished);
+
+        next_score_button.visible = !round_finished;
+        prev_score_button.visible = !round_finished;
     }
 
     private void update_score_view(bool round_finished)
@@ -152,9 +153,13 @@ class ScoringView : View2D
             remove_child(scoring_view);
         }
 
-        start_time = 0;
-        time = delays.get_animation_round_end_delay(score);
-        time_label.visible = false;
+        if (round_finished)
+        {
+            start_time = 0;
+            time = delays.get_animation_round_end_delay(score);
+            time--; // Count down to 0
+        }
+
         scoring_view = new ScoringInnerView(score, player_index, delays, round_finished);
         scoring_view.animation_finished.connect(animation_finished);
         add_child(scoring_view);
@@ -163,6 +168,8 @@ class ScoringView : View2D
 
     private void check_score_change_buttons()
     {
+        prev_score_button.visible = true;
+        next_score_button.visible = true;
         prev_score_button.enabled = score_index > 0;
         next_score_button.enabled = score_index < scores.length - 1;
     }
