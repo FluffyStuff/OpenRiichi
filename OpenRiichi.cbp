@@ -61,6 +61,7 @@
 		<Unit filename="../Engine/Helper/Threading.vala" />
 		<Unit filename="../Engine/Helper/Timers.vala" />
 		<Unit filename="../Engine/Properties/Color.vala" />
+		<Unit filename="../Engine/Properties/Curve.vala" />
 		<Unit filename="../Engine/Properties/Mat3.vala" />
 		<Unit filename="../Engine/Properties/Mat4.vala" />
 		<Unit filename="../Engine/Properties/Orientation.vala" />
@@ -93,6 +94,7 @@
 		<Unit filename="../Engine/Rendering/RenderState.vala" />
 		<Unit filename="../Engine/Rendering/RenderTarget.vala" />
 		<Unit filename="../Engine/Rendering/ResourceStore.vala" />
+		<Unit filename="../Engine/Window/Animation.vala" />
 		<Unit filename="../Engine/Window/Container.vala" />
 		<Unit filename="../Engine/Window/Control.vala" />
 		<Unit filename="../Engine/Window/Controls/ImageControl.vala" />

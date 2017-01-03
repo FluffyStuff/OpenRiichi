@@ -3,7 +3,7 @@ using Gee;
 class ScoringPointsView : View2D
 {
     private RoundScoreState score;
-    private AnimationTimings delays;
+    private AnimationTimings timings;
     private LabelControl score_label;
     private LabelControl? draw_label;
     private GameMenuButton? next_button;
@@ -11,30 +11,26 @@ class ScoringPointsView : View2D
     private ScoringScoreControl? scoring_control;
     private ScoringDoraView? dora;
     private ScoringDoraView? ura;
+    private Sound fade_sound;
     private int score_index;
 
     private bool animate;
     private int padding = 20;
     private int switches;
-    private float delay;
     private float total_time;
-    private EventTimer animation_timer;
-    private DeltaTimer fade_timer = new DeltaTimer();
-    private bool fade_label_animation;
-    private bool item_animation;
 
     public signal void label_animation_finished();
     public signal void score_animation_finished();
     public signal void score_selected(int player_index);
 
-    public ScoringPointsView(RoundScoreState score, AnimationTimings delays, bool animate)
+    public ScoringPointsView(RoundScoreState score, AnimationTimings timings, bool animate)
     {
         this.score = score;
-        this.delays = delays;
+        this.timings = timings;
         this.animate = animate;
 
         if (animate)
-            total_time = delays.get_animation_round_end_delay(score);
+            total_time = timings.get_animation_round_end_delay(score);
     }
 
     public override void added()
@@ -88,8 +84,10 @@ class ScoringPointsView : View2D
         score_label.alpha = animate ? 0 : 1;
         score_label.font_size = 40;
 
-        animation_timer = new EventTimer(delays.finish_label_delay, animate);
-        animation_timer.elapsed.connect(finish_label_delay_elapsed);
+        fade_sound = store.audio_player.load_sound("fade_in");
+
+        if (animate)
+            animation_label_start();
 
         if (draw)
         {
@@ -159,7 +157,6 @@ class ScoringPointsView : View2D
         if (score.result.scores.length > 1)
         {
             switches = score.result.scores.length - 1;
-            delay = total_time / (switches + 1);
 
             prev_button = new GameMenuButton("Prev");
             next_button = new GameMenuButton("Next");
@@ -183,74 +180,77 @@ class ScoringPointsView : View2D
         }
     }
 
-    protected override void do_process(DeltaArgs args)
+    private void animation_label_start()
     {
-        animation_timer.process(args);
-
-        if (fade_label_animation)
-        {
-            float time = fade_timer.elapsed(args) / delays.finish_label_fade_time;
-
-            if (time >= 1)
-            {
-                fade_timer.reset();
-                fade_label_animation = false;
-                item_animation = true;
-                label_animation_finished();
-                if (scoring_control != null)
-                    scoring_control.animate();
-
-                time = 1;
-            }
-
-            score_label.alpha = time;
-            if (draw_label != null)
-                draw_label.alpha = time;
-        }
-
-        if (item_animation)
-        {
-            float time = fade_timer.elapsed(args) / delays.menu_items_fade_time;
-
-            if (time >= 1)
-            {
-                if (scoring_control == null)
-                    score_animation_finished();
-
-                item_animation = false;
-                time = 1;
-            }
-
-            if (dora != null)
-                dora.alpha = time;
-            if (ura != null)
-                ura.alpha = time;
-        }
+        var animation = new Animation(timings.finish_label_fade);
+        animation.animate_start.connect(animation_label_animate_start);
+        animation.animate.connect(animation_label_animate);
+        animation.finished.connect(animation_label_finish);
+        add_animation(animation);
     }
 
-    private void finish_label_delay_elapsed()
+    private void animation_label_animate_start()
     {
-        fade_label_animation = true;
+        fade_sound.play();
+    }
+
+    private void animation_label_animate(float time)
+    {
+        score_label.alpha = time;
+        if (draw_label != null)
+            draw_label.alpha = time;
+    }
+
+    private void animation_label_finish()
+    {
+        label_animation_finished();
+        animation_items_fade_start();
+
+        if (scoring_control != null)
+            scoring_control.animate();
+    }
+
+    private void animation_items_fade_start()
+    {
+        var animation = new Animation(timings.menu_items_fade);
+        animation.animate_start.connect(animation_items_fade_animate_start);
+        animation.animate.connect(animation_items_fade_animate);
+        animation.finished.connect(animation_items_fade_finish);
+        add_animation(animation);
+    }
+
+    private void animation_items_fade_animate_start()
+    {
+        if (scoring_control == null)
+            fade_sound.play();
+    }
+
+    private void animation_items_fade_animate(float time)
+    {
+        if (dora != null)
+            dora.alpha = time;
+        if (ura != null)
+            ura.alpha = time;
+    }
+
+    private void animation_items_fade_finish()
+    {
+        if (scoring_control == null)
+            score_animation_finished();
     }
 
     private void scoring_control_animation_finished()
     {
         if (switches > 0)
         {
-            animation_timer = new EventTimer(delays.multiple_ron_display_delay, true);
-            animation_timer.elapsed.connect(multiple_ron_display_delay_elapsed);
+            score_index = (score_index + 1) % score.result.scores.length;
+            show_score_control();
+            switches--;
+
+            scoring_control.animate();
         }
         else
             score_animation_finished();
-    }
-
-    private void multiple_ron_display_delay_elapsed()
-    {
-        score_index = (score_index + 1) % score.result.scores.length;
-        show_score_control();
-        switches--;
-
-        scoring_control.animate();
     }
 
     public void animation_finished()
@@ -275,7 +275,7 @@ class ScoringPointsView : View2D
         if (score.result.result == RoundFinishResult.RoundResultEnum.RON)
             dual_payer = sekinin = sekinin && sekinin_index != score.result.loser_index;
 
-        scoring_control = new ScoringScoreControl(scoring, sekinin, dual_payer, delays, animate);
+        scoring_control = new ScoringScoreControl(scoring, sekinin, dual_payer, timings, animate);
         add_child(scoring_control);
         scoring_control.resize_style = ResizeStyle.ABSOLUTE;
         scoring_control.inner_anchor = Vec2(0.5f, 0);
@@ -321,15 +321,11 @@ class ScoringPointsView : View2D
         private AnimationTimings timings;
         private bool _animate;
 
-        private bool animate_items;
-        private int han_animation_index;
-        private bool animate_han;
-        private bool fade_score;
-        private bool animate_score;
+        private int animation_han_index;
         private LabelControl points_label;
-        private EventTimer? event_timer;
-        private DeltaTimer timer = new DeltaTimer();
         private ArrayList<YakuLine> lines = new ArrayList<YakuLine>();
+        private Sound score_sound;
+        private Sound fade_sound;
 
         public signal void animation_finished();
 
@@ -409,86 +405,118 @@ class ScoringPointsView : View2D
             points_label.outer_anchor = Vec2(0.5f, 0);
             points_label.alpha = _animate ? 0 : 1;
             set_points_text(_animate ? 0 : 1);
+
+            score_sound = store.audio_player.load_sound("score_count");
+            fade_sound = store.audio_player.load_sound("fade_in");
         }
 
-        protected override void do_process(DeltaArgs args)
+        private void animate_items_start()
         {
-            if (event_timer != null)
-                event_timer.process(args);
+            var animation = new Animation(timings.menu_items_fade);
+            animation.animate_start.connect(animate_items_animate_start);
+            animation.animate.connect(animate_items_animate);
+            animation.finished.connect(animate_items_finished);
+            add_animation(animation);
+        }
 
-            if (animate_items)
-            {
-                float time = timer.elapsed(args) / timings.menu_items_fade_time;
+        private void animate_items_animate_start()
+        {
+            fade_sound.play();
+        }
 
-                if (time >= 1)
-                {
-                    timer.reset();
-                    animate_items = false;
-                    event_timer = new EventTimer(timings.han_counting_delay, true);
-                    event_timer.elapsed.connect(han_counting_delay_elapsed);
-                    time = 1;
-                }
+        private void animate_items_animate(float time)
+        {
+            hand.alpha = time;
+        }
 
-                hand.alpha = time;
-            }
+        private void animate_items_finished()
+        {
+            animation_han_start();
+        }
 
-            if (animate_han)
-            {
-                float time = (timer.elapsed(args) - timings.han_fade_delay) / timings.han_fade_time;
-                time = Math.fmaxf(0, time);
+        private void animation_han_start()
+        {
+            var animation = new Animation(timings.han_fade);
+            animation.animate_start.connect(animation_han_animate_start);
+            animation.animate.connect(animation_han_animate);
+            animation.finished.connect(animation_han_finish);
+            add_animation(animation);
+        }
 
-                bool increase = false;
+        private void animation_han_animate_start()
+        {
+            fade_sound.play();
+        }
 
-                if (time >= 1)
-                {
-                    if (han_animation_index >= lines.size - 1)
-                    {
-                        animate_han = false;
-                        fade_score = true;
-                    }
+        private void animation_han_animate(float time)
+        {
+            lines[animation_han_index].name.alpha = time;
+            lines[animation_han_index].han.alpha = time;
+        }
 
-                    timer.reset();
-                    increase = true;
-                    time = 1;
-                }
+        private void animation_han_finish()
+        {
+            animation_han_index++;
 
-                lines[han_animation_index].name.alpha = time;
-                lines[han_animation_index].han.alpha = time;
+            if (animation_han_index >= lines.size)
+                animation_score_fade_start();
+            else
+                animation_han_start();
+        }
 
-                if (increase)
-                    han_animation_index++;
-            }
+        private void animation_score_fade_start()
+        {
+            var animation = new Animation(timings.score_counting_fade);
+            animation.animate_start.connect(animation_score_fade_animate_start);
+            animation.animate.connect(animation_score_fade_animate);
+            animation.finished.connect(animation_score_fade_finish);
+            add_animation(animation);
+        }
 
-            if (fade_score)
-            {
-                float time = (timer.elapsed(args) - timings.score_counting_fade_delay) / timings.score_counting_fade_time;
-                time = Math.fmaxf(0, time);
+        private void animation_score_fade_animate_start()
+        {
+            fade_sound.play();
+        }
 
-                if (time >= 1)
-                {
-                    timer.reset();
-                    fade_score = false;
-                    animate_score = true;
-                    time = 1;
-                }
+        private void animation_score_fade_animate(float time)
+        {
+            points_label.alpha = time;
+        }
 
-                points_label.alpha = time;
-            }
+        private void animation_score_fade_finish()
+        {
+            animation_score_count_start();
+        }
 
-            if (animate_score)
-            {
-                float time = (timer.elapsed(args) - timings.score_counting_delay) / timings.score_counting_time;
-                time = Math.fmaxf(0, time);
+        private void animation_score_count_start()
+        {
+            var animation = new Animation(timings.score_counting);
+            animation.animate_start.connect(animation_score_count_animate_start);
+            animation.animate_finish.connect(animation_score_count_animate_finish);
+            animation.animate.connect(animation_score_count_animate);
+            animation.finished.connect(animation_score_count_finish);
+            animation.curve = new ExponentCurve(0.5f);
+            add_animation(animation);
+        }
 
-                if (time >= 1)
-                {
-                    animation_finished();
-                    animate_score = false;
-                    time = 1;
-                }
+        private void animation_score_count_animate_start()
+        {
+            score_sound.play(true);
+        }
 
-                set_points_text(time);
-            }
+        private void animation_score_count_animate_finish()
+        {
+            score_sound.stop();
+        }
+
+        private void animation_score_count_animate(float time)
+        {
+            set_points_text(time);
+        }
+
+        private void animation_score_count_finish()
+        {
+            animation_finished();
         }
 
         protected override void resized()
@@ -499,12 +527,7 @@ class ScoringPointsView : View2D
 
         public void animate()
         {
-            animate_items = true;
-        }
-
-        private void han_counting_delay_elapsed()
-        {
-            animate_han = true;
+            animate_items_start();
         }
 
         private void set_points_text(float amount)

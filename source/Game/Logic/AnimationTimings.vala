@@ -9,20 +9,14 @@ public class AnimationTimings : Serializable
         float hanchan_end_delay,
         float game_end_delay,
         float decision_time,
-        float finish_label_delay,
-        float finish_label_fade_time,
-        float finish_label_animation_time,
-        float menu_items_fade_time,
-        float han_counting_delay,
-        float han_fade_delay,
-        float han_fade_time,
-        float score_counting_fade_delay,
-        float score_counting_fade_time,
-        float score_counting_delay,
-        float score_counting_time,
-        float multiple_ron_display_delay,
-        float players_score_counting_delay,
-        float players_score_counting_time
+        AnimationTime finish_label_fade,
+        AnimationTime menu_items_fade,
+        AnimationTime han_fade,
+        AnimationTime score_counting_fade,
+        AnimationTime score_counting,
+        AnimationTime players_points_counting,
+        AnimationTime players_score_fade,
+        AnimationTime players_score_counting
 	)
 	{
         this.winning_draw_animation_time = winning_draw_animation_time;
@@ -32,20 +26,14 @@ public class AnimationTimings : Serializable
 		this.hanchan_end_delay = hanchan_end_delay;
 		this.game_end_delay = game_end_delay;
 		this.decision_time = decision_time;
-        this.finish_label_delay = finish_label_delay;
-        this.finish_label_fade_time = finish_label_fade_time;
-        this.finish_label_animation_time = finish_label_animation_time;
-        this.menu_items_fade_time = menu_items_fade_time;
-        this.han_counting_delay = han_counting_delay;
-        this.han_fade_delay = han_fade_delay;
-        this.han_fade_time = han_fade_time;
-		this.score_counting_fade_delay = score_counting_fade_delay;
-		this.score_counting_fade_time = score_counting_fade_time;
-		this.score_counting_delay = score_counting_delay;
-		this.score_counting_time = score_counting_time;
-		this.multiple_ron_display_delay = multiple_ron_display_delay;
-        this.players_score_counting_delay = players_score_counting_delay;
-        this.players_score_counting_time = players_score_counting_time;
+        this.finish_label_fade = finish_label_fade;
+        this.menu_items_fade = menu_items_fade;
+        this.han_fade = han_fade;
+        this.score_counting_fade = score_counting_fade;
+        this.score_counting = score_counting;
+        this.players_points_counting = players_points_counting;
+        this.players_score_fade = players_score_fade;
+        this.players_score_counting = players_score_counting;
 	}
 
 	public float get_animation_round_end_delay(RoundScoreState round)
@@ -53,36 +41,32 @@ public class AnimationTimings : Serializable
 	    float time = 0;
 
 	    time += round_over_delay;
-        time += finish_label_delay + finish_label_fade_time + finish_label_animation_time;
+        time += finish_label_fade.total() + menu_items_fade.total();
 
 	    if (round.result.result != RoundFinishResult.RoundResultEnum.DRAW &&
             round.result.result != RoundFinishResult.RoundResultEnum.NONE)
         {
-            time += multiple_ron_display_delay * (round.result.scores.length - 1);
-
             foreach (Scoring score in round.result.scores)
             {
-                time += menu_items_fade_time + han_counting_delay + score_counting_fade_delay + score_counting_fade_time + score_counting_delay + score_counting_time;
+                time += score_counting_fade.total() + score_counting.total();
 
                 foreach (Yaku y in score.yaku)
                     if (score.yakuman == 0 || y.yakuman > 0)
-                        time += han_fade_delay + han_fade_time;
+                        time += han_fade.total();
             }
         }
-        else if (round.result.nagashi_indices.length != 0)
-            time += menu_items_fade_time + han_counting_delay + score_counting_fade_delay + score_counting_fade_time + score_counting_delay + score_counting_time;
 
         if (round.game_is_finished)
-            time += game_end_delay;
+            time += game_end_delay + players_score_fade.total() + players_score_counting.total();
         else if (round.hanchan_is_finished)
-            time += hanchan_end_delay;
+            time += hanchan_end_delay + players_score_fade.total() + players_score_counting.total();
         else
             time += round_end_delay;
 
         foreach (var player in round.players)
             if (player.transfer != 0)
             {
-                time += players_score_counting_delay + players_score_counting_time;
+                time += players_points_counting.total();
                 break;
             }
 
@@ -99,19 +83,14 @@ public class AnimationTimings : Serializable
 	public float game_end_delay { get; protected set; }
 	public float decision_time { get; protected set; }
 
-	public float finish_label_delay { get; protected set; }
-	public float finish_label_fade_time { get; protected set; }
-	public float finish_label_animation_time { get; protected set; }
-	public float menu_items_fade_time { get; protected set; }
-	public float han_counting_delay { get; protected set; }
-	public float han_fade_delay { get; protected set; }
-	public float han_fade_time { get; protected set; }
-	public float score_counting_fade_delay { get; protected set; }
-	public float score_counting_fade_time { get; protected set; }
-	public float score_counting_delay { get; protected set; }
-	public float score_counting_time { get; protected set; }
-	public float multiple_ron_display_delay { get; protected set; }
+	public AnimationTime finish_label_fade { get; protected set; }
+	public AnimationTime menu_items_fade { get; protected set; }
+	public AnimationTime han_fade { get; protected set; }
 
-	public float players_score_counting_delay { get; protected set; }
-	public float players_score_counting_time { get; protected set; }
+	public AnimationTime score_counting_fade { get; protected set; }
+	public AnimationTime score_counting { get; protected set; }
+
+	public AnimationTime players_points_counting { get; protected set; }
+	public AnimationTime players_score_fade { get; protected set; }
+	public AnimationTime players_score_counting { get; protected set; }
 }

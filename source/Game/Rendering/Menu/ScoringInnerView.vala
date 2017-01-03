@@ -3,8 +3,9 @@ using Gee;
 class ScoringInnerView : View2D
 {
     private int player_index;
-    private AnimationTimings delays;
+    private AnimationTimings timings;
     private bool animate;
+    private int score_animations_finished;
     private ScoringPointsView? view = null;
     private ScoringPlayerElement bottom;
     private ScoringPlayerElement right;
@@ -15,53 +16,50 @@ class ScoringInnerView : View2D
     private LabelControl wind_indicator;
     private LabelControl round_indicator;
     private int padding = 10;
-    private EventTimer timer;
-    private bool items_animation;
-    private DeltaTimer items_timer = new DeltaTimer();
 
     public signal void animation_finished();
 
-    public ScoringInnerView(RoundScoreState score, int player_index, AnimationTimings delays, bool animate)
+    public ScoringInnerView(RoundScoreState score, int player_index, AnimationTimings timings, bool animate)
     {
         this.score = score;
         this.player_index = player_index;
-        this.delays = delays;
+        this.timings = timings;
         this.animate = animate;
     }
 
     public override void added()
     {
         var player = score.players[player_index];
-        bottom = new ScoringPlayerElement(player.index, player.wind, player.name, player.points, player.transfer, player.score, delays, animate);
+        bottom = new ScoringPlayerElement(player.index, player.wind, player.name, player.points, player.transfer, player.score, score.hanchan_is_finished, timings, animate);
         add_child(bottom);
         bottom.resize_style = ResizeStyle.ABSOLUTE;
         bottom.inner_anchor = Vec2(0.5f, 0);
         bottom.outer_anchor = Vec2(0.5f, 0);
-        bottom.show_score = score.hanchan_is_finished;
+        bottom.animation_finished.connect(player_element_animation_finished);
 
         player = score.players[(player_index + 1) % 4];
-        right = new ScoringPlayerElement(player.index, player.wind, player.name, player.points, player.transfer, player.score, delays, animate);
+        right = new ScoringPlayerElement(player.index, player.wind, player.name, player.points, player.transfer, player.score, score.hanchan_is_finished, timings, animate);
         add_child(right);
         right.resize_style = ResizeStyle.ABSOLUTE;
         right.inner_anchor = Vec2(1, 0.5f);
         right.outer_anchor = Vec2(1, 0.5f);
-        right.show_score = score.hanchan_is_finished;
+        right.animation_finished.connect(player_element_animation_finished);
 
         player = score.players[(player_index + 2) % 4];
-        top = new ScoringPlayerElement(player.index, player.wind, player.name, player.points, player.transfer, player.score, delays, animate);
+        top = new ScoringPlayerElement(player.index, player.wind, player.name, player.points, player.transfer, player.score, score.hanchan_is_finished, timings, animate);
         add_child(top);
         top.resize_style = ResizeStyle.ABSOLUTE;
         top.inner_anchor = Vec2(0.5f, 1);
         top.outer_anchor = Vec2(0.5f, 1);
-        top.show_score = score.hanchan_is_finished;
+        top.animation_finished.connect(player_element_animation_finished);
 
         player = score.players[(player_index + 3) % 4];
-        left = new ScoringPlayerElement(player.index, player.wind, player.name, player.points, player.transfer, player.score, delays, animate);
+        left = new ScoringPlayerElement(player.index, player.wind, player.name, player.points, player.transfer, player.score, score.hanchan_is_finished, timings, animate);
         add_child(left);
         left.resize_style = ResizeStyle.ABSOLUTE;
         left.inner_anchor = Vec2(0, 0.5f);
         left.outer_anchor = Vec2(0, 0.5f);
-        left.show_score = score.hanchan_is_finished;
+        left.animation_finished.connect(player_element_animation_finished);
 
         riichi_view = new ScoringStickNumberView("1000", true);
         add_child(riichi_view);
@@ -100,7 +98,7 @@ class ScoringInnerView : View2D
 
         if (score.round_is_finished)
         {
-            view = new ScoringPointsView(score, delays, animate);
+            view = new ScoringPointsView(score, timings, animate);
             view.score_selected.connect(score_selected);
             view.label_animation_finished.connect(label_animation_finished);
             view.score_animation_finished.connect(score_animation_finished);
@@ -108,57 +106,41 @@ class ScoringInnerView : View2D
         }
     }
 
-    protected override void do_process(DeltaArgs args)
+    private void animation_items_start()
     {
-        if (!animate)
-            return;
+        var animation = new Animation(timings.menu_items_fade);
+        animation.animate.connect(animation_items_animate);
+        add_animation(animation);
+    }
 
-        if (items_animation)
-        {
-            float time = items_timer.elapsed(args) / delays.menu_items_fade_time;
-
-            if (time >= 1)
-            {
-                items_animation = false;
-                time = 1;
-            }
-
-            riichi_view.alpha = time;
-            renchan_view.alpha = time;
-            wind_indicator.alpha = time;
-            round_indicator.alpha = time;
-        }
-
-        if (timer != null)
-            timer.process(args);
+    private void animation_items_animate(float time)
+    {
+        riichi_view.alpha = time;
+        renchan_view.alpha = time;
+        wind_indicator.alpha = time;
+        round_indicator.alpha = time;
     }
 
     private void label_animation_finished()
     {
-        items_animation = true;
+        animation_items_start();
     }
 
     private void score_animation_finished()
-    {
-        timer = new EventTimer(delays.players_score_counting_delay, true);
-        timer.elapsed.connect(counting_delay_elapsed);
-    }
-
-    private void counting_delay_elapsed()
     {
         bottom.animate();
         right.animate();
         top.animate();
         left.animate();
-
-        timer = new EventTimer(delays.players_score_counting_time, true);
-        timer.elapsed.connect(counting_time_elapsed);
     }
 
-    private void counting_time_elapsed()
+    private void player_element_animation_finished()
     {
-        animation_finished();
-        view.animation_finished();
+        if (++score_animations_finished == 4)
+        {
+            animation_finished();
+            view.animation_finished();
+        }
     }
 
     protected override void resized()

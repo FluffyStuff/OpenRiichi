@@ -356,20 +356,14 @@ namespace GameServer
             float game_end_delay = 60 + 1;
             float decision_time = 10 + 1;
 
-            float finish_label_delay = 1.0f;
-            float finish_label_fade_time = 1.0f;
-            float finish_label_animation_time = 0.0f;
-            float menu_items_fade_time = 1.0f;
-            float han_counting_delay = 1.0f;
-            float han_fade_delay = 0.4f;
-            float han_fade_time = 0.6f;
-            float score_counting_fade_delay = 1.0f;
-            float score_counting_fade_time = 1.0f;
-            float score_counting_delay = 1.0f;
-            float score_counting_time = 2.0f;
-            float multiple_ron_display_delay = 2.0f;
-            float players_score_counting_delay = 1.0f;
-            float players_score_counting_time = 2.0f;
+            var finish_label_fade = new AnimationTime(1, 0.5f, 0);
+            var menu_items_fade = new AnimationTime(1, 0.5f, 1);
+            var han_fade = new AnimationTime(0.5f, 0.5f, 0);
+            var score_counting_fade = new AnimationTime(1, 0.5f, 0);
+            var score_counting = new AnimationTime(1, 3, 2);
+            var players_points_counting = new AnimationTime(0, 3, 2);
+            var players_score_fade = new AnimationTime(0, 0.5f, 0);
+            var players_score_counting = new AnimationTime(1, 3, 2);
 
             AnimationTimings timings = new AnimationTimings
             (
@@ -380,20 +374,14 @@ namespace GameServer
                 hanchan_end_delay,
                 game_end_delay,
                 decision_time,
-                finish_label_delay,
-                finish_label_fade_time,
-                finish_label_animation_time,
-                menu_items_fade_time,
-                han_counting_delay,
-                han_fade_delay,
-                han_fade_time,
-                score_counting_fade_delay,
-                score_counting_fade_time,
-                score_counting_delay,
-                score_counting_time,
-                multiple_ron_display_delay,
-                players_score_counting_delay,
-                players_score_counting_time
+                finish_label_fade,
+                menu_items_fade,
+                han_fade,
+                score_counting_fade,
+                score_counting,
+                players_points_counting,
+                players_score_fade,
+                players_score_counting
             );
 
             GameStartInfo info = new GameStartInfo

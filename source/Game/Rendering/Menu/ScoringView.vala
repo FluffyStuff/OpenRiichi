@@ -4,7 +4,7 @@ class ScoringView : View2D
 {
 	private RoundScoreState[] scores;
     private int player_index;
-    private AnimationTimings delays;
+    private AnimationTimings timings;
     private int score_index;
     private LabelControl time_label;
     private LabelControl score_label;
@@ -20,10 +20,10 @@ class ScoringView : View2D
 
     public signal void score_finished();
 
-    public ScoringView(int player_index, AnimationTimings delays)
+    public ScoringView(int player_index, AnimationTimings timings)
     {
         this.player_index = player_index;
-        this.delays = delays;
+        this.timings = timings;
         relative_size = Size2(0.9f, 0.9f);
     }
 
@@ -156,11 +156,11 @@ class ScoringView : View2D
         if (round_finished)
         {
             start_time = 0;
-            time = delays.get_animation_round_end_delay(score);
+            time = timings.get_animation_round_end_delay(score);
             time--; // Count down to 0
         }
 
-        scoring_view = new ScoringInnerView(score, player_index, delays, round_finished);
+        scoring_view = new ScoringInnerView(score, player_index, timings, round_finished);
         scoring_view.animation_finished.connect(animation_finished);
         add_child(scoring_view);
         resized();
