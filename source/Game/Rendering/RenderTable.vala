@@ -4,6 +4,7 @@ public class RenderTable
     private float field_rotation;
     private Wind round_wind;
     private RoundScoreState score;
+    private bool english_winds;
 
     private RenderGeometry3D table;
     private RenderGeometry3D? field;
@@ -13,12 +14,13 @@ public class RenderTable
     private RenderLabel3D round_wind_label;
     private RenderTablePlayerNameField[] names;
 
-    public RenderTable(ResourceStore store, string extension, Vec3 tile_size, Wind round_wind, float field_rotation, RoundScoreState score)
+    public RenderTable(ResourceStore store, string extension, Vec3 tile_size, Wind round_wind, float field_rotation, RoundScoreState score, bool english_winds)
     {
         this.tile_size = tile_size;
         this.field_rotation = field_rotation;
         this.round_wind = round_wind;
         this.score = score;
+	this.english_winds = english_winds;
 
         reload(store, extension);
     }
@@ -71,16 +73,46 @@ public class RenderTable
         center_size = Vec3(center_size.x, center_size.y * 1.1f, center_size.z);
 
         for (int i = 0; i < names.length; i++)
-            names[i] = new RenderTablePlayerNameField(store, center_size, scale, -(float)i / 2, score.players[i].name, score.players[i].wind, score.players[i].points);
+            names[i] = new RenderTablePlayerNameField(store, center_size, scale, -(float)i / 2, score.players[i].name, wind_to_string(score.players[i].wind, english_winds), score.players[i].points);
 
         round_wind_label = store.create_label_3D();
         round_wind_label.bold = true;
         round_wind_label.rotation = new Quat.from_euler_vec(Vec3(0, field_rotation, 0));
-        round_wind_label.text = WIND_TO_STRING(round_wind);
+        round_wind_label.text = wind_to_string(round_wind, english_winds);
         round_wind_label.color = Color.blue();
         round_wind_label.size = scale * 2;
         round_wind_label.font_size = 100;
         round_wind_label.position = Vec3(0, center_size.y, 0);
+    }
+
+    private string wind_to_string(Wind wind, bool english_winds) {
+	if (english_winds) {
+	    switch (wind)
+	    {
+	    case Wind.EAST:
+	    default:
+		return "E";
+	    case Wind.SOUTH:
+		return "S";
+	    case Wind.WEST:
+		return "W";
+	    case Wind.NORTH:
+		return "N";
+	    }
+	} else {
+	    switch (wind)
+	    {
+	    case Wind.EAST:
+	    default:
+		return "東";
+	    case Wind.SOUTH:
+		return "南";
+	    case Wind.WEST:
+		return "西";
+	    case Wind.NORTH:
+		return "北";
+	    }
+	}
     }
 
     public Vec3 center { get; private set; }
@@ -94,7 +126,7 @@ private class RenderTablePlayerNameField
     private RenderLabel3D name_label;
     private RenderLabel3D score_label;
 
-    public RenderTablePlayerNameField(ResourceStore store, Vec3 center_size, float scale, float rotation, string name, Wind wind, int score)
+    public RenderTablePlayerNameField(ResourceStore store, Vec3 center_size, float scale, float rotation, string name, string wind, int score)
     {
         float dist = 0.5f;
         scale *= 0.8f;
@@ -102,7 +134,7 @@ private class RenderTablePlayerNameField
         wind_label = store.create_label_3D();
         wind_label.bold = true;
         wind_label.rotation = new Quat.from_euler_vec(Vec3(0, rotation, 0));
-        wind_label.text = WIND_TO_STRING(wind);
+        wind_label.text = wind;
         wind_label.color = Color.blue();
         wind_label.size = scale;
 

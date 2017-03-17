@@ -73,7 +73,7 @@ class RenderSceneManager : Object
         tile_size = ((RenderBody3D)tile.geometry[0]).model.size;
         tile_size = Vec3(tile_size.x, tile_size.y + ((RenderBody3D)tile.geometry[1]).model.size.y, tile_size.z).mul_scalar(tile_scale);
 
-        table = new RenderTable(store, extension, tile_size, round_wind, -(float)index / 2, score);
+        table = new RenderTable(store, extension, tile_size, round_wind, -(float)index / 2, score, options.english_winds);
 
         table_length = table.player_offset;
         center = table.center;

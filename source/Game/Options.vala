@@ -17,6 +17,7 @@ public class Options
         tile_fore_color = Color.white();
         tile_back_color = Color(0, 0.5f, 1, 1);
         tile_textures = "Regular";
+	english_winds = false;
     }
 
     public Options.from_disk()
@@ -61,6 +62,7 @@ public class Options
         options.add("tile_fore_color = " + color_to_string(tile_fore_color));
         options.add("tile_back_color = " + color_to_string(tile_back_color));
         options.add("tile_textures = " + tile_textures);
+        options.add("english_winds = " + english_winds.to_string());
 
         FileLoader.save(dir, options.to_array());
     }
@@ -104,6 +106,9 @@ public class Options
         case "tile_textures":
             tile_textures = value;
             break;
+	case "english_winds":
+	    english_winds = bool.parse(value);
+	    break;
         }
     }
 
@@ -179,6 +184,7 @@ public class Options
     public Color tile_fore_color { get; set; }
     public Color tile_back_color { get; set; }
     public string tile_textures { get; set; }
+    public bool english_winds { get; set; }
 
     public enum QualityEnum
     {

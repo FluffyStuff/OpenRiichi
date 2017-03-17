@@ -259,6 +259,7 @@ private class AppearanceOptionsMenuView : SubOptionsMenuView
     private ScrollBarControl back_red = new ScrollBarControl(false);
     private ScrollBarControl back_green = new ScrollBarControl(false);
     private ScrollBarControl back_blue = new ScrollBarControl(false);
+    private OptionItemControl english_winds_option;
 
     public AppearanceOptionsMenuView(string name, Options options, string apply_text, string back_text, int padding)
     {
@@ -349,6 +350,13 @@ private class AppearanceOptionsMenuView : SubOptionsMenuView
         simplified.outer_anchor = Vec2(0.5f, 1);
         simplified.position = Vec2(3 * spacing, -(top_offset + padding + height * 8));
         simplified.clicked.connect(simplified_clicked);
+
+	string[] winds_options = {"東", "E"};
+	english_winds_option = new OptionItemControl(true, "Winds", winds_options, (int)options.english_winds);
+	add_child(english_winds_option);
+        english_winds_option.inner_anchor = Vec2(0.5f, 1);
+        english_winds_option.outer_anchor = Vec2(0.5f, 1);
+        english_winds_option.position = Vec2(0, -(top_offset + padding + height * 9));
     }
 
     private void set_bar_properties(ScrollBarControl bar, float height, bool fore)
@@ -404,6 +412,7 @@ private class AppearanceOptionsMenuView : SubOptionsMenuView
         options.tile_fore_color = tile.fore_color;
         options.tile_back_color = tile.back_color;
         options.tile_textures = tile.texture_type;
+	options.english_winds = (bool)english_winds_option.index;
     }
 
     public override void resized()
