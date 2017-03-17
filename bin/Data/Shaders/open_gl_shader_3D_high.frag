@@ -9,9 +9,13 @@ varying vec2 frag_texture_coord;
 varying vec3 frag_normal;
 varying vec3 frag_camera_normal;
 
-varying vec3 light_normals[MAX_LIGHTS];
-varying float light_intensity[MAX_LIGHTS];
-varying vec3 light_colors[MAX_LIGHTS];
+varying vec3 light_normals0;
+varying float light_intensity0;
+varying vec3 light_colors0;
+
+varying vec3 light_normals1;
+varying float light_intensity1;
+varying vec3 light_colors1;
 
 // Material
 uniform vec4 ambient_color;
@@ -73,10 +77,24 @@ void calculate_lighting_factor(out vec4 diffuse_out, out vec4 specular_out)
 	
 	for (int i = 0; i < light_count; i++)
 	{
-		float intensity = light_intensity[i];
+		vec3 light_normals;
+		float light_intensity;
+		vec3 light_colors;
 		
-		float lnlen = max(length(light_normals[i]), 1);
-		vec3 ln = normalize(light_normals[i]);
+		if (i == 0) {
+			light_normals = light_normals0;
+			light_intensity = light_intensity0;
+			light_colors = light_colors0;
+		} else {
+			light_normals = light_normals1;
+			light_intensity = light_intensity1;
+			light_colors = light_colors1;
+		}
+
+		float intensity = light_intensity;
+		
+		float lnlen = max(length(light_normals), 1);
+		vec3 ln = normalize(light_normals);
 		vec3 cm = normalize(frag_camera_normal);
 		
 		float d = max(dot(normal, ln) / 1, 0);
@@ -85,7 +103,7 @@ void calculate_lighting_factor(out vec4 diffuse_out, out vec4 specular_out)
 		plus += d / lnlen * linear_factor;
 		plus += d / pow(lnlen, 2) * quadratic_factor;
 		
-		diffuse += (c * (1-blend_factor) + light_colors[i] * blend_factor) * plus * intensity;
+		diffuse += (c * (1-blend_factor) + light_colors * blend_factor) * plus * intensity;
 		
 		if (dot(ln, normal) > 0) // Only reflect on the correct side
 		{
@@ -99,7 +117,7 @@ void calculate_lighting_factor(out vec4 diffuse_out, out vec4 specular_out)
 			
 			p = max(p, 0) * intensity;
 			
-			specular += (light_colors[i] * (1-blend_factor) * 0 + specular_in.xyz/* * blend_factor*/) * p;
+			specular += (light_colors * (1-blend_factor) * 0 + specular_in.xyz/* * blend_factor*/) * p;
 		}
 	}
 	

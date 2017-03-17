@@ -26,19 +26,25 @@ varying vec2 frag_texture_coord;
 varying vec3 frag_normal;
 varying vec3 frag_camera_normal;
 
-varying vec3 light_normals[MAX_LIGHTS];
-varying float light_intensity[MAX_LIGHTS];
-varying vec3 light_colors[MAX_LIGHTS];
+varying vec3 light_normals0;
+varying float light_intensity0;
+varying vec3 light_colors0;
+
+varying vec3 light_normals1;
+varying float light_intensity1;
+varying vec3 light_colors1;
 
 void main()
 {
 	vec3 mod_pos = (model_transform * position).xyz;
-	for (int i = 0; i < light_count; i++)
-	{
-		light_normals[i] = light_source[i].position - mod_pos;
-		light_intensity[i] = light_source[i].intensity;
-		light_colors[i] = light_source[i].color;
-	}
+
+	light_normals0 = light_source[0].position - mod_pos;
+	light_intensity0 = light_source[0].intensity;
+	light_colors0 = light_source[0].color;
+	
+	light_normals1 = light_source[1].position - mod_pos;
+	light_intensity1 = light_source[1].intensity;
+	light_colors1 = light_source[1].color;
 	
 	frag_texture_coord = texture_coord.xy;
 	frag_normal = (vec4(normalize(normal), 1.0) * un_model_transform).xyz;
