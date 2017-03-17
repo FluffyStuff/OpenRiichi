@@ -6,8 +6,11 @@ class ServerSettingsView : MainMenuSubView
     private OptionItemControl aka_option;
     private OptionItemControl multiple_ron_option;
     private OptionItemControl triple_ron_option;
+    private OptionItemControl decision_time_option;
 
     private MenuTextButton? log_button;
+
+    private string[] decision_time_choices = { "10", "20", "30", "60", "120" };
 
     public ServerSettingsView(bool can_control, bool log_control, ServerSettings settings)
     {
@@ -26,10 +29,24 @@ class ServerSettingsView : MainMenuSubView
         aka_option = new OptionItemControl(can_control, "Aka dora", enabled_disabled_choices, (int)settings.aka_dora);
         multiple_ron_option = new OptionItemControl(can_control, "Multiple ron", enabled_disabled_choices, (int)settings.multiple_ron);
         triple_ron_option = new OptionItemControl(can_control, "Triple ron draw", enabled_disabled_choices, (int)settings.triple_ron_draw);
+	int decision_time_selected = 0;
+	if (settings.decision_time == 10) {
+		decision_time_selected = 0;
+	} else if (settings.decision_time == 20) {
+		decision_time_selected = 1;
+	} else if (settings.decision_time == 30) {
+		decision_time_selected = 2;
+	} else if (settings.decision_time == 60) {
+		decision_time_selected = 3;
+	} else if (settings.decision_time == 120) {
+		decision_time_selected = 4;
+	}
+        decision_time_option = new OptionItemControl(can_control, "Decision time (seconds)", decision_time_choices, decision_time_selected);
         opts.add(riichi_option);
         opts.add(aka_option);
         opts.add(multiple_ron_option);
         opts.add(triple_ron_option);
+	opts.add(decision_time_option);
 
         int padding = 30;
 
@@ -97,6 +114,7 @@ class ServerSettingsView : MainMenuSubView
         settings.aka_dora = (Options.OnOffEnum)aka_option.index;
         settings.multiple_ron = (Options.OnOffEnum)multiple_ron_option.index;
         settings.triple_ron_draw = (Options.OnOffEnum)triple_ron_option.index;
+	settings.decision_time = int.parse(decision_time_choices[decision_time_option.index]);
         settings.save();
 
         do_finish();
