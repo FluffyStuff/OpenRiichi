@@ -68,7 +68,7 @@ macDebug:
 mac:
 	$(VALAC) $(O) $(DIRS) $(PKGS) $(MAC) $(VAPI) $(OTHER) -D MAC
 
-winowsDebug:
+windowsDebug:
 	$(VALAC) $(O) $(DIRS) $(PKGS) $(WINDOWS) $(VAPI) $(OTHER) $(DEBUG) -D WINDOWS
 
 windows:

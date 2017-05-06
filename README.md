@@ -9,6 +9,7 @@ It features all the standard riichi rules, as well as some optional ones. It als
 <img src ="https://raw.githubusercontent.com/FluffyStuff/riichi-data/master/screenshots/screenshot1.png" />
 <img src ="https://raw.githubusercontent.com/FluffyStuff/riichi-data/master/screenshots/screenshot5.png" />
 </div>
+
 More screenshots can be found [here](https://github.com/FluffyStuff/riichi-data).
 
 ## Building
@@ -49,7 +50,7 @@ git clone https://github.com/FluffyStuff/Engine.git
 ```
 
 Build by opening up your mingw32 or mingw64 shell, depending on whether you want to compile for 32 or 64 bits, and run:
-```cd OpenRiichi && make WindowsRelease```
+```cd OpenRiichi && make windows```
 
 ### MacOS
 
@@ -75,7 +76,7 @@ git clone https://github.com/FluffyStuff/OpenRiichi.git
 git clone https://github.com/FluffyStuff/Engine.git
 ```
 
-Build by running `cd OpenRiichi && make macRelease`
+Build by running `cd OpenRiichi && make mac`
 
 ### Linux (Debian based)
 
@@ -93,7 +94,7 @@ libsdl2-image-dev \
 libsdl2-dev \
 libcsfml-dev \
 libsfml-dev
-git clone https://github.com/FluffyStuff/RiichiMahjong.git
+git clone https://github.com/FluffyStuff/OpenRiichi.git
 git clone https://github.com/FluffyStuff/Engine.git
 ```
 
