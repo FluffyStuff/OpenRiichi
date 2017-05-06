@@ -95,7 +95,7 @@ public class GameNetworkConnection : IGameConnection
         disconnected();
     }
 
-    public override bool authoritative { get; private set; }
+    public override bool authoritative { get; protected set; }
 }
 
 public class GameLocalConnection : IGameConnection
@@ -156,7 +156,7 @@ public class GameLocalConnection : IGameConnection
         unref();
     }
 
-    public override bool authoritative { get; private set; }
+    public override bool authoritative { get; protected set; }
 }
 
 public class TunneledGameConnection : IGameConnection
@@ -184,5 +184,5 @@ public class TunneledGameConnection : IGameConnection
         request_close(this);
     }
 
-    public override bool authoritative { get; private set; }
+    public override bool authoritative { get; protected set; }
 }
