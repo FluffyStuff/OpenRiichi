@@ -1340,7 +1340,7 @@ public class Scoring : Object
                     f *= 2;
                 if (meld.is_kan)
                     f *= 4;
-                if (meld.tile_1.is_dragon_tile() || meld.tile_1.is_wind(round.round_wind) || meld.tile_1.is_wind(player.wind))
+                if (meld.tile_1.is_honor_tile() || meld.tile_1.is_terminal_tile())
                     f *= 2;
 
                 fu += f;
