@@ -14259,7 +14259,7 @@ namespace GL {
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVertexAttribP4uiv")]
 	public static void glVertexAttribP4uiv (uint index, uint type, bool normalized, [CCode (array_length = false)] uint[]? value);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVertexAttribPointer")]
-	public static void glVertexAttribPointer (uint index, int size, uint type, bool normalized, int stride, [CCode (array_length = false)] GL.GLvoid[]? pointer);
+	public static void glVertexAttribPointer (uint index, int size, uint type, bool normalized, int stride, int pointer);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVertexAttribPointerARB")]
 	public static void glVertexAttribPointerARB (uint index, int size, uint type, bool normalized, int stride, [CCode (array_length = false)] GL.GLvoid[]? pointer);
 	[CCode (cheader_filename = "GL/glew.h", cname = "glVertexAttribPointerNV")]
