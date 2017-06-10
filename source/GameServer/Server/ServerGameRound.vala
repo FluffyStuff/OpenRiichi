@@ -105,8 +105,6 @@ namespace GameServer
                 this.players[i].server_player.send_message(start_message);
             }
 
-            Thread.usleep(5 * 100 * 1000); // TODO: Find fix for slow loading
-
             if (reveal)
                 foreach (Tile tile in tiles)
                     game_reveal_tile(tile);

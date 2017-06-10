@@ -5,7 +5,7 @@ public class Environment
     private const int VERSION_MAJOR = 0;
     private const int VERSION_MINOR = 1;
     private const int VERSION_PATCH = 3;
-    private const int VERSION_REVIS = 0;
+    private const int VERSION_REVIS = 1;
 
     public const int MIN_NAME_LENGTH =  2;
     public const int MAX_NAME_LENGTH = 12;
@@ -96,13 +96,31 @@ public class Environment
         typeof(GamePlayer).class_ref();
 
         typeof(ServerMessage).class_ref();
+        typeof(ServerMessageGameStart).class_ref();
         typeof(ServerMessageRoundStart).class_ref();
+        typeof(ServerMessagePlayerLeft).class_ref();
+
+        typeof(ServerMessageTileAssignment).class_ref();
+        typeof(ServerMessageTileDraw).class_ref();
+        typeof(ServerMessageTileDiscard).class_ref();
+        typeof(ServerMessageCallDecision).class_ref();
+        typeof(ServerMessageTurnDecision).class_ref();
+        typeof(ServerMessageRon).class_ref();
+        typeof(ServerMessageTsumo).class_ref();
+        typeof(ServerMessageRiichi).class_ref();
+        typeof(ServerMessageLateKan).class_ref();
+        typeof(ServerMessageClosedKan).class_ref();
+        typeof(ServerMessageOpenKan).class_ref();
+        typeof(ServerMessagePon).class_ref();
+        typeof(ServerMessageChii).class_ref();
+        typeof(ServerMessageCallsFinished).class_ref();
+        typeof(ServerMessageDraw).class_ref();
+
         typeof(ServerMessageAcceptJoin).class_ref();
         typeof(ServerMessageMenuSlotAssign).class_ref();
         typeof(ServerMessageMenuSlotClear).class_ref();
         typeof(ServerMessageMenuSettings).class_ref();
         typeof(ServerMessageMenuGameLog).class_ref();
-        typeof(ServerMessageDraw).class_ref();
 
         typeof(Lobby.LobbyInformation).class_ref();
         typeof(Lobby.ServerLobbyMessage).class_ref();
