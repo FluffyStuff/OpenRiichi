@@ -379,12 +379,13 @@ public class TileRules
         {
             foreach (RoundStateCall call in calls)
             {
+                ArrayList<Tile> tiles = sort_tiles(call.tiles);
                 if (call.call_type == RoundStateCall.CallType.CHII || call.call_type == RoundStateCall.CallType.PON)
-                    call_melds.add(new TileMeld(call.tiles[0], call.tiles[1], call.tiles[2], false));
+                    call_melds.add(new TileMeld(tiles[0], tiles[1], tiles[2], false));
                 else if (call.call_type == RoundStateCall.CallType.OPEN_KAN || call.call_type == RoundStateCall.CallType.LATE_KAN)
-                    call_melds.add(new TileMeld.kan(call.tiles[0], call.tiles[1], call.tiles[2], call.tiles[3], false));
+                    call_melds.add(new TileMeld.kan(tiles[0], tiles[1], tiles[2], tiles[3], false));
                 else if (call.call_type == RoundStateCall.CallType.CLOSED_KAN)
-                    call_melds.add(new TileMeld.kan(call.tiles[0], call.tiles[1], call.tiles[2], call.tiles[3], true));
+                    call_melds.add(new TileMeld.kan(tiles[0], tiles[1], tiles[2], tiles[3], true));
             }
         }
 
