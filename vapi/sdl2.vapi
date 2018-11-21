@@ -1556,7 +1556,7 @@ namespace SDL {
 		public int len_cvt;
 		public int len_mult;
 		public double len_ratio;
-		public SDL.AudioFilter filters[10];
+		//public SDL.AudioFilter filters[10];
 		public int filter_index;
 
 		[CCode (cname="SDL_BuildAudioCVT")]
