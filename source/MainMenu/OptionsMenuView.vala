@@ -259,6 +259,7 @@ private class AppearanceOptionsMenuView : SubOptionsMenuView
     private ScrollBarControl back_red = new ScrollBarControl(false);
     private ScrollBarControl back_green = new ScrollBarControl(false);
     private ScrollBarControl back_blue = new ScrollBarControl(false);
+    private OptionItemControl english_winds_option;
 
     public AppearanceOptionsMenuView(string name, Options options, string apply_text, string back_text, int padding)
     {
@@ -323,17 +324,39 @@ private class AppearanceOptionsMenuView : SubOptionsMenuView
 
         MenuTextButton regular = new MenuTextButton("MenuButtonSmall", "Regular");
         add_child(regular);
-        regular.inner_anchor = Vec2(1, 1);
+	float spacing = regular.size.width / 2 + padding / 2;
+        regular.inner_anchor = Vec2(0.5f, 1);
         regular.outer_anchor = Vec2(0.5f, 1);
-        regular.position = Vec2(-padding / 2, -(top_offset + padding + height * 8));
+        regular.position = Vec2(-3 * spacing, -(top_offset + padding + height * 8));
         regular.clicked.connect(regular_clicked);
 
         MenuTextButton black = new MenuTextButton("MenuButtonSmall", "Black");
         add_child(black);
-        black.inner_anchor = Vec2(0, 1);
+        black.inner_anchor = Vec2(0.5f, 1);
         black.outer_anchor = Vec2(0.5f, 1);
-        black.position = Vec2(padding / 2, -(top_offset + padding + height * 8));
+        black.position = Vec2(-spacing, -(top_offset + padding + height * 8));
         black.clicked.connect(black_clicked);
+
+        MenuTextButton numbered = new MenuTextButton("MenuButtonSmall", "Numbered");
+        add_child(numbered);
+        numbered.inner_anchor = Vec2(0.5f, 1);
+        numbered.outer_anchor = Vec2(0.5f, 1);
+        numbered.position = Vec2(spacing, -(top_offset + padding + height * 8));
+        numbered.clicked.connect(numbered_clicked);
+
+        MenuTextButton simplified = new MenuTextButton("MenuButtonSmall", "Simplified");
+        add_child(simplified);
+        simplified.inner_anchor = Vec2(0.5f, 1);
+        simplified.outer_anchor = Vec2(0.5f, 1);
+        simplified.position = Vec2(3 * spacing, -(top_offset + padding + height * 8));
+        simplified.clicked.connect(simplified_clicked);
+
+	string[] winds_options = {"東", "E"};
+	english_winds_option = new OptionItemControl(true, "Winds", winds_options, (int)options.english_winds);
+	add_child(english_winds_option);
+        english_winds_option.inner_anchor = Vec2(0.5f, 1);
+        english_winds_option.outer_anchor = Vec2(0.5f, 1);
+        english_winds_option.position = Vec2(0, -(top_offset + padding + height * 9));
     }
 
     private void set_bar_properties(ScrollBarControl bar, float height, bool fore)
@@ -364,6 +387,16 @@ private class AppearanceOptionsMenuView : SubOptionsMenuView
         tile.texture_type = "Black";
     }
 
+    private void numbered_clicked()
+    {
+        tile.texture_type = "Numbered";
+    }
+
+    private void simplified_clicked()
+    {
+        tile.texture_type = "Simplified";
+    }
+
     private void fore_color_changed()
     {
         tile.fore_color = Color(fore_red.fval, fore_green.fval, fore_blue.fval, 1);
@@ -379,6 +412,7 @@ private class AppearanceOptionsMenuView : SubOptionsMenuView
         options.tile_fore_color = tile.fore_color;
         options.tile_back_color = tile.back_color;
         options.tile_textures = tile.texture_type;
+	options.english_winds = (bool)english_winds_option.index;
     }
 
     public override void resized()
