@@ -4,9 +4,9 @@ using Engine;
 public class Environment
 {
     private const int VERSION_MAJOR = 0;
-    private const int VERSION_MINOR = 1;
-    private const int VERSION_PATCH = 3;
-    private const int VERSION_REVIS = 2;
+    private const int VERSION_MINOR = 2;
+    private const int VERSION_PATCH = 0;
+    private const int VERSION_REVIS = 0;
 
     public const int MIN_NAME_LENGTH =  2;
     public const int MAX_NAME_LENGTH = 12;
