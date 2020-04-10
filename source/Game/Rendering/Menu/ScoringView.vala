@@ -1,10 +1,11 @@
+using Engine;
 using Gee;
 
 class ScoringView : View2D
 {
+    private GameRenderContext context;
 	private RoundScoreState[] scores;
     private int player_index;
-    private AnimationTimings timings;
     private int score_index;
     private LabelControl time_label;
     private LabelControl score_label;
@@ -20,19 +21,17 @@ class ScoringView : View2D
 
     public signal void score_finished();
 
-    public ScoringView(int player_index, AnimationTimings timings)
+    public ScoringView(GameRenderContext context, int player_index)
     {
+        this.context = context;
         this.player_index = player_index;
-        this.timings = timings;
         relative_size = Size2(0.9f, 0.9f);
     }
 
     public override void added()
     {
-        ResetContainer reset = new ResetContainer();
-        add_child(reset);
         rectangle = new RectangleControl();
-        reset.add_child(rectangle);
+        add_child(rectangle);
         rectangle.resize_style = ResizeStyle.RELATIVE;
         rectangle.color = Color.with_alpha(0.7f);
         rectangle.selectable = true;
@@ -84,7 +83,7 @@ class ScoringView : View2D
         visible = false;
     }
 
-    protected override void do_process(DeltaArgs delta)
+    protected override void process(DeltaArgs delta)
     {
         if (start_time == 0)
             start_time = delta.time;
@@ -141,6 +140,26 @@ class ScoringView : View2D
         prev_score_button.visible = !round_finished;
     }
 
+    public void next()
+    {
+        player_index = (player_index + 1) % 4;
+        refresh_score();
+    }
+
+    public void prev()
+    {
+        player_index = (player_index + 3) % 4;
+        refresh_score();
+    }
+
+    private void refresh_score()
+    {
+        if (scoring_view != null)
+            remove_child(scoring_view);
+        scoring_view = null;
+        update_score_view(false);
+    }
+
     private void update_score_view(bool round_finished)
     {
         check_score_change_buttons();
@@ -156,11 +175,11 @@ class ScoringView : View2D
         if (round_finished)
         {
             start_time = 0;
-            time = timings.get_animation_round_end_delay(score);
+            time = context.server_times.get_animation_round_end_delay(score);
             time--; // Count down to 0
         }
 
-        scoring_view = new ScoringInnerView(score, player_index, timings, round_finished);
+        scoring_view = new ScoringInnerView(context, score, player_index, round_finished);
         scoring_view.animation_finished.connect(animation_finished);
         add_child(scoring_view);
         resized();

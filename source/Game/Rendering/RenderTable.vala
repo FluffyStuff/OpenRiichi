@@ -1,141 +1,218 @@
-public class RenderTable
+using Engine;
+
+public class RenderTable : WorldObject
 {
-    private Vec3 tile_size;
+    private GameRenderContext context;
     private float field_rotation;
-    private Wind round_wind;
     private RoundScoreState score;
+    private WorldTableObject table;
 
-    private RenderGeometry3D table;
-    private RenderGeometry3D? field;
-
-    private RenderGeometry3D center_piece;
-
-    private RenderLabel3D round_wind_label;
-    private RenderTablePlayerNameField[] names;
-
-    public RenderTable(ResourceStore store, string extension, Vec3 tile_size, Wind round_wind, float field_rotation, RoundScoreState score)
+    public RenderTable(GameRenderContext context, RenderTile[] tiles, float field_rotation, RoundScoreState score)
     {
-        this.tile_size = tile_size;
+        this.context = context;
+        this.tiles = tiles;
         this.field_rotation = field_rotation;
-        this.round_wind = round_wind;
         this.score = score;
-
-        reload(store, extension);
     }
 
-    public void render(RenderScene3D scene)
+    protected override void added()
     {
-        scene.add_object(table);
-        scene.add_object(field);
-        scene.add_object(center_piece);
-        scene.add_object(round_wind_label);
+        float hand_offset = 8;
 
-        foreach (RenderTablePlayerNameField name in names)
-            name.render(scene);
+        RenderTableCenterPiece center = new RenderTableCenterPiece(context.tile_size, field_rotation, score);
+        add_object(center);
+
+        players = new RenderPlayer[4];
+        for (int i = 0; i < players.length; i++)
+        {
+            players[i] = new RenderPlayer(context, i, i == context.dealer, hand_offset, center.riichi_offset, i == context.observer_index, INT_TO_WIND(i - context.dealer));
+            add_object(players[i]);
+            players[i].rotation = Quat.from_euler(i / 2.0f, 0, 0);
+        }
+        
+        wall = new RenderWall(context, tiles);
+        add_object(wall);
+
+        reload(QualityEnum.HIGH);
     }
 
-    public void reload(ResourceStore store, string extension)
+    public void reload(QualityEnum quality)
     {
+        if (table == null)
+        {
+            table = new WorldTableObject();
+            add_object(table);
+            table.rotation = Quat.from_euler(field_rotation / 2, 0, 0);
+        }
+
+        table.load(quality);
+    }
+
+    public void split_dead_wall(AnimationTime time)
+    {
+        wall.split_dead_wall(time);
+    }
+
+    public RenderPlayer[] players { get; private set; }
+    public RenderTile[] tiles { get; private set; }
+    public RenderWall wall { get; private set; }
+    //public Vec3 tile_size { get; private set; }
+    //public float player_offset { get; private set; }
+    //public float wall_offset { get; private set; }
+}
+
+public class WorldTableObject : WorldObject
+{
+    private RenderGeometry3D table;
+    private RenderObject3D field;
+
+    public void load(QualityEnum quality)
+    {
+        string extension = quality_enum_to_string(quality);
         table = store.load_geometry_3D("table_" + extension, true);
-        center_piece = store.load_geometry_3D("table_center", true);
-
-        float scale = tile_size.x * 2.9f;
-        center_piece.scale = Vec3(scale, scale, scale);
+        field = store.create_plane();
 
         string dir = Environment.get_user_dir() + "Custom/";
 
         RenderTexture? texture = store.load_texture_dir(dir, "field");
-
-        if (texture != null)
-            field = store.load_geometry_3D_dir(dir, "field", false);
-        else
+        if (texture == null)
             texture = store.load_texture("field_" + extension);
 
-        if (field == null)
-            field = store.load_geometry_3D("field", false);
+        var spec = field.material.spec;
+        spec.specular_color = UniformType.NONE;
+        field.material = store.load_material(spec);
+        field.material.textures[0] = texture;
 
-        ((RenderBody3D)field.geometry[0]).texture = texture;
+        table.transform.position = Vec3(0, -0.163f, 0);
+        table.transform.scale = Vec3(10, 10, 10);
+        table.transform.change_parent(transform);
+        field.transform.scale = Vec3(9.6f, 1, 9.6f);
+        field.transform.change_parent(transform);
+    }
 
-        table.position = Vec3(0, -0.163f, 0);
-        table.scale = Vec3(10, 10, 10);
-        field.position = Vec3(0, 0, 0);
-        field.scale = Vec3(9.6f, 1, 9.6f);
-        field.rotation = new Quat.from_euler_vec(Vec3(0, field_rotation, 0));
+	public override void do_add_to_scene(RenderScene3D scene)
+    {
+        scene.add_object(table);
+        scene.add_object(field);
+    }
+}
 
-        center = Vec3(0, field.position.y, 0);
-        player_offset = field.scale.z - 0.3f - (tile_size.x / 2 + tile_size.z);
+private class RenderTableCenterPiece : WorldObjectTransformable
+{
+    private Vec3 tile_size;
+    private float field_rotation;
+    private RoundScoreState score;
+    private RenderObject3D center_piece;
+    private WorldLabel round_wind_label;
+    private RenderTablePlayerNameField[] names;
+
+    public RenderTableCenterPiece(Vec3 tile_size, float field_rotation, RoundScoreState score)
+    {
+        this.tile_size = tile_size;
+        this.field_rotation = field_rotation;
+        this.score = score;
+    }
+
+    protected override void added()
+    {
+        center_piece = store.load_geometry_3D("table_center", true).geometry[0] as RenderObject3D;
+        set_object(center_piece);
+
+        var spec = center_piece.material.spec;
+        spec.specular_color = UniformType.STATIC;
+        spec.static_specular_color = Color(0.3f, 0.3f, 0.3f, 1);
+
+        var material = center_piece.material.textures[0];
+        center_piece.material = store.load_material(spec);
+        center_piece.material.textures[0] = material;
+
+        float scale = tile_size.x * 2.9f;
+        this.scale = Vec3(scale, scale, scale);
 
         names = new RenderTablePlayerNameField[score.players.length];
 
-        Vec3 center_size = ((RenderBody3D)center_piece.geometry[0]).model.size.mul_scalar(scale);
+        Vec3 center_size = center_piece.obb;
         center_size = Vec3(center_size.x, center_size.y * 1.1f, center_size.z);
+        riichi_offset = Vec3(0, center_size.y, center_size.x / 2 * scale * 0.8f);
+
+        round_wind_label = new WorldLabel();
+        add_object(round_wind_label);
+        round_wind_label.bold = true;
+        round_wind_label.rotation = Quat.from_euler(field_rotation / 2, 0, 0);
+        round_wind_label.text = WIND_TO_KANJI(score.round_wind);
+        round_wind_label.color = Color(0.1f, 0.3f, 1, 1);
+        float s = 2.5f;
+        round_wind_label.scale = Vec3(s, s, s);
+        round_wind_label.font_size = 300;
+        round_wind_label.position = Vec3(0, center_size.y, 0);
 
         for (int i = 0; i < names.length; i++)
-            names[i] = new RenderTablePlayerNameField(store, center_size, scale, -(float)i / 2, score.players[i].name, score.players[i].wind, score.players[i].points);
-
-        round_wind_label = store.create_label_3D();
-        round_wind_label.bold = true;
-        round_wind_label.rotation = new Quat.from_euler_vec(Vec3(0, field_rotation, 0));
-        round_wind_label.text = WIND_TO_STRING(round_wind);
-        round_wind_label.color = Color.blue();
-        round_wind_label.size = scale * 2;
-        round_wind_label.font_size = 100;
-        round_wind_label.position = Vec3(0, center_size.y, 0);
+        {
+            WorldObject wrap = new WorldObject();
+            add_object(wrap);
+            wrap.rotation = Quat.from_euler(i / 2.0f, 0, 0);
+            names[i] = new RenderTablePlayerNameField(score.players[i].name, score.players[i].wind, score.players[i].points, round_wind_label.end_size, round_wind_label.color);
+            wrap.add_object(names[i]);
+            wrap.position = Vec3(0, center_size.y, 0);
+        }
     }
 
-    public Vec3 center { get; private set; }
-    public float player_offset { get; private set; }
-    //public float wall_offset { get; private set; }
+    public Vec3 riichi_offset { get; private set; }
 }
 
-private class RenderTablePlayerNameField
+private class RenderTablePlayerNameField : WorldObject
 {
-    private RenderLabel3D wind_label;
-    private RenderLabel3D name_label;
-    private RenderLabel3D score_label;
+    private string name;
+    private Wind wind;
+    private int score;
+    private Vec3 center_size;
+    private Color color;
 
-    public RenderTablePlayerNameField(ResourceStore store, Vec3 center_size, float scale, float rotation, string name, Wind wind, int score)
+    public RenderTablePlayerNameField(string name, Wind wind, int score, Vec3 center_size, Color color)
     {
-        float dist = 0.5f;
-        scale *= 0.8f;
-
-        wind_label = store.create_label_3D();
-        wind_label.bold = true;
-        wind_label.rotation = new Quat.from_euler_vec(Vec3(0, rotation, 0));
-        wind_label.text = WIND_TO_STRING(wind);
-        wind_label.color = Color.blue();
-        wind_label.size = scale;
-
-        float offset = -center_size.x / 2 * dist + wind_label.end_size.z / 2 + wind_label.end_size.x / 2;
-        Vec3 pos = Calculations.rotate_y(Vec3.empty(), -rotation, Vec3(offset, center_size.y, center_size.z / 2 * dist));
-        wind_label.position = pos;
-
-        name_label = store.create_label_3D();
-        name_label.bold = true;
-        name_label.rotation = new Quat.from_euler_vec(Vec3(0, rotation, 0));
-        name_label.text = name;
-        name_label.size = wind_label.size * 0.6f;
-        name_label.font_size = wind_label.font_size * 0.6f;
-        name_label.color = wind_label.color;
-
-        pos = Calculations.rotate_y(Vec3.empty(), -rotation, Vec3(offset + wind_label.end_size.x / 2 + name_label.end_size.x / 2, center_size.y, center_size.z / 2 * dist));
-        name_label.position = pos;
-
-        score_label = store.create_label_3D();
-        score_label.bold = true;
-        score_label.rotation = new Quat.from_euler_vec(Vec3(0, rotation, 0));
-        score_label.text = score.to_string();
-        score_label.size = wind_label.size * 0.6f;
-        name_label.font_size = wind_label.font_size * 0.6f;
-
-        pos = Calculations.rotate_y(Vec3.empty(), -rotation, Vec3(offset + wind_label.end_size.x / 2 + score_label.end_size.x / 2, center_size.y, center_size.z / 2 * dist + name_label.end_size.z / 2 + score_label.end_size.z / 2));
-        score_label.position = pos;
+        this.name = name;
+        this.wind = wind;
+        this.score = score;
+        this.center_size = center_size;
+        this.color = color;
     }
 
-    public void render(RenderScene3D scene)
+    protected override void added()
     {
-        scene.add_object(wind_label);
-        scene.add_object(name_label);
-        scene.add_object(score_label);
+        float scale = 0.8f;
+
+        WorldLabel wind_label = new WorldLabel();
+        add_object(wind_label);
+        wind_label.bold = true;
+        wind_label.text = WIND_TO_KANJI(wind);
+        wind_label.color = color;
+        wind_label.scale = Vec3(scale, scale, scale);
+        wind_label.font_size = wind_label.font_size * 8;
+
+        Vec3 offset = Vec3(-center_size.x / 2, 0, center_size.z / 2);
+        Vec3 pos = Vec3(offset.x + wind_label.end_size.x / 2, 0, offset.z + wind_label.end_size.z / 2);
+        wind_label.position = pos;
+
+        WorldLabel name_label = new WorldLabel();
+        add_object(name_label);
+        name_label.bold = true;
+        name_label.text = name;
+        name_label.scale = wind_label.scale.mul_scalar(0.5f);
+        name_label.font_size = wind_label.font_size;
+        name_label.color = color;
+
+        pos = Vec3(offset.x + wind_label.end_size.x + name_label.end_size.x / 2, 0, offset.z + name_label.end_size.z / 2);
+        name_label.position = pos;
+
+        WorldLabel score_label = new WorldLabel();
+        add_object(score_label);
+        score_label.bold = true;
+        score_label.text = score.to_string();
+        score_label.scale = name_label.scale;
+        score_label.font_size = name_label.font_size;
+        score_label.color = Color.green();
+
+        pos = Vec3(offset.x + wind_label.end_size.x + score_label.end_size.x / 2, 0, offset.z + name_label.end_size.z + score_label.end_size.z / 2);
+        score_label.position = pos;
     }
 }

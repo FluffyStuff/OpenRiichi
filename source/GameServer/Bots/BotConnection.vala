@@ -32,13 +32,13 @@ class BotConnection : Object
         bot.do_void_hand.connect(bot_do_void_hand);
         bot.do_tsumo.connect(bot_do_tsumo);
         bot.do_riichi.connect(bot_do_riichi);
-        bot.do_late_kan.connect(bot_late_kan);
-        bot.do_closed_kan.connect(bot_closed_kan);
+        bot.do_late_kan.connect(bot_do_late_kan);
+        bot.do_closed_kan.connect(bot_do_closed_kan);
         bot.call_nothing.connect(bot_call_nothing);
-        bot.call_ron.connect(bot_ron);
-        bot.call_open_kan.connect(bot_open_kan);
-        bot.call_pon.connect(bot_pon);
-        bot.call_chii.connect(bot_chii);
+        bot.call_ron.connect(bot_call_ron);
+        bot.call_open_kan.connect(bot_call_open_kan);
+        bot.call_pon.connect(bot_call_pon);
+        bot.call_chii.connect(bot_call_chii);
     }
 
     ~BotConnection()
@@ -175,69 +175,63 @@ class BotConnection : Object
 
     /////////////////
 
+    private void send_action(ClientAction action)
+    {
+        connection.send_message(new ClientMessageGameAction(action));
+    }
+
     private void bot_do_discard(Tile tile)
     {
-        ClientMessageTileDiscard message = new ClientMessageTileDiscard(tile.ID);
-        connection.send_message(message);
+        send_action(new TileDiscardClientAction(tile.ID));
     }
 
     private void bot_do_tsumo()
     {
-        ClientMessageTsumo message = new ClientMessageTsumo();
-        connection.send_message(message);
+        send_action(new TsumoClientAction());
     }
 
     private void bot_do_void_hand()
     {
-        ClientMessageVoidHand message = new ClientMessageVoidHand();
-        connection.send_message(message);
+        send_action(new VoidHandClientAction());
     }
 
     private void bot_do_riichi(bool open)
     {
-        ClientMessageRiichi message = new ClientMessageRiichi(open);
-        connection.send_message(message);
+        send_action(new RiichiClientAction(open));
     }
 
-    private void bot_late_kan(Tile tile)
+    private void bot_do_late_kan(Tile tile)
     {
-        ClientMessageLateKan message = new ClientMessageLateKan(tile.ID);
-        connection.send_message(message);
+        send_action(new LateKanClientAction(tile.ID));
     }
 
-    private void bot_closed_kan(TileType type)
+    private void bot_do_closed_kan(TileType type)
     {
-        ClientMessageClosedKan message = new ClientMessageClosedKan(type);
-        connection.send_message(message);
+        send_action(new ClosedKanClientAction(type));
     }
 
     private void bot_call_nothing()
     {
-        ClientMessageNoCall message = new ClientMessageNoCall();
-        connection.send_message(message);
+        send_action(new NoCallClientAction());
     }
 
-    private void bot_ron()
+    private void bot_call_ron()
     {
-        ClientMessageRon message = new ClientMessageRon();
-        connection.send_message(message);
+        send_action(new RonClientAction());
     }
 
-    private void bot_open_kan()
+    private void bot_call_open_kan()
     {
-        ClientMessageOpenKan message = new ClientMessageOpenKan();
-        connection.send_message(message);
+        send_action(new OpenKanClientAction());
     }
 
-    private void bot_pon()
+    private void bot_call_pon()
     {
-        ClientMessagePon message = new ClientMessagePon();
-        connection.send_message(message);
+        send_action(new PonClientAction());
     }
 
-    private void bot_chii(Tile tile_1, Tile tile_2)
+    private void bot_call_chii(Tile tile_1, Tile tile_2)
     {
-        ClientMessageChii message = new ClientMessageChii(tile_1.ID, tile_2.ID);
-        connection.send_message(message);
+        send_action(new ChiiClientAction(tile_1.ID, tile_2.ID));
     }
 }

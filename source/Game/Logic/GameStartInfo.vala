@@ -1,4 +1,5 @@
 using GameServer;
+using Engine;
 
 public class GameStartInfo : Serializable
 {

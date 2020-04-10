@@ -9,7 +9,7 @@ public class ClientRoundState : Object
 
     private ArrayList<TileSelectionGroup> selection_groups = new ArrayList<TileSelectionGroup>();
 
-    public signal void send_message(ClientMessage message);
+    public signal void do_action(ClientAction action);
 
     public signal void set_chii_state(bool enabled);
     public signal void set_pon_state(bool enabled);
@@ -95,28 +95,23 @@ public class ClientRoundState : Object
 
     private void do_riichi(Tile tile, bool open)
     {
-        ClientMessageRiichi message = new ClientMessageRiichi(open);
-        send_message(message);
-
+        do_action(new RiichiClientAction(open));
         do_discard_tile(tile);
     }
 
     private void do_late_kan(Tile tile)
     {
-        ClientMessageLateKan message = new ClientMessageLateKan(tile.ID);
-        send_message(message);
+        do_action(new LateKanClientAction(tile.ID));
     }
 
     private void do_closed_kan(TileType type)
     {
-        ClientMessageClosedKan message = new ClientMessageClosedKan(type);
-        send_message(message);
+        do_action(new ClosedKanClientAction(type));
     }
 
     private void do_chii(Tile tile_1, Tile tile_2)
     {
-        ClientMessageChii message = new ClientMessageChii(tile_1.ID, tile_2.ID);
-        send_message(message);
+        do_action(new ChiiClientAction(tile_1.ID, tile_2.ID));
     }
 
     private void do_turn_decision()
@@ -176,8 +171,7 @@ public class ClientRoundState : Object
 
     private void do_discard_tile(Tile tile)
     {
-        ClientMessageTileDiscard message = new ClientMessageTileDiscard(tile.ID);
-        send_message(message);
+        do_action(new TileDiscardClientAction(tile.ID));
     }
 
     private void do_select_chii(Tile tile)
@@ -311,8 +305,7 @@ public class ClientRoundState : Object
 
         decision_finished();
 
-        ClientMessagePon message = new ClientMessagePon();
-        send_message(message);
+        do_action(new PonClientAction());
     }
 
     public void client_kan()
@@ -321,8 +314,7 @@ public class ClientRoundState : Object
         {
             decision_finished();
 
-            ClientMessageOpenKan message = new ClientMessageOpenKan();
-            send_message(message);
+            do_action(new OpenKanClientAction());
         }
         else if (action_state == State.TURN)
         {
@@ -422,9 +414,7 @@ public class ClientRoundState : Object
             return;
 
         decision_finished();
-
-        ClientMessageTsumo message = new ClientMessageTsumo();
-        send_message(message);
+        do_action(new TsumoClientAction());
     }
 
     public void client_ron()
@@ -433,9 +423,7 @@ public class ClientRoundState : Object
             return;
 
         decision_finished();
-
-        ClientMessageRon message = new ClientMessageRon();
-        send_message(message);
+        do_action(new RonClientAction());
     }
 
     public void client_continue()
@@ -444,9 +432,7 @@ public class ClientRoundState : Object
             return;
 
         decision_finished();
-
-        ClientMessageNoCall message = new ClientMessageNoCall();
-        send_message(message);
+        do_action(new NoCallClientAction());
     }
 
     public void client_void_hand()
@@ -455,9 +441,7 @@ public class ClientRoundState : Object
             return;
 
         decision_finished();
-
-        ClientMessageVoidHand message = new ClientMessageVoidHand();
-        send_message(message);
+        do_action(new VoidHandClientAction());
     }
 
     public void client_tile_selected(Tile tile)

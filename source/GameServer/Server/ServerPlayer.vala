@@ -1,8 +1,10 @@
+using Engine;
+
 namespace GameServer
 {
     public abstract class ServerPlayer : Object
     {
-        public ServerPlayer(string name, bool bot)
+        protected ServerPlayer(string name, bool bot)
         {
             this.name = name;
             this.bot = bot;
@@ -155,6 +157,7 @@ namespace GameServer
 
         public override void send_message(ServerMessage message)
         {
+            //Environment.log(LogType.DEBUG, "ServerPlayer:158", message.to_string());
             Message msg = new Message(message.serialize());
             connection.send(msg);
         }
@@ -166,13 +169,14 @@ namespace GameServer
 
         private void parse_message(Connection connection, Message message)
         {
-            Serializable? msg = Serializable.deserialize(message.data);
+            Serializable? msg = Serializable.deserialize(message.get_message());
 
             if (msg == null || !msg.get_type().is_a(typeof(ClientMessage)))
             {
                 Environment.log(LogType.NETWORK, "ServerPlayerNetworkConnection", "Server discarding invalid client message");
                 return;
             }
+            //Environment.log(LogType.DEBUG, "ServerPlayer:177", msg.to_string());
             receive_message((ClientMessage)msg);
         }
 

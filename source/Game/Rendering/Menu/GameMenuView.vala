@@ -1,12 +1,15 @@
+using Engine;
 using Gee;
 
 class GameMenuView : View2D
 {
     private ScoringView? score_view = null;
     private ArrayList<MenuTextButton> buttons = new ArrayList<MenuTextButton>();
+    private ArrayList<MenuTextButton> observer_buttons = new ArrayList<MenuTextButton>();
 
+    private GameRenderContext context;
     private ServerSettings settings;
-	private AnimationTimings delays;
+    private bool observing;
 
     private Sound hint_sound;
     private float start_time;
@@ -23,6 +26,9 @@ class GameMenuView : View2D
     private MenuTextButton conti;
     private MenuTextButton void_hand;
 
+    private MenuTextButton next;
+    private MenuTextButton prev;
+
     public signal void chii_pressed();
     public signal void pon_pressed();
     public signal void kan_pressed();
@@ -33,6 +39,9 @@ class GameMenuView : View2D
     public signal void void_hand_pressed();
     public signal void display_score_pressed();
     public signal void score_finished();
+
+    public signal void observe_next_pressed();
+    public signal void observe_prev_pressed();
 
     private void press_chii() { chii_pressed(); }
     private void press_pon() { pon_pressed(); }
@@ -56,13 +65,17 @@ class GameMenuView : View2D
     private void press_continue() { continue_pressed(); }
     private void press_void_hand() { void_hand_pressed(); }
 
-    public GameMenuView(ServerSettings settings, int player_index, AnimationTimings delays)
+    private void press_next() { observe_next_pressed(); score_view.next(); }
+    private void press_prev() { observe_prev_pressed(); score_view.prev(); }
+
+    public GameMenuView(GameRenderContext context, ServerSettings settings, int player_index, bool observing)
     {
+        this.context = context;
         this.settings = settings;
         this.player_index = player_index;
-		this.delays = delays;
+        this.observing = observing;
 
-        score_view = new ScoringView(player_index, delays);
+        score_view = new ScoringView(context, player_index);
         score_view.score_finished.connect(do_score_finished);
     }
 
@@ -99,6 +112,9 @@ class GameMenuView : View2D
         conti = new MenuTextButton("MenuButtonSmall", "Continue");
         void_hand = new MenuTextButton("MenuButtonSmall", "Void Hand");
 
+        next = new MenuTextButton("MenuButtonSmall", "Next");
+        prev = new MenuTextButton("MenuButtonSmall", "Previous");
+
         chii.clicked.connect(press_chii);
         pon.clicked.connect(press_pon);
         kan.clicked.connect(press_kan);
@@ -108,6 +124,9 @@ class GameMenuView : View2D
         ron.clicked.connect(press_ron);
         conti.clicked.connect(press_continue);
         void_hand.clicked.connect(press_void_hand);
+
+        next.clicked.connect(press_next);
+        prev.clicked.connect(press_prev);
 
         buttons.add(chii);
         buttons.add(pon);
@@ -119,6 +138,9 @@ class GameMenuView : View2D
         buttons.add(conti);
         buttons.add(void_hand);
 
+        observer_buttons.add(prev);
+        observer_buttons.add(next);
+
         foreach (var button in buttons)
         {
             add_child(button);
@@ -126,16 +148,27 @@ class GameMenuView : View2D
             button.inner_anchor = Vec2(0.5f, 0);
             button.outer_anchor = Vec2(0.5f, 0);
             button.font_size = 24;
+            button.visible = !observing;
+        }
+
+        foreach (var button in observer_buttons)
+        {
+            add_child(button);
+            button.inner_anchor = Vec2(0.5f, 0);
+            button.outer_anchor = Vec2(0.5f, 0);
+            button.font_size = 24;
+            button.visible = observing;
         }
 
         void_hand.visible = false;
-        open_riichi.visible = settings.open_riichi == Options.OnOffEnum.ON;
-        position_buttons();
+        open_riichi.visible = open_riichi.visible && settings.open_riichi == OnOffEnum.ON;
+        position_buttons(buttons);
+        position_buttons(observer_buttons);
 
         add_child(score_view);
     }
 
-    private void position_buttons()
+    private void position_buttons(ArrayList<MenuTextButton> buttons)
     {
         float p = 0;
         float width = 0;
@@ -154,7 +187,7 @@ class GameMenuView : View2D
         }
     }
 
-    protected override void do_key_press(KeyArgs key)
+    protected override void key_press(KeyArgs key)
     {
         if (key.handled)
             return;
@@ -208,13 +241,14 @@ class GameMenuView : View2D
         if (enabled)
             hint_sound.play();
         conti.enabled = enabled;
+        press_continue();
     }
 
     public void set_void_hand(bool enabled)
     {
         void_hand.visible = enabled;
         void_hand.enabled = enabled;
-        position_buttons();
+        position_buttons(buttons);
     }
 
     public void set_furiten(bool enabled)
@@ -244,6 +278,9 @@ class GameMenuView : View2D
     public void round_finished()
     {
         score_view.display(true);
+
+        foreach (var button in observer_buttons)
+            button.enabled = false;
     }
 
     public void display_score()
@@ -260,14 +297,14 @@ class GameMenuView : View2D
     {
         InformationMenuView view = new InformationMenuView("Connection to server lost");
         add_child(view);
-        view.finish.connect(info_menu_finished);
+        view.back.connect(info_menu_finished);
     }
 
     public void display_player_left(string name)
     {
         InformationMenuView view = new InformationMenuView(name + " has left the game");
         add_child(view);
-        view.finish.connect(info_menu_finished);
+        view.back.connect(info_menu_finished);
     }
 
     private void info_menu_finished(MenuSubView view)
@@ -280,7 +317,7 @@ class GameMenuView : View2D
         score_finished();
     }
 
-    protected override void do_process(DeltaArgs delta)
+    protected override void process(DeltaArgs delta)
     {
         if (start_time == 0)
             start_time = delta.time;
@@ -288,8 +325,8 @@ class GameMenuView : View2D
         if (!timer.visible)
             return;
 
-        int t = int.max((int)(start_time + delays.decision_time - delta.time), 0);
-        if (t == delays.decision_time)
+        int t = int.max((int)(start_time + context.server_times.decision_time - delta.time), 0);
+        if (t == context.server_times.decision_time)
             t--;
 
         if (t < 0)

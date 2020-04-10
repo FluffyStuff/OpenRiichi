@@ -1,3 +1,5 @@
+using Engine;
+
 private static bool debug =
 #if DEBUG
     true
@@ -6,7 +8,7 @@ private static bool debug =
 #endif
 ;
 
-private static bool multithread_rendering = true;
+private static bool multithread_rendering = false;
 
 private static void parse_args(string[] args)
 {
@@ -32,17 +34,21 @@ public static int main(string[] args)
 {
     parse_args(args);
 
-    Environment.init(debug);
+    if (!Environment.init(debug))
+    {
+        Environment.log(LogType.ERROR, "Main", "Could not init environment");
+        return -1;
+    }
 
     while (true)
     {
         Options options = new Options.from_disk();
-        int multisamples = options.anti_aliasing == Options.OnOffEnum.ON ? 2 : 0;
-        bool fullscreen = options.fullscreen == Options.OnOffEnum.ON;
+        int multisamples = options.anti_aliasing == OnOffEnum.ON ? 2 : 0;
+        bool fullscreen = options.fullscreen == OnOffEnum.ON;
         string window_name = "OpenRiichi";
         int window_width = 1280, window_height = 720;
 
-        SDLGLEngine engine = new SDLGLEngine(multithread_rendering);
+        SDLGLEngine engine = new SDLGLEngine(multithread_rendering, debug);
         if (!engine.init(window_name, window_width, window_height, multisamples, fullscreen))
         {
             Environment.log(LogType.ERROR, "Main", "Could not init engine");

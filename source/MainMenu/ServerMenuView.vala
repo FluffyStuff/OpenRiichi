@@ -1,3 +1,4 @@
+using Engine;
 using Gee;
 using GameServer;
 
@@ -32,7 +33,6 @@ class ServerMenuView : MenuSubView
     {
         this.connection = connection;
         this.connection.disconnected.connect(do_back);
-        this.connection.received_message.connect(received_message);
         this.can_control = can_control;
     }
 
@@ -41,11 +41,6 @@ class ServerMenuView : MenuSubView
         host = true;
         player_name = "Log";
         this.log = log;
-    }
-
-    ~ServerMenuView()
-    {
-        connection = null; // Fixes warnings because of reasons
     }
 
     private void start_server()
@@ -59,8 +54,6 @@ class ServerMenuView : MenuSubView
         game_connection.set_connection(server_connection);
 
         connection = game_connection;
-        connection.disconnected.connect(do_back);
-        connection.received_message.connect(received_message);
 
         ServerHumanPlayer player = new ServerHumanPlayer(server_connection, player_name);
         server.add_player(player);
@@ -116,8 +109,6 @@ class ServerMenuView : MenuSubView
             send_settings(settings);
         if (log != null)
             send_log(log);
-
-        received_message();
     }
 
     private void kick_slot(int slot)
@@ -173,11 +164,7 @@ class ServerMenuView : MenuSubView
             players[i].visible = visible;
     }
 
-    public void received_message()
-    {
-    }
-
-    protected override void do_process(DeltaArgs delta)
+    protected override void process(DeltaArgs delta)
     {
         if (connection == null)
             return;
@@ -207,8 +194,9 @@ class ServerMenuView : MenuSubView
 
     private void start_message(ServerMessageGameStart message)
     {
-        connection.received_message.disconnect(received_message);
+        connection.disconnected.disconnect(do_back);
         start(message.info, message.settings, connection, message.player_index);
+        do_back();
     }
 
     private void assign_message(ServerMessageMenuSlotAssign message)
@@ -231,8 +219,7 @@ class ServerMenuView : MenuSubView
 
     private void game_log_message(ServerMessageMenuGameLog message)
     {
-        // TODO
-        Environment.log(LogType.DEBUG, "ServerMenuView", message.name == null ? "null name" : message.name);
+        // TODO: name
         start_button.enabled = true;
     }
 

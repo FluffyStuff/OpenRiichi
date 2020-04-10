@@ -1,9 +1,10 @@
+using Engine;
 using Gee;
 
 class ScoringInnerView : View2D
 {
+    private GameRenderContext context;
     private int player_index;
-    private AnimationTimings timings;
     private bool animate;
     private int score_animations_finished;
     private ScoringPointsView? view = null;
@@ -19,18 +20,18 @@ class ScoringInnerView : View2D
 
     public signal void animation_finished();
 
-    public ScoringInnerView(RoundScoreState score, int player_index, AnimationTimings timings, bool animate)
+    public ScoringInnerView(GameRenderContext context, RoundScoreState score, int player_index, bool animate)
     {
+        this.context = context;
         this.score = score;
         this.player_index = player_index;
-        this.timings = timings;
         this.animate = animate;
     }
 
     public override void added()
     {
         var player = score.players[player_index];
-        bottom = new ScoringPlayerElement(player.index, player.wind, player.name, player.points, player.transfer, player.score, score.hanchan_is_finished, timings, animate);
+        bottom = new ScoringPlayerElement(player.index, player.wind, player.name, player.points, player.transfer, player.score, score.hanchan_is_finished, context.server_times, animate);
         add_child(bottom);
         bottom.resize_style = ResizeStyle.ABSOLUTE;
         bottom.inner_anchor = Vec2(0.5f, 0);
@@ -38,7 +39,7 @@ class ScoringInnerView : View2D
         bottom.animation_finished.connect(player_element_animation_finished);
 
         player = score.players[(player_index + 1) % 4];
-        right = new ScoringPlayerElement(player.index, player.wind, player.name, player.points, player.transfer, player.score, score.hanchan_is_finished, timings, animate);
+        right = new ScoringPlayerElement(player.index, player.wind, player.name, player.points, player.transfer, player.score, score.hanchan_is_finished, context.server_times, animate);
         add_child(right);
         right.resize_style = ResizeStyle.ABSOLUTE;
         right.inner_anchor = Vec2(1, 0.5f);
@@ -46,7 +47,7 @@ class ScoringInnerView : View2D
         right.animation_finished.connect(player_element_animation_finished);
 
         player = score.players[(player_index + 2) % 4];
-        top = new ScoringPlayerElement(player.index, player.wind, player.name, player.points, player.transfer, player.score, score.hanchan_is_finished, timings, animate);
+        top = new ScoringPlayerElement(player.index, player.wind, player.name, player.points, player.transfer, player.score, score.hanchan_is_finished, context.server_times, animate);
         add_child(top);
         top.resize_style = ResizeStyle.ABSOLUTE;
         top.inner_anchor = Vec2(0.5f, 1);
@@ -54,15 +55,16 @@ class ScoringInnerView : View2D
         top.animation_finished.connect(player_element_animation_finished);
 
         player = score.players[(player_index + 3) % 4];
-        left = new ScoringPlayerElement(player.index, player.wind, player.name, player.points, player.transfer, player.score, score.hanchan_is_finished, timings, animate);
+        left = new ScoringPlayerElement(player.index, player.wind, player.name, player.points, player.transfer, player.score, score.hanchan_is_finished, context.server_times, animate);
         add_child(left);
         left.resize_style = ResizeStyle.ABSOLUTE;
         left.inner_anchor = Vec2(0, 0.5f);
         left.outer_anchor = Vec2(0, 0.5f);
         left.animation_finished.connect(player_element_animation_finished);
-
-        riichi_view = new ScoringStickNumberView("1000", true);
+        
+        riichi_view = new ScoringStickNumberView(RenderStick.StickType.STICK_1000, true);
         add_child(riichi_view);
+        riichi_view.resize_style = ResizeStyle.ABSOLUTE;
         riichi_view.size = Size2(200, 20);
         riichi_view.inner_anchor = Vec2(0, 0);
         riichi_view.outer_anchor = Vec2(0, 0);
@@ -70,8 +72,9 @@ class ScoringInnerView : View2D
         riichi_view.number = score.riichi_count;
         riichi_view.alpha = animate ? 0 : 1;
 
-        renchan_view = new ScoringStickNumberView("100", false);
+        renchan_view = new ScoringStickNumberView(RenderStick.StickType.STICK_100, false);
         add_child(renchan_view);
+        renchan_view.resize_style = ResizeStyle.ABSOLUTE;
         renchan_view.size = riichi_view.size;
         renchan_view.inner_anchor = Vec2(1, 0);
         renchan_view.outer_anchor = Vec2(1, 0);
@@ -81,7 +84,7 @@ class ScoringInnerView : View2D
 
         wind_indicator = new LabelControl();
         add_child(wind_indicator);
-        wind_indicator.text = WIND_TO_STRING(score.round_wind);
+        wind_indicator.text = WIND_TO_KANJI(score.round_wind);
         wind_indicator.inner_anchor = Vec2(0, 1);
         wind_indicator.outer_anchor = Vec2(0, 1);
         wind_indicator.font_size = 60;
@@ -98,7 +101,7 @@ class ScoringInnerView : View2D
 
         if (score.round_is_finished)
         {
-            view = new ScoringPointsView(score, timings, animate);
+            view = new ScoringPointsView(context, score, animate);
             view.score_selected.connect(score_selected);
             view.label_animation_finished.connect(label_animation_finished);
             view.score_animation_finished.connect(score_animation_finished);
@@ -108,7 +111,7 @@ class ScoringInnerView : View2D
 
     private void animation_items_start()
     {
-        var animation = new Animation(timings.menu_items_fade);
+        var animation = new Animation(context.server_times.menu_items_fade);
         animation.animate.connect(animation_items_animate);
         add_animation(animation);
     }
@@ -150,11 +153,6 @@ class ScoringInnerView : View2D
             view.size = Size2(right.rect.x - (left.rect.x + left.size.width) - padding * 2, top.rect.y - (bottom.rect.y + bottom.rect.height) - riichi_view.size.height - padding * 2);
             view.position = Vec2(0, riichi_view.size.height / 2);
         }
-
-        /*if (riichi_view != null)
-            riichi_view.size = Size2((right.rect.x - (left.rect.x + left.size.width)) / 2, riichi_view.size.height);
-        if (renchan_view != null)
-            renchan_view.size = Size2((right.rect.x - (left.rect.x + left.size.width)) / 2, renchan_view.size.height);*/
     }
 
     private void score_selected(int player_index)

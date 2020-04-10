@@ -1,3 +1,4 @@
+using Engine;
 using Gee;
 
 public class ServerPlayerFieldView : Control
@@ -71,9 +72,9 @@ public class ServerPlayerFieldView : Control
         resize_style = ResizeStyle.ABSOLUTE;
     }
 
-    protected override void do_mouse_event(MouseEventArgs mouse)
+    protected override void mouse_event(MouseEventArgs mouse)
     {
-        base.do_mouse_event(mouse);
+        base.mouse_event(mouse);
 
         if (!editable || expand_button.focused)
             return;
@@ -172,11 +173,11 @@ public class ServerPlayerFieldView : Control
             label.position = Vec2(10, 0);
         }
 
-        protected override void do_render(RenderState state, RenderScene2D scene)
+        protected override void render(RenderState state, RenderScene2D scene)
         {
             if (hovering)
             {
-                if (mouse_down)
+                if (mouse_pressed)
                     background.color = Color(0.75f, 0.025f, 0.025f, 1);
                 else
                     background.color = Color(0.9f, 0.03f, 0.03f, 1);

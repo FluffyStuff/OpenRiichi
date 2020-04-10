@@ -1,3 +1,4 @@
+using Engine;
 using Gee;
 
 class InformationMenuView : MenuSubView

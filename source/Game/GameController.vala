@@ -1,3 +1,5 @@
+using Engine;
+
 class GameController : Object
 {
     private GameState game;
@@ -24,12 +26,9 @@ class GameController : Object
         this.settings = settings;
         this.connection = connection;
         this.player_index = player_index;
+        this.options = options;
 
         this.connection.disconnected.connect(disconnected);
-
-        this.options = options;
-        string quality = Options.quality_enum_to_string(options.shader_quality);
-        parent_view.window.renderer.shader_3D = "open_gl_shader_3D_" + quality;
 
         game = new GameState(start_info, settings);
     }
@@ -87,17 +86,13 @@ class GameController : Object
     public void load_options(Options options)
     {
         this.options = options;
-
         renderer.load_options(options);
-
-        string quality = Options.quality_enum_to_string(options.shader_quality);
-        parent_view.window.renderer.shader_3D = "open_gl_shader_3D_" + quality;
     }
 
     private void create_round_state(RoundStartInfo round_start)
     {
         round = new ClientRoundState(round_start, settings, player_index, game.round_wind, game.dealer_index, game.can_riichi());
-        round.send_message.connect(connection.send_message);
+        round.do_action.connect(do_action);
         round.set_chii_state.connect(menu.set_chii);
         round.set_pon_state.connect(menu.set_pon);
         round.set_kan_state.connect(menu.set_kan);
@@ -137,7 +132,15 @@ class GameController : Object
             menu.ron_pressed.connect(round.client_ron);
             menu.continue_pressed.connect(round.client_continue);
             menu.void_hand_pressed.connect(round.client_void_hand);
+
+            menu.observe_next_pressed.connect(renderer.observe_next);
+            menu.observe_prev_pressed.connect(renderer.observe_prev);
         }
+    }
+
+    private void do_action(ClientAction action)
+    {
+        connection.send_message(new ClientMessageGameAction(action));
     }
 
     private void create_round(RoundStartInfo info)
@@ -150,11 +153,13 @@ class GameController : Object
         int index = player_index == -1 ? 0 : player_index;
 
         game.start_round(info);
-        menu = new GameMenuView(settings, index, start_info.timings);
+
+        renderer = new GameRenderView(player_index, game.dealer_index, start_info, info, options, game.score);
+        parent_view.add_child(renderer);
+
+        menu = new GameMenuView(renderer.context, settings, index, player_index == -1);
         menu.score_finished.connect(menu_score_finished);
 
-        renderer = new GameRenderView(info, player_index, game.round_wind, game.dealer_index, options, game.score);
-        parent_view.add_child(renderer);
         parent_view.add_child(menu);
 
         create_round_state(info);

@@ -1,19 +1,19 @@
+using Engine;
 using Gee;
 
 public class ScoringStickNumberView : View2D
 {
-    private string stick_type;
+    private RenderStick.StickType stick_type;
     private bool left_text;
     private int _number = 0;
 
     private LabelControl? label;
     private ScoringStickView? stick;
 
-    public ScoringStickNumberView(string stick_type, bool left_text)
+    public ScoringStickNumberView(RenderStick.StickType stick_type, bool left_text)
     {
         this.stick_type = stick_type;
         this.left_text = left_text;
-        resize_style = ResizeStyle.ABSOLUTE;
     }
 
     protected override void added()
@@ -61,73 +61,43 @@ public class ScoringStickNumberView : View2D
 
 public class ScoringStickView : View3D
 {
-    private string stick_type;
-    private RenderGeometry3D stick;
-    private RenderMaterial material;
+    private RenderStick.StickType stick_type;
+    private RenderStick stick;
 
-    private Camera camera = new Camera();
-    private LightSource light1 = new LightSource();
-    private LightSource light2 = new LightSource();
-    private float width = 1;
-
-    public ScoringStickView(string stick_type)
+    public ScoringStickView(RenderStick.StickType stick_type)
     {
         this.stick_type = stick_type;
-        resize_style = ResizeStyle.ABSOLUTE;
     }
 
     public override void added()
     {
-        /*RectangleControl rect = new RectangleControl();
-        add_child(rect);
-        rect.resize_style = ResizeStyle.RELATIVE;
-        rect.color = Color(1, 0, 0, 0.1f);*/
+        stick = new RenderStick(stick_type);
+        world.add_object(stick);
 
-        float scale = 0.9f;
+        float len = 2.5f;
 
-        stick = store.load_geometry_3D("stick", false);
-        RenderBody3D body = ((RenderBody3D)stick.geometry[0]);
-        body.texture = store.load_texture("Sticks/Stick" + stick_type);
-        material = body.material;
+        WorldCamera camera = new TargetWorldCamera(stick);
+        world.add_object(camera);
+        world.active_camera = camera;
+        camera.position = Vec3(0, len * 2, len);
 
-        stick.scale = Vec3(scale, scale, scale);
-        Vec3 size = ((RenderBody3D)stick.geometry[0]).model.size;
-
-        width = size.x / scale;
-
-        float len = 15;
-        camera.focal_length = 0.03f;
-
-        Vec3 pos = Vec3(0, len, len);
-        camera.position = pos;
-        camera.pitch = -0.249f;
-        camera.roll = 0;
+        WorldLight light1 = new WorldLight();
+        WorldLight light2 = new WorldLight();
+        world.add_object(light1);
+        world.add_object(light2);
 
         light1.color = Color.white();
-        light1.position = Vec3(len, len * 2, -len);
+        light1.position = Vec3(len * 2, len * 2, len);
         light1.intensity = 15;
         light2.color = Color.white();
-        light2.position = Vec3(-len, len * 2, -len);
+        light2.position = Vec3(-len * 2, len * 2, len);
         light2.intensity = 15;
-    }
-
-    public override void do_render_3D(RenderState state)
-    {
-        RenderScene3D scene = new RenderScene3D(state.screen_size, 1.11f * width, rect);
-
-        scene.set_camera(camera);
-        scene.add_light_source(light1);
-        scene.add_light_source(light2);
-
-        scene.add_object(stick);
-
-        state.add_scene(scene);
     }
 
     public float alpha
     {
-        get { return material.alpha; }
-        set { material.alpha = value; }
+        get { return stick.alpha; }
+        set { stick.alpha = value; }
     }
 
     /*float mul = 1;

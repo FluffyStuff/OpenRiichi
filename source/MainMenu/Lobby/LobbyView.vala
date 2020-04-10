@@ -1,3 +1,4 @@
+using Engine;
 using Gee;
 using GameServer;
 
@@ -79,7 +80,7 @@ class LobbyView : MenuSubView
         enter_button.enabled = false;
     }
 
-    protected override void do_process(DeltaArgs args)
+    protected override void process(DeltaArgs args)
     {
         if (do_refresh_game_list)
         {

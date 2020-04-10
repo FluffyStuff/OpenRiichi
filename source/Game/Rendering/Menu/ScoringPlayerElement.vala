@@ -1,3 +1,5 @@
+using Engine;
+
 class ScoringPlayerElement : Control
 {
     private Wind wind;
@@ -44,7 +46,7 @@ class ScoringPlayerElement : Control
 
         wind_label = new LabelControl();
         add_child(wind_label);
-        wind_label.text = WIND_TO_STRING(wind);
+        wind_label.text = WIND_TO_KANJI(wind);
         wind_label.inner_anchor = Vec2(0, 0.5f);
         wind_label.outer_anchor = Vec2(0, 0.5f);
         wind_label.font_size = 50;
@@ -101,10 +103,7 @@ class ScoringPlayerElement : Control
 
     public void animate()
     {
-        if (transfer != 0)
-            animation_points_start();
-        else
-            animation_finished(this);
+        animation_points_start();
     }
 
     private void animation_points_start()
@@ -154,7 +153,7 @@ class ScoringPlayerElement : Control
 
     private void animation_score_fade_animate_start()
     {
-        fade_sound.play(true);
+        fade_sound.play();
     }
 
     private void animation_score_fade_animate(float time)

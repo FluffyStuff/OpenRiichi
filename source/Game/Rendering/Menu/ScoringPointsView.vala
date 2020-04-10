@@ -1,9 +1,10 @@
+using Engine;
 using Gee;
 
 class ScoringPointsView : View2D
 {
+    private GameRenderContext context;
     private RoundScoreState score;
-    private AnimationTimings timings;
     private LabelControl score_label;
     private LabelControl? draw_label;
     private GameMenuButton? next_button;
@@ -23,14 +24,14 @@ class ScoringPointsView : View2D
     public signal void score_animation_finished();
     public signal void score_selected(int player_index);
 
-    public ScoringPointsView(RoundScoreState score, AnimationTimings timings, bool animate)
+    public ScoringPointsView(GameRenderContext context, RoundScoreState score, bool animate)
     {
+        this.context = context;
         this.score = score;
-        this.timings = timings;
         this.animate = animate;
 
         if (animate)
-            total_time = timings.get_animation_round_end_delay(score);
+            total_time = context.server_times.get_animation_round_end_delay(score);
     }
 
     public override void added()
@@ -131,6 +132,7 @@ class ScoringPointsView : View2D
         var s = score.result.scores[0];
         var d = s.round.dora;
         var u = s.round.ura_dora;
+        
         dora = new ScoringDoraView(d, 2 - d.size / 2, 4 - d.size / 2);
         ura = new ScoringDoraView(u, 2 - (u.size - 1) / 2, 4 - (u.size - 1) / 2);
         add_child(dora);
@@ -182,7 +184,7 @@ class ScoringPointsView : View2D
 
     private void animation_label_start()
     {
-        var animation = new Animation(timings.finish_label_fade);
+        var animation = new Animation(context.server_times.finish_label_fade);
         animation.animate_start.connect(animation_label_animate_start);
         animation.animate.connect(animation_label_animate);
         animation.finished.connect(animation_label_finish);
@@ -212,7 +214,7 @@ class ScoringPointsView : View2D
 
     private void animation_items_fade_start()
     {
-        var animation = new Animation(timings.menu_items_fade);
+        var animation = new Animation(context.server_times.menu_items_fade);
         animation.animate_start.connect(animation_items_fade_animate_start);
         animation.animate.connect(animation_items_fade_animate);
         animation.finished.connect(animation_items_fade_finish);
@@ -275,7 +277,7 @@ class ScoringPointsView : View2D
         if (score.result.result == RoundFinishResult.RoundResultEnum.RON)
             dual_payer = sekinin = sekinin && sekinin_index != score.result.loser_index;
 
-        scoring_control = new ScoringScoreControl(scoring, sekinin, dual_payer, timings, animate);
+        scoring_control = new ScoringScoreControl(context, scoring, sekinin, dual_payer, animate);
         add_child(scoring_control);
         scoring_control.resize_style = ResizeStyle.ABSOLUTE;
         scoring_control.inner_anchor = Vec2(0.5f, 0);
@@ -315,10 +317,10 @@ class ScoringPointsView : View2D
     private class ScoringScoreControl : Control
     {
         private ScoringHandView? hand;
+        private GameRenderContext context;
         private Scoring scoring;
         private bool sekinin;
         private bool dual_payer;
-        private AnimationTimings timings;
         private bool _animate;
 
         private int animation_han_index;
@@ -329,18 +331,18 @@ class ScoringPointsView : View2D
 
         public signal void animation_finished();
 
-        public ScoringScoreControl(Scoring scoring, bool sekinin, bool dual_payer, AnimationTimings timings, bool animate)
+        public ScoringScoreControl(GameRenderContext context, Scoring scoring, bool sekinin, bool dual_payer, bool animate)
         {
+            this.context = context;
             this.scoring = scoring;
             this.sekinin = sekinin;
             this.dual_payer = dual_payer;
-            this.timings = timings;
             _animate = animate;
         }
 
         public override void added()
         {
-            hand = new ScoringHandView(scoring);
+            hand = new ScoringHandView(context, scoring);
             add_child(hand);
             hand.outer_anchor = Vec2(0.5f, 1);
             hand.size = Size2(size.width, 120);
@@ -412,7 +414,7 @@ class ScoringPointsView : View2D
 
         private void animate_items_start()
         {
-            var animation = new Animation(timings.menu_items_fade);
+            var animation = new Animation(context.server_times.menu_items_fade);
             animation.animate_start.connect(animate_items_animate_start);
             animation.animate.connect(animate_items_animate);
             animation.finished.connect(animate_items_finished);
@@ -436,7 +438,7 @@ class ScoringPointsView : View2D
 
         private void animation_han_start()
         {
-            var animation = new Animation(timings.han_fade);
+            var animation = new Animation(context.server_times.han_fade);
             animation.animate_start.connect(animation_han_animate_start);
             animation.animate.connect(animation_han_animate);
             animation.finished.connect(animation_han_finish);
@@ -466,7 +468,7 @@ class ScoringPointsView : View2D
 
         private void animation_score_fade_start()
         {
-            var animation = new Animation(timings.score_counting_fade);
+            var animation = new Animation(context.server_times.score_counting_fade);
             animation.animate_start.connect(animation_score_fade_animate_start);
             animation.animate.connect(animation_score_fade_animate);
             animation.finished.connect(animation_score_fade_finish);
@@ -490,7 +492,7 @@ class ScoringPointsView : View2D
 
         private void animation_score_count_start()
         {
-            var animation = new Animation(timings.score_counting);
+            var animation = new Animation(context.server_times.score_counting);
             animation.animate_start.connect(animation_score_count_animate_start);
             animation.animate_finish.connect(animation_score_count_animate_finish);
             animation.animate.connect(animation_score_count_animate);

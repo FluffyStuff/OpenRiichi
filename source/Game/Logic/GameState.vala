@@ -366,7 +366,22 @@ public class GameState : Object
     public string to_string()
     {
         string str =
-        "round_wind: " + round_wind.to_string() + "\n" +        "starting_dealer_index: " + starting_dealer_index.to_string() + "\n" +        "dealer_index: " + dealer_index.to_string() + "\n" +        "current_round: " + current_round.to_string() + "\n" +        "round_count: " + round_count.to_string() + "\n" +        "renchan: " + renchan.to_string() + "\n" +        "current_hanchan: " + current_hanchan.to_string() + "\n" +        "hanchan_count: " + hanchan_count.to_string() + "\n" +        "riichi_count: " + riichi_count.to_string() + "\n" +        "round_is_finished: " + round_is_finished.to_string() + "\n" +        "hanchan_is_finished: " + hanchan_is_finished.to_string() + "\n" +        "game_is_started: " + game_is_started.to_string() + "\n" +        "game_is_finished: " + game_is_finished.to_string() + "\n" +        "do_renchan: " + do_renchan.to_string() + "\n" +        "reset_riichi: " + reset_riichi.to_string();
+
+        "round_wind: " + round_wind.to_string() + "\n" +
+        "starting_dealer_index: " + starting_dealer_index.to_string() + "\n" +
+        "dealer_index: " + dealer_index.to_string() + "\n" +
+        "current_round: " + current_round.to_string() + "\n" +
+        "round_count: " + round_count.to_string() + "\n" +
+        "renchan: " + renchan.to_string() + "\n" +
+        "current_hanchan: " + current_hanchan.to_string() + "\n" +
+        "hanchan_count: " + hanchan_count.to_string() + "\n" +
+        "riichi_count: " + riichi_count.to_string() + "\n" +
+        "round_is_finished: " + round_is_finished.to_string() + "\n" +
+        "hanchan_is_finished: " + hanchan_is_finished.to_string() + "\n" +
+        "game_is_started: " + game_is_started.to_string() + "\n" +
+        "game_is_finished: " + game_is_finished.to_string() + "\n" +
+        "do_renchan: " + do_renchan.to_string() + "\n" +
+        "reset_riichi: " + reset_riichi.to_string();
 
         return str;
     }

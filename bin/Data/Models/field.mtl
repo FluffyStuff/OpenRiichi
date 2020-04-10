@@ -1,4 +1,4 @@
-# Blender MTL File: 'stick.blend'
+# Blender MTL File: 'field.blend'
 # Material Count: 1
 
 newmtl Material
@@ -9,4 +9,3 @@ Ks 0.000000 0.000000 0.000000
 Ni 1.000000
 d 0.000000
 illum 2
-map_Kd C:\\Users\\Fluffy\\Documents\\Projects\\RiichiMahjong\\bin\\Data\\Textures\\Sticks\\Stick1000.png

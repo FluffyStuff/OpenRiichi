@@ -1,3 +1,5 @@
+using Engine;
+
 public class VersionInfo : Serializable
 {
     public VersionInfo(int major, int minor, int patch, int revis)
@@ -8,7 +10,7 @@ public class VersionInfo : Serializable
         this.revis = revis;
     }
 
-    public string to_string()
+    public new string to_string()
     {
         return major.to_string() + "." + minor.to_string() + "." + patch.to_string() + "." + revis.to_string();
     }

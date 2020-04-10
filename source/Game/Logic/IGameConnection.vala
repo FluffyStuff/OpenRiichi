@@ -1,4 +1,5 @@
 using Gee;
+using Engine;
 
 public abstract class IGameConnection : Object
 {
@@ -79,7 +80,7 @@ public class GameNetworkConnection : IGameConnection
 
     private void parse_message(Connection connection, Message message)
     {
-        Serializable? msg = Serializable.deserialize(message.data);
+        Serializable? msg = Serializable.deserialize(message.get_message());
 
         if (msg == null || !msg.get_type().is_a(typeof(ServerMessage)))
         {

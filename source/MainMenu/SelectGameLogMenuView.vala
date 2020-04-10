@@ -1,3 +1,4 @@
+using Engine;
 using Gee;
 
 class SelectGameLogMenuView : MenuSubView
@@ -90,7 +91,7 @@ public class GameLogsListControl : ListControl
         refresh_data();
     }
 
-    protected override void on_added()
+    protected override void added()
     {
         refresh_data();
     }

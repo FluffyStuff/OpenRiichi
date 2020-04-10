@@ -1,48 +1,28 @@
 using Gee;
+using Engine;
 
 namespace GameServer
 {
-    public class Server : Object
+    abstract class Server : Object
     {
-        private GameState state;
-        private GameStartInfo start_info;
-        private ServerSettings settings;
+        protected GameState state;
+        protected GameStartInfo start_info;
+        protected ServerSettings settings;
+        protected RandomClass rnd;
         private State action_state;
-        private ServerGameRound? round = null;
-        private Random rnd;
+        private ServerGameRound? round;
         private DelayTimer timer = new DelayTimer();
-        private ServerGameRoundInfoSource source;
-        private bool reveal;
 
-        private ArrayList<ServerPlayer> players = new ArrayList<ServerPlayer>();
-        private ArrayList<ServerPlayer> spectators = new ArrayList<ServerPlayer>();
-        //private Logger logger;
-        private GameLogger? game_log;
+        protected ArrayList<ServerPlayer> players = new ArrayList<ServerPlayer>();
+        protected ArrayList<ServerPlayer> spectators = new ArrayList<ServerPlayer>();
 
-        //public signal void log(string message);
-
-        private void log(GameLogLine line)
+        protected Server(ArrayList<ServerPlayer> players, ArrayList<ServerPlayer> spectators, RandomClass rnd, GameStartInfo start_info, ServerSettings settings)
         {
-            //logger.log(LogType.GAME, "Server", message);
-            if (game_log != null)
-                game_log.log(line);
-        }
-
-        private void log_round(RoundStartInfo info, Tile[] tiles)
-        {
-            if (game_log != null)
-                game_log.log_round(info, tiles);
-        }
-
-        public Server(ArrayList<ServerPlayer> players, ArrayList<ServerPlayer> spectators, Random rnd, GameStartInfo start_info, ServerSettings settings, ServerGameRoundInfoSource source, bool do_log, bool reveal)
-        {
-            this.players = new ArrayList<ServerPlayer>();
-            this.spectators = spectators;
             this.rnd = rnd;
             this.start_info = start_info;
             this.settings = settings;
-            this.source = source;
-            this.reveal = reveal;
+
+            state = new GameState(start_info, settings);
 
             for (int i = 0; i < players.size; i++)
             {
@@ -55,19 +35,16 @@ namespace GameServer
 
             for (int i = 0; i < spectators.size; i++)
             {
+                ServerPlayer spectator = spectators[i];
+                this.spectators.add(spectator);
+
                 ServerMessageGameStart start = new ServerMessageGameStart(start_info, settings, -1);
-                spectators[i].send_message(start);
+                spectator.send_message(start);
             }
+        }
 
-            state = new GameState(start_info, settings);
-
-            if (do_log)
-                game_log = Environment.open_game_log(start_info, settings);
-
-            //log(new StartingGameGameLogLine(new TimeStamp.now(), start_info, settings));
-
-            //state.log.connect(do_log);
-
+        protected void start()
+        {
             start_round(0);
         }
 
@@ -163,18 +140,18 @@ namespace GameServer
             foreach (var player in spectators)
                 player.ready = false;
 
-            ServerGameRoundInfoSourceRound info = source.get_round();
-
             action_state = State.ACTIVE;
-            state.start_round(info.info);
 
-            round = new ServerGameRound(info.info, settings, players, spectators, state.round_wind, state.dealer_index, rnd, state.can_riichi(), start_info.timings, info.tiles, reveal);
-            log_round(info.info, round.tiles);
+            var info = get_round_start_info();
+            state.start_round(info);
+            round = create_round(info);
 
             round.declare_riichi.connect(state.declare_riichi);
-            round.log.connect(log);
             round.start(time);
         }
+
+        protected abstract ServerGameRound create_round(RoundStartInfo info);
+        protected abstract RoundStartInfo get_round_start_info();
 
         public bool finished { get; private set; }
 
@@ -184,6 +161,105 @@ namespace GameServer
             GAME_FINISHED,
             HANCHAN_FINISHED,
             ROUND_FINISHED
+        }
+    }
+
+    class RegularServer : Server
+    {
+        private GameLogger? game_log;
+
+        public RegularServer(ArrayList<ServerPlayer> players, ArrayList<ServerPlayer> spectators, RandomClass rnd, GameStartInfo info, ServerSettings settings)
+        {
+            base(players, spectators, rnd, info, settings);
+            game_log = Environment.open_game_log(info, settings);
+
+            start();
+        }
+
+        private void log(GameLogLine line)
+        {
+            if (game_log != null)
+                game_log.log(line);
+        }
+
+        private void log_round(RoundStartInfo info, Tile[] tiles)
+        {
+            if (game_log != null)
+                game_log.log_round(info, tiles);
+        }
+
+        protected override RoundStartInfo get_round_start_info()
+        {
+            int wall_index = rnd.int_range(1, 7) + rnd.int_range(1, 7); // Emulate dual die roll probability
+            return new RoundStartInfo(wall_index);
+        }
+
+        protected override ServerGameRound create_round(RoundStartInfo info)
+        {
+            RegularServerGameRound round = new RegularServerGameRound(info, settings, players, spectators, state.round_wind, state.dealer_index, rnd, state.can_riichi(), start_info.timings);
+            log_round(info, round.tiles);
+            round.log.connect(log);
+
+            return round;
+        }
+    }
+
+    class LogServer : Server
+    {
+        private GameLogRound[] rounds;
+        private GameLogRound round;
+        private int round_index = 0;
+
+        public LogServer(ArrayList<ServerPlayer> spectators, RandomClass rnd, ServerSettings settings, GameLog log)
+        {
+            ArrayList<ServerPlayer> players = new ArrayList<ServerPlayer>();
+            for (int i = 0; i < 4; i++)
+                players.add(new ServerLogPlayer()); // Dummies
+
+            base(players, spectators, rnd, log.start_info, settings);
+            rounds = log.rounds.to_array();
+
+            start();
+        }
+
+        protected override RoundStartInfo get_round_start_info()
+        {
+            if (rounds.length <= round_index)
+            {
+                var info = new RoundStartInfo(rnd.int_range(2, 13));
+                round = new GameLogRound(info, null);
+                return info;
+            }
+
+            round = rounds[round_index++];
+            return round.start_info;
+        }
+
+        protected override ServerGameRound create_round(RoundStartInfo info)
+        {
+            return new LogServerGameRound(settings, players, spectators, state.round_wind, state.dealer_index, rnd, state.can_riichi(), start_info.timings, round);
+        }
+
+        public class ServerLogPlayer : ServerPlayer
+        {
+            public ServerLogPlayer()
+            {
+                base("", false);
+
+                ready = true;
+                state = State.PLAYER;
+            }
+
+            public override void close()
+            {
+                // Nothing
+            }
+
+            public override bool ready
+            {
+                get { return true; }
+                set {}
+            }
         }
     }
 }

@@ -1,3 +1,4 @@
+using Engine;
 using Lobby;
 
 public class LobbyGameListControl : ListControl
@@ -17,7 +18,7 @@ public class LobbyGameListControl : ListControl
         refresh_data();
     }
 
-    protected override void on_added()
+    protected override void added()
     {
         refresh_data();
     }

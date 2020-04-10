@@ -1,12 +1,13 @@
+using Engine;
 using Gee;
 
 class SingleplayerMenuView : MenuSubView
 {
-    private GameController controller;
+    private GameController controller; // Fix include bug in vala
 
     public SingleplayerMenuView()
     {
-        controller = null; // Fix include bug in vala
+        controller = null; // Ignore warning
     }
 
     public signal GameController menu_game_start(GameStartInfo info, ServerSettings settings, IGameConnection connection, int player_index);

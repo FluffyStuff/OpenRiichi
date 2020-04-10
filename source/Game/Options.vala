@@ -1,4 +1,5 @@
 using Gee;
+using Engine;
 
 public class Options
 {
@@ -16,7 +17,7 @@ public class Options
         sounds = OnOffEnum.ON;
         tile_fore_color = Color.white();
         tile_back_color = Color(0, 0.5f, 1, 1);
-        tile_textures = "Regular";
+        tile_textures = TileTextureEnum.REGULAR;
     }
 
     public Options.from_disk()
@@ -60,7 +61,7 @@ public class Options
         options.add("sounds = " + on_off_enum_to_string(sounds));
         options.add("tile_fore_color = " + color_to_string(tile_fore_color));
         options.add("tile_back_color = " + color_to_string(tile_back_color));
-        options.add("tile_textures = " + tile_textures);
+        options.add("tile_textures = " + tile_texture_enum_to_string(tile_textures));
 
         FileLoader.save(dir, options.to_array());
     }
@@ -102,70 +103,9 @@ public class Options
             tile_back_color = parse_color(down_value);
             break;
         case "tile_textures":
-            tile_textures = value;
+            tile_textures = parse_tile_texture_enum(down_value);
             break;
         }
-    }
-
-    public static QualityEnum parse_quality_enum(string value)
-    {
-        switch (value)
-        {
-        case "low":
-            return QualityEnum.LOW;
-        case "high":
-        default:
-            return QualityEnum.HIGH;
-        }
-    }
-
-    public static string quality_enum_to_string(QualityEnum quality)
-    {
-        switch (quality)
-        {
-        case QualityEnum.LOW:
-            return "low";
-        case QualityEnum.HIGH:
-        default:
-            return "high";
-        }
-    }
-
-    public static OnOffEnum parse_on_off_enum(string value)
-    {
-        switch (value)
-        {
-        case "off":
-            return OnOffEnum.OFF;
-        case "on":
-        default:
-            return OnOffEnum.ON;
-        }
-    }
-
-    public static string on_off_enum_to_string(OnOffEnum on_off)
-    {
-        switch (on_off)
-        {
-        case OnOffEnum.OFF:
-            return "off";
-        case OnOffEnum.ON:
-        default:
-            return "on";
-        }
-    }
-
-    public static Color parse_color(string value)
-    {
-        int64 v;
-        if (!int64.try_parse(value, out v))
-            v = 16777215;
-        return Color((float)(v / 65536) / 255, (float)((v / 256) % 256) / 255, (float)(v % 256) / 255, 1);
-    }
-
-    public static string color_to_string(Color color)
-    {
-        return ((int)(color.r * 255) * 65536 + (int)(color.g * 255) * 256 + (int)(color.b * 255)).to_string();
     }
 
     public QualityEnum shader_quality { get; set; }
@@ -178,17 +118,108 @@ public class Options
     public OnOffEnum sounds { get; set; }
     public Color tile_fore_color { get; set; }
     public Color tile_back_color { get; set; }
-    public string tile_textures { get; set; }
+    public TileTextureEnum tile_textures { get; set; }
+}
 
-    public enum QualityEnum
+public static QualityEnum parse_quality_enum(string value)
+{
+    switch (value)
     {
-        LOW = 0,
-        HIGH = 1
+    case "low":
+        return QualityEnum.LOW;
+    case "high":
+    default:
+        return QualityEnum.HIGH;
     }
+}
 
-    public enum OnOffEnum
+public static string quality_enum_to_string(QualityEnum quality)
+{
+    switch (quality)
     {
-        OFF = 0,
-        ON = 1
+    case QualityEnum.LOW:
+        return "low";
+    case QualityEnum.HIGH:
+    default:
+        return "high";
     }
+}
+
+public static TileTextureEnum parse_tile_texture_enum(string value)
+{
+    switch (value)
+    {
+    default:
+    case "regular":
+        return TileTextureEnum.REGULAR;
+    case "black":
+        return TileTextureEnum.BLACK;
+    }
+}
+
+public static string tile_texture_enum_to_string(TileTextureEnum texture)
+{
+    switch (texture)
+    {
+    default:
+    case TileTextureEnum.REGULAR:
+        return "regular";
+    case TileTextureEnum.BLACK:
+        return "black";
+    }
+}
+
+public static OnOffEnum parse_on_off_enum(string value)
+{
+    switch (value)
+    {
+    case "off":
+        return OnOffEnum.OFF;
+    case "on":
+    default:
+        return OnOffEnum.ON;
+    }
+}
+
+public static string on_off_enum_to_string(OnOffEnum on_off)
+{
+    switch (on_off)
+    {
+    case OnOffEnum.OFF:
+        return "off";
+    case OnOffEnum.ON:
+    default:
+        return "on";
+    }
+}
+
+public static Color parse_color(string value)
+{
+    int64 v;
+    if (!int64.try_parse(value, out v))
+        v = 16777215;
+    return Color((float)(v / 65536) / 255, (float)((v / 256) % 256) / 255, (float)(v % 256) / 255, 1);
+}
+
+public static string color_to_string(Color color)
+{
+    return ((int)(color.r * 255) * 65536 + (int)(color.g * 255) * 256 + (int)(color.b * 255)).to_string();
+}
+
+public enum QualityEnum
+{
+    LOW = 0,
+    HIGH = 1
+}
+
+public enum OnOffEnum
+{
+    OFF = 0,
+    ON = 1
+}
+
+public enum TileTextureEnum
+{
+    REGULAR,
+    BLACK
 }

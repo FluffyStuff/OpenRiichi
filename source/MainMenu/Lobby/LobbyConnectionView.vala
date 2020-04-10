@@ -1,3 +1,4 @@
+using Engine;
 using Gee;
 using GameServer;
 using Lobby;
@@ -35,7 +36,7 @@ class LobbyConnectionView : MenuSubView
         connecting_finished = true;
     }
 
-    protected override void do_process(DeltaArgs time)
+    protected override void process(DeltaArgs time)
     {
         if (processed)
             return;
