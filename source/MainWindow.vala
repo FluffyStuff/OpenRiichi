@@ -1,5 +1,4 @@
-using SDL;
-using GL;
+using Engine;
 using GameServer;
 
 public class MainWindow : RenderWindow
@@ -42,8 +41,6 @@ public class MainWindow : RenderWindow
 
     private GameController game_start(GameStartInfo info, ServerSettings settings, IGameConnection connection, int player_index)
     {
-        /*main_view.remove_child(menu);
-        menu = null;*/
         menu.visible = false;
         game_controller = new GameController(game_view, info, settings, connection, player_index, new Options.from_disk());
         game_controller.finished.connect(game_finished);
@@ -62,7 +59,6 @@ public class MainWindow : RenderWindow
             main_view.remove_child(escape_menu);
             escape_menu = null;
         }
-        //create_main_menu();
     }
 
     private void leave_game_pressed()
@@ -84,7 +80,7 @@ public class MainWindow : RenderWindow
     protected override void do_process(DeltaArgs delta)
     {
         if (game_running && game_controller != null)
-            game_controller.process();
+            game_controller.process(delta);
     }
 
     protected override bool key_press(KeyArgs key)
@@ -134,12 +130,12 @@ public class MainWindow : RenderWindow
 
     private void load_options(Options options)
     {
-        renderer.anisotropic_filtering = options.anisotropic_filtering == Options.OnOffEnum.ON;
-        renderer.v_sync = options.v_sync == Options.OnOffEnum.ON;
-        store.audio_player.muted = options.sounds == Options.OnOffEnum.OFF;
-        fullscreen = options.fullscreen == Options.OnOffEnum.ON;
+        renderer.anisotropic_filtering = options.anisotropic_filtering == OnOffEnum.ON;
+        renderer.v_sync = options.v_sync == OnOffEnum.ON;
+        store.audio_player.muted = options.sounds == OnOffEnum.OFF;
+        fullscreen = options.fullscreen == OnOffEnum.ON;
 
-        if (options.music == Options.OnOffEnum.ON)
+        if (options.music == OnOffEnum.ON)
             music.start();
         else
             music.stop();

@@ -1,6 +1,7 @@
+using Engine;
 using Gee;
 
-class InformationMenuView : MainMenuSubView
+class InformationMenuView : MenuSubView
 {
     public InformationMenuView(string text)
     {

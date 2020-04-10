@@ -1,8 +1,9 @@
+using Engine;
 using Gee;
 using GameServer;
 using Lobby;
 
-class LobbyConnectionView : MainMenuSubView
+class LobbyConnectionView : MenuSubView
 {
     private LabelControl message_label = new LabelControl();
     private MenuTextButton ok_button;
@@ -35,7 +36,7 @@ class LobbyConnectionView : MainMenuSubView
         connecting_finished = true;
     }
 
-    protected override void do_process(DeltaArgs time)
+    protected override void process(DeltaArgs time)
     {
         if (processed)
             return;
@@ -103,7 +104,7 @@ class LobbyConnectionView : MainMenuSubView
     protected override string get_name() { return "Online lobby"; }
 }
 
-class LobbySelectionView : MainMenuSubView
+class LobbySelectionView : MenuSubView
 {
     private LobbyInformationListControl? lobby_info;
     private LobbyInformation? selected_lobby;

@@ -1,6 +1,7 @@
+using Engine;
 using Gee;
 
-private class OptionsMenuView : MainMenuSubView
+private class OptionsMenuView : MenuSubView
 {
     private ArrayList<SubOptionsMenuView> menus = new ArrayList<SubOptionsMenuView>();
 
@@ -106,7 +107,7 @@ private class MenuOptionsButton : MenuTextButton
     public SubOptionsMenuView menu { get; private set; }
 }
 
-private abstract class SubOptionsMenuView : MainMenuSubView
+private abstract class SubOptionsMenuView : MenuSubView
 {
     protected Options options;
     protected string apply_text;
@@ -117,7 +118,7 @@ private abstract class SubOptionsMenuView : MainMenuSubView
 
     public signal void back_clicked(SubOptionsMenuView menu);
 
-    public SubOptionsMenuView(string name, Options options, string apply_text, string back_text, int padding)
+    protected SubOptionsMenuView(string name, Options options, string apply_text, string back_text, int padding)
     {
         menu_name = name;
         this.options = options;
@@ -207,12 +208,12 @@ private class GraphicOptionsMenuView : SubOptionsMenuView
 
     public override void do_apply()
     {
-        options.shader_quality = (Options.QualityEnum)shader_option.index;
-        options.model_quality = (Options.QualityEnum)model_option.index;
-        options.fullscreen = (Options.OnOffEnum)fullscreen_option.index;
-        options.anisotropic_filtering = (Options.OnOffEnum)aniso_option.index;
-        options.anti_aliasing = (Options.OnOffEnum)aliasing_option.index;
-        options.v_sync = (Options.OnOffEnum)v_sync_option.index;
+        options.shader_quality = (QualityEnum)shader_option.index;
+        options.model_quality = (QualityEnum)model_option.index;
+        options.fullscreen = (OnOffEnum)fullscreen_option.index;
+        options.anisotropic_filtering = (OnOffEnum)aniso_option.index;
+        options.anti_aliasing = (OnOffEnum)aliasing_option.index;
+        options.v_sync = (OnOffEnum)v_sync_option.index;
     }
 }
 
@@ -245,8 +246,8 @@ private class AudioOptionsMenuView : SubOptionsMenuView
 
     public override void do_apply()
     {
-        options.music = (Options.OnOffEnum)music_option.index;
-        options.sounds = (Options.OnOffEnum)sounds_option.index;
+        options.music = (OnOffEnum)music_option.index;
+        options.sounds = (OnOffEnum)sounds_option.index;
     }
 }
 
@@ -274,8 +275,9 @@ private class AppearanceOptionsMenuView : SubOptionsMenuView
 
     public override void add_options()
     {
-        tile = new TileMenuView(options.tile_textures, options.tile_fore_color, options.tile_back_color);
+        tile = new TileMenuView();
         add_child(tile);
+        tile.texture_type = options.tile_textures;
         tile.inner_anchor = Vec2(1, 0.5f);
         tile.outer_anchor = Vec2(1, 0.5f);
 
@@ -356,17 +358,17 @@ private class AppearanceOptionsMenuView : SubOptionsMenuView
 
     private void regular_clicked()
     {
-        tile.texture_type = "Regular";
+        tile.texture_type = TileTextureEnum.REGULAR;
     }
 
     private void black_clicked()
     {
-        tile.texture_type = "Black";
+        tile.texture_type = TileTextureEnum.BLACK;
     }
 
     private void fore_color_changed()
     {
-        tile.fore_color = Color(fore_red.fval, fore_green.fval, fore_blue.fval, 1);
+        tile.front_color = Color(fore_red.fval, fore_green.fval, fore_blue.fval, 1);
     }
 
     private void back_color_changed()
@@ -376,7 +378,7 @@ private class AppearanceOptionsMenuView : SubOptionsMenuView
 
     public override void do_apply()
     {
-        options.tile_fore_color = tile.fore_color;
+        options.tile_fore_color = tile.front_color;
         options.tile_back_color = tile.back_color;
         options.tile_textures = tile.texture_type;
     }
@@ -390,30 +392,17 @@ private class AppearanceOptionsMenuView : SubOptionsMenuView
 private class TileMenuView : View3D
 {
     private RenderTile tile;
-    private Camera camera = new Camera();
-    private LightSource light1 = new LightSource();
-    private LightSource light2 = new LightSource();
-
-    private string _texture_type;
-    private Color _fore_color;
-    private Color _back_color;
-
-    public TileMenuView(string texture_type, Color fore_color, Color back_color)
-    {
-        _texture_type = texture_type;
-        _fore_color = fore_color;
-        _back_color = back_color;
-    }
 
     public override void added()
     {
         resize_style = ResizeStyle.ABSOLUTE;
 
-        float len = 3;
-        camera.focal_length = 0.8f;
+        WorldLight light1 = new WorldLight();
+        WorldLight light2 = new WorldLight();
+        world.add_object(light1);
+        world.add_object(light2);
 
-        Vec3 pos = Vec3(0, 0, len);
-        camera.position = pos;
+        float len = 4;
 
         light1.color = Color.white();
         light1.position = Vec3(len, len, len / 2);
@@ -422,59 +411,45 @@ private class TileMenuView : View3D
         light2.position = Vec3(-len, len, len / 2);
         light2.intensity = 5;
 
-        reload_tile();
+        tile = new RenderTile()
+        {
+            tile_type = new Tile(0, TileType.PIN1, false),
+            model_quality = QualityEnum.HIGH
+        };
+
+        world.add_object(tile);
+
+        WorldCamera camera = new TargetWorldCamera(tile);
+        world.add_object(camera);
+        world.active_camera = camera;
+        camera.position = Vec3(0, 1, 1);
     }
 
-    public void reload_tile()
-    {
-        string extension = "high";
-
-        float tile_scale = 4f;
-        Tile t = new Tile(0, TileType.PIN1, false);
-        tile = new RenderTile(store, extension, texture_type, t, tile_scale);
-        tile.front_color = fore_color;
-        tile.back_color = back_color;
-    }
-
-    public override void do_process(DeltaArgs delta)
+    protected override void process(DeltaArgs delta)
     {
         float r = delta.time;
-        tile.set_absolute_location(Vec3.empty(), new Quat.from_euler_vec(Vec3(r * -0.2f, r * 0.1f, r * 0.0812f)));
+        tile.set_absolute_location(Vec3.empty(), Quat.from_euler_vec(Vec3(r * -0.2f, r * 0.1f, r * 0.0812f)));
     }
 
-    public override void do_render_3D(RenderState state)
+    public TileTextureEnum texture_type
     {
-        window.renderer.shader_3D = "open_gl_shader_3D_high";
-        RenderScene3D scene = new RenderScene3D(state.screen_size, 1, rect);
-
-        scene.set_camera(camera);
-        scene.add_light_source(light1);
-        scene.add_light_source(light2);
-
-        tile.render(scene);
-
-        state.add_scene(scene);
-    }
-
-    public string texture_type
-    {
-        get { return _texture_type; }
+        get { return tile.texture_type; }
         set
         {
-            _texture_type = value;
-            reload_tile();
+            tile.texture_type = value;
+            tile.reload();
         }
     }
 
-    public Color fore_color
+    public Color front_color
     {
-        get { return _fore_color; }
-        set { _fore_color = tile.front_color = value; }
+        get { return tile.front_color; }
+        set { tile.front_color = value; }
     }
 
     public Color back_color
     {
-        get { return _back_color; }
-        set { _back_color = tile.back_color = value; }
+        get { return tile.back_color; }
+        set { tile.back_color = value; }
     }
 }

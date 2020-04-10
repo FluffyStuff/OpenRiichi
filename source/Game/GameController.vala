@@ -1,9 +1,12 @@
+using Engine;
+
 class GameController : Object
 {
     private GameState game;
     private ClientRoundState round;
     private GameRenderView? renderer = null;
     private GameMenuView? menu = null;
+    private EventTimer? round_over_timer = null;
 
     private unowned Container parent_view;
     private GameStartInfo start_info;
@@ -23,12 +26,9 @@ class GameController : Object
         this.settings = settings;
         this.connection = connection;
         this.player_index = player_index;
+        this.options = options;
 
         this.connection.disconnected.connect(disconnected);
-
-        this.options = options;
-        string quality = Options.quality_enum_to_string(options.shader_quality);
-        parent_view.window.renderer.shader_3D = "open_gl_shader_3D_" + quality;
 
         game = new GameState(start_info, settings);
     }
@@ -41,13 +41,16 @@ class GameController : Object
         parent_view.remove_child(menu);
     }
 
-    public void process()
+    public void process(DeltaArgs delta)
     {
         if (game_finished == true)
         {
             finished();
             return;
         }
+
+        if (round_over_timer != null)
+            round_over_timer.process(delta);
 
         ServerMessage? message = null;
         while ((message = connection.dequeue_message()) != null)
@@ -59,6 +62,8 @@ class GameController : Object
             {
                 ServerMessageRoundStart start = message as ServerMessageRoundStart;
                 create_round(start.info);
+                if (menu != null)
+                    menu.update_scores(game.scores.to_array());
             }
             else if (message is ServerMessagePlayerLeft && !game.game_is_finished)
             {
@@ -71,8 +76,9 @@ class GameController : Object
         {
             if (round.finished)
             {
-                var result = game.round_finished(round.result);
-                menu.display_score(result, true, false);
+                game.round_finished(round.result);
+                round_over_timer = new EventTimer(start_info.timings.round_over_delay, true);
+                round_over_timer.elapsed.connect(round_over_timer_elapsed);
             }
         }
     }
@@ -80,24 +86,20 @@ class GameController : Object
     public void load_options(Options options)
     {
         this.options = options;
-
         renderer.load_options(options);
-
-        string quality = Options.quality_enum_to_string(options.shader_quality);
-        parent_view.window.renderer.shader_3D = "open_gl_shader_3D_" + quality;
     }
 
     private void create_round_state(RoundStartInfo round_start)
     {
         round = new ClientRoundState(round_start, settings, player_index, game.round_wind, game.dealer_index, game.can_riichi());
-        round.send_message.connect(connection.send_message);
+        round.do_action.connect(do_action);
         round.set_chii_state.connect(menu.set_chii);
         round.set_pon_state.connect(menu.set_pon);
         round.set_kan_state.connect(menu.set_kan);
         round.set_riichi_state.connect(menu.set_riichi);
         round.set_tsumo_state.connect(menu.set_tsumo);
         round.set_ron_state.connect(menu.set_ron);
-        round.set_timer_state.connect(menu.set_timer);
+        round.set_timer_state.connect(menu.set_move_timer);
         round.set_continue_state.connect(menu.set_continue);
         round.set_void_hand_state.connect(menu.set_void_hand);
         round.set_furiten_state.connect(menu.set_furiten);
@@ -130,7 +132,15 @@ class GameController : Object
             menu.ron_pressed.connect(round.client_ron);
             menu.continue_pressed.connect(round.client_continue);
             menu.void_hand_pressed.connect(round.client_void_hand);
+
+            menu.observe_next_pressed.connect(renderer.observe_next);
+            menu.observe_prev_pressed.connect(renderer.observe_prev);
         }
+    }
+
+    private void do_action(ClientAction action)
+    {
+        connection.send_message(new ClientMessageGameAction(action));
     }
 
     private void create_round(RoundStartInfo info)
@@ -143,12 +153,13 @@ class GameController : Object
         int index = player_index == -1 ? 0 : player_index;
 
         game.start_round(info);
-        menu = new GameMenuView(settings, index, start_info.decision_time, start_info.round_wait_time, start_info.hanchan_wait_time, start_info.game_wait_time);
-        menu.display_score_pressed.connect(display_score_pressed);
-        menu.score_timer_expired.connect(score_timer_expired);
 
-        renderer = new GameRenderView(info, player_index, game.round_wind, game.dealer_index, options, game.score);
+        renderer = new GameRenderView(player_index, game.dealer_index, start_info, info, options, game.score);
         parent_view.add_child(renderer);
+
+        menu = new GameMenuView(renderer.context, settings, index, player_index == -1);
+        menu.score_finished.connect(menu_score_finished);
+
         parent_view.add_child(menu);
 
         create_round_state(info);
@@ -159,16 +170,18 @@ class GameController : Object
         game.declare_riichi(player_index);
     }
 
-    private void display_score_pressed()
-    {
-        if (menu != null)
-            menu.display_score(game.score, false, false);
-    }
-
-    private void score_timer_expired()
+    private void menu_score_finished()
     {
         if (game.game_is_finished || is_disconnected)
             game_finished = true;
+        else
+            connection.send_message(new ClientMessageMenuReady());
+    }
+
+    private void round_over_timer_elapsed()
+    {
+        menu.update_scores(game.scores.to_array());
+        menu.round_finished();
     }
 
     private void disconnected()
@@ -179,7 +192,7 @@ class GameController : Object
         {
             if (round != null)
                 round.disconnected();
-            menu.display_score(game.score, true, true);
+            menu.game_over();
             menu.display_disconnected();
         }
     }

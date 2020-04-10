@@ -1,7 +1,8 @@
+using Engine;
 using Gee;
 using GameServer;
 
-class MainMenuView : MainMenuSubView
+class MainMenuView : MenuSubView
 {
     public signal GameController menu_game_start(GameStartInfo info, ServerSettings settings, IGameConnection connection, int player_index);
     public signal void restart();

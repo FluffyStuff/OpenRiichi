@@ -1,3 +1,4 @@
+using Engine;
 using Gee;
 using Lobby;
 
@@ -52,14 +53,12 @@ public class LobbyConnection
         send_message(new ClientLobbyMessageGetLobbies());
     }
 
-    public void authenticate(string username_in)
+    public void authenticate(string username)
     {
-        // TODO: Unify name check
-        string username = username_in.strip();
-        if (username.length < 1 || username.length > 20)
+        if (!Environment.is_valid_name(username))
             return;
 
-        send_message(new ClientLobbyMessageAuthenticate(username));
+        send_message(new ClientLobbyMessageAuthenticate(Environment.sanitize_name(username)));
     }
 
     public void enter_lobby(LobbyInformation lobby)
@@ -121,7 +120,7 @@ public class LobbyConnection
 
     private void received_message(Connection connection, Message msg)
     {
-        Serializable? m = Serializable.deserialize(msg.data);
+        Serializable? m = Serializable.deserialize(msg.get_message());
 
         if (m == null || !(m.get_type().is_a(typeof(ServerLobbyMessage)) || m.get_type().is_a(typeof(ServerMessage))))
         {

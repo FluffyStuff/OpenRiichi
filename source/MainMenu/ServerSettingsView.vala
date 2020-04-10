@@ -1,6 +1,7 @@
+using Engine;
 using Gee;
 
-class ServerSettingsView : MainMenuSubView
+class ServerSettingsView : MenuSubView
 {
     private OptionItemControl riichi_option;
     private OptionItemControl aka_option;
@@ -56,10 +57,6 @@ class ServerSettingsView : MainMenuSubView
             MenuTextButton apply_button = new MenuTextButton("MenuButton", "Apply");
             apply_button.clicked.connect(apply);
             buttons.add(apply_button);
-
-            /*log_button = new MenuTextButton("MenuButton", "Log File");
-            log_button.clicked.connect(log_file);
-            buttons.add(log_button);*/
         }
 
         MenuTextButton back_button = new MenuTextButton("MenuButton", "Back");
@@ -75,28 +72,17 @@ class ServerSettingsView : MainMenuSubView
             log_button.enabled = log_control;
     }
 
-    public override void do_render(RenderState state, RenderScene2D scene)
+    public override void render(RenderState state, RenderScene2D scene)
     {
         state.back_color = Color.black();
     }
 
-    /*private void log_file()
-    {
-        string n = "2016-11-13_03-25-55"; //"2016-11-07_07-22-57";
-        string name = Environment.log_dir + GameLogger.game_log_dir + n + Environment.log_extension;
-        Environment.log(LogType.DEBUG, "ServerSettingsView", name);
-        GameLog? log = Environment.load_game_log(name);
-        Environment.log(LogType.DEBUG, "ServerSettingsView", log == null ? "null log" : "log");
-
-        this.log = log;
-    }*/
-
     private void apply()
     {
-        settings.open_riichi = (Options.OnOffEnum)riichi_option.index;
-        settings.aka_dora = (Options.OnOffEnum)aka_option.index;
-        settings.multiple_ron = (Options.OnOffEnum)multiple_ron_option.index;
-        settings.triple_ron_draw = (Options.OnOffEnum)triple_ron_option.index;
+        settings.open_riichi = (OnOffEnum)riichi_option.index;
+        settings.aka_dora = (OnOffEnum)aka_option.index;
+        settings.multiple_ron = (OnOffEnum)multiple_ron_option.index;
+        settings.triple_ron_draw = (OnOffEnum)triple_ron_option.index;
         settings.save();
 
         do_finish();
@@ -104,7 +90,6 @@ class ServerSettingsView : MainMenuSubView
 
     protected override string get_name() { return "Server Settings"; }
 
-    //public GameLog? log { get; private set; }
     public ServerSettings settings { get; private set; }
     public bool can_control { get; private set; }
     public bool log_control { get; private set; }

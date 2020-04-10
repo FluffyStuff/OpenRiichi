@@ -1,36 +1,37 @@
+using Engine;
 using Gee;
 
 public abstract class RenderAction : Object
 {
-    public RenderAction(float time)
+    protected RenderAction(AnimationTime time)
     {
         this.time = time;
     }
 
-    public float time { get; private set; }
+    public AnimationTime time { get; private set; }
 }
 
 public class RenderActionDelay : RenderAction
 {
-    public RenderActionDelay(float delay)
+    public RenderActionDelay(AnimationTime time)
     {
-        base(delay);
+        base(time);
     }
 }
 
 public class RenderActionSplitDeadWall : RenderAction
 {
-    public RenderActionSplitDeadWall()
+    public RenderActionSplitDeadWall(AnimationTime time)
     {
-        base(0.5f);
+        base(time);
     }
 }
 
 public class RenderActionInitialDraw : RenderAction
 {
-    public RenderActionInitialDraw(RenderPlayer player, int tiles)
+    public RenderActionInitialDraw(AnimationTime time, RenderPlayer player, int tiles)
     {
-        base(0.1f);
+        base(time);
 
         this.player = player;
         this.tiles = tiles;
@@ -42,9 +43,9 @@ public class RenderActionInitialDraw : RenderAction
 
 public class RenderActionDraw : RenderAction
 {
-    public RenderActionDraw(RenderPlayer player)
+    public RenderActionDraw(AnimationTime time, RenderPlayer player)
     {
-        base(0.5f);
+        base(time);
 
         this.player = player;
     }
@@ -54,9 +55,9 @@ public class RenderActionDraw : RenderAction
 
 public class RenderActionDrawDeadWall : RenderAction
 {
-    public RenderActionDrawDeadWall(RenderPlayer player)
+    public RenderActionDrawDeadWall(AnimationTime time, RenderPlayer player)
     {
-        base(0.5f);
+        base(time);
 
         this.player = player;
     }
@@ -66,9 +67,9 @@ public class RenderActionDrawDeadWall : RenderAction
 
 public class RenderActionDiscard : RenderAction
 {
-    public RenderActionDiscard(RenderPlayer player, RenderTile tile)
+    public RenderActionDiscard(AnimationTime time, RenderPlayer player, RenderTile tile)
     {
-        base(0.5f);
+        base(time);
 
         this.player = player;
         this.tile = tile;
@@ -80,9 +81,11 @@ public class RenderActionDiscard : RenderAction
 
 public class RenderActionRon : RenderAction
 {
-    public RenderActionRon(RenderPlayer[] winners, RenderPlayer? discarder, RenderTile? tile, RenderPlayer? return_riichi_player, bool allow_dora_flip)
+    private RenderPlayer[] winners;
+
+    public RenderActionRon(AnimationTime time, RenderPlayer[] winners, RenderPlayer? discarder, RenderTile? tile, RenderPlayer? return_riichi_player, bool allow_dora_flip)
     {
-        base(0.5f);
+        base(time);
 
         this.winners = winners;
         this.discarder = discarder;
@@ -91,7 +94,10 @@ public class RenderActionRon : RenderAction
         this.allow_dora_flip = allow_dora_flip;
     }
 
-    public RenderPlayer[] winners { get; private set; }
+    public RenderPlayer[] get_winners()
+    {
+        return winners;
+    }
     public RenderPlayer? discarder { get; private set; }
     public RenderTile? tile { get; private set; }
     public RenderPlayer? return_riichi_player { get; private set; }
@@ -100,9 +106,9 @@ public class RenderActionRon : RenderAction
 
 public class RenderActionTsumo : RenderAction
 {
-    public RenderActionTsumo(RenderPlayer player)
+    public RenderActionTsumo(AnimationTime time, RenderPlayer player)
     {
-        base(0.5f);
+        base(time);
 
         this.player = player;
     }
@@ -112,9 +118,9 @@ public class RenderActionTsumo : RenderAction
 
 public class RenderActionRiichi : RenderAction
 {
-    public RenderActionRiichi(RenderPlayer player, bool open)
+    public RenderActionRiichi(AnimationTime time, RenderPlayer player, bool open)
     {
-        base(0.5f);
+        base(time);
 
         this.player = player;
         this.open = open;
@@ -126,9 +132,9 @@ public class RenderActionRiichi : RenderAction
 
 public class RenderActionReturnRiichi : RenderAction
 {
-    public RenderActionReturnRiichi(RenderPlayer player)
+    public RenderActionReturnRiichi(AnimationTime time, RenderPlayer player)
     {
-        base(0.5f);
+        base(time);
 
         this.player = player;
     }
@@ -138,9 +144,9 @@ public class RenderActionReturnRiichi : RenderAction
 
 public class RenderActionLateKan : RenderAction
 {
-    public RenderActionLateKan(RenderPlayer player, RenderTile tile)
+    public RenderActionLateKan(AnimationTime time, RenderPlayer player, RenderTile tile)
     {
-        base(0.2f);
+        base(time);
 
         this.player = player;
         this.tile = tile;
@@ -152,9 +158,9 @@ public class RenderActionLateKan : RenderAction
 
 public class RenderActionClosedKan : RenderAction
 {
-    public RenderActionClosedKan(RenderPlayer player, TileType tile_type)
+    public RenderActionClosedKan(AnimationTime time, RenderPlayer player, TileType tile_type)
     {
-        base(0.2f);
+        base(time);
 
         this.player = player;
         this.tile_type = tile_type;
@@ -166,9 +172,9 @@ public class RenderActionClosedKan : RenderAction
 
 public class RenderActionOpenKan : RenderAction
 {
-    public RenderActionOpenKan(RenderPlayer player, RenderPlayer discarder, RenderTile tile, RenderTile tile_1, RenderTile tile_2, RenderTile tile_3)
+    public RenderActionOpenKan(AnimationTime time, RenderPlayer player, RenderPlayer discarder, RenderTile tile, RenderTile tile_1, RenderTile tile_2, RenderTile tile_3)
     {
-        base(0.2f);
+        base(time);
 
         this.player = player;
         this.discarder = discarder;
@@ -188,9 +194,9 @@ public class RenderActionOpenKan : RenderAction
 
 public class RenderActionPon : RenderAction
 {
-    public RenderActionPon(RenderPlayer player, RenderPlayer discarder, RenderTile tile, RenderTile tile_1, RenderTile tile_2)
+    public RenderActionPon(AnimationTime time, RenderPlayer player, RenderPlayer discarder, RenderTile tile, RenderTile tile_1, RenderTile tile_2)
     {
-        base(0.5f);
+        base(time);
 
         this.player = player;
         this.discarder = discarder;
@@ -208,9 +214,9 @@ public class RenderActionPon : RenderAction
 
 public class RenderActionChii : RenderAction
 {
-    public RenderActionChii(RenderPlayer player, RenderPlayer discarder, RenderTile tile, RenderTile tile_1, RenderTile tile_2)
+    public RenderActionChii(AnimationTime time, RenderPlayer player, RenderPlayer discarder, RenderTile tile, RenderTile tile_1, RenderTile tile_2)
     {
-        base(0.5f);
+        base(time);
 
         this.player = player;
         this.discarder = discarder;
@@ -228,9 +234,9 @@ public class RenderActionChii : RenderAction
 
 public class RenderActionGameDraw : RenderAction
 {
-    public RenderActionGameDraw(ArrayList<RenderPlayer> players, GameDrawType draw_type)
+    public RenderActionGameDraw(AnimationTime time, ArrayList<RenderPlayer> players, GameDrawType draw_type)
     {
-        base(0.5f);
+        base(time);
 
         this.players = players;
         this.draw_type = draw_type;
@@ -244,7 +250,7 @@ public class RenderActionSetActive : RenderAction
 {
     public RenderActionSetActive(bool active)
     {
-        base(0);
+        base(new AnimationTime.zero());
 
         this.active = active;
     }
@@ -254,9 +260,9 @@ public class RenderActionSetActive : RenderAction
 
 public class RenderActionHandReveal : RenderAction
 {
-    public RenderActionHandReveal(RenderPlayer player)
+    public RenderActionHandReveal(AnimationTime time, RenderPlayer player)
     {
-        base(0.5f);
+        base(time);
 
         this.player = player;
     }
@@ -268,14 +274,14 @@ public class RenderActionFlipDora : RenderAction
 {
     public RenderActionFlipDora()
     {
-        base(0);
+        base(new AnimationTime.zero());
     }
 }
 
 public class RenderActionFlipUraDora : RenderAction
 {
-    public RenderActionFlipUraDora()
+    public RenderActionFlipUraDora(AnimationTime time)
     {
-        base(0.5f);
+        base(time);
     }
 }

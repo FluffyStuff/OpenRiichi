@@ -1,3 +1,5 @@
+using Engine;
+
 class GameMenuButton : Control
 {
     private ImageControl? button = null;
@@ -25,7 +27,7 @@ class GameMenuButton : Control
         size = button.end_size;
     }
 
-    public override void do_render(RenderState state, RenderScene2D scene)
+    public override void render(RenderState state, RenderScene2D scene)
     {
         if (!enabled)
         {
@@ -35,7 +37,7 @@ class GameMenuButton : Control
         {
             if (hovering)
             {
-                if (mouse_down)
+                if (mouse_pressed)
                     button.diffuse_color = Color(0.3f, 0.3f, 0.1f, 1);
                 else
                     button.diffuse_color = Color(0.5f, 0.5f, 0.3f, 1);

@@ -1,4 +1,5 @@
 using Gee;
+using Engine;
 
 namespace GameServer
 {
@@ -104,7 +105,7 @@ namespace GameServer
 
             private void parse_message(Connection connection, Message message)
             {
-                Serializable? msg = Serializable.deserialize(message.data);
+                Serializable? msg = Serializable.deserialize(message.get_message());
 
                 if (msg == null || !msg.get_type().is_a(typeof(ClientMessageAuthenticate)))
                 {

@@ -2,7 +2,6 @@ class NullBot : Bot
 {
     protected override void do_turn_decision()
     {
-        Thread.usleep(1 * 1000 * 1000);
         do_discard(round_state.self.get_default_discard_tile());
     }
 

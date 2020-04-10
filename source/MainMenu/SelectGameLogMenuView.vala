@@ -1,6 +1,7 @@
+using Engine;
 using Gee;
 
-class SelectGameLogMenuView : MainMenuSubView
+class SelectGameLogMenuView : MenuSubView
 {
     private GameLogsListControl log_list;
     private MenuTextButton load_button;
@@ -90,7 +91,7 @@ public class GameLogsListControl : ListControl
         refresh_data();
     }
 
-    protected override void on_added()
+    protected override void added()
     {
         refresh_data();
     }

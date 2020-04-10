@@ -1,4 +1,5 @@
 using Gee;
+using Engine;
 
 public class ClientMessageParser
 {
@@ -82,10 +83,7 @@ public class ClientMessageParser
     }
 }
 
-public abstract class ClientMessage : Serializable
-{
-
-}
+public abstract class ClientMessage : Serializable {}
 
 public class ClientMessageAuthenticate : ClientMessage
 {
@@ -155,66 +153,14 @@ public class ClientMessageMenuSettings : ClientMessage
     public ServerSettings settings { get; protected set; }
 }
 
-public class ClientMessageTileDiscard : ClientMessage
+public class ClientMessageMenuReady : ClientMessage {}
+
+public class ClientMessageGameAction : ClientMessage
 {
-    public ClientMessageTileDiscard(int tile_ID)
+    public ClientMessageGameAction(ClientAction action)
     {
-        this.tile_ID = tile_ID;
+        this.action = action;
     }
 
-    public int tile_ID { get; protected set; }
+    public ClientAction action { get; protected set; }
 }
-
-public class ClientMessageNoCall : ClientMessage {}
-
-public class ClientMessageChii : ClientMessage
-{
-    public ClientMessageChii(int tile_1_ID, int tile_2_ID)
-    {
-        this.tile_1_ID = tile_1_ID;
-        this.tile_2_ID = tile_2_ID;
-    }
-
-    public int tile_1_ID { get; protected set; }
-    public int tile_2_ID { get; protected set; }
-}
-
-public class ClientMessagePon : ClientMessage {}
-
-public class ClientMessageOpenKan : ClientMessage {}
-
-public class ClientMessageClosedKan : ClientMessage
-{
-    public ClientMessageClosedKan(TileType tile_type)
-    {
-        this.tile_type = tile_type;
-    }
-
-    public TileType tile_type { get; protected set; }
-}
-
-public class ClientMessageLateKan : ClientMessage
-{
-    public ClientMessageLateKan(int tile_ID)
-    {
-        this.tile_ID = tile_ID;
-    }
-
-    public int tile_ID { get; protected set; }
-}
-
-public class ClientMessageRiichi : ClientMessage
-{
-    public ClientMessageRiichi(bool open)
-    {
-        this.open = open;
-    }
-
-    public bool open { get; protected set; }
-}
-
-public class ClientMessageTsumo : ClientMessage {}
-
-public class ClientMessageRon : ClientMessage {}
-
-public class ClientMessageVoidHand : ClientMessage {}

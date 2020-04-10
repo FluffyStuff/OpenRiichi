@@ -1,7 +1,8 @@
+using Engine;
 using Gee;
 using GameServer;
 
-class LobbyView : MainMenuSubView
+class LobbyView : MenuSubView
 {
     private ClientLobby lobby;
     private LobbyConnection connection;
@@ -79,7 +80,7 @@ class LobbyView : MainMenuSubView
         enter_button.enabled = false;
     }
 
-    protected override void do_process(DeltaArgs args)
+    protected override void process(DeltaArgs args)
     {
         if (do_refresh_game_list)
         {

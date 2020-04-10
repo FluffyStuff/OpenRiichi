@@ -1,15 +1,15 @@
+using Engine;
 using Gee;
 
-public class GameMenuView : View2D
+class GameMenuView : View2D
 {
     private ScoringView? score_view = null;
     private ArrayList<MenuTextButton> buttons = new ArrayList<MenuTextButton>();
+    private ArrayList<MenuTextButton> observer_buttons = new ArrayList<MenuTextButton>();
 
+    private GameRenderContext context;
     private ServerSettings settings;
-    private int decision_time;
-    private int round_time;
-    private int hanchan_time;
-    private int game_time;
+    private bool observing;
 
     private Sound hint_sound;
     private float start_time;
@@ -26,6 +26,9 @@ public class GameMenuView : View2D
     private MenuTextButton conti;
     private MenuTextButton void_hand;
 
+    private MenuTextButton next;
+    private MenuTextButton prev;
+
     public signal void chii_pressed();
     public signal void pon_pressed();
     public signal void kan_pressed();
@@ -35,7 +38,10 @@ public class GameMenuView : View2D
     public signal void continue_pressed();
     public signal void void_hand_pressed();
     public signal void display_score_pressed();
-    public signal void score_timer_expired();
+    public signal void score_finished();
+
+    public signal void observe_next_pressed();
+    public signal void observe_prev_pressed();
 
     private void press_chii() { chii_pressed(); }
     private void press_pon() { pon_pressed(); }
@@ -59,14 +65,18 @@ public class GameMenuView : View2D
     private void press_continue() { continue_pressed(); }
     private void press_void_hand() { void_hand_pressed(); }
 
-    public GameMenuView(ServerSettings settings, int player_index, int decision_time, int round_time, int hanchan_time, int game_time)
+    private void press_next() { observe_next_pressed(); score_view.next(); }
+    private void press_prev() { observe_prev_pressed(); score_view.prev(); }
+
+    public GameMenuView(GameRenderContext context, ServerSettings settings, int player_index, bool observing)
     {
+        this.context = context;
         this.settings = settings;
         this.player_index = player_index;
-        this.decision_time = decision_time;
-        this.round_time = round_time;
-        this.hanchan_time = hanchan_time;
-        this.game_time = game_time;
+        this.observing = observing;
+
+        score_view = new ScoringView(context, player_index);
+        score_view.score_finished.connect(do_score_finished);
     }
 
     public override void added()
@@ -102,6 +112,9 @@ public class GameMenuView : View2D
         conti = new MenuTextButton("MenuButtonSmall", "Continue");
         void_hand = new MenuTextButton("MenuButtonSmall", "Void Hand");
 
+        next = new MenuTextButton("MenuButtonSmall", "Next");
+        prev = new MenuTextButton("MenuButtonSmall", "Previous");
+
         chii.clicked.connect(press_chii);
         pon.clicked.connect(press_pon);
         kan.clicked.connect(press_kan);
@@ -111,6 +124,9 @@ public class GameMenuView : View2D
         ron.clicked.connect(press_ron);
         conti.clicked.connect(press_continue);
         void_hand.clicked.connect(press_void_hand);
+
+        next.clicked.connect(press_next);
+        prev.clicked.connect(press_prev);
 
         buttons.add(chii);
         buttons.add(pon);
@@ -122,6 +138,9 @@ public class GameMenuView : View2D
         buttons.add(conti);
         buttons.add(void_hand);
 
+        observer_buttons.add(prev);
+        observer_buttons.add(next);
+
         foreach (var button in buttons)
         {
             add_child(button);
@@ -129,14 +148,27 @@ public class GameMenuView : View2D
             button.inner_anchor = Vec2(0.5f, 0);
             button.outer_anchor = Vec2(0.5f, 0);
             button.font_size = 24;
+            button.visible = !observing;
+        }
+
+        foreach (var button in observer_buttons)
+        {
+            add_child(button);
+            button.inner_anchor = Vec2(0.5f, 0);
+            button.outer_anchor = Vec2(0.5f, 0);
+            button.font_size = 24;
+            button.visible = observing;
         }
 
         void_hand.visible = false;
-        open_riichi.visible = settings.open_riichi == Options.OnOffEnum.ON;
-        position_buttons();
+        open_riichi.visible = open_riichi.visible && settings.open_riichi == OnOffEnum.ON;
+        position_buttons(buttons);
+        position_buttons(observer_buttons);
+
+        add_child(score_view);
     }
 
-    private void position_buttons()
+    private void position_buttons(ArrayList<MenuTextButton> buttons)
     {
         float p = 0;
         float width = 0;
@@ -155,7 +187,7 @@ public class GameMenuView : View2D
         }
     }
 
-    protected override void do_key_press(KeyArgs key)
+    protected override void key_press(KeyArgs key)
     {
         if (key.handled)
             return;
@@ -165,7 +197,7 @@ public class GameMenuView : View2D
         if (key.scancode == ScanCode.TAB && !key.repeat)
         {
             if (key.down)
-                display_score_pressed();
+                display_score();
             else
                 hide_score();
         }
@@ -209,13 +241,14 @@ public class GameMenuView : View2D
         if (enabled)
             hint_sound.play();
         conti.enabled = enabled;
+        press_continue();
     }
 
     public void set_void_hand(bool enabled)
     {
         void_hand.visible = enabled;
         void_hand.enabled = enabled;
-        position_buttons();
+        position_buttons(buttons);
     }
 
     public void set_furiten(bool enabled)
@@ -223,7 +256,7 @@ public class GameMenuView : View2D
         furiten.visible = enabled;
     }
 
-    public void set_timer(bool enabled)
+    public void set_move_timer(bool enabled)
     {
         if (timer.visible && enabled)
             return;
@@ -232,55 +265,59 @@ public class GameMenuView : View2D
         timer.visible = enabled;
     }
 
-    public void display_score(RoundScoreState score, bool timer, bool force_game_time)
+    public void update_scores(RoundScoreState[] scores)
     {
-        if (score_view != null)
-        {
-            if (score_view.score != score)
-                remove_child(score_view);
-            else
-            {
-                score_view.visible = true;
-                return;
-            }
-        }
+        score_view.update_scores(scores);
+    }
 
-        score_view = new ScoringView(score, player_index, timer, round_time, hanchan_time, game_time, force_game_time);
-        add_child(score_view);
-        score_view.timer_expired.connect(do_score_timer_expired);
+    public void game_over()
+    {
+        score_view.display(true);
+    }
+
+    public void round_finished()
+    {
+        score_view.display(true);
+
+        foreach (var button in observer_buttons)
+            button.enabled = false;
+    }
+
+    public void display_score()
+    {
+        score_view.display(false);
     }
 
     public void hide_score()
     {
-        if (score_view != null)
-            score_view.visible = false;
+        score_view.hide();
     }
 
     public void display_disconnected()
     {
-        DisconnectedMenuView view = new DisconnectedMenuView();
+        InformationMenuView view = new InformationMenuView("Connection to server lost");
         add_child(view);
-        view.ok_pressed.connect(menu_ok_pressed);
+        view.back.connect(info_menu_finished);
     }
 
     public void display_player_left(string name)
     {
-        DisconnectedMenuView view = new DisconnectedMenuView.player(name);
+        InformationMenuView view = new InformationMenuView(name + " has left the game");
         add_child(view);
-        view.ok_pressed.connect(menu_ok_pressed);
+        view.back.connect(info_menu_finished);
     }
 
-    private void menu_ok_pressed(DisconnectedMenuView view)
+    private void info_menu_finished(MenuSubView view)
     {
         remove_child(view);
     }
 
-    private void do_score_timer_expired()
+    private void do_score_finished()
     {
-        score_timer_expired();
+        score_finished();
     }
 
-    protected override void do_process(DeltaArgs delta)
+    protected override void process(DeltaArgs delta)
     {
         if (start_time == 0)
             start_time = delta.time;
@@ -288,8 +325,8 @@ public class GameMenuView : View2D
         if (!timer.visible)
             return;
 
-        int t = int.max((int)(start_time + decision_time - delta.time), 0);
-        if (t == decision_time)
+        int t = int.max((int)(start_time + context.server_times.decision_time - delta.time), 0);
+        if (t == context.server_times.decision_time)
             t--;
 
         if (t < 0)
@@ -307,51 +344,4 @@ public class GameMenuView : View2D
     }
 
     public int player_index { get; set; }
-
-    private class DisconnectedMenuView : View2D
-    {
-        private string message;
-
-        public signal void ok_pressed(DisconnectedMenuView view);
-
-        public DisconnectedMenuView()
-        {
-            message = "Connection to server lost";
-        }
-
-        public DisconnectedMenuView.player(string name)
-        {
-            message = name + " has left the game";
-        }
-
-        public override void added()
-        {
-            RectangleControl background = new RectangleControl();
-            add_child(background);
-            background.color = Color.with_alpha(0.5f);
-            background.resize_style = ResizeStyle.RELATIVE;
-            background.selectable = true;
-            background.cursor_type = CursorType.NORMAL;
-
-            int padding = 50;
-
-            LabelControl label = new LabelControl();
-            add_child(label);
-            label.text = message;
-            label.font_size = 50;
-            label.inner_anchor = Vec2(0.5f, 0);
-            label.position = Vec2(0, padding / 2);
-
-            MenuTextButton button = new MenuTextButton("MenuButton", "OK");
-            add_child(button);
-            button.inner_anchor = Vec2(0.5f, 1);
-            button.position = Vec2(0, -padding / 2);
-            button.clicked.connect(button_pressed);
-        }
-
-        private void button_pressed()
-        {
-            ok_pressed(this);
-        }
-    }
 }

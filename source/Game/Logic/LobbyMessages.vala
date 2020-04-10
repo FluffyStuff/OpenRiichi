@@ -1,3 +1,5 @@
+using Engine;
+
 namespace Lobby
 {
     public abstract class ClientLobbyMessage : Serializable {}

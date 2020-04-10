@@ -1,4 +1,4 @@
-public interface IGameRenderer : Object
+public interface IGameRenderer
 {
     public signal void tile_selected(Tile tile);
     public abstract void set_active(bool active);

@@ -1,203 +1,202 @@
+using Engine;
 using Gee;
 
-// This particular signal receiver must be an object (otherwise the application will crash randomly...)
-// I'm guessing it has something to do with being subscribed to a signal in a list of objects, but I'm not sure. Either way it's a bug in Vala
-public class RenderWall : Object
+public class RenderWall : WorldObject
 {
-    private Vec3 tile_size;
+    private GameRenderContext context;
+    private RenderTile[] tiles;
     private WallPart[] walls;
-    private DeadWall dead_wall;
-    private int active_wall;
-    private int last_wall;
-    private int dealer;
+
+    private ArrayList<WallPart> draw_parts;
+    private ArrayList<WallPart> dead_parts;
     private int split;
 
-    public RenderWall(RenderTile[] tiles, Vec3 tile_size, Vec3 center, float offset, int dealer, int split)
+    public RenderWall(GameRenderContext context, RenderTile[] tiles)
     {
-        this.tile_size = tile_size;
-        this.dealer = dealer;
-        this.split = split;
-        int start_wall = (4 - dealer) % 4;
-        active_wall = last_wall = start_wall;
+        this.context = context;
+        this.tiles = tiles;
+        this.split = context.wall_split;
+    }
 
+    protected override void added()
+    {
         walls = new WallPart[4];
+        
         for (int i = 0; i < 4; i++)
         {
             RenderTile[] wt = new RenderTile[34];
             for (int j = 0; j < 34; j++)
                 wt[j] = tiles[i * 34 + j];
 
-            Vec3 pos = Calculations.rotate_y(Vec3.empty(), -(float)i / 2, Vec3(0, 0, offset)).plus(center);
-            walls[i] = new WallPart(wt, tile_size, pos, i);
-            walls[i].next_wall.connect(next_wall);
+            WorldObject wrap = new WorldObject();
+            WorldObject rot = new WorldObject();
+            walls[i] = new WallPart(wt, context.tile_size);
+            add_object(rot);
+            rot.add_object(wrap);
+            wrap.add_object(walls[i]);
+
+            rot.rotation = Quat.from_euler(-i / 2.0f, 0, 0);
+            wrap.position = Vec3(context.tile_size.x * 8, context.tile_size.y / 2, 10 * context.tile_size.x);
         }
     }
 
-    public void split_dead_wall()
+    public void split_dead_wall(AnimationTime time)
     {
-        int start_wall = (4 - dealer) % 4;
+        float delta = context.tile_size.x / 2 * 3;
 
-        ArrayList<RenderTile> left = walls[start_wall].dead_split(split, true);
-        ArrayList<RenderTile> right = walls[(start_wall + 3) % 4].dead_split(split, false);
+        int start_wall = (4 - context.dealer) % 4;
+        ArrayList<WallPart> draw = new ArrayList<WallPart>();
+        ArrayList<WallPart> dead = new ArrayList<WallPart>();
 
-        int rot = last_wall;
-        if (left.size < 14)
-            rot = (rot + 3) % 4;
-        dead_wall = new DeadWall(left, right, split, rot, tile_size);
+        for (int i = 0; i < 4; i++)
+            draw.add(walls[(start_wall + i) % 4]);
+
+        WallPart left = draw.remove_at(0);
+        WallPart p = left.dead_split(split);
+        draw.insert(0, p);
+        p.animate_move(-delta, time);
+
+        if (split > 7)
+        {
+            var part = left.dead_split(split - 7);
+            part.to_dead_wall(4);
+            dead.add(part);
+            draw.add(left);
+
+            left.animate_move(delta, time);
+        }
+        else
+        {
+            dead.add(left);
+            left.to_dead_wall(4);
+
+            if (split != 7)
+            {
+                var part = draw[3].dead_split(10 + split);
+                dead.add(part);
+                part.to_dead_wall(0);
+                part.animate_move(-delta, time);
+            }
+        }
+
+        draw_parts = draw;
+        dead_parts = dead;
     }
 
     public RenderTile? draw_wall()
     {
-        return walls[active_wall].draw();
+        if (draw_parts[0].empty)
+            draw_parts.remove_at(0);
+        if (draw_parts.size == 0)
+            return null;
+        return draw_parts[0].draw();
     }
 
     public RenderTile? draw_dead_wall()
     {
-        return dead_wall.draw();
+        if (dead_parts[0].empty)
+            dead_parts.remove_at(0);
+        if (dead_parts.size == 0)
+            return null;
+        return dead_parts[0].dead_draw();
     }
 
     public void flip_dora()
     {
-        dead_wall.flip_dora();
+        if (!dead_parts[0].flip_dora(context.server_times.dora_flip))
+            dead_parts[1].flip_dora(context.server_times.dora_flip);
     }
 
     public void flip_ura_dora()
     {
-        dead_wall.flip_ura_dora();
+        foreach (WallPart part in dead_parts)
+            part.flip_ura_dora(context.server_times.dora_flip);
     }
 
     public void dead_tile_add()
     {
-        if (walls[last_wall].empty)
-            last_wall = (last_wall + 3) % 4;
+        int i = draw_parts.size - 1;
+        WallPart last = draw_parts[i];
+        if (last.empty)
+            draw_parts.remove_at(i--);
 
-        RenderTile tile = walls[last_wall].remove_last();
-        dead_wall.dead_tile_add(tile);
+        dead_parts[dead_parts.size - 1].dead_tile_add(draw_parts[i].remove_last(context.server_times.dora_flip), context.server_times.dora_flip);
     }
 
-    private void next_wall()
+    public class WallPart : WorldObject
     {
-        active_wall = (active_wall + 1) % 4;
-    }
-
-    public class WallPart
-    {
-        private ArrayList<RenderTile> wall_left = new ArrayList<RenderTile>();
-        private ArrayList<RenderTile> wall_right = new ArrayList<RenderTile>();
+        private ArrayList<RenderTile> tiles = new ArrayList<RenderTile>();
         private Vec3 tile_size;
-        private Vec3 position;
-        private int rotation;
-        private int removed_tiles = 0;
+        private int removed_tiles;
 
-        public signal void next_wall();
+        private int dora_index;
+        private int tiles_added;
+        private int dead_drawn;
+        private ArrayList<RenderTile> doras = new ArrayList<RenderTile>();
+        private ArrayList<RenderTile> ura_doras = new ArrayList<RenderTile>();
 
-        public WallPart(RenderTile[] tiles, Vec3 tile_size, Vec3 position, int rotation)
+        public WallPart(RenderTile[] tiles, Vec3 tile_size)
         {
             for (int i = 0; i < tiles.length; i++)
-                wall_left.add(tiles[i]);
+                this.tiles.add(tiles[i]);
 
             this.tile_size = tile_size;
-            this.position = position;
-            this.rotation = rotation;
+        }
+
+        public override void added()
+        {
+            foreach (RenderTile tile in tiles)
+                add_object(tile);
 
             order();
         }
 
-        public ArrayList<RenderTile> dead_split(int index, bool first)
+        public void animate_move(float delta, AnimationTime time)
         {
-            ArrayList<RenderTile> left = new ArrayList<RenderTile>();
-            ArrayList<RenderTile> center = new ArrayList<RenderTile>();
-            ArrayList<RenderTile> right = new ArrayList<RenderTile>();
-
-            if (!first)
-                index += 17;
-            index *= 2;
-
-            if (index <= 0 || index >= 48)
-                return center;
-
-            for (int i = index; i < 34; i++)
-                left.add(wall_left[i]);
-            for (int i = int.max(index - 14, 0); i < int.min(index, 34); i++)
-                center.add(wall_left[i]);
-            for (int i = 0; i < index - 14; i++)
-                right.add(wall_left[i]);
-
-            float offset = 1.0f * tile_size.x;
-            float left_m = 0;//-1;
-            float center_m = 0;
-            float right_m = 1.1f;
-
-            /*if (left.size == 0)
-            {
-                left_m = 0;
-                center_m -= 0.5f;
-            }
-            if (right.size == 0)
-            {
-                right_m = 0;
-                center_m += 0.5f;
-            }*/
-
-            float r = -(float)rotation / 2;
-
-            for (int i = 0; i < left.size; i++)
-            {
-                RenderTile t = left[i];
-                Vec3 pos = Calculations.rotate_y(Vec3.empty(), r, {left_m * offset});
-                pos = t.position.plus(pos);
-
-                t.animate_towards(pos, t.rotation);
-            }
-            for (int i = 0; i < center.size; i++)
-            {
-                RenderTile t = center[i];
-                Vec3 pos = Calculations.rotate_y(Vec3.empty(), r, {center_m * offset});
-                pos = t.position.plus(pos);
-
-                t.animate_towards(pos, t.rotation);
-            }
-            for (int i = 0; i < right.size; i++)
-            {
-                RenderTile t = right[i];
-                Vec3 pos = Calculations.rotate_y(Vec3.empty(), r, {right_m * offset});
-                pos = t.position.plus(pos);
-
-                t.animate_towards(pos, t.rotation);
-            }
-
-            wall_left = left;
-            wall_right = right;
-
-            ArrayList<RenderTile> tiles = new ArrayList<RenderTile>();
-            for (int i = center.size - 1; i >= 0; i--)
-            {
-                int a = i;
-                if (i % 2 == 0)
-                    a++;
-                else
-                    a--;
-                tiles.add(center[a]);
-            }
-
-            return tiles;
+            WorldObjectAnimation animation = new WorldObjectAnimation(time);
+            Path3D path = new LinearPath3D(Vec3(delta, 0, 0));
+            animation.do_relative_position(path);
+            animation.curve = new SmoothApproachCurve();
+            animate(animation, true);
         }
 
-        public RenderTile remove_last()
+        public void to_dead_wall(int dora_index)
         {
-            ArrayList<RenderTile> list;
-            if (wall_right.size != 0)
-                list = wall_right;
-            else
-                list = wall_left;
+            this.dora_index = dora_index + 1;
 
-            assert(list.size > 0);
-            RenderTile tile = list.remove_at(list.size - 1);
+            ArrayList<RenderTile> tiles = new ArrayList<RenderTile>();
+            while (this.tiles.size > 0)
+                tiles.add(this.tiles.remove_at(this.tiles.size - 1));
+            this.tiles = tiles;
+        }
 
-            if (removed_tiles % 2 == 0 && list.size > 0)
+        public WallPart dead_split(int index)
+        {
+            ArrayList<RenderTile> split = new ArrayList<RenderTile>();
+
+            index *= 2;
+
+            while (index < tiles.size)
+                split.add(tiles.remove_at(index));
+
+            Vec3 pos = Vec3(split[0].position.x, 0, 0);
+
+            WallPart wall = new WallPart(split.to_array(), tile_size);
+            get_parent().add_object(wall);
+            wall.position = position.plus(pos);
+
+            return wall;
+        }
+
+        public RenderTile remove_last(AnimationTime time)
+        {
+            assert(tiles.size > 0);
+            RenderTile tile = tiles.remove_at(tiles.size - 1);
+
+            if (removed_tiles % 2 == 0 && tiles.size > 0)
             {
-                RenderTile t = list[list.size - 1];
-                t.animate_towards(tile.position, tile.rotation);
+                RenderTile t = tiles[tiles.size - 1];
+                t.animate_towards(tile.position, tile.rotation, time);
             }
 
             removed_tiles++;
@@ -211,164 +210,88 @@ public class RenderWall : Object
             if (empty)
                 return null;
 
-            if (wall_left.size > 0)
-            {
-                RenderTile t = wall_left.remove_at(0);
-                if (wall_left.size == 0)
-                    next_wall();
+            return tiles.remove_at(0);
+        }
 
-                return t;
-            }
+        public RenderTile? dead_draw()
+        {
+            assert(!empty);
 
-            RenderTile t = wall_right.remove_at(0);
-            if (wall_right.size == 0)
-                next_wall();
-            return t;
+            int i = ++dead_drawn % 2;
+
+            if (i >= tiles.size)
+                return null;
+
+            dora_index--;
+            return tiles.remove_at(i);
         }
 
         private void order()
         {
-            for (int i = 0; i < wall_left.size; i++)
+            for (int i = 0; i < tiles.size; i++)
             {
-                RenderTile tile = wall_left[i];
+                RenderTile tile = tiles[i];
 
                 Vec3 pos = Vec3
                 (
-                    (8 - i / 2) * tile_size.x,
-                    ((i + 1) % 2 + 0.5f) * tile_size.y,
+                    (i / 2) * -tile_size.x,
+                    ((i + 1) % 2) * tile_size.y,
                     0
                 );
+                Quat rot = Quat.from_euler(0, 1, 0);
 
-                pos = Calculations.rotate_y(Vec3.empty(), -(float)rotation / 2, pos).plus(position);
-
-                Quat rot = new Quat.from_euler
-                (
-                    1,
-                    (float)rotation / 2 + 1,
-                    0
-                );
-
-                tile.set_absolute_location(pos, rot);
+                tile.rotation = rot;
+                tile.position = pos;
             }
         }
 
-        public bool empty { get { return wall_left.size + wall_right.size == 0; } }
-    }
-
-    private class DeadWall
-    {
-        private ArrayList<RenderTile> tiles = new ArrayList<RenderTile>();
-        private ArrayList<RenderTile> doras = new ArrayList<RenderTile>();
-        private ArrayList<RenderTile> ura_doras = new ArrayList<RenderTile>();
-        private int rotation;
-        private int split;
-        private Vec3 tile_size;
-
-        private int dora_index = 4;
-        private int tiles_added = 0;
-
-        public DeadWall(ArrayList<RenderTile> left, ArrayList<RenderTile> right, int split, int rotation, Vec3 tile_size)
+        public void dead_tile_add(RenderTile tile, AnimationTime time)
         {
-            this.rotation = rotation;
-            this.split = split;
-            this.tile_size = tile_size;
+            Vec3 pos = Vec3(((tiles_added + 1) % 2) * tile_size.x, ((tiles_added % 2) * 2 - 1) * tile_size.y, 0);
+            pos = tiles[tiles.size - 1].position.plus(pos);
+            Quat rot = Quat.from_euler(0, 1, 0);
 
-            for (int i = 0; i < left.size; i++)
-                tiles.add(left[i]);
-            for (int i = 0; i < right.size; i++)
-                tiles.add(right[i]);
+            convert_object(tile);
+            tile.animate_towards(pos, rot, time);
+
+            tiles.add(tile);
+            tiles_added++;
         }
 
-        public RenderTile draw()
+        public bool flip_dora(AnimationTime time)
         {
-            assert(tiles.size > 0);
-
-            dora_index--;
-            return tiles.remove_at(0);
-        }
-
-        public void flip_dora()
-        {
-            assert(tiles.size > dora_index + 1);
+            if (dora_index >= tiles.size)
+                return false;
 
             RenderTile t = tiles[dora_index];
             doras.add(t);
-            ura_doras.add(tiles[dora_index + 1]);
+            ura_doras.add(tiles[dora_index - 1]);
 
-            Quat rot = t.rotation;
-            rot = new Quat.from_euler(1, 0, 0).mul(rot);
+            Quat rot = Quat.from_euler(0, 1, 0).mul(t.rotation);
 
-            t.animate_towards(t.position, rot);
+            t.animate_towards(t.position, rot, time);
 
             dora_index += 2;
+
+            return true;
         }
 
-        public void flip_ura_dora()
+        public void flip_ura_dora(AnimationTime time)
         {
-            for (int i = 0; i < doras.size; i++)
+            foreach (var tile in doras)
             {
-                RenderTile tile = doras[i];
-                Vec3 pos = Vec3(0, -tile_size.y, tile_size.z / 2);
-                int rotation = this.rotation;
-                if (split >= 7)
-                    rotation--;
-                if (3 + i <= split)
-                    rotation--;
-
-                pos = Calculations.rotate_y(Vec3.empty(), -(float)rotation / 2, pos).plus(tile.position);
-                tile.animate_towards(pos, tile.rotation);
+                Vec3 pos = Vec3(0, -tile_size.y, 0).plus(tile.position);
+                tile.animate_towards(pos, tile.rotation, time);
             }
 
-            for (int i = 0; i < ura_doras.size; i++)
+            foreach (var tile in ura_doras)
             {
-                RenderTile tile = ura_doras[i];
-                int rotation = this.rotation;
-                float dir = 1.000f;
-                if (rotation % 2 == 0)
-                    dir = -dir;
-                if (split >= 7)
-                    rotation--;
-                if (3 + i <= split)
-                {
-                    rotation--;
-                    dir = -dir;
-                }
-
-                Vec3 pos = Vec3(0, 0, -tile_size.z / 2);
-                pos = Calculations.rotate_y(Vec3.empty(), -(float)rotation / 2, pos).plus(tile.position);
-
-                Quat rot = tile.rotation;
-                rot = new Quat.from_euler(dir, 0, 0).mul(rot);
-                tile.animate_towards(pos, rot);
+                Vec3 pos = Vec3(0, 0, tile_size.z).plus(tile.position);
+                Quat rot = Quat.from_euler(0, 1, 0).mul(tile.rotation);
+                tile.animate_towards(pos, rot, time);
             }
         }
 
-        public void dead_tile_add(RenderTile tile)
-        {
-            Vec3 pos;
-
-            if (tiles_added % 2 == 0)
-            {
-                float y = tiles_added > 0 ? -tile_size.y : 0;
-                pos = Vec3(tile_size.x, y, 0);
-                pos = Calculations.rotate_y(Vec3.empty(), -(float)rotation / 2, pos);
-            }
-            else
-                pos = Vec3(0, tile_size.y, 0);
-
-            pos = tiles[tiles.size - 1].position.plus(pos);
-
-            Quat rot = new Quat.from_euler
-            (
-                1,
-                (float)rotation / 2 + 1,
-                0
-            );
-
-            tile.animate_towards(pos, rot);
-
-            tiles_added++;
-            tiles.insert(tiles.size, tile);
-        }
+        public bool empty { get { return tiles.size == 0; } }
     }
 }

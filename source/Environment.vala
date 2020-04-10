@@ -1,4 +1,5 @@
 using Gee;
+using Engine;
 
 public class Environment
 {
@@ -21,10 +22,10 @@ public class Environment
 
     private Environment() {}
 
-    public static void init(bool do_debug)
+    public static bool init(bool do_debug)
     {
         if (initialized)
-            return;
+            return false;
         initialized = true;
         debug = do_debug;
 
@@ -33,18 +34,22 @@ public class Environment
         bool console_color = set_console_color_mode();
 
         logger = new Logger("application/", console_color);
-        Log.set_default_handler (glib_log_func);
+        Log.set_default_handler(glib_log_func);
         set_print_handler(glib_print);
         set_printerr_handler(glib_error);
         engine_logger = new LogCallback();
         engine_logger.log.connect(engine_log);
         EngineLog.set_log_callback(engine_logger);
 
-        log(LogType.INFO, "Environment", "Logging started");
+        log(LogType.INFO, "Environment", "Logging started (" + version_info.to_string() + ")");
         log(LogType.DEBUG, "Environment", "Logging debug information");
 
-        set_working_dir();
+        if (!set_working_dir())
+            return false;
+        
         reflection_bug_fix();
+
+        return true;
     }
 
     private static void glib_log_func(string? log_domain, LogLevelFlags log_levels, string message)
@@ -91,7 +96,6 @@ public class Environment
     {
         typeof(Serializable).class_ref();
         typeof(SerializableList).class_ref();
-        //typeof(SerializableListItem).class_ref();
         typeof(ObjInt).class_ref();
         typeof(GamePlayer).class_ref();
 
@@ -121,6 +125,25 @@ public class Environment
         typeof(ServerMessageMenuSlotClear).class_ref();
         typeof(ServerMessageMenuSettings).class_ref();
         typeof(ServerMessageMenuGameLog).class_ref();
+
+        typeof(ClientMessageMenuReady).class_ref();
+
+        typeof(ServerAction).class_ref();
+        typeof(DefaultDiscardServerAction).class_ref();
+        typeof(DefaultNoCallServerAction).class_ref();
+        typeof(ClientServerAction).class_ref();
+        typeof(ClientAction).class_ref();
+        typeof(TileDiscardClientAction).class_ref();
+        typeof(NoCallClientAction).class_ref();
+        typeof(RonClientAction).class_ref();
+        typeof(TsumoClientAction).class_ref();
+        typeof(VoidHandClientAction).class_ref();
+        typeof(RiichiClientAction).class_ref();
+        typeof(LateKanClientAction).class_ref();
+        typeof(ClosedKanClientAction).class_ref();
+        typeof(OpenKanClientAction).class_ref();
+        typeof(PonClientAction).class_ref();
+        typeof(ChiiClientAction).class_ref();
 
         typeof(Lobby.LobbyInformation).class_ref();
         typeof(Lobby.ServerLobbyMessage).class_ref();
@@ -153,39 +176,33 @@ public class Environment
         typeof(GameLog).class_ref();
         typeof(GameLogRound).class_ref();
         typeof(GameLogLine).class_ref();
-        typeof(DefaultTileDiscardGameLogLine).class_ref();
-        typeof(DefaultCallActionGameLogLine).class_ref();
-        typeof(ClientTileDiscardGameLogLine).class_ref();
-        typeof(ClientNoCallGameLogLine).class_ref();
-        typeof(ClientRonGameLogLine).class_ref();
-        typeof(ClientTsumoGameLogLine).class_ref();
-        typeof(ClientVoidHandGameLogLine).class_ref();
-        typeof(ClientRiichiGameLogLine).class_ref();
-        typeof(ClientLateKanGameLogLine).class_ref();
-        typeof(ClientClosedKanGameLogLine).class_ref();
-        typeof(ClientOpenKanGameLogLine).class_ref();
-        typeof(ClientPonGameLogLine).class_ref();
-        typeof(ClientChiiGameLogLine).class_ref();
 
         typeof(NullBot).class_ref();
         typeof(SimpleBot).class_ref();
     }
 
-    private static void set_working_dir()
+    private static bool set_working_dir()
     {
+        bool ret = true;
+
 	// This makes relative paths work by changing directory to the Resources folder inside the .app bundle
 	#if MAC
         void *mainBundle = CFBundleGetMainBundle();
         void *resourcesURL = CFBundleCopyResourcesDirectoryURL(mainBundle);
         char path[PATH_MAX];
+
         if (!CFURLGetFileSystemRepresentation(resourcesURL, true, (uint8*)path, PATH_MAX))
         {
-            // error!
+            log(LogType.ERROR, "Environment", "Could not set working dir");
+            ret = false;
         }
-        CFRelease(resourcesURL);
+        else
+            GLib.Environment.set_current_dir((string)path);
 
-        GLib.Environment.set_current_dir((string)path);
-	#endif
+        CFRelease(resourcesURL);
+    #endif
+    
+        return ret;
     }
 
     private static bool set_console_color_mode()
@@ -199,6 +216,7 @@ public class Environment
         uint mode = 0;
         if (!Win.GetConsoleMode(handle, out mode))
             return false;
+        
         mode |= Win.ENABLE_VIRTUAL_TERMINAL_PROCESSING;
         return Win.SetConsoleMode(handle, mode);
     #else
@@ -339,18 +357,25 @@ public class Logger
             return;
 
         log_lock.lock();
-        string msg = message.replace("\r", "").replace("\n", " ").replace("\"", "|").strip();
         string type = log_type.to_string().substring(9);
         string date = Environment.get_datetime_string();
 
-        string log_line = "[" + date + "] " + type + " from " + origin + ": \"" + msg + "\"" + NEWLINE;
-        string col_line = GREEN + "[" + RED + date + GREEN + "] " + YELLOW + type + GREEN + " from " + BLUE + origin + GREEN + ": \"" + RED + msg + GREEN + "\"" + RESET + NEWLINE;
+        string[] lines = message.strip().replace("\t", "    ").split("\n");
 
-        string con_line = use_color ? col_line : log_line;
+        for (int i = 0; i < lines.length; i++)
+        {
+            string line = lines[i];
+            string number = (i + 1).to_string("%02d");
+            string log_line = "[%s] %s from %s(%s): %s%s".printf(date, type, origin, number, line, NEWLINE);
+            string col_line = "%s[%s%s%s] %s%s %sfrom %s%s%s(%s): %s%s%s%s".printf(GREEN, RED, date, GREEN, YELLOW, type, GREEN, BLUE, origin, GREEN, number, RED, line, RESET, NEWLINE);
 
-        stdout.printf("%s", con_line);
+            string con_line = use_color ? col_line : log_line;
+
+            stdout.printf("%s", con_line);
+            log_stream.write(log_line);
+        }
+
         stdout.flush();
-        log_stream.write(log_line);
         log_lock.unlock();
     }
 }

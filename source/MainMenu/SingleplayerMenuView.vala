@@ -1,12 +1,13 @@
+using Engine;
 using Gee;
 
-class SingleplayerMenuView : MainMenuSubView
+class SingleplayerMenuView : MenuSubView
 {
-    private GameController controller;
+    private GameController controller; // Fix include bug in vala
 
     public SingleplayerMenuView()
     {
-        controller = null; // Fix include bug in vala
+        controller = null; // Ignore warning
     }
 
     public signal GameController menu_game_start(GameStartInfo info, ServerSettings settings, IGameConnection connection, int player_index);
@@ -51,7 +52,7 @@ class SingleplayerMenuView : MainMenuSubView
         return buttons;
     }
 
-    private void create_game(MainMenuSubView view)
+    private void create_game(MenuSubView view)
     {
         CreateServerView v = (CreateServerView)view;
         ServerMenuView s = new ServerMenuView.create_server(v.player_name, false);
@@ -59,7 +60,7 @@ class SingleplayerMenuView : MainMenuSubView
         load_sub_view(s);
     }
 
-    private void load_log(MainMenuSubView view)
+    private void load_log(MenuSubView view)
     {
         SelectGameLogMenuView v = (SelectGameLogMenuView)view;
         ServerMenuView s = new ServerMenuView.use_log(v.log);

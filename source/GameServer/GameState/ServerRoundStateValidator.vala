@@ -1,4 +1,5 @@
 using Gee;
+using Engine;
 
 namespace GameServer
 {
@@ -8,7 +9,7 @@ namespace GameServer
         private ActionState action_state = ActionState.STARTING;
         private ServerSettings settings;
 
-        public ServerRoundStateValidator(ServerSettings settings, int dealer, int wall_index, Random rnd, Wind round_wind, bool[] can_riichi, Tile[]? tiles)
+        public ServerRoundStateValidator(ServerSettings settings, int dealer, int wall_index, RandomClass rnd, Wind round_wind, bool[] can_riichi, Tile[]? tiles)
         {
             this.settings = settings;
 
@@ -160,7 +161,7 @@ namespace GameServer
 
         public bool riichi(bool open)
         {
-            if (open && settings.open_riichi != Options.OnOffEnum.ON)
+            if (open && settings.open_riichi != OnOffEnum.ON)
                 return false;
 
             return state.riichi(open);
@@ -292,8 +293,8 @@ namespace GameServer
 
             if (ron_players.size > 1)
             {
-                if (ron_players.size == 3 && settings.triple_ron_draw == Options.OnOffEnum.ON) {} // Empty
-                else if (settings.multiple_ron != Options.OnOffEnum.ON)
+                if (ron_players.size == 3 && settings.triple_ron_draw == OnOffEnum.ON) {} // Empty
+                else if (settings.multiple_ron != OnOffEnum.ON)
                 {
                     var p = ron_players[0];
                     ron_players.clear();
@@ -313,7 +314,7 @@ namespace GameServer
                     null,
                     CallDecisionType.RON,
                     state.riichi_return_index,
-                    ron_players.size >= 3 && settings.triple_ron_draw == Options.OnOffEnum.ON
+                    ron_players.size >= 3 && settings.triple_ron_draw == OnOffEnum.ON
                 );
             }
             else
@@ -385,9 +386,13 @@ namespace GameServer
             }
         }
 
+        public Tile[] get_tiles()
+        {
+            return state.get_tiles();
+        }
+
         public Tile newest_dora { get { return state.newest_dora; } }
         public ArrayList<Tile> ura_dora{ get { return state.ura_dora; } }
-        public Tile[] tiles { get { return state.tiles; } }
         public bool game_over { get { return state.game_over; } }
         public bool game_draw { get { return state.game_draw_type != GameDrawType.NONE; } }
         public GameDrawType game_draw_type { get { return state.game_draw_type; } }

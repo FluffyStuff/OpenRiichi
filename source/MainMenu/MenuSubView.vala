@@ -1,13 +1,14 @@
+using Engine;
 using Gee;
 
-abstract class MainMenuSubView : View2D
+abstract class MenuSubView : View2D
 {
     private const int padding = 30;
 
-    private signal void _finish(MainMenuSubView view);
-    private signal void _back(MainMenuSubView view);
-    public signal void finish(MainMenuSubView view);
-    public signal void back(MainMenuSubView view);
+    private signal void internal_finish(MenuSubView view);
+    private signal void internal_back(MenuSubView view);
+    public signal void finish(MenuSubView view);
+    public signal void back(MenuSubView view);
 
     protected virtual void load() {}
     protected virtual void load_finished() {}
@@ -15,9 +16,6 @@ abstract class MainMenuSubView : View2D
     protected virtual void set_visibility(bool visible) {}
     protected virtual ArrayList<MenuTextButton>? get_main_buttons() { return null; }
     protected virtual ArrayList<MenuTextButton>? get_menu_buttons() { return null; }
-
-    protected void do_finish() { _finish(this); finish(this); }
-    protected void do_back() { _back(this); back(this); }
 
     private LabelControl? name_label;
     private SizingControl main_buttons_control = new SizingControl();
@@ -71,18 +69,40 @@ abstract class MainMenuSubView : View2D
         load_finished();
     }
 
-    public void load_sub_view(MainMenuSubView view)
+    public void load_sub_view(MenuSubView view)
     {
-        view._finish.connect(sub_finished);
-        view._back.connect(sub_finished);
+        view.internal_finish.connect(sub_finished);
+        view.internal_back.connect(sub_back);
         visibility_change(false);
         add_child(view);
     }
 
-    private void sub_finished(MainMenuSubView view)
+    protected void do_finish()
     {
-        view._finish.disconnect(sub_finished);
-        view._back.disconnect(sub_finished);
+        MenuSubView view = this;
+        internal_finish(view);
+        finish(view);
+    }
+
+    protected void do_back()
+    {
+        MenuSubView view = this;
+        internal_back(view);
+        back(view);
+    }
+
+    private void sub_finished(MenuSubView view)
+    {
+        view.internal_finish.disconnect(sub_finished);
+        view.internal_back.disconnect(sub_back);
+        remove_child(view);
+        visibility_change(true);
+    }
+
+    private void sub_back(MenuSubView view)
+    {
+        view.internal_finish.disconnect(sub_finished);
+        view.internal_back.disconnect(sub_back);
         remove_child(view);
         visibility_change(true);
     }

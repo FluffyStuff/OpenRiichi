@@ -1,7 +1,8 @@
+using Engine;
 using Gee;
 using GameServer;
 
-class JoinMenuView : MainMenuSubView
+class JoinMenuView : MenuSubView
 {
     private MenuTextButton join_button;
     private LabelControl info_label;
@@ -11,8 +12,6 @@ class JoinMenuView : MainMenuSubView
 
     private DelayTimer timer = new DelayTimer();
     private int delay_time = 5;
-
-    //public signal void joined(IGameConnection connection, string name);
 
     protected override void load()
     {
@@ -36,7 +35,7 @@ class JoinMenuView : MainMenuSubView
         name_text.text_changed.connect(name_changed);
     }
 
-    protected override void do_process(DeltaArgs delta)
+    protected override void process(DeltaArgs delta)
     {
         if (!connecting)
             return;
@@ -58,9 +57,9 @@ class JoinMenuView : MainMenuSubView
             if (msg == null)
                 continue;
 
+            connection.disconnected.disconnect(disconnected);
             if (msg.version_mismatch || !Environment.compatible(msg.version_info))
             {
-                connection.disconnected.disconnect(disconnected);
                 connection.close();
                 connection = null;
                 join_button.enabled = true;
@@ -114,7 +113,6 @@ class JoinMenuView : MainMenuSubView
         string host = server_text.text;
         player_name = name_text.text;
 
-        ref();
         Threading.start2(try_join, new Obj<string>(host), new Obj<string>(player_name));
     }
 
@@ -135,41 +133,10 @@ class JoinMenuView : MainMenuSubView
         {
             info_label.text = "Connected";
             connection = new GameNetworkConnection(con);
-            //connection.received_message.connect(received_message);
             connection.disconnected.connect(disconnected);
             connection.send_message(new ClientMessageAuthenticate(name, Environment.version_info));
         }
-
-        unref();
     }
-
-    /*private void received_message()
-    {
-        ServerMessage? message;
-
-        while ((message = connection.dequeue_message()) != null)
-        {
-            ServerMessageAcceptJoin msg = message as ServerMessageAcceptJoin;
-            if (msg == null)
-                continue;
-
-            if (msg.version_mismatch || !Environment.compatible(msg.version_info))
-            {
-                connection.disconnected.disconnect(disconnected);
-                connection.close();
-                connection = null;
-                join_button.enabled = true;
-                info_label.text = "Error: Version mismatch\n" + "Please get the latest version";
-                connecting = false;
-                return;
-            }
-
-            ServerMenuView view = new ServerMenuView.join_server(connection, false);
-            load_sub_view(view);
-            //joined(connection, player_name);
-            break;
-        }
-    }*/
 
     private void disconnected()
     {

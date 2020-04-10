@@ -1,4 +1,5 @@
 using Gee;
+using Engine;
 
 namespace GameServer
 {
@@ -8,7 +9,7 @@ namespace GameServer
 
         private ClientMessageParser parser = new ClientMessageParser();
         private ServerPlayer?[] slots = new ServerPlayer?[4];
-        private Random rnd = new Random();
+        private RandomClass rnd = new RandomClass();
 
         public signal void game_start(GameStartInfo info);
         public signal void game_start_event(GameStartInfo info);
@@ -20,7 +21,6 @@ namespace GameServer
             settings = new ServerSettings.default();
 
             parser.connect(client_game_start, typeof(ClientMessageMenuGameStart));
-            //parser.connect(client_game_start_event, typeof(ClientMessageMenuGameStartEvent));
             parser.connect(client_add_bot, typeof(ClientMessageMenuAddBot));
             parser.connect(client_kick_player, typeof(ClientMessageMenuKickPlayer));
             parser.connect(client_settings, typeof(ClientMessageMenuSettings));
@@ -134,7 +134,7 @@ namespace GameServer
                 p.disconnected.disconnect(player_disconnected);
             }
 
-            int[] seats = random_seats(rnd, this.players.size);
+            int[] seats = RandomClass_seats(rnd, this.players.size);
             ArrayList<ServerPlayer> shuffled_players = new ArrayList<ServerPlayer>();
             for (int i = 0; i < this.players.size; i++)
                 shuffled_players.add(this.players[seats[i]]);
@@ -144,94 +144,12 @@ namespace GameServer
             for (int i = 0; i < players.length; i++)
                 players[i] = new GamePlayer(i, this.players[i].name);
 
-            int starting_dealer = 0;
-            int starting_score = 25000;
-            int decision_time = 10 + 1; // Add a second so the indicator counts down to 0
-            int round_wait_time = 15;
-            int hanchan_wait_time = 30;
-            int game_wait_time = 60;
-            int round_count = 8;
-            int hanchan_count = 2;
-            int uma_higher = 20;
-            int uma_lower = 10;
-
-            GameStartInfo info = new GameStartInfo
-            (
-                players,
-                starting_dealer,
-                starting_score,
-                round_count,
-                hanchan_count,
-                decision_time,
-                round_wait_time,
-                hanchan_wait_time,
-                game_wait_time,
-                uma_higher,
-                uma_lower
-            );
-
             mutex.unlock();
+
+            GameStartInfo info = create_start_info(players);
+
             game_start(info);
         }
-
-        /*private void clint_game_start_event(ServerPlayer player, ClientMessage message)
-        {
-            if (player != host)
-                return;
-
-            //var msg = message as ClientMessageMenuGameStartEvent;
-
-            GameLog log = Environment.load_game_log("derp");
-            if (log == null)
-                return;
-
-            mutex.lock();
-
-            foreach (ServerPlayer p in players)
-            {
-                p.receive_message.disconnect(message_received);
-                p.disconnected.disconnect(player_disconnected);
-            }
-
-            GameEventController event = new GameEventController.with_log(log);
-
-            observers.add_range(players);
-            players = event.players;
-            int[] seats = log.starting_seats;
-
-            GamePlayer[] players = new GamePlayer[this.players.size];
-            for (int i = 0; i < players.length; i++)
-                players[i] = new GamePlayer(i, this.players[i].name);
-
-            int starting_dealer = log.starting_dealer;
-            int starting_score = log.starting_score;
-            int decision_time = 0;//10 + 1; // Add a second so the indicator counts down to 0
-            int round_wait_time = log.round_wait_time;
-            int hanchan_wait_time = log.hanchan_wait_time;
-            int game_wait_time = log.game_wait_time;
-            int round_count = log.round_count;
-            int hanchan_count = log.hanchan_count;
-            int uma_higher = log.uma_higher;
-            int uma_lower = log.uma_lower;
-
-            GameStartInfo info = new GameStartInfo
-            (
-                players,
-                starting_dealer,
-                starting_score,
-                round_count,
-                hanchan_count,
-                decision_time,
-                round_wait_time,
-                hanchan_wait_time,
-                game_wait_time,
-                uma_higher,
-                uma_lower
-            );
-
-            mutex.unlock();
-            game_start_event(info);
-        }*/
 
         private void client_add_bot(ServerPlayer player, ClientMessage message)
         {
@@ -251,7 +169,7 @@ namespace GameServer
                 return;
             }
 
-            Object? obj = Object.newv(type, new Parameter[0]);
+            Object? obj = Object.new_with_properties(type, new string[0], new Value[0]);
             if (obj == null)
             {
                 mutex.lock();
@@ -341,7 +259,7 @@ namespace GameServer
             }
         }
 
-        private int[] random_seats(Random rnd, int count)
+        private int[] RandomClass_seats(RandomClass rnd, int count)
         {
             int[] seats = new int[count];
 
@@ -357,6 +275,115 @@ namespace GameServer
             }
 
             return seats;
+        }
+
+        private GameStartInfo create_start_info(GamePlayer[] players)
+        {
+            int starting_dealer = 0;
+            int starting_score = 25000;
+            int round_count = 8;
+            int hanchan_count = 1;
+            int uma_higher = 20;
+            int uma_lower = 10;
+
+
+            float winning_draw_animation_time = 0.5f;
+            float hand_reveal_animation_time = 0.5f;
+            float round_over_delay = 1.0f;
+
+            // Add a second so the indicator counts down from the specific second to 0
+            float round_end_delay = 10 + 1;
+            float hanchan_end_delay = 30 + 1;
+            float game_end_delay = 60 + 1;
+            float decision_time = 10 + 1;
+
+            var finish_label_fade = new AnimationTime(1, 0.5f, 0);
+            var menu_items_fade = new AnimationTime(1, 0.5f, 1);
+            var han_fade = new AnimationTime(0.5f, 0.5f, 0);
+            var score_counting_fade = new AnimationTime(1, 0.5f, 0);
+            var score_counting = new AnimationTime(1, 3, 2);
+            var players_points_counting = new AnimationTime(0, 3, 2);
+            var players_score_fade = new AnimationTime(0, 0.5f, 0);
+            var players_score_counting = new AnimationTime(1, 3, 2);
+
+            var initial_draw = new AnimationTime(0, 0.15f, 0);
+            var tile_draw = new AnimationTime(0, 0.15f, 0.2f);
+            var tile_discard = new AnimationTime(0, 0.15f, 0.3f);
+            var call = new AnimationTime(0, 0.5f, 0);
+            var hand_reveal = new AnimationTime(0, 0.15f, 0.8f);
+            var split_wall = new AnimationTime(0, 0.5f, 0);
+            var dora_flip = new AnimationTime(0, 0.2f, 0);
+            var win = new AnimationTime(0, 0.5f, 0.5f);
+            var riichi = new AnimationTime(0, 0.3f, 0.5f);
+
+            var hand_order = new AnimationTime(0, 0.15f, 0);
+            var hand_angle = new AnimationTime(0, 0.2f, 0);
+
+            /*var finish_label_fade = new AnimationTime.zero();
+            var menu_items_fade = new AnimationTime.zero();
+            var han_fade = new AnimationTime.zero();
+            var score_counting_fade = new AnimationTime.zero();
+            var score_counting = new AnimationTime.zero();
+            var players_points_counting = new AnimationTime.zero();
+            var players_score_fade = new AnimationTime.zero();
+            var players_score_counting = new AnimationTime.zero();
+            var initial_draw = new AnimationTime.zero();
+            var tile_draw = new AnimationTime.zero();
+            var tile_discard = new AnimationTime.zero();
+            var call = new AnimationTime.zero();
+            var hand_reveal = new AnimationTime.zero();
+            var split_wall = new AnimationTime.zero();
+            var dora_flip = new AnimationTime.zero();
+            var win = new AnimationTime.zero();
+            var riichi = new AnimationTime.zero();
+            var hand_order = new AnimationTime.zero();
+            var hand_angle = new AnimationTime.zero();*/
+
+            AnimationTimings timings = new AnimationTimings
+            (
+                winning_draw_animation_time,
+                hand_reveal_animation_time,
+                round_over_delay,
+                round_end_delay,
+                hanchan_end_delay,
+                game_end_delay,
+                decision_time,
+                finish_label_fade,
+                menu_items_fade,
+                han_fade,
+                score_counting_fade,
+                score_counting,
+                players_points_counting,
+                players_score_fade,
+                players_score_counting,
+
+                initial_draw,
+                tile_draw,
+                tile_discard,
+                call,
+                hand_reveal,
+                split_wall,
+                dora_flip,
+                win,
+                riichi,
+
+                hand_order,
+                hand_angle
+            );
+
+            GameStartInfo info = new GameStartInfo
+            (
+                players,
+                timings,
+                starting_dealer,
+                starting_score,
+                round_count,
+                hanchan_count,
+                uma_higher,
+                uma_lower
+            );
+
+            return info;
         }
 
         public ServerPlayer? host { get; private set; }

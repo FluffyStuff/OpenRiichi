@@ -1,8 +1,10 @@
+using Engine;
+
 namespace GameServer
 {
     public abstract class ServerPlayer : Object
     {
-        public ServerPlayer(string name, bool bot)
+        protected ServerPlayer(string name, bool bot)
         {
             this.name = name;
             this.bot = bot;
@@ -15,7 +17,7 @@ namespace GameServer
         public abstract void close();
 
         public State state { get; protected set; }
-        public bool ready { get; protected set; }
+        public virtual bool ready { get; set; }
         public string name { get; private set; }
         public bool bot { get; private set; }
         public bool is_disconnected { get; set; }
@@ -30,13 +32,12 @@ namespace GameServer
     class ServerHumanPlayer : ServerPlayer
     {
         private ServerPlayerConnection connection;
+        private bool _ready;
 
         public ServerHumanPlayer(ServerPlayerConnection connection, string name)
         {
             base(name, false);
 
-            // TODO: Remove this
-            ready = true;
             state = State.PLAYER;
 
             this.connection = connection;
@@ -68,6 +69,12 @@ namespace GameServer
         public override void close()
         {
             connection.close();
+        }
+
+        public override bool ready
+        {
+            get { return _ready || is_disconnected; }
+            set { _ready = value; }
         }
     }
 
@@ -115,6 +122,12 @@ namespace GameServer
         {
             bot_connection.stop();
         }
+
+        public override bool ready
+        {
+            get { return true; }
+            set {}
+        }
     }
 
     public abstract class ServerPlayerConnection : Object
@@ -144,6 +157,7 @@ namespace GameServer
 
         public override void send_message(ServerMessage message)
         {
+            //Environment.log(LogType.DEBUG, "ServerPlayer:158", message.to_string());
             Message msg = new Message(message.serialize());
             connection.send(msg);
         }
@@ -155,13 +169,14 @@ namespace GameServer
 
         private void parse_message(Connection connection, Message message)
         {
-            Serializable? msg = Serializable.deserialize(message.data);
+            Serializable? msg = Serializable.deserialize(message.get_message());
 
             if (msg == null || !msg.get_type().is_a(typeof(ClientMessage)))
             {
                 Environment.log(LogType.NETWORK, "ServerPlayerNetworkConnection", "Server discarding invalid client message");
                 return;
             }
+            //Environment.log(LogType.DEBUG, "ServerPlayer:177", msg.to_string());
             receive_message((ClientMessage)msg);
         }
 

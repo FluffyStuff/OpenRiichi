@@ -1,13 +1,4 @@
-DIRS  = \
-	../Engine/*.vala \
-	../Engine/Audio/*.vala \
-	../Engine/Files/*.vala \
-	../Engine/Helper/*.vala \
-	../Engine/Properties/*.vala \
-	../Engine/Rendering/*.vala \
-	../Engine/Rendering/OpenGLRenderer/*.vala \
-	../Engine/Window/*.vala \
-	../Engine/Window/Controls/*.vala \
+DIRS = \
 	source/*.vala \
 	source/Game/*.vala \
 	source/Game/Logic/*.vala \
@@ -17,63 +8,66 @@ DIRS  = \
 	source/GameServer/GameState/*.vala \
 	source/GameServer/Server/*.vala \
 	source/MainMenu/*.vala \
-	source/MainMenu/Lobby/*.vala
+	source/MainMenu/Lobby/*.vala \
+	source/Tests/*.vala
 
-PKGS  = \
-	--thread \
-	--target-glib 2.32 \
-	--pkg gio-2.0 \
-	--pkg glew \
+ENGINE_PATH = ../Engine
+ENGINE_BIN  = $(ENGINE_PATH)/bin
+
+PKGS = \
 	--pkg gee-0.8 \
-	--pkg gl \
-	--pkg SDL2_image \
-	--pkg sdl2 \
-	--pkg stb \
-	--pkg pangoft2 \
-	--pkg sfml-audio \
-	--pkg sfml-system \
-	--pkg zlib \
+	--pkg gio-2.0 \
 	--pkg win32 \
-	-X -lcsfml-audio \
-	-X -lcsfml-system \
-	-X -Iinclude \
-	-X -lm
-
-WINDOWS = \
-	-X -lopengl32
-
-MAC = \
-	-X -framework -X OpenGL \
-	-X -framework -X CoreFoundation
+	--pkg libengine \
+	-X -L$(ENGINE_BIN) \
+	-X -I$(ENGINE_BIN) \
+	-X -lengine
 
 VALAC = valac
 NAME  = OpenRiichi
-VAPI  = --vapidir=vapi
+OUT   = bin/$(NAME)
+VAPI  = --vapidir=vapi --vapidir=$(ENGINE_BIN)
 #-w = Supress C warnings (Since they stem from the vala code gen)
-OTHER = -X -w -X -DGLEW_NO_GLU
-O     = -o bin/$(NAME)
+OTHER = -X -w -X -Ofast
+O     = -o $(OUT)
 DEBUG = -v --save-temps --enable-checking -g -X -ggdb -X -O0 -D DEBUG
 
-all: release
+all: linuxRelease
 
-debug:
+engineLinuxDebug:
+	$(MAKE) -C $(ENGINE_PATH) linuxDebug
+	cp $(ENGINE_BIN)/libengine.so bin
+
+engineLinuxRelease:
+	$(MAKE) -C $(ENGINE_PATH) linuxRelease
+	cp $(ENGINE_BIN)/libengine.so bin
+
+engineWindowsDebug:
+	$(MAKE) -C $(ENGINE_PATH) windowsDebug
+	cp $(ENGINE_BIN)/libengine.dll bin
+
+engineWindowsRelease:
+	$(MAKE) -C $(ENGINE_PATH) windowsRelease
+	cp $(ENGINE_BIN)/libengine.dll bin
+
+linuxDebug: engineLinuxDebug
 	$(VALAC) $(O) $(DIRS) $(PKGS) $(VAPI) $(OTHER) $(DEBUG) -D LINUX
 
-release:
+linuxRelease: engineLinuxRelease
 	$(VALAC) $(O) $(DIRS) $(PKGS) $(VAPI) $(OTHER) -D LINUX
 
-macDebug:
+macDebug: engine
 	$(VALAC) $(O) $(DIRS) $(PKGS) $(MAC) $(VAPI) $(OTHER) $(DEBUG) -D MAC
 
-mac:
+macRelease: engine
 	$(VALAC) $(O) $(DIRS) $(PKGS) $(MAC) $(VAPI) $(OTHER) -D MAC
 
-windowsDebug:
+windowsDebug: engineWindowsDebug
 	$(VALAC) $(O) $(DIRS) $(PKGS) $(WINDOWS) $(VAPI) $(OTHER) $(DEBUG) -D WINDOWS
 
-windows:
+windowsRelease: engineWindowsRelease
 	$(VALAC) $(O) $(DIRS) $(PKGS) $(WINDOWS) $(VAPI) $(OTHER) -D WINDOWS -X -mwindows
 
 clean:
-	rm bin/$(NAME)*
-	find . -type f -name '*.c' -exec rm {} +
+	rm -f $(OUT)* bin/libengine*
+	/usr/bin/find . -type f -name '*.c' -exec rm {} +

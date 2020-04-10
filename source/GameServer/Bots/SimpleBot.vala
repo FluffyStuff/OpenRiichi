@@ -2,12 +2,10 @@ using Gee;
 
 class SimpleBot : Bot
 {
-    private Random rnd = new Random();
+    private Engine.RandomClass rnd = new Engine.RandomClass();
 
     protected override void do_turn_decision()
     {
-        turn_delay();
-
         if (round_state.can_tsumo())
         {
             do_tsumo();
@@ -57,7 +55,6 @@ class SimpleBot : Bot
     {
         if (round_state.can_ron(round_state.self))
         {
-            call_delay();
             call_ron();
             return;
         }
@@ -65,7 +62,6 @@ class SimpleBot : Bot
         {
             if (tile.is_dragon_tile() || tile.is_wind(round_state.self.wind) || tile.is_wind(round_state.round_wind))
             {
-                call_delay();
                 call_pon();
                 return;
             }
@@ -111,7 +107,7 @@ class SimpleBot : Bot
         }
 
         if (tiles.size == 0)
-            return random(backup);
+            return RandomClass(backup);
 
         foreach (Tile tile in tiles)
         {
@@ -140,7 +136,7 @@ class SimpleBot : Bot
         }
 
         if (tiles.size == 0)
-            return random(backup);
+            return RandomClass(backup);
 
         backup.clear();
         backup.add_all(tiles);
@@ -153,7 +149,7 @@ class SimpleBot : Bot
         }
 
         if (tiles.size == 0)
-            return random(backup);
+            return RandomClass(backup);
 
         backup.clear();
         backup.add_all(tiles);
@@ -166,7 +162,7 @@ class SimpleBot : Bot
         }
 
         if (tiles.size == 0)
-            return random(backup);
+            return RandomClass(backup);
 
         backup.clear();
         backup.add_all(tiles);
@@ -179,7 +175,7 @@ class SimpleBot : Bot
         }
 
         if (tiles.size == 0)
-            return random(backup);
+            return RandomClass(backup);
 
         backup.clear();
         backup.add_all(tiles);
@@ -192,12 +188,12 @@ class SimpleBot : Bot
         }
 
         if (tiles.size == 0)
-            return random(backup);
+            return RandomClass(backup);
 
-        return random(tiles);
+        return RandomClass(tiles);
     }
 
-    private Tile random(ArrayList<Tile> tiles)
+    private Tile RandomClass(ArrayList<Tile> tiles)
     {
         return tiles[rnd.int_range(0, tiles.size)];
     }
@@ -243,16 +239,6 @@ class SimpleBot : Bot
         }
 
         return false;
-    }
-
-    private void turn_delay()
-    {
-        Thread.usleep(1 * 1000 * 1000);
-    }
-
-    private void call_delay()
-    {
-        Thread.usleep(500 * 1000);
     }
 
     public override string name { get { return "SimpleBot"; } }

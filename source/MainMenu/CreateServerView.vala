@@ -1,6 +1,7 @@
+using Engine;
 using Gee;
 
-class CreateServerView : MainMenuSubView
+class CreateServerView : MenuSubView
 {
     private MenuTextButton? create_button;
     private TextInputControl name_text;

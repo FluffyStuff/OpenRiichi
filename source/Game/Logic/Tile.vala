@@ -1,3 +1,6 @@
+using Gee;
+using Engine;
+
 public class Tile : Serializable
 {
     public Tile(int ID, TileType type, bool dora)
@@ -160,43 +163,73 @@ public class Tile : Serializable
         return TileType.BLANK;
     }
 
-    public string to_string()
+    public new string to_string()
     {
         return "(" + ID.to_string() + ") " + tile_type.to_string() + (dora ? " dora" : " not dora");
+    }
+
+    public bool equals(Tile tile)
+    {
+        return ID == tile.ID && tile_type == tile.tile_type && dora == tile.dora;
+    }
+
+    public static ArrayList<Tile> sort_tiles_ID(ArrayList<Tile> list)
+    {
+        ArrayList<Tile> tiles = new ArrayList<Tile>();
+        tiles.add_all(list);
+
+        tiles.sort
+        (
+            (t1, t2) =>
+            {
+                int a = t1.ID;
+                int b = t2.ID;
+                return (int)(a > b) - (int)(a < b);
+            }
+        );
+
+        return tiles;
+    }
+
+    public static ArrayList<Tile> sort_tiles_type(ArrayList<Tile> list)
+    {
+        ArrayList<Tile> tiles = new ArrayList<Tile>();
+        tiles.add_all(list);
+
+        tiles.sort
+        (
+            (t1, t2) =>
+            {
+                int a = (int)t1.tile_type;
+                int b = (int)t2.tile_type;
+                return (int)(a > b) - (int)(a < b);
+            }
+        );
+
+        return tiles;
+    }
+
+    public static bool tiles_equal_unordered(ArrayList<Tile> list1, ArrayList<Tile> list2)
+    {
+        return tiles_equal_ordered(sort_tiles_ID(list1), sort_tiles_ID(list2));
+    }
+
+    public static bool tiles_equal_ordered(ArrayList<Tile> list1, ArrayList<Tile> list2)
+    {
+        if (list1.size != list2.size)
+            return false;
+        
+        for (int i = 0; i < list1.size; i++)
+            if (!list1[i].equals(list2[i]))
+                return false;
+        
+        return true;
     }
 
     public int ID { get; set; }
     public TileType tile_type { get; set; }
     public bool dora { get; set; }
-
-    /*public TileSuit tile_sort
-    {
-        get
-        {
-            if (tile_type == TileType.BLANK)
-                return TileSuit.BLANK;
-
-            if (tile_type >= TileType.MAN1 && tile_type <= TileType.MAN9)
-                return TileSuit.MAN;
-            if (tile_type >= TileType.PIN1 && tile_type <= TileType.PIN9)
-                return TileSuit.PIN;
-            if (tile_type >= TileType.SOU1 && tile_type <= TileType.SOU9)
-                return TileSuit.SOU;
-
-            return TileSuit.DRAGON;
-        }
-    }*/
 }
-
-/*public enum TileSuit
-{
-    BLANK,
-    MAN,
-    PIN,
-    SOU,
-    WIND,
-    DRAGON
-}*/
 
 public enum Wind
 {
@@ -204,6 +237,25 @@ public enum Wind
     SOUTH,
     WEST,
     NORTH
+}
+
+public static Wind INT_TO_WIND(int wind)
+{
+    if (wind < 0) wind = 4 -((-wind) % 4);
+    wind %= 4;
+
+    switch (wind)
+    {
+    default:
+    case 0:
+        return Wind.EAST;
+    case 1:
+        return Wind.SOUTH;
+    case 2:
+        return Wind.WEST;
+    case 3:
+        return Wind.NORTH;
+    }
 }
 
 public static Wind NEXT_WIND(Wind wind)
@@ -238,7 +290,7 @@ public static Wind PREVIOUS_WIND(Wind wind)
     }
 }
 
-public static string WIND_TO_STRING(Wind wind)
+public static string WIND_TO_KANJI(Wind wind)
 {
     switch (wind)
     {
@@ -252,6 +304,50 @@ public static string WIND_TO_STRING(Wind wind)
     case Wind.NORTH:
         return "北";
     }
+}
+
+public static string WIND_TO_STRING(Wind wind)
+{
+    switch (wind)
+    {
+    case Wind.EAST:
+    default:
+        return "East";
+    case Wind.SOUTH:
+        return "South";
+    case Wind.WEST:
+        return "West";
+    case Wind.NORTH:
+        return "North";
+    }
+}
+
+public static string TILE_TYPE_TO_STRING(TileType type)
+{
+    int t = (int)type;
+
+    if (t >= (int)TileType.MAN1 && t <= (int)TileType.MAN9)
+        return "Man" + (t - (int)TileType.MAN1 + 1).to_string();
+    else if (t >= (int)TileType.PIN1 && t <= (int)TileType.PIN9)
+        return "Pin" + (t - (int)TileType.PIN1 + 1).to_string();
+    else if (t >= (int)TileType.SOU1 && t <= (int)TileType.SOU9)
+        return "Sou" + (t - (int)TileType.SOU1 + 1).to_string();
+    else if (type == TileType.TON)
+        return "Ton";
+    else if (type == TileType.NAN)
+        return "Nan";
+    else if (type == TileType.SHAA)
+        return "Shaa";
+    else if (type == TileType.PEI)
+        return "Pei";
+    else if (type == TileType.HAKU)
+        return "Haku";
+    else if (type == TileType.HATSU)
+        return "Hatsu";
+    else if (type == TileType.CHUN)
+        return "Chun";
+
+    return "Blank";
 }
 
 public enum TileType
