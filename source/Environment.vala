@@ -217,8 +217,7 @@ public class Environment
         if (!Win.GetConsoleMode(handle, out mode))
             return false;
         
-        mode |= Win.ENABLE_VIRTUAL_TERMINAL_PROCESSING;
-        return Win.SetConsoleMode(handle, mode);
+        return Win.SetConsoleMode(handle, mode | 0x0200);
     #else
         return true;
     #endif
