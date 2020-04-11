@@ -52,7 +52,7 @@ git clone https://github.com/FluffyStuff/Engine.git
 ```
 
 Build by opening up your mingw32 or mingw64 shell, depending on whether you want to compile for 32 or 64 bits, and run:
-```cd OpenRiichi && make windows```
+```cd OpenRiichi && make windowsRelease```
 
 ### MacOS
 
@@ -78,7 +78,7 @@ git clone https://github.com/FluffyStuff/OpenRiichi.git
 git clone https://github.com/FluffyStuff/Engine.git
 ```
 
-Build by running `cd OpenRiichi && make mac`
+Build by running `cd OpenRiichi && make macRelease`
 
 ### Linux (Debian based)
 
@@ -100,7 +100,7 @@ git clone https://github.com/FluffyStuff/OpenRiichi.git
 git clone https://github.com/FluffyStuff/Engine.git
 ```
 
-Build by running `cd OpenRiichi && make release`
+Build by running `cd OpenRiichi && make linuxRelease`
 
 ## License
 
