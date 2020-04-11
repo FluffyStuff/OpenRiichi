@@ -241,7 +241,6 @@ class GameMenuView : View2D
         if (enabled)
             hint_sound.play();
         conti.enabled = enabled;
-        press_continue();
     }
 
     public void set_void_hand(bool enabled)
