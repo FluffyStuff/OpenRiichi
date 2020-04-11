@@ -228,8 +228,7 @@ public class Environment
         return
             version.major == version_info.major &&
             version.minor == version_info.minor &&
-            version.patch >= version_info.patch &&
-            version.revis >= version_info.revis;
+            version.patch >= version_info.patch;
     }
 
     public static string sanitize_name(string input)
