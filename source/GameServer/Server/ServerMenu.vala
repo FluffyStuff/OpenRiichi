@@ -295,7 +295,7 @@ namespace GameServer
             float round_end_delay = 10 + 1;
             float hanchan_end_delay = 30 + 1;
             float game_end_delay = 60 + 1;
-            float decision_time = 10 + 1;
+            int decision_time = settings.decision_time + 1;
 
             var finish_label_fade = new AnimationTime(1, 0.5f, 0);
             var menu_items_fade = new AnimationTime(1, 0.5f, 1);

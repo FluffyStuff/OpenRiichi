@@ -7,8 +7,12 @@ class ServerSettingsView : MenuSubView
     private OptionItemControl aka_option;
     private OptionItemControl multiple_ron_option;
     private OptionItemControl triple_ron_option;
+    private OptionItemControl decision_time_option;
 
     private MenuTextButton? log_button;
+
+    const string[] enabled_disabled_choices = { "Disabled", "Enabled" };
+    const string[] decision_time_choices = { "2", "5", "10", "20", "30", "60", "120" };
 
     public ServerSettingsView(bool can_control, bool log_control, ServerSettings settings)
     {
@@ -19,18 +23,47 @@ class ServerSettingsView : MenuSubView
 
     public override void load()
     {
-        string[] enabled_disabled_choices = { "Disabled", "Enabled" };
-
         ArrayList<OptionItemControl> opts = new ArrayList<OptionItemControl>();
 
         riichi_option = new OptionItemControl(can_control, "Open riichi", enabled_disabled_choices, (int)settings.open_riichi);
         aka_option = new OptionItemControl(can_control, "Aka dora", enabled_disabled_choices, (int)settings.aka_dora);
         multiple_ron_option = new OptionItemControl(can_control, "Multiple ron", enabled_disabled_choices, (int)settings.multiple_ron);
         triple_ron_option = new OptionItemControl(can_control, "Triple ron draw", enabled_disabled_choices, (int)settings.triple_ron_draw);
+
+        int decision_time_selected;
+        switch (settings.decision_time)
+        {
+        case 2:
+            decision_time_selected = 0;
+            break;
+        case 5:
+            decision_time_selected = 1;
+            break;
+        case 10:
+        default:
+            decision_time_selected = 2;
+            break;
+        case 20:
+            decision_time_selected = 3;
+            break;
+        case 30:
+            decision_time_selected = 4;
+            break;
+        case 60:
+            decision_time_selected = 5;
+            break;
+        case 120:
+            decision_time_selected = 6;
+            break;
+        }
+        
+        decision_time_option = new OptionItemControl(can_control, "Decision time (seconds)", decision_time_choices, decision_time_selected);
+
         opts.add(riichi_option);
         opts.add(aka_option);
         opts.add(multiple_ron_option);
         opts.add(triple_ron_option);
+        opts.add(decision_time_option);
 
         int padding = 30;
 
@@ -83,6 +116,7 @@ class ServerSettingsView : MenuSubView
         settings.aka_dora = (OnOffEnum)aka_option.index;
         settings.multiple_ron = (OnOffEnum)multiple_ron_option.index;
         settings.triple_ron_draw = (OnOffEnum)triple_ron_option.index;
+        settings.decision_time = int.parse(decision_time_choices[decision_time_option.index]);
         settings.save();
 
         do_finish();

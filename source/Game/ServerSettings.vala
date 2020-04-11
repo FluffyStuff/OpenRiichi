@@ -11,6 +11,7 @@ public class ServerSettings : Serializable
         aka_dora = OnOffEnum.ON;
         multiple_ron = OnOffEnum.ON;
         triple_ron_draw = OnOffEnum.ON;
+        decision_time = 10;
     }
 
     public ServerSettings.from_disk()
@@ -68,6 +69,7 @@ public class ServerSettings : Serializable
         settings.add("aka_dora = " + on_off_enum_to_string(aka_dora));
         settings.add("multiple_ron = " + on_off_enum_to_string(multiple_ron));
         settings.add("triple_ron_draw = " + on_off_enum_to_string(triple_ron_draw));
+        settings.add("decision_time = " + decision_time.to_string());
 
         return settings.to_array();
     }
@@ -94,6 +96,9 @@ public class ServerSettings : Serializable
         case "triple_ron_draw":
             triple_ron_draw = parse_on_off_enum(value);
             break;
+        case "decision_time":
+            decision_time = int.parse(value).clamp(2, 120);
+            break;
         }
     }
 
@@ -101,4 +106,5 @@ public class ServerSettings : Serializable
     public OnOffEnum aka_dora { get; set; }
     public OnOffEnum multiple_ron { get; set; }
     public OnOffEnum triple_ron_draw { get; set; }
+    public int decision_time;
 }
