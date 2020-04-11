@@ -47,8 +47,7 @@ mingw32/mingw-w64-i686-csfml \
 mingw64/mingw-w64-x86_64-csfml \
 mingw32/mingw-w64-i686-sfml \
 mingw64/mingw-w64-x86_64-sfml
-git clone https://github.com/FluffyStuff/OpenRiichi.git
-git clone https://github.com/FluffyStuff/Engine.git
+git clone --recurse-submodules https://github.com/FluffyStuff/OpenRiichi.git
 ```
 
 Build by opening up your mingw32 or mingw64 shell, depending on whether you want to compile for 32 or 64 bits, and run:
@@ -74,8 +73,7 @@ libsdl2_image \
 glew \
 pango \
 sfml
-git clone https://github.com/FluffyStuff/OpenRiichi.git
-git clone https://github.com/FluffyStuff/Engine.git
+git clone --recurse-submodules https://github.com/FluffyStuff/OpenRiichi.git
 ```
 
 Build by running `cd OpenRiichi && make macRelease`
@@ -96,8 +94,7 @@ libsdl2-image-dev \
 libsdl2-dev \
 libcsfml-dev \
 libsfml-dev
-git clone https://github.com/FluffyStuff/OpenRiichi.git
-git clone https://github.com/FluffyStuff/Engine.git
+git clone --recurse-submodules https://github.com/FluffyStuff/OpenRiichi.git
 ```
 
 Build by running `cd OpenRiichi && make linuxRelease`
