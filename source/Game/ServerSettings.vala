@@ -22,11 +22,13 @@ public class ServerSettings : Serializable
 
     public ServerSettings.from_string(string settings)
     {
+        this.default();
         load_string(settings);
     }
 
     public ServerSettings.from_settings(ServerSettings settings)
     {
+        this.default();
         load_from_string(settings.to_string());
     }
 
@@ -106,5 +108,5 @@ public class ServerSettings : Serializable
     public OnOffEnum aka_dora { get; set; }
     public OnOffEnum multiple_ron { get; set; }
     public OnOffEnum triple_ron_draw { get; set; }
-    public int decision_time;
+    public int decision_time { get; set; }
 }
