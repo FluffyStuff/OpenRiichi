@@ -28,7 +28,7 @@ NAME  = OpenRiichi
 OUT   = bin/$(NAME)
 VAPI  = --vapidir=vapi --vapidir=$(ENGINE_BIN)
 #-w = Supress C warnings (Since they stem from the vala code gen)
-OTHER = -X -w -X -Ofast
+OTHER = -X -w -X -Ofast -X -Wl,-rpath,.
 O     = -o $(OUT)
 DEBUG = -v --save-temps --enable-checking -g -X -ggdb -X -O0 -D DEBUG
 
