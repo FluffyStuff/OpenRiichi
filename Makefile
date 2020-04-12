@@ -11,7 +11,7 @@ DIRS = \
 	source/MainMenu/Lobby/*.vala \
 	source/Tests/*.vala
 
-ENGINE_PATH = ../Engine
+ENGINE_PATH = Engine
 ENGINE_BIN  = $(ENGINE_PATH)/bin
 
 PKGS = \
