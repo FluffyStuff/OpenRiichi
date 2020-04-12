@@ -3,6 +3,7 @@
 *.shader
 bin/OpenRiichi*
 bin/libengine*
+bin/Data/Fonts/.uuid
 *.c
 *.o
 *.DS_Store

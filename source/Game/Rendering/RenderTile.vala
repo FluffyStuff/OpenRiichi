@@ -64,6 +64,7 @@ public class RenderTile : WorldObjectTransformable
     private RenderTexture get_texture()
     {
         string tex = tile_texture_enum_to_string(texture_type);
+        tex = tex[0].toupper().to_string() + tex.substring(1);
         string name = "Tiles/" + tex + "/" + TILE_TYPE_TO_STRING(tile_type.tile_type);
 
         if (tile_type.dora)
