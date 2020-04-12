@@ -9,7 +9,7 @@ public class Options
     {
         shader_quality = QualityEnum.HIGH;
         model_quality = QualityEnum.HIGH;
-        fullscreen = OnOffEnum.ON;
+        screen_type = ScreenTypeEnum.WINDOWED;
         anisotropic_filtering = OnOffEnum.ON;
         anti_aliasing = OnOffEnum.ON;
         v_sync = OnOffEnum.OFF;
@@ -18,6 +18,10 @@ public class Options
         tile_fore_color = Color.white();
         tile_back_color = Color(0, 0.5f, 1, 1);
         tile_textures = TileTextureEnum.REGULAR;
+        window_width = 1280;
+        window_height = 720;
+        window_x = -1;
+        window_y = -1;
     }
 
     public Options.from_disk()
@@ -53,7 +57,7 @@ public class Options
 
         options.add("shader_quality = " + quality_enum_to_string(shader_quality));
         options.add("model_quality = " + quality_enum_to_string(model_quality));
-        options.add("fullscreen = " + on_off_enum_to_string(fullscreen));
+        options.add("screen_type = " + screentype_enum_to_string(screen_type));
         options.add("anisotropic_filtering = " + on_off_enum_to_string(anisotropic_filtering));
         options.add("anti_aliasing = " + on_off_enum_to_string(anti_aliasing));
         options.add("v_sync = " + on_off_enum_to_string(v_sync));
@@ -62,6 +66,10 @@ public class Options
         options.add("tile_fore_color = " + color_to_string(tile_fore_color));
         options.add("tile_back_color = " + color_to_string(tile_back_color));
         options.add("tile_textures = " + tile_texture_enum_to_string(tile_textures));
+        options.add("window_width = " + window_width.to_string());
+        options.add("window_height = " + window_height.to_string());
+        options.add("window_x = " + window_x.to_string());
+        options.add("window_y = " + window_y.to_string());
 
         FileLoader.save(dir, options.to_array());
     }
@@ -78,8 +86,8 @@ public class Options
         case "model_quality":
             model_quality = parse_quality_enum(down_value);
             break;
-        case "fullscreen":
-            fullscreen = parse_on_off_enum(down_value);
+        case "screen_type":
+            screen_type = parse_screen_type_enum(down_value);
             break;
         case "anisotropic_filtering":
             anisotropic_filtering = parse_on_off_enum(down_value);
@@ -105,12 +113,24 @@ public class Options
         case "tile_textures":
             tile_textures = parse_tile_texture_enum(down_value);
             break;
+        case "window_width":
+            window_width = int.parse(down_value);
+            break;
+        case "window_height":
+            window_height = int.parse(down_value);
+            break;
+        case "window_x":
+            window_x = int.parse(down_value);
+            break;
+        case "window_y":
+            window_y = int.parse(down_value);
+            break;
         }
     }
 
     public QualityEnum shader_quality { get; set; }
     public QualityEnum model_quality { get; set; }
-    public OnOffEnum fullscreen { get; set; }
+    public ScreenTypeEnum screen_type { get; set; }
     public OnOffEnum anisotropic_filtering { get; set; }
     public OnOffEnum anti_aliasing { get; set; }
     public OnOffEnum v_sync { get; set; }
@@ -119,6 +139,24 @@ public class Options
     public Color tile_fore_color { get; set; }
     public Color tile_back_color { get; set; }
     public TileTextureEnum tile_textures { get; set; }
+    public int window_width { get; set; }
+    public int window_height { get; set; }
+    public int window_x { get; set; }
+    public int window_y { get; set; }
+}
+
+public static ScreenTypeEnum parse_screen_type_enum(string value)
+{
+    switch (value)
+    {
+    case "fullscreen":
+        return ScreenTypeEnum.FULLSCREEN;
+    case "maximized":
+        return ScreenTypeEnum.MAXIMIZED;
+    case "windowed":
+    default:
+        return ScreenTypeEnum.WINDOWED;
+    }
 }
 
 public static QualityEnum parse_quality_enum(string value)
@@ -130,6 +168,20 @@ public static QualityEnum parse_quality_enum(string value)
     case "high":
     default:
         return QualityEnum.HIGH;
+    }
+}
+
+public static string screentype_enum_to_string(ScreenTypeEnum screen_type)
+{
+    switch (screen_type)
+    {
+    case ScreenTypeEnum.FULLSCREEN:
+        return "fullscreen";
+    case ScreenTypeEnum.MAXIMIZED:
+        return "maximized";
+    case ScreenTypeEnum.WINDOWED:
+    default:
+        return "windowed";
     }
 }
 

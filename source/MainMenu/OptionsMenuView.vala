@@ -200,7 +200,7 @@ private class GraphicOptionsMenuView : SubOptionsMenuView
     {
         opts.add(shader_option = new OptionItemControl(true, "Shader quality", quality_choices, (int)options.shader_quality));
         opts.add(model_option = new OptionItemControl(true, "Model quality", quality_choices, (int)options.model_quality));
-        opts.add(fullscreen_option = new OptionItemControl(true, "Fullscreen", on_off_choices, (int)options.fullscreen));
+        opts.add(fullscreen_option = new OptionItemControl(true, "Fullscreen", on_off_choices, options.screen_type == ScreenTypeEnum.FULLSCREEN ? 1 : 0));
         opts.add(aniso_option = new OptionItemControl(true, "Anisotropic filtering", on_off_choices, (int)options.anisotropic_filtering));
         opts.add(aliasing_option = new OptionItemControl(true, "Anti aliasing", on_off_choices, (int)options.anti_aliasing));
         opts.add(v_sync_option = new OptionItemControl(true, "V-sync", on_off_choices, (int)options.v_sync));
@@ -210,10 +210,14 @@ private class GraphicOptionsMenuView : SubOptionsMenuView
     {
         options.shader_quality = (QualityEnum)shader_option.index;
         options.model_quality = (QualityEnum)model_option.index;
-        options.fullscreen = (OnOffEnum)fullscreen_option.index;
         options.anisotropic_filtering = (OnOffEnum)aniso_option.index;
         options.anti_aliasing = (OnOffEnum)aliasing_option.index;
         options.v_sync = (OnOffEnum)v_sync_option.index;
+
+        if (fullscreen_option.index == 1)
+            options.screen_type = ScreenTypeEnum.FULLSCREEN;
+        else if (fullscreen_option.index == 0 && options.screen_type == ScreenTypeEnum.FULLSCREEN)
+            options.screen_type = ScreenTypeEnum.WINDOWED;
     }
 }
 

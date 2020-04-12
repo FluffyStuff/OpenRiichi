@@ -30,6 +30,30 @@ public class MainWindow : RenderWindow
         main_view.add_child(game_view);
     }
 
+    protected override void resized()
+    {
+        Options options = new Options.from_disk();
+        options.screen_type = screen_type;
+
+        if (screen_type == ScreenTypeEnum.WINDOWED)
+        {
+            options.window_width = size.width;
+            options.window_height = size.height;
+        }
+        options.save();
+    }
+
+    protected override void moved()
+    {
+        if (screen_type == ScreenTypeEnum.WINDOWED)
+        {
+            Options options = new Options.from_disk();
+            options.window_x = position.x;
+            options.window_y = position.y;
+            options.save();
+        }
+    }
+
     private void create_main_menu()
     {
         menu = new MainMenuControlView();
@@ -88,7 +112,7 @@ public class MainWindow : RenderWindow
         if (key.scancode == ScanCode.F12)
         {
             if (key.down)
-                fullscreen = !fullscreen;
+                screen_type = screen_type == ScreenTypeEnum.FULLSCREEN ? ScreenTypeEnum.WINDOWED : ScreenTypeEnum.FULLSCREEN;
             return true;
         }
         else if (key.scancode == ScanCode.ESCAPE)
@@ -133,7 +157,7 @@ public class MainWindow : RenderWindow
         renderer.anisotropic_filtering = options.anisotropic_filtering == OnOffEnum.ON;
         renderer.v_sync = options.v_sync == OnOffEnum.ON;
         store.audio_player.muted = options.sounds == OnOffEnum.OFF;
-        fullscreen = options.fullscreen == OnOffEnum.ON;
+        screen_type = options.screen_type;
 
         if (options.music == OnOffEnum.ON)
             music.start();

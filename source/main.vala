@@ -44,12 +44,12 @@ public static int main(string[] args)
     {
         Options options = new Options.from_disk();
         int multisamples = options.anti_aliasing == OnOffEnum.ON ? 2 : 0;
-        bool fullscreen = options.fullscreen == OnOffEnum.ON;
+        Size2i window_size = Size2i(options.window_width, options.window_height);
+        Vec2i window_position = Vec2i(options.window_x, options.window_y);
         string window_name = "OpenRiichi";
-        int window_width = 1280, window_height = 720;
 
         SDLGLEngine engine = new SDLGLEngine(multithread_rendering, debug);
-        if (!engine.init(window_name, window_width, window_height, multisamples, fullscreen))
+        if (!engine.init(window_name, window_size, window_position, options.screen_type, multisamples))
         {
             Environment.log(LogType.ERROR, "Main", "Could not init engine");
             return -1;
