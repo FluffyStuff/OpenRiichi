@@ -105,7 +105,7 @@ Setting up building and debugging for VSCode in windows requires a few tweaks.
 
 First we need to add these MSYS2 directories to our `path` environment variable (in case of the default MSYS2 install path): `C:\msys64\usr\bin` and `C:\msys64\mingw64\bin`
 
-Create or edit your tasks.json file and add the following build command:
+Create or edit your `tasks.json` file and add the following build command:
 ```
 {
     "version": "2.0.0",
@@ -129,7 +129,7 @@ This should allow you to run incremental builds from within VSCode.
 
 For debugging you will need a MinGW-w64 version of GDB. A release package can be found [here](https://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win64/Personal%20Builds/mingw-builds). Go to the latest release folder and download the `x64_64-posix-seh` package. Extract the containing `mingw64` folder to a location of your choice.
 
-Your `tasks.json` should look like the following:
+Your `launch.json` should look like the following:
 ```
 {
     "version": "0.2.0",
