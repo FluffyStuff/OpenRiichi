@@ -92,4 +92,4 @@ sources = files(
     'source/Tests/HandTests.vala',
 ) + engine_sources
 
-executable('OpenRiichi', sources, dependencies: dependencies, include_directories: engine_includes)
+executable('OpenRiichi', sources, dependencies: dependencies, include_directories: engine_includes, gui_app: true)
