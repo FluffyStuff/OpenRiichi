@@ -76,7 +76,7 @@ class GameScene : WorldObject
             tile.back_color = options.tile_back_color;
             tile.reload();
         }
-        table.reload(options.model_quality);
+        table.reload(options.model_quality, options.table_texture_path);
     }
 
     public override void process(DeltaArgs delta)

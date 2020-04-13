@@ -35,6 +35,7 @@ mingw64/mingw-w64-x86_64-pkg-config \
 mingw64/mingw-w64-x86_64-gcc \
 mingw64/mingw-w64-x86_64-meson \
 mingw64/mingw-w64-x86_64-libgee \
+mingw64/mingw-w64-x86_64-gtk3 \
 mingw64/mingw-w64-x86_64-glew \
 mingw64/mingw-w64-x86_64-SDL2_image \
 mingw64/mingw-w64-x86_64-pango \
@@ -58,6 +59,7 @@ vala \
 pkgconfig \
 meson \
 libgee \
+gtk3 \
 libsdl2 \
 libsdl2_image \
 glew \
@@ -75,6 +77,7 @@ valac \
 gcc \
 meson \
 libgee-0.8-dev \
+libgtk-3-dev \
 libglew-dev \
 libpango1.0-dev \
 libsdl2-image-dev \

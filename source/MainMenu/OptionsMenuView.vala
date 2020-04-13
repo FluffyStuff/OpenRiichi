@@ -255,6 +255,36 @@ private class AudioOptionsMenuView : SubOptionsMenuView
     }
 }
 
+class FileChooser
+{
+    class Chooser : Gtk.Application
+    {
+        public string? filename { get; private set; }
+        public string extension { get; set; }
+
+        protected override void activate ()
+        {
+            Gtk.FileChooserNative native = new Gtk.FileChooserNative("Open File",
+                null,
+                Gtk.FileChooserAction.OPEN,
+                "_Open",
+                "_Cancel");
+            Gtk.FileFilter filter = new Gtk.FileFilter();
+            filter.add_pattern("*." + extension);
+            filter.set_filter_name(extension);
+            native.add_filter(filter);
+            filename = (native.run() == Gtk.ResponseType.ACCEPT) ? native.get_filename() : null;
+        }
+    }
+
+    public string? run(string extension)
+    {
+        Chooser chooser = new Chooser(){ extension = extension };
+        chooser.run({});
+        return chooser.filename;
+    }
+}
+
 private class AppearanceOptionsMenuView : SubOptionsMenuView
 {
     private TileMenuView tile;
@@ -264,6 +294,10 @@ private class AppearanceOptionsMenuView : SubOptionsMenuView
     private ScrollBarControl back_red = new ScrollBarControl(false);
     private ScrollBarControl back_green = new ScrollBarControl(false);
     private ScrollBarControl back_blue = new ScrollBarControl(false);
+
+    private ImageControl table_texture_image;
+    private string table_texture_path = "";
+    private string table_extension;
 
     public AppearanceOptionsMenuView(string name, Options options, string apply_text, string back_text, int padding)
     {
@@ -275,6 +309,9 @@ private class AppearanceOptionsMenuView : SubOptionsMenuView
             back_text,
             padding
         );
+
+        table_texture_path = options.table_texture_path;
+        table_extension = quality_enum_to_string(options.model_quality);
     }
 
     public override void add_options()
@@ -327,6 +364,8 @@ private class AppearanceOptionsMenuView : SubOptionsMenuView
         back_green.current_value = (int)(options.tile_back_color.g * 100);
         back_blue.current_value = (int)(options.tile_back_color.b * 100);
 
+        //////////////////
+
         MenuTextButton regular = new MenuTextButton("MenuButtonSmall", "Regular");
         add_child(regular);
         regular.inner_anchor = Vec2(1, 1);
@@ -340,6 +379,39 @@ private class AppearanceOptionsMenuView : SubOptionsMenuView
         black.outer_anchor = Vec2(0.5f, 1);
         black.position = Vec2(padding / 2, -(top_offset + padding + height * 8));
         black.clicked.connect(black_clicked);
+        
+        /////////////////
+
+        LabelControl table_label = new LabelControl();
+        add_child(table_label);
+        table_label.text = "Table field texture";
+        table_label.font_size = 30;
+        table_label.outer_anchor = Vec2(0.5f, 1);
+        table_label.inner_anchor = Vec2(0.5f, 0);
+        table_label.position = Vec2(0, -(top_offset + padding + height * 10));
+
+        table_texture_image = new ImageControl.empty();
+        add_child(table_texture_image);
+        table_texture_image.inner_anchor = Vec2(0, 1);
+        table_texture_image.outer_anchor = Vec2(0.5f, 1);
+        table_texture_image.position = Vec2(padding / 2, -(top_offset + padding + height * 10));
+        table_texture_image.resize_style = ResizeStyle.ABSOLUTE;
+        table_texture_image.size = Size2(130, 130);
+        update_table_texture();
+
+        MenuTextButton default_button = new MenuTextButton("MenuButtonSmall", "Default");
+        add_child(default_button);
+        default_button.inner_anchor = Vec2(1, 1);
+        default_button.outer_anchor = Vec2(0.5f, 1);
+        default_button.position = Vec2(-padding / 2, -(top_offset + padding + height * 10f));
+        default_button.clicked.connect(default_button_clicked);
+
+        MenuTextButton select_button = new MenuTextButton("MenuButtonSmall", "Select...");
+        add_child(select_button);
+        select_button.inner_anchor = Vec2(1, 1);
+        select_button.outer_anchor = Vec2(0.5f, 1);
+        select_button.position = Vec2(-padding / 2, -(top_offset + padding + height * 11.3f));
+        select_button.clicked.connect(background_button_clicked);
     }
 
     private void set_bar_properties(ScrollBarControl bar, float height, bool fore)
@@ -380,16 +452,39 @@ private class AppearanceOptionsMenuView : SubOptionsMenuView
         tile.back_color = Color(back_red.fval, back_green.fval, back_blue.fval, 1);
     }
 
+    private void default_button_clicked()
+    {
+        table_texture_path = "";
+        update_table_texture();
+    }
+
+    private void background_button_clicked()
+    {
+        FileChooser chooser = new FileChooser();
+        string filename = chooser.run("png");
+        window.focus();
+        
+        if (filename != null)
+            table_texture_path = filename;
+        update_table_texture();
+    }
+
     public override void do_apply()
     {
         options.tile_fore_color = tile.front_color;
         options.tile_back_color = tile.back_color;
         options.tile_textures = tile.texture_type;
+        options.table_texture_path = table_texture_path;
     }
 
     public override void resized()
     {
         tile.size = Size2(size.width / 3, size.height / 3);
+    }
+
+    private void update_table_texture()
+    {
+        table_texture_image.set_texture(store.load_texture_path(table_texture_path) ?? store.load_texture("field_" + table_extension));
     }
 }
 
@@ -401,19 +496,9 @@ private class TileMenuView : View3D
     {
         resize_style = ResizeStyle.ABSOLUTE;
 
-        WorldLight light1 = new WorldLight();
-        WorldLight light2 = new WorldLight();
-        world.add_object(light1);
-        world.add_object(light2);
-
         float len = 4;
-
-        light1.color = Color.white();
-        light1.position = Vec3(len, len, len / 2);
-        light1.intensity = 5;
-        light2.color = Color.white();
-        light2.position = Vec3(-len, len, len / 2);
-        light2.intensity = 5;
+        world.add_object(new WorldLight(){ position = Vec3( len, len, len / 2), intensity = 5 });
+        world.add_object(new WorldLight(){ position = Vec3(-len, len, len / 2), intensity = 5 });
 
         tile = new RenderTile()
         {

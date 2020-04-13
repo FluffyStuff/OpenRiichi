@@ -18,8 +18,9 @@ public class Options
         tile_fore_color = Color.white();
         tile_back_color = Color(0, 0.5f, 1, 1);
         tile_textures = TileTextureEnum.REGULAR;
-        window_width = 1280;
-        window_height = 720;
+        table_texture_path = "";
+        window_width = 1600;
+        window_height = 900;
         window_x = -1;
         window_y = -1;
     }
@@ -66,6 +67,7 @@ public class Options
         options.add("tile_fore_color = " + color_to_string(tile_fore_color));
         options.add("tile_back_color = " + color_to_string(tile_back_color));
         options.add("tile_textures = " + tile_texture_enum_to_string(tile_textures));
+        options.add("table_texture_path = " + table_texture_path);
         options.add("window_width = " + window_width.to_string());
         options.add("window_height = " + window_height.to_string());
         options.add("window_x = " + window_x.to_string());
@@ -113,6 +115,9 @@ public class Options
         case "tile_textures":
             tile_textures = parse_tile_texture_enum(down_value);
             break;
+        case "table_texture_path":
+            table_texture_path = value;
+            break;
         case "window_width":
             window_width = int.parse(down_value);
             break;
@@ -139,6 +144,7 @@ public class Options
     public Color tile_fore_color { get; set; }
     public Color tile_back_color { get; set; }
     public TileTextureEnum tile_textures { get; set; }
+    public string table_texture_path { get; set; }
     public int window_width { get; set; }
     public int window_height { get; set; }
     public int window_x { get; set; }

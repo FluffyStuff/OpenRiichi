@@ -33,10 +33,10 @@ public class RenderTable : WorldObject
         wall = new RenderWall(context, tiles);
         add_object(wall);
 
-        reload(QualityEnum.HIGH);
+        reload(QualityEnum.HIGH, "");
     }
 
-    public void reload(QualityEnum quality)
+    public void reload(QualityEnum quality, string table_texture_path)
     {
         if (table == null)
         {
@@ -45,7 +45,7 @@ public class RenderTable : WorldObject
             table.rotation = Quat.from_euler(field_rotation / 2, 0, 0);
         }
 
-        table.load(quality);
+        table.load(quality, table_texture_path);
     }
 
     public void split_dead_wall(AnimationTime time)
@@ -66,15 +66,13 @@ public class WorldTableObject : WorldObject
     private RenderGeometry3D table;
     private RenderObject3D field;
 
-    public void load(QualityEnum quality)
+    public void load(QualityEnum quality, string table_texture_path)
     {
         string extension = quality_enum_to_string(quality);
         table = store.load_geometry_3D("table_" + extension, true);
         field = store.create_plane();
 
-        string dir = Environment.get_user_dir() + "Custom/";
-
-        RenderTexture? texture = store.load_texture_dir(dir, "field");
+        RenderTexture? texture = store.load_texture_path(table_texture_path);
         if (texture == null)
             texture = store.load_texture("field_" + extension);
 
