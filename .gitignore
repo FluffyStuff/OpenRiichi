@@ -1,8 +1,10 @@
 .vscode
 *.code-workspace
 *.shader
-bin/OpenRiichi*
-bin/libengine*
+.build
+build
+bin/*
+!bin/Data
 bin/Data/Fonts/.uuid
 *.c
 *.o
