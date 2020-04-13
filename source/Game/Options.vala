@@ -13,7 +13,7 @@ public class Options
         anisotropic_filtering = OnOffEnum.ON;
         anti_aliasing = OnOffEnum.ON;
         v_sync = OnOffEnum.OFF;
-        music = OnOffEnum.ON;
+        music = OnOffEnum.OFF;
         sounds = OnOffEnum.ON;
         tile_fore_color = Color.white();
         tile_back_color = Color(0, 0.5f, 1, 1);
