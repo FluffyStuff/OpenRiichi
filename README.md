@@ -14,7 +14,7 @@ Prebuilt binaries for windows can be found in the [release](https://github.com/F
 
 More screenshots can be found [here](https://github.com/FluffyStuff/riichi-data).
 
-# Bulding
+# Building
 
 ## Setup
 
