@@ -54,19 +54,10 @@ public class GameRenderView : View3D, IGameRenderer
         observe_object = new WorldObject();
         observer.add_object(observe_object);
 
-        WorldLight light1 = new WorldLight();
-        WorldLight light2 = new WorldLight();
-        WorldLight light3 = new WorldLight();
-        observe_object.add_object(light1);
-        observe_object.add_object(light2);
-        observe_object.add_object(light3);
-
-        light1.intensity = 12;
-        light2.intensity = 8;
-        light3.intensity = 8;
-        light1.position = Vec3(  0, 20,  10);
-        light2.position = Vec3( 15, 10, -10);
-        light3.position = Vec3(-15, 10, -10);
+        observe_object.add_object(new WorldLight(){ intensity = 18, position = Vec3(  0, 20, 30) });
+        observe_object.add_object(new WorldLight(){ intensity = 12, position = Vec3( 30, 10,  0) });
+        observe_object.add_object(new WorldLight(){ intensity = 12, position = Vec3(-30, 10,  0) });
+        observe_object.add_object(new WorldLight(){ intensity =  1, position = Vec3(  0,  8,  0) });
 
         target = new WorldObject();
         observe_object.add_object(target);
