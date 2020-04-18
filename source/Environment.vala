@@ -48,6 +48,7 @@ public class Environment
             return false;
         
         reflection_bug_fix();
+        fc_bug_fix();
 
         return true;
     }
@@ -179,6 +180,11 @@ public class Environment
 
         typeof(NullBot).class_ref();
         typeof(SimpleBot).class_ref();
+    }
+
+    private static void fc_bug_fix()
+    {
+        GLib.Environment.set_variable("LC_CTYPE", "", true); // Fixes a fontconfig warning on macOS
     }
 
     private static bool set_working_dir()
