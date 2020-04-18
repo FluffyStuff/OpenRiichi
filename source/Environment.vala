@@ -186,7 +186,7 @@ public class Environment
         bool ret = true;
 
 	// This makes relative paths work by changing directory to the Resources folder inside the .app bundle
-	#if MAC
+	#if DARWIN
         void *mainBundle = CFBundleGetMainBundle();
         void *resourcesURL = CFBundleCopyResourcesDirectoryURL(mainBundle);
         char path[PATH_MAX];
@@ -390,7 +390,7 @@ public enum LogType
 
 
 
-#if MAC
+#if DARWIN
 extern const int PATH_MAX;
 static extern void* CFBundleGetMainBundle();
 static extern void* CFBundleCopyResourcesDirectoryURL(void *bundle);

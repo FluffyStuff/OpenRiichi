@@ -46,9 +46,9 @@ mingw64/mingw-w64-x86_64-sfml
 ### MacOS
 
 On MacOS the client can be built using [Command Line Tools for macOS](https://developer.apple.com/download/more),
-[MacPorts](https://www.macports.org/install.php), and [CSFML](http://www.sfml-dev.org/download/csfml).
+[MacPorts](https://www.macports.org/install.php), [SFML](https://www.sfml-dev.org/files/SFML-2.4.2-osx-clang.tar.gz) and [CSFML](https://www.sfml-dev.org/files/CSFML-2.4-osx-clang.tar.gz).
 
-Start by installing MacPorts and the developer tools. Afterwards extract your CSFML .dylib files into `/usr/local/lib`
+Start by installing MacPorts and the developer tools. Afterwards extract your SFML and CSFML .dylib files into `/usr/local/lib`
 
 Then run the following commands:
 ```

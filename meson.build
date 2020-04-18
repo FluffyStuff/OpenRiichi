@@ -4,7 +4,7 @@ project('OpenRiichi', 'vala', 'c')
 subdir('Engine')
 
 dependencies = [
-    valac.find_library('win32', dirs: meson.current_source_dir() / 'vapi', required: false)
+    valac.find_library('win32', dirs: meson.current_source_dir() + '/vapi', required: false)
 ] + engine_dependencies
 
 sources = files(
