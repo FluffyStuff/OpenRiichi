@@ -1,6 +1,6 @@
 # Blender v2.78 (sub 0) OBJ File: 'tile.blend'
 # www.blender.org
-mtllib tile.mtl
+mtllib tile_low.mtl
 o Top_Cube.001
 v -0.175507 0.116251 0.211452
 v -0.175507 0.116251 -0.211452
