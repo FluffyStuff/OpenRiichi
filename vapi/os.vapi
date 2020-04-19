@@ -4,6 +4,7 @@ namespace Build
 	const string WORKING_DIR;
 }
 
+#if WINDOWS
 [CCode (cheader_filename="windows.h", lower_case_cprefix = "")]
 namespace Windows
 {
@@ -12,3 +13,4 @@ namespace Windows
 	bool GetConsoleMode(void *hConsoleHandle, out uint mode);
 	bool SetConsoleMode(void *hConsoleHandle, uint mode);
 }
+#endif

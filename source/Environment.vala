@@ -444,6 +444,7 @@ public enum LogType
     DEBUG
 }
 
+#if DARWIN
 [CCode (lower_case_cprefix = "")]
 namespace macOS
 {
@@ -453,3 +454,4 @@ namespace macOS
     extern bool CFURLGetFileSystemRepresentation(void *url, bool b, uint8 *path, int max_path);
     extern void CFRelease(void *url);
 }
+#endif
