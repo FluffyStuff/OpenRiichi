@@ -49,7 +49,10 @@ public class Environment
             return false;
 
         if (!set_working_dir(working_directory))
+        {
+            log(LogType.DEBUG, "Environment.set_bundle_working_dir", "Could not set working dir");
             return false;
+        }
         
         reflection_bug_fix();
         fc_bug_fix();
@@ -203,22 +206,39 @@ public class Environment
         bool ret = true;
 
 	// This makes relative paths work by changing directory to the Resources folder inside the .app bundle
-	#if DARWIN
-        log(LogType.DEBUG, "Environment", "Setting working directory to bundle for macOS");
+    #if DARWIN
+        log(LogType.DEBUG, "Environment.set_bundle_working_dir", "Setting working directory to bundle for macOS");
+
+        if (macOS.CFBundleGetMainBundle == null)
+        {
+            log(LogType.DEBUG, "Environment.set_bundle_working_dir", "Main bundle function not found");
+            return false;
+        }
 
         void *mainBundle = macOS.CFBundleGetMainBundle();
-        void *resourcesURL = macOS.CFBundleCopyResourcesDirectoryURL(mainBundle);
-        char path[macOS.PATH_MAX];
+        if (mainBundle == null)
+        {
+            log(LogType.DEBUG, "Environment.set_bundle_working_dir", "Could not get main bundle");
+            return false;
+        }
 
+        void *resourcesURL = macOS.CFBundleCopyResourcesDirectoryURL(mainBundle);
+        if (resourcesURL == null)
+        {
+            log(LogType.DEBUG, "Environment.set_bundle_working_dir", "Could not get resouces URL");
+            return false;
+        }
+
+        char path[macOS.PATH_MAX];
         if (!macOS.CFURLGetFileSystemRepresentation(resourcesURL, true, (uint8*)path, macOS.PATH_MAX))
         {
-            log(LogType.ERROR, "Environment", "Could not set working dir");
+            log(LogType.DEBUG, "Environment.set_bundle_working_dir", "Could not get file system representation");
             ret = false;
         }
         else
         {
             GLib.Environment.set_current_dir((string)path);
-            log(LogType.DEBUG, "Environment", "Working directory: " + (string)path);
+            log(LogType.DEBUG, "Environment.set_bundle_working_dir", "Working directory: " + (string)path);
         }
 
         macOS.CFRelease(resourcesURL);
@@ -422,4 +442,14 @@ public enum LogType
     GAME,
     NETWORK,
     DEBUG
+}
+
+[CCode (lower_case_cprefix = "")]
+namespace macOS
+{
+    extern const int PATH_MAX;
+    extern void* CFBundleGetMainBundle();
+    extern void* CFBundleCopyResourcesDirectoryURL(void *bundle);
+    extern bool CFURLGetFileSystemRepresentation(void *url, bool b, uint8 *path, int max_path);
+    extern void CFRelease(void *url);
 }
