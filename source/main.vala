@@ -48,7 +48,7 @@ public static int main(string[] args)
         Vec2i window_position = Vec2i(options.window_x, options.window_y);
         string window_name = "OpenRiichi";
 
-        SDLGLEngine engine = new SDLGLEngine(multithread_rendering, debug);
+        SDLGLEngine engine = new SDLGLEngine(multithread_rendering, Environment.version_info.to_string(), debug);
         if (!engine.init(window_name, window_size, window_position, options.screen_type, multisamples))
         {
             Environment.log(LogType.ERROR, "Main", "Could not init engine");
