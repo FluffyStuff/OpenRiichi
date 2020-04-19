@@ -35,6 +35,7 @@ class GameController : Object
 
     ~GameController()
     {
+        Environment.log(LogType.DEBUG, "GameController", "Destroying game controller");
         connection.close();
 
         parent_view.remove_child(renderer);

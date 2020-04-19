@@ -34,15 +34,16 @@ public class Environment
         bool console_color = set_console_color_mode();
 
         logger = new Logger("application/", console_color);
+
+        log(LogType.INFO, "Environment", "Logging started (" + version_info.to_string() + ")");
+        log(LogType.DEBUG, "Environment", "Logging debug information");
+
         Log.set_default_handler(glib_log_func);
         set_print_handler(glib_print);
         set_printerr_handler(glib_error);
         engine_logger = new LogCallback();
         engine_logger.log.connect(engine_log);
         EngineLog.set_log_callback(engine_logger);
-
-        log(LogType.INFO, "Environment", "Logging started (" + version_info.to_string() + ")");
-        log(LogType.DEBUG, "Environment", "Logging debug information");
 
         if (!set_working_dir())
             return false;
@@ -78,6 +79,9 @@ public class Environment
 
         switch (log_type)
         {
+        case EngineLogType.ERROR:
+            t = LogType.ERROR;
+            break;
         case EngineLogType.NETWORK:
             t = LogType.NETWORK;
             break;
@@ -95,6 +99,8 @@ public class Environment
     // TODO: Find better way to fix class reflection bug
     private static void reflection_bug_fix()
     {
+        log(LogType.DEBUG, "Environment", "Calling class_ref for reflection");
+
         typeof(Serializable).class_ref();
         typeof(SerializableList).class_ref();
         typeof(ObjInt).class_ref();
@@ -184,6 +190,8 @@ public class Environment
 
     private static void fc_bug_fix()
     {
+        log(LogType.DEBUG, "Environment", "Clearing LC_CTYPE environment variable");
+
         GLib.Environment.set_variable("LC_CTYPE", "", true); // Fixes a fontconfig warning on macOS
     }
 
@@ -193,6 +201,8 @@ public class Environment
 
 	// This makes relative paths work by changing directory to the Resources folder inside the .app bundle
 	#if DARWIN
+        log(LogType.DEBUG, "Environment", "Setting working directory to bundle for macOS");
+
         void *mainBundle = CFBundleGetMainBundle();
         void *resourcesURL = CFBundleCopyResourcesDirectoryURL(mainBundle);
         char path[PATH_MAX];
@@ -203,7 +213,10 @@ public class Environment
             ret = false;
         }
         else
+        {
             GLib.Environment.set_current_dir((string)path);
+            log(LogType.DEBUG, "Environment", "Working directory: " + (string)path);
+        }
 
         CFRelease(resourcesURL);
     #endif
@@ -215,6 +228,8 @@ public class Environment
     {
     // This makes console colors work in Windows 10
     #if WINDOWS
+        log(LogType.DEBUG, "Environment", "Setting console color mode for windows");
+
         void *handle = Win.GetStdHandle(Win.STD_OUTPUT_HANDLE);
         if ((int)handle == 0 || (int)handle == -1)
             return false;

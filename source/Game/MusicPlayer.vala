@@ -40,6 +40,8 @@ public class MusicPlayer : Object
     {
         if (files.length == 0)
             return;
+        
+        Environment.log(LogType.DEBUG, "MusicPlayer", "Playing next song");
 
         music = audio.load_music(files[index]);
         music.music_finished.connect(song_finished);
