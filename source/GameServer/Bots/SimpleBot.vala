@@ -107,7 +107,7 @@ class SimpleBot : Bot
         }
 
         if (tiles.size == 0)
-            return RandomClass(backup);
+            return RandomTile(backup);
 
         foreach (Tile tile in tiles)
         {
@@ -136,7 +136,7 @@ class SimpleBot : Bot
         }
 
         if (tiles.size == 0)
-            return RandomClass(backup);
+            return RandomTile(backup);
 
         backup.clear();
         backup.add_all(tiles);
@@ -149,7 +149,7 @@ class SimpleBot : Bot
         }
 
         if (tiles.size == 0)
-            return RandomClass(backup);
+            return RandomTile(backup);
 
         backup.clear();
         backup.add_all(tiles);
@@ -162,7 +162,7 @@ class SimpleBot : Bot
         }
 
         if (tiles.size == 0)
-            return RandomClass(backup);
+            return RandomTile(backup);
 
         backup.clear();
         backup.add_all(tiles);
@@ -175,7 +175,7 @@ class SimpleBot : Bot
         }
 
         if (tiles.size == 0)
-            return RandomClass(backup);
+            return RandomTile(backup);
 
         backup.clear();
         backup.add_all(tiles);
@@ -188,12 +188,12 @@ class SimpleBot : Bot
         }
 
         if (tiles.size == 0)
-            return RandomClass(backup);
+            return RandomTile(backup);
 
-        return RandomClass(tiles);
+        return RandomTile(tiles);
     }
 
-    private Tile RandomClass(ArrayList<Tile> tiles)
+    private Tile RandomTile(ArrayList<Tile> tiles)
     {
         return tiles[rnd.int_range(0, tiles.size)];
     }
