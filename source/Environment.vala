@@ -31,12 +31,12 @@ public class Environment
 
         version_info = new VersionInfo(VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH, VERSION_REVIS);
 
-        bool console_color = set_console_color_mode();
-
-        logger = new Logger("application/", console_color);
+        logger = new Logger("application/");
+        logger.use_color = set_console_color_mode();
 
         log(LogType.INFO, "Environment", "Logging started (" + version_info.to_string() + ")");
         log(LogType.DEBUG, "Environment", "Logging debug information");
+        log(LogType.DEBUG, "Environment", "Console color mode " + (logger.use_color ? "" : "not ") + "applied");
 
         Log.set_default_handler(glib_log_func);
         set_print_handler(glib_print);
@@ -228,15 +228,13 @@ public class Environment
     {
     // This makes console colors work in Windows 10
     #if WINDOWS
-        log(LogType.DEBUG, "Environment", "Setting console color mode for windows");
-
         void *handle = Win.GetStdHandle(Win.STD_OUTPUT_HANDLE);
         if ((int)handle == 0 || (int)handle == -1)
             return false;
 
         uint mode = 0;
         if (!Win.GetConsoleMode(handle, out mode))
-            return false;
+            return true; // Let's assume it works anyway
         
         return Win.SetConsoleMode(handle, mode | 0x0200);
     #else
@@ -359,11 +357,9 @@ public class Logger
 
     private Mutex log_lock;
     private FileWriter log_stream;
-    private bool use_color;
 
-    public Logger(string name, bool use_color)
+    public Logger(string name)
     {
-        this.use_color = use_color;
         log_stream = FileLoader.open(Environment.log_dir + name + Environment.get_datetime_string() + Environment.log_extension);
         log_lock = Mutex();
 
@@ -397,6 +393,8 @@ public class Logger
         stdout.flush();
         log_lock.unlock();
     }
+
+    public bool use_color { get; set; }
 }
 
 public enum LogType
