@@ -30,13 +30,19 @@ private static void parse_args(string[] args)
     }
 }
 
+private static void show_error(string message)
+{
+    Environment.log(LogType.ERROR, "Main", message);
+    show_error_message_box("OpenRiichi (" + Environment.version_info.to_string() + ") startup error", message + "\n" + "Look at logs for more details");
+}
+
 public static int main(string[] args)
 {
     parse_args(args);
 
     if (!Environment.init(debug))
     {
-        Environment.log(LogType.ERROR, "Main", "Could not init environment");
+        show_error("Could not init environment");
         return -1;
     }
 
@@ -51,7 +57,7 @@ public static int main(string[] args)
         SDLGLEngine engine = new SDLGLEngine(multithread_rendering, Environment.version_info.to_string(), debug);
         if (!engine.init(window_name, window_size, window_position, options.screen_type, multisamples))
         {
-            Environment.log(LogType.ERROR, "Main", "Could not init engine");
+            show_error("Could not init engine");
             return -1;
         }
 
