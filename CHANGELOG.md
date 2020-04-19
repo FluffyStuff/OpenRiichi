@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 - Table texture selection option in options menu.
 - Feature to persist window state between runs.
 - Meson build scripts.
+- More verbose debug log
 
 ### Changed
 - Disabled background music by default.
