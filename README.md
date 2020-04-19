@@ -100,7 +100,7 @@ If you prefer to use a different directory for building, be sure to copy the `Da
 ## IDE
 
 The preferred editor to use is [Visual Studio Code](https://code.visualstudio.com).
-It works on all operating systems which are supported for OpenRiichi, and has several extensios for Vala in the Visual Studio Marketplace.
+It works on all operating systems which are supported for OpenRiichi, and has several extensions for Vala in the Visual Studio Marketplace.
 
 ### Windows
 
