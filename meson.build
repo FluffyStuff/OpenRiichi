@@ -3,8 +3,11 @@ project('OpenRiichi', 'vala', 'c')
 # We use subdir instead of subproject so we don't have to recompile everything when we change something in libengine
 subdir('Engine')
 
+dataDir = get_option('prefix') / get_option('datadir') / 'OpenRiichi'
+add_project_arguments('-DOPENRIICHI_WORKING_DIR="' + dataDir +  '"', language: 'c')
+
 dependencies = [
-    valac.find_library('win32', dirs: meson.current_source_dir() + '/vapi', required: false)
+    valac.find_library('os', dirs: meson.current_source_dir() + '/vapi', required: false)
 ] + engine_dependencies
 
 sources = files(
@@ -92,4 +95,12 @@ sources = files(
     'source/Tests/HandTests.vala',
 ) + engine_sources
 
-executable('OpenRiichi', sources, dependencies: dependencies, include_directories: engine_includes, gui_app: true)
+includes = [include_directories('include'), engine_includes]
+
+executable('OpenRiichi', sources,
+    dependencies: dependencies,
+    include_directories: includes,
+    gui_app: true,
+    install: true
+)
+install_subdir('bin/Data', install_dir: dataDir)

@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 - Feature to persist window state between runs.
 - Meson build scripts.
 - More verbose debug log
+- Compile and runtime option for working directory
 
 ### Changed
 - Disabled background music by default.

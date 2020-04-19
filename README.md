@@ -90,12 +90,16 @@ libsfml-dev
 
 Start by cloning the OpenRiichi repository with: ```git clone --recurse-submodules https://github.com/FluffyStuff/OpenRiichi.git```
 
-Next, generate a build target with meson using `meson bin -Dbuildtype=release` or `meson bin -Dbuildtype=debug` depending on whether you want a release or debug build.
+Next, generate a build target with meson using `meson build -Dbuildtype=release` or `meson build -Dbuildtype=debug` depending on whether you want a release or debug build.
 
-Build the target with ninja using: `ninja -C bin`
+Build the target with ninja using: `ninja -C build`
 
-If the build succeeded, you should be able to launch the application from inside the `bin` directory.
-If you prefer to use a different directory for building, be sure to copy the `Data` folder from the `bin` folder into the directory where the built `OpenRiichi` executable resides.
+You can also install the target by running: `ninja -C build install`
+
+If the installation build succeeded, you should be able to launch the application by running `OpenRiichi`.
+
+OpenRiichi requires the `Data` folder (found inside the `bin` folder) to be in the current working directory during runtime. By default OpenRiichi will change the working directory to the `OpenRiichi` subdirectory of the default data directory of the OS (usually `/usr/share/OpenRiichi`).
+This can be changed during runtime by running OpenRiichi with the `--working-directory some_alternative_directory` flag. Use `--working-directory .` to stay put in the current working directory.
 
 ## IDE
 
@@ -116,7 +120,7 @@ Create or edit your `tasks.json` file and add the following build command:
     "args": [
         "-l",
         "-c",
-        "ninja -C bin"
+        "ninja -C build"
     ],
     "problemMatchers": [
         "$valac"
@@ -141,8 +145,9 @@ Your `launch.json` should look like the following:
             "name": "Debug",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceRoot}/bin/OpenRiichi.exe",
-            "cwd": "${workspaceFolder}/bin",
+            "program": "${workspaceRoot}/build/OpenRiichi.exe",
+            "args": ["--debug", "--working-directory", "${workspaceFolder}/bin"],
+            "cwd": "${workspaceFolder}",
             "MIMode": "gdb",
             "miDebuggerPath": "path_to_your_mingw64/bin/gdb.exe",
             "setupCommands": [

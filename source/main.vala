@@ -10,6 +10,8 @@ private static bool debug =
 
 private static bool multithread_rendering = false;
 
+private static string? working_directory = null;
+
 private static void parse_args(string[] args)
 {
     for (int i = 0; i < args.length; i++)
@@ -27,6 +29,13 @@ private static void parse_args(string[] args)
             multithread_rendering = true;
         else if (arg == "-no-multithread-rendering")
             multithread_rendering = false;
+        else if (arg == "-working-directory")
+        {
+            i++;
+
+            if (i < args.length)
+                working_directory = args[i];
+        }
     }
 }
 
@@ -38,9 +47,11 @@ private static void show_error(string message)
 
 public static int main(string[] args)
 {
+    working_directory = Build.WORKING_DIR;
+
     parse_args(args);
 
-    if (!Environment.init(debug))
+    if (!Environment.init(working_directory, debug))
     {
         show_error("Could not init environment");
         return -1;

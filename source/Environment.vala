@@ -22,7 +22,7 @@ public class Environment
 
     private Environment() {}
 
-    public static bool init(bool do_debug)
+    public static bool init(string? working_directory, bool do_debug)
     {
         if (initialized)
             return false;
@@ -45,7 +45,10 @@ public class Environment
         engine_logger.log.connect(engine_log);
         EngineLog.set_log_callback(engine_logger);
 
-        if (!set_working_dir())
+        if (!set_bundle_working_dir())
+            return false;
+
+        if (!set_working_dir(working_directory))
             return false;
         
         reflection_bug_fix();
@@ -195,7 +198,7 @@ public class Environment
         GLib.Environment.set_variable("LC_CTYPE", "", true); // Fixes a fontconfig warning on macOS
     }
 
-    private static bool set_working_dir()
+    private static bool set_bundle_working_dir()
     {
         bool ret = true;
 
@@ -203,11 +206,11 @@ public class Environment
 	#if DARWIN
         log(LogType.DEBUG, "Environment", "Setting working directory to bundle for macOS");
 
-        void *mainBundle = CFBundleGetMainBundle();
-        void *resourcesURL = CFBundleCopyResourcesDirectoryURL(mainBundle);
-        char path[PATH_MAX];
+        void *mainBundle = macOS.CFBundleGetMainBundle();
+        void *resourcesURL = macOS.CFBundleCopyResourcesDirectoryURL(mainBundle);
+        char path[macOS.PATH_MAX];
 
-        if (!CFURLGetFileSystemRepresentation(resourcesURL, true, (uint8*)path, PATH_MAX))
+        if (!macOS.CFURLGetFileSystemRepresentation(resourcesURL, true, (uint8*)path, macOS.PATH_MAX))
         {
             log(LogType.ERROR, "Environment", "Could not set working dir");
             ret = false;
@@ -218,9 +221,23 @@ public class Environment
             log(LogType.DEBUG, "Environment", "Working directory: " + (string)path);
         }
 
-        CFRelease(resourcesURL);
+        macOS.CFRelease(resourcesURL);
     #endif
     
+        return ret;
+    }
+
+    private static bool set_working_dir(string? working_dir)
+    {
+        if (working_dir == null || working_dir.length == 0 || working_dir == ".")
+            return true;
+        
+        log(LogType.INFO, "Environment", "Changing working directory to: " + working_dir);
+        
+        bool ret = GLib.Environment.set_current_dir(working_dir) == 0;
+        if (!ret)
+            log(LogType.ERROR, "Environment", "Could not set working dir");
+
         return ret;
     }
 
@@ -228,15 +245,15 @@ public class Environment
     {
     // This makes console colors work in Windows 10
     #if WINDOWS
-        void *handle = Win.GetStdHandle(Win.STD_OUTPUT_HANDLE);
+        void *handle = Windows.GetStdHandle(Windows.STD_OUTPUT_HANDLE);
         if ((int)handle == 0 || (int)handle == -1)
             return false;
 
         uint mode = 0;
-        if (!Win.GetConsoleMode(handle, out mode))
+        if (!Windows.GetConsoleMode(handle, out mode))
             return true; // Let's assume it works anyway
         
-        return Win.SetConsoleMode(handle, mode | 0x0200);
+        return Windows.SetConsoleMode(handle, mode | 0x0200);
     #else
         return true;
     #endif
@@ -406,13 +423,3 @@ public enum LogType
     NETWORK,
     DEBUG
 }
-
-
-
-#if DARWIN
-extern const int PATH_MAX;
-static extern void* CFBundleGetMainBundle();
-static extern void* CFBundleCopyResourcesDirectoryURL(void *bundle);
-static extern bool CFURLGetFileSystemRepresentation(void *url, bool b, uint8 *path, int max_path);
-static extern void CFRelease(void *url);
-#endif
