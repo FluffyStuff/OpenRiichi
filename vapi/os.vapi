@@ -1,7 +1,7 @@
-[CCode (cheader_filename="working_dir.h", lower_case_cprefix = "")]
+[CCode (cheader_filename="search_dir.h", lower_case_cprefix = "")]
 namespace Build
 {
-	const string WORKING_DIR;
+	const string SEARCH_DIR;
 }
 
 #if WINDOWS

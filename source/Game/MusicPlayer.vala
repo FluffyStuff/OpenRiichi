@@ -21,7 +21,7 @@ public class MusicPlayer : Object
     {
         if (music == null)
         {
-            files = FileLoader.get_files_in_dir("Data/Audio/Music");
+            files = FileLoader.get_files_in_dir(FileLoader.find_directory(GLib.Path.build_filename("Data", "Audio", "Music")));
             play_next();
         }
     }

@@ -18,7 +18,7 @@ public class MainWindow : RenderWindow
 
     protected override void shown()
     {
-        set_icon("./Data/Icon.png");
+        set_icon(FileLoader.find_file(GLib.Path.build_filename("Data", "Icon.png")));
         music = new MusicPlayer(store.audio_player);
 
         Options options = new Options.from_disk();

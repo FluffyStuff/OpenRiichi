@@ -55,7 +55,7 @@ class SelectGameLogMenuView : MenuSubView
     private void load_clicked()
     {
         string log_name = log_list.logs[log_list.selected_index];
-        string name = Environment.game_log_dir + log_name + Environment.log_extension;
+        string name = GLib.Path.build_filename(Environment.game_log_dir, log_name + Environment.log_extension);
         log = Environment.load_game_log(name);
 
         if (log == null || !Environment.compatible(log.version))

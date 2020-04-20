@@ -22,7 +22,7 @@ public class Environment
 
     private Environment() {}
 
-    public static bool init(string? working_directory, bool do_debug)
+    public static bool init(bool do_debug)
     {
         if (initialized)
             return false;
@@ -31,7 +31,7 @@ public class Environment
 
         version_info = new VersionInfo(VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH, VERSION_REVIS);
 
-        logger = new Logger("application/");
+        logger = new Logger("application");
         logger.use_color = set_console_color_mode();
 
         log(LogType.INFO, "Environment", "Logging started (" + version_info.to_string() + ")");
@@ -47,12 +47,6 @@ public class Environment
 
         if (!set_bundle_working_dir())
             return false;
-
-        if (!set_working_dir(working_directory))
-        {
-            log(LogType.DEBUG, "Environment.set_bundle_working_dir", "Could not set working dir");
-            return false;
-        }
         
         reflection_bug_fix();
         fc_bug_fix();
@@ -247,20 +241,6 @@ public class Environment
         return ret;
     }
 
-    private static bool set_working_dir(string? working_dir)
-    {
-        if (working_dir == null || working_dir.length == 0 || working_dir == ".")
-            return true;
-        
-        log(LogType.INFO, "Environment", "Changing working directory to: " + working_dir);
-        
-        bool ret = GLib.Environment.set_current_dir(working_dir) == 0;
-        if (!ret)
-            log(LogType.ERROR, "Environment", "Could not set working dir");
-
-        return ret;
-    }
-
     private static bool set_console_color_mode()
     {
     // This makes console colors work in Windows 10
@@ -340,8 +320,8 @@ public class Environment
 
     public static bool debug { get; private set; }
     public static VersionInfo version_info { get; private set; }
-    public static string log_dir { owned get { return Environment.get_user_dir() + "logs/"; } }
-    public static string game_log_dir { owned get { return log_dir + "game/"; } }
+    public static string log_dir { owned get { return GLib.Path.build_filename(Environment.get_user_dir(), "logs"); } }
+    public static string game_log_dir { owned get { return GLib.Path.build_filename(log_dir, "game"); } }
     public static string log_extension { owned get { return ".log"; } }
 }
 
@@ -397,7 +377,7 @@ public class Logger
 
     public Logger(string name)
     {
-        log_stream = FileLoader.open(Environment.log_dir + name + Environment.get_datetime_string() + Environment.log_extension);
+        log_stream = FileLoader.open(GLib.Path.build_filename(Environment.log_dir, name + Environment.get_datetime_string() + Environment.log_extension));
         log_lock = Mutex();
 
         log_stream.write("%VersionInfo:" + Environment.version_info.to_string() + NEWLINE);

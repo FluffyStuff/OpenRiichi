@@ -100,8 +100,8 @@ You can remove the installed target by running: `ninja -C build uninstall`
 
 If the installation build succeeded, you should be able to launch the application by running `OpenRiichi`.
 
-OpenRiichi requires the `Data` folder (found inside the `bin` folder) to be in the current working directory during runtime. By default OpenRiichi will change the working directory to the `OpenRiichi` subdirectory of the default data directory of the OS (usually `/usr/share/OpenRiichi`).
-This can be changed during runtime by running OpenRiichi with the `--working-directory some_alternative_directory` flag. Use `--working-directory .` to stay put in the current working directory.
+OpenRiichi requires the `Data` folder (found inside the `bin` folder) to be in the one of the search directories. OpenRiichi will add the `OpenRiichi` subdirectory of the default data directory of the OS (usually `/usr/share/OpenRiichi`) to the search path, along with the the current working directory and the executable directory.
+An additional search path can be added during runtime by running OpenRiichi with the `--search-directory some_custom_directory` flag.
 
 ## IDE
 

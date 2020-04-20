@@ -10,11 +10,11 @@ private static bool debug =
 
 private static bool multithread_rendering = false;
 
-private static string? working_directory = null;
+private static string? arg_search_dir = null;
 
 private static void parse_args(string[] args)
 {
-    for (int i = 0; i < args.length; i++)
+    for (int i = 1; i < args.length; i++)
     {
         string arg = args[i];
         if (arg.length == 0 || arg[0] != '-')
@@ -29,12 +29,12 @@ private static void parse_args(string[] args)
             multithread_rendering = true;
         else if (arg == "-no-multithread-rendering")
             multithread_rendering = false;
-        else if (arg == "-working-directory")
+        else if (arg == "-search-directory")
         {
             i++;
 
             if (i < args.length)
-                working_directory = args[i];
+                arg_search_dir = args[i];
         }
     }
 }
@@ -47,15 +47,21 @@ private static void show_error(string message)
 
 public static int main(string[] args)
 {
-    working_directory = Build.WORKING_DIR;
+    string? executable_dir = args.length > 0 ? GLib.Path.get_dirname(args[0]) : null;
+    string? built_search_dir = Build.SEARCH_DIR;
 
     parse_args(args);
 
-    if (!Environment.init(working_directory, debug))
+    if (!Environment.init(debug))
     {
         show_error("Could not init environment");
         return -1;
     }
+
+    FileLoader.init();
+    FileLoader.add_search_path(executable_dir);
+    FileLoader.add_search_path(built_search_dir);
+    FileLoader.add_search_path(arg_search_dir);
 
     while (true)
     {
