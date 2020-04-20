@@ -18,6 +18,7 @@ All notable changes to this project will be documented in this file.
 - Moved Engine project into a subfolder as a git submodule.
 - Statically build Engine into executable file.
 - Move shaders from GLSL 120 to GLES 100 for better macOS support.
+- Changed audio backend to use SDLMixer instead of SFML audio.
 
 ### Fixed
 - Compilation and runtime for linux and macOS.

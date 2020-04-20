@@ -38,17 +38,15 @@ mingw64/mingw-w64-x86_64-libgee \
 mingw64/mingw-w64-x86_64-gtk3 \
 mingw64/mingw-w64-x86_64-glew \
 mingw64/mingw-w64-x86_64-SDL2_image \
-mingw64/mingw-w64-x86_64-pango \
-mingw64/mingw-w64-x86_64-csfml \
-mingw64/mingw-w64-x86_64-sfml
+mingw64/mingw-w64-x86_64-SDL2_mixer \
+mingw64/mingw-w64-x86_64-pango
 ```
 
 ### MacOS
 
-On MacOS the client can be built using [Command Line Tools for macOS](https://developer.apple.com/download/more),
-[MacPorts](https://www.macports.org/install.php), [SFML](https://www.sfml-dev.org/files/SFML-2.4.2-osx-clang.tar.gz) and [CSFML](https://www.sfml-dev.org/files/CSFML-2.4-osx-clang.tar.gz).
+On MacOS the client can be built using [Command Line Tools for macOS](https://developer.apple.com/download/more) and [MacPorts](https://www.macports.org/install.php).
 
-Start by installing MacPorts and the developer tools. Afterwards extract your SFML and CSFML .dylib files into `/usr/local/lib`
+Start by installing MacPorts and the developer tools.
 
 Then run the following commands:
 ```
@@ -62,16 +60,16 @@ libgee \
 gtk3 \
 libsdl2 \
 libsdl2_image \
+libsdl2_mixer \
 glew \
-pango \
-sfml
+pango
 ```
 
 ### Linux (Debian based)
 
 Run the following commands:
 ```
-sudo aptitude install -y
+sudo aptitude install -y \
 git \
 valac \
 gcc \
@@ -81,9 +79,8 @@ libgtk-3-dev \
 libglew-dev \
 libpango1.0-dev \
 libsdl2-image-dev \
-libsdl2-dev \
-libcsfml-dev \
-libsfml-dev
+libsdl2-mixer-dev \
+libsdl2-dev
 ```
 
 ## Build
