@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 - Meson build scripts.
 - More verbose debug log
 - Compile and runtime option for data search directory
+- About menu
 
 ### Changed
 - Disabled background music by default.
