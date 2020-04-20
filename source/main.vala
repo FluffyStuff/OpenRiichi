@@ -63,6 +63,12 @@ public static int main(string[] args)
     FileLoader.add_search_path(built_search_dir);
     FileLoader.add_search_path(arg_search_dir);
 
+    if (FileLoader.find_directory("Data") == null)
+    {
+        show_error("Could not find Data directory in search paths");
+        return -1;
+    }
+
     while (true)
     {
         Options options = new Options.from_disk();
