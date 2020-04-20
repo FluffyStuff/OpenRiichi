@@ -335,7 +335,7 @@ public class GameLogger
     {
         log_lock = Mutex();
         game_log = new GameLog(Environment.version_info, start_info, settings);
-        name = Environment.game_log_dir + Environment.get_datetime_string() + Environment.log_extension;
+        name = GLib.Path.build_filename(Environment.game_log_dir, Environment.get_datetime_string() + Environment.log_extension);
     }
 
     private void write()
@@ -377,7 +377,7 @@ public class Logger
 
     public Logger(string name)
     {
-        log_stream = FileLoader.open(GLib.Path.build_filename(Environment.log_dir, name + Environment.get_datetime_string() + Environment.log_extension));
+        log_stream = FileLoader.open(GLib.Path.build_filename(Environment.log_dir, name, Environment.get_datetime_string() + Environment.log_extension));
         log_lock = Mutex();
 
         log_stream.write("%VersionInfo:" + Environment.version_info.to_string() + NEWLINE);

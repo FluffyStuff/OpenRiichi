@@ -62,6 +62,7 @@ public static int main(string[] args)
     FileLoader.add_search_path(executable_dir);
     FileLoader.add_search_path(built_search_dir);
     FileLoader.add_search_path(arg_search_dir);
+    FileLoader.add_search_path(Environment.get_user_dir());
 
     if (FileLoader.find_directory("Data") == null)
     {
