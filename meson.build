@@ -71,6 +71,7 @@ sources = files(
     'source/GameServer/Server/ServerMenu.vala',
     'source/GameServer/Server/ServerNetworking.vala',
     'source/GameServer/Server/ServerPlayer.vala',
+    'source/MainMenu/AboutMenuView.vala',
     'source/MainMenu/CreateServerView.vala',
     'source/MainMenu/InformationMenuView.vala',
     'source/MainMenu/JoinMenuView.vala',

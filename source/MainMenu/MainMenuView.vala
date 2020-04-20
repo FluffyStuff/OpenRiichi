@@ -28,6 +28,12 @@ class MainMenuView : MenuSubView
         load_sub_view(options_view);
     }
 
+    private void about()
+    {
+        AboutMenuView about_view = new AboutMenuView();
+        load_sub_view(about_view);
+    }
+
     private void options_apply()
     {
         restart();
@@ -53,6 +59,10 @@ class MainMenuView : MenuSubView
         MenuTextButton options_button = new MenuTextButton("MenuButtonBig", "Options");
         options_button.clicked.connect(options);
         buttons.add(options_button);
+
+        MenuTextButton about_button = new MenuTextButton("MenuButtonBig", "About");
+        about_button.clicked.connect(about);
+        buttons.add(about_button);
 
         MenuTextButton exit_button = new MenuTextButton("MenuButtonBig", "Exit");
         exit_button.clicked.connect(do_finish);
