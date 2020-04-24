@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [0.2.1.0] - 2020-04-24
 
 ### Added
 - Changelog file.
@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 - More verbose debug log
 - Compile and runtime option for data search directory
 - About menu
+- Game start animation
 
 ### Changed
 - Disabled background music by default.
@@ -76,7 +77,8 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Initial release, branched from older project.
 
-[unreleased]: https://github.com/FluffyStuff/OpenRiichi/compare/v0.2.0.3...HEAD
+[unreleased]: https://github.com/FluffyStuff/OpenRiichi/compare/v0.2.1.0...HEAD
+[0.2.1.0]:    https://github.com/FluffyStuff/OpenRiichi/releases/tag/v0.2.1.0
 [0.2.0.3]:    https://github.com/FluffyStuff/OpenRiichi/releases/tag/v0.2.0.3
 [0.2.0.1]:    https://github.com/FluffyStuff/OpenRiichi/releases/tag/v0.2.0.1
 [0.1.3.2]:    https://github.com/FluffyStuff/OpenRiichi/releases/tag/v0.1.3.2
