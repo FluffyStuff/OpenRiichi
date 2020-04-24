@@ -9,6 +9,7 @@ public class MainWindow : RenderWindow
     private GameEscapeMenuView? escape_menu;
     private bool game_running = false;
     private MusicPlayer music;
+    private RectangleControl fade_rect;
 
     public MainWindow(IWindowTarget window, RenderTarget renderer)
     {
@@ -63,12 +64,38 @@ public class MainWindow : RenderWindow
         main_view.add_child(menu);
     }
 
+    private void game_loaded()
+    {
+        var anim = new Animation.preset(1);
+        anim.curve = new SmoothDepartCurve();
+        anim.animate.connect(animate_fade_rect);
+        anim.finished.connect(remove_fade_rect);
+        fade_rect.add_animation(anim);
+    }
+
+    private void animate_fade_rect(float time)
+    {
+        fade_rect.color = Color.with_alpha(1 - time);
+    }
+
+    private void remove_fade_rect()
+    {
+        main_view.remove_child(fade_rect);
+    }
+
     private GameController game_start(GameStartInfo info, ServerSettings settings, IGameConnection connection, int player_index)
     {
         menu.visible = false;
         game_controller = new GameController(game_view, info, settings, connection, player_index, new Options.from_disk());
+        game_controller.game_loaded.connect(game_loaded);
         game_controller.finished.connect(game_finished);
+        
         game_running = true;
+    
+        fade_rect = new RectangleControl();
+        main_view.add_child(fade_rect);
+        fade_rect.color = Color.black();
+        fade_rect.resize_style = ResizeStyle.RELATIVE;
 
         return game_controller;
     }

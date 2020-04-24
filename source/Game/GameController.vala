@@ -17,6 +17,7 @@ class GameController : Object
     private Options options;
     private bool game_finished = false;
     private bool is_disconnected = false;
+    public signal void game_loaded();
     public signal void finished();
 
     public GameController(Container parent_view, GameStartInfo start_info, ServerSettings settings, IGameConnection connection, int player_index, Options options)
@@ -156,6 +157,7 @@ class GameController : Object
         game.start_round(info);
 
         renderer = new GameRenderView(player_index, game.dealer_index, start_info, info, options, game.score);
+        renderer.game_loaded.connect(on_game_loaded);
         parent_view.add_child(renderer);
 
         menu = new GameMenuView(renderer.context, settings, index, player_index == -1);
@@ -164,6 +166,11 @@ class GameController : Object
         parent_view.add_child(menu);
 
         create_round_state(info);
+    }
+
+    private void on_game_loaded()
+    {
+        game_loaded();
     }
 
     private void declared_riichi(int player_index, bool open)

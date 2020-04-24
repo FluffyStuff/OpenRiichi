@@ -24,6 +24,9 @@ public class GameRenderView : View3D, IGameRenderer
     private WorldObject target;
     private WorldObject observe_object;
 
+    public signal void game_loaded();
+    private bool has_loaded = false;
+
     public GameRenderView(int observer_index, int dealer_index, GameStartInfo game_start, RoundStartInfo info, Options options, RoundScoreState score)
     {
         this.observer_index = observer_index;
@@ -61,13 +64,25 @@ public class GameRenderView : View3D, IGameRenderer
 
         target = new WorldObject();
         observe_object.add_object(target);
-        target.position = Vec3(0, -4, 0);
+        target.position = Vec3(0, 2, 0);
 
         camera = new TargetWorldCamera(target);
         observe_object.add_object(camera);
         world.active_camera = camera;
-        camera.position = Vec3(0, 16, 10);
+        camera.position = Vec3(0, 2, 4);
         camera.view_angle = 80;
+
+        float camera_animation_time = 3;
+        
+        WorldObjectAnimation camera_animation = new WorldObjectAnimation(new AnimationTime.preset(camera_animation_time));
+        camera_animation.do_absolute_position(new LinearPath3D(Vec3(0, 16, 10)));
+        camera_animation.curve = new SCurve(0.5f);
+        camera.animate(camera_animation, true);
+        
+        WorldObjectAnimation target_animation = new WorldObjectAnimation(new AnimationTime.preset(camera_animation_time));
+        target_animation.do_absolute_position(new LinearPath3D(Vec3(0, -4, 0)));
+        target_animation.curve = new SCurve(0.5f);
+        target.animate(target_animation, true);
 
         buffer_action(new RenderActionDelay(new AnimationTime.preset(0.5f)));
         buffer_action(new RenderActionSplitDeadWall(context.server_times.split_wall));
@@ -85,6 +100,15 @@ public class GameRenderView : View3D, IGameRenderer
             buffer_action(new RenderActionInitialDraw(context.server_times.initial_draw, players[(i + dealer_index) % 4], i < 12 ? 4 : 1));
 
         buffer_action(new RenderActionFlipDora());
+    }
+
+    protected override void process(DeltaArgs args)
+    {
+        if (!has_loaded)
+        {
+            has_loaded = true;
+            game_loaded();
+        }
     }
 
     /*protected override void key_press(KeyArgs key)
