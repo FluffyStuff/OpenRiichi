@@ -105,10 +105,7 @@ An additional search path can be added during runtime by running OpenRiichi with
 This repository includes a `flake.nix` hence you can automatically build and run it with
 
 ```bash
-git clone https://github.com/FluffyStuff/OpenRiichi.git
-cd OpenRiichi
-nix flake update # optional: if you want to update `flake.lock`
-nix run .
+nix run github:FluffyStuff/OpenRiichi?submodules=1#OpenRiichi
 ```
 
 ## IDE

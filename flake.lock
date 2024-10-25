@@ -15,28 +15,9 @@
         "type": "indirect"
       }
     },
-    "open-riichi": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1657618982,
-        "narHash": "sha256-ICifjbAFeBsDJZepcQhCQqgOQnFW6L6i4ufG3sCprxg=",
-        "ref": "refs/heads/master",
-        "rev": "cf3f6e53bc3c10547c579bd1f4dda5bea8b3a7d0",
-        "revCount": 83,
-        "submodules": true,
-        "type": "git",
-        "url": "https://github.com/FluffyStuff/OpenRiichi"
-      },
-      "original": {
-        "submodules": true,
-        "type": "git",
-        "url": "https://github.com/FluffyStuff/OpenRiichi"
-      }
-    },
     "root": {
       "inputs": {
-        "nixpkgs": "nixpkgs",
-        "open-riichi": "open-riichi"
+        "nixpkgs": "nixpkgs"
       }
     }
   },

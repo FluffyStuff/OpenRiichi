@@ -3,17 +3,12 @@
 
   inputs = {
     nixpkgs.url = "nixpkgs/nixos-unstable";
-    open-riichi = {
-      url = "git+https://github.com/FluffyStuff/OpenRiichi?submodules=1";
-      flake = false;
-    };
   };
 
   outputs =
     {
       self,
       nixpkgs,
-      open-riichi,
       ...
     }:
     let
@@ -21,7 +16,7 @@
       pkgs = nixpkgs.legacyPackages.${system};
       open-richii-drv = pkgs.stdenv.mkDerivation {
         name = "OpenRiichi";
-        src = open-riichi;
+        src = ./.;
         nativeBuildInputs = with pkgs; [
           vala
           meson
