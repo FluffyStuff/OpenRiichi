@@ -24,6 +24,8 @@ public class ClientRoundState : Object
 
     public signal void set_tile_select_state(bool enabled);
     public signal void set_tile_select_groups(ArrayList<TileSelectionGroup>? selection_groups);
+    public signal void tile_efficiency_updated(string results);
+    public signal void tile_efficiency_hidden();
 
     public bool finished { get; private set; }
     public RoundFinishResult result { get; private set; }
@@ -117,6 +119,13 @@ public class ClientRoundState : Object
     private void do_turn_decision()
     {
         action_state = State.TURN;
+
+        if (self_active)
+        {
+            string? efficiency = EfficiencyLogging.log_turn(state);
+            if (efficiency != null)
+                tile_efficiency_updated(efficiency);
+        }
 
         bool can_kan = state.can_closed_kan() || state.can_late_kan();
         bool can_riichi = state.can_riichi();
@@ -481,6 +490,16 @@ public class ClientRoundState : Object
         decision_finished();
 
         ServerMessageTileDiscard discard = (ServerMessageTileDiscard)message;
+        if (self_active && state.current_player.index == state.self.index)
+        {
+            foreach (Tile tile in state.self.hand)
+                if (tile.ID == discard.tile_ID)
+                {
+                    EfficiencyLogging.log_discard(tile.tile_type);
+                    tile_efficiency_hidden();
+                    break;
+                }
+        }
         state.tile_discard(discard.tile_ID);
         game_tile_discard(state.current_player.index, discard.tile_ID);
     }

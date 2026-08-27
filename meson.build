@@ -11,6 +11,13 @@ dependencies = [
     valac.find_library('os', dirs: meson.current_source_dir() + '/vapi', required: false)
 ] + engine_dependencies
 
+if host_machine.system() == 'darwin'
+  dependencies += dependency(
+      'appleframeworks',
+      modules: 'CoreFoundation',
+  )
+endif
+
 sources = files(
     'source/main.vala',
     'source/Environment.vala',
@@ -32,6 +39,7 @@ sources = files(
     'source/Game/Logic/Tile.vala',
     'source/Game/Logic/TileRules.vala',
     'source/Game/Logic/TimeStamp.vala',
+    'source/Game/Logic/TileEfficiency.vala',
     'source/Game/Logic/VersionInfo.vala',
     'source/Game/MusicPlayer.vala',
     'source/Game/Options.vala',
@@ -49,6 +57,7 @@ sources = files(
     'source/Game/Rendering/Menu/ScoringPointsView.vala',
     'source/Game/Rendering/Menu/ScoringStickView.vala',
     'source/Game/Rendering/Menu/ScoringView.vala',
+    'source/Game/Rendering/Menu/TileEfficiencyWindow.vala',
     'source/Game/Rendering/RenderAction.vala',
     'source/Game/Rendering/RenderCalls.vala',
     'source/Game/Rendering/RenderHand.vala',
@@ -103,6 +112,13 @@ executable('OpenRiichi', sources,
     dependencies: dependencies,
     include_directories: includes,
     gui_app: true,
+    install: true
+)
+
+executable('OpenRiichi-Efficiency', sources,
+    dependencies: dependencies,
+    include_directories: includes,
+    vala_args: ['--define=EFFICIENCY_LOGGING'],
     install: true
 )
 install_subdir('bin/Data', install_dir: dataDir)

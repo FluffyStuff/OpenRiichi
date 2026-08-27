@@ -107,6 +107,8 @@ class GameController : Object
         round.set_furiten_state.connect(menu.set_furiten);
         round.set_tile_select_state.connect(renderer.set_active);
         round.set_tile_select_groups.connect(renderer.set_tile_select_groups);
+        round.tile_efficiency_updated.connect(menu.set_tile_efficiency);
+        round.tile_efficiency_hidden.connect(menu.hide_tile_efficiency);
         round.game_riichi.connect(declared_riichi);
 
         round.game_finished.connect(renderer.game_finished);

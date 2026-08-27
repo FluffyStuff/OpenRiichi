@@ -47,6 +47,10 @@ private static void show_error(string message)
 
 public static int main(string[] args)
 {
+#if EFFICIENCY_LOGGING
+    EfficiencyLogging.enabled = true;
+#endif
+
     string? executable_dir = args.length > 0 ? GLib.Path.get_dirname(args[0]) : null;
     string? built_search_dir = Build.SEARCH_DIR;
 
@@ -76,7 +80,7 @@ public static int main(string[] args)
         int multisamples = options.anti_aliasing == OnOffEnum.ON ? 2 : 0;
         Size2i window_size = Size2i(options.window_width, options.window_height);
         Vec2i window_position = Vec2i(options.window_x, options.window_y);
-        string window_name = "OpenRiichi";
+        string window_name = EfficiencyLogging.enabled ? "OpenRiichi Tile Efficiency" : "OpenRiichi";
 
         SDLGLEngine engine = new SDLGLEngine(multithread_rendering, Environment.version_info.to_string(), debug);
         if (!engine.init(window_name, window_size, window_position, options.screen_type, multisamples))

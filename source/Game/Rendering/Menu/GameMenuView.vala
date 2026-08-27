@@ -15,6 +15,7 @@ class GameMenuView : View2D
     private float start_time;
     private LabelControl timer;
     private LabelControl furiten;
+    private TileEfficiencyWindow? efficiency_window = null;
 
     private MenuTextButton chii;
     private MenuTextButton pon;
@@ -101,6 +102,9 @@ class GameMenuView : View2D
         furiten.visible = false;
         furiten.text = "Furiten";
         furiten.color = Color.red();
+
+        if (EfficiencyLogging.enabled && EfficiencyLogging.singleplayer_session && !observing)
+            efficiency_window = new TileEfficiencyWindow();
 
         chii = new MenuTextButton("MenuButtonSmall", "Chii");
         pon = new MenuTextButton("MenuButtonSmall", "Pon");
@@ -264,6 +268,18 @@ class GameMenuView : View2D
         timer.visible = enabled;
     }
 
+    public void set_tile_efficiency(string results)
+    {
+        if (efficiency_window != null)
+            efficiency_window.show_results(results);
+    }
+
+    public void hide_tile_efficiency()
+    {
+        if (efficiency_window != null)
+            efficiency_window.show_waiting();
+    }
+
     public void update_scores(RoundScoreState[] scores)
     {
         score_view.update_scores(scores);
@@ -276,6 +292,7 @@ class GameMenuView : View2D
 
     public void round_finished()
     {
+        hide_tile_efficiency();
         score_view.display(true);
 
         foreach (var button in observer_buttons)
@@ -318,6 +335,9 @@ class GameMenuView : View2D
 
     protected override void process(DeltaArgs delta)
     {
+        if (efficiency_window != null)
+            efficiency_window.process_events();
+
         if (start_time == 0)
             start_time = delta.time;
 
@@ -343,4 +363,13 @@ class GameMenuView : View2D
     }
 
     public int player_index { get; set; }
+
+    protected override void removed()
+    {
+        if (efficiency_window != null)
+        {
+            efficiency_window.close();
+            efficiency_window = null;
+        }
+    }
 }

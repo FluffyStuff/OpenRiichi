@@ -260,6 +260,10 @@ public class RoundState : Object
         if (!player.discard(tile))
             return false;
 
+        foreach (RoundStatePlayer riichi_player in players)
+            if (riichi_player.in_riichi)
+                riichi_player.post_riichi_discards.add(tile);
+
         discard_tile = tile;
         rinshan = false;
         chankan_call = ChankanCall.NONE;
@@ -616,6 +620,7 @@ public class RoundStatePlayer
         hand = new ArrayList<Tile>();
         pond = new ArrayList<Tile>();
         calls = new ArrayList<RoundStateCall>();
+        post_riichi_discards = new ArrayList<Tile>();
         in_riichi = false;
         first_turn = true;
     }
@@ -650,7 +655,10 @@ public class RoundStatePlayer
         pond.add(tile);
 
         if (do_riichi_discard)
+        {
+            riichi_tile = tile;
             do_riichi_discard = false;
+        }
         else
             ippatsu = false;
 
@@ -1055,6 +1063,8 @@ public class RoundStatePlayer
     public ArrayList<Tile> hand { get; private set; }
     public ArrayList<Tile> pond { get; private set; }
     public ArrayList<RoundStateCall> calls { get; private set; }
+    public ArrayList<Tile> post_riichi_discards { get; private set; }
+    public Tile? riichi_tile { get; private set; }
     public bool in_riichi { get; private set; }
     public bool open { get; private set; } // Open riichi
     public bool first_turn { get; private set; }

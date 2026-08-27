@@ -9,6 +9,7 @@ class MainMenuView : MenuSubView
 
     private void singleplayer()
     {
+        EfficiencyLogging.singleplayer_session = true;
         SingleplayerMenuView singleplayer_menu_view = new SingleplayerMenuView();
         singleplayer_menu_view.menu_game_start.connect(game_start);
         load_sub_view(singleplayer_menu_view);
@@ -16,6 +17,7 @@ class MainMenuView : MenuSubView
 
     private void multiplayer()
     {
+        EfficiencyLogging.singleplayer_session = false;
         MultiplayerMenuView multiplayer_menu_view = new MultiplayerMenuView();
         multiplayer_menu_view.menu_game_start.connect(game_start);
         load_sub_view(multiplayer_menu_view);
